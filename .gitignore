@@ -69,3 +69,33 @@ Thumbs.db
 config/local.yml
 logs/
 temp/
+
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next/
+out/
+build/
+
+# Auth service
+services/auth/.env
+services/auth/dist/
+services/auth/coverage/
+
+# Meta UI
+client/meta-ui/.env.local
+client/meta-ui/.next/
+client/meta-ui/out/
+client/meta-ui/build/
+client/meta-ui/coverage/
+
+# Package manager
+package-lock.json
+yarn.lock
+
+# TypeScript
+*.tsbuildinfo
