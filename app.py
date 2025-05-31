@@ -7,6 +7,7 @@ Enhanced with performance monitoring and self-building capabilities.
 
 import logging
 import time
+import threading
 
 from flask import Flask, jsonify, request
 
@@ -15,6 +16,7 @@ from scraper import WebScraper
 from metrics import metrics
 from monitoring import PerformanceMiddleware, monitor_performance
 from health import health_scorer, HealthStatus
+from code_analyzer import find_code_tags
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +30,11 @@ app = Flask(__name__)
 
 # Initialize performance monitoring
 monitoring = PerformanceMiddleware(app)
+
+# Global in-memory store for improvement suggestions
+improvement_log = []
+next_suggestion_id = 1
+log_lock = threading.Lock()
 
 
 @app.route("/")
@@ -221,8 +228,10 @@ def performance_baseline():
 @monitor_performance
 def improvement_suggestions():
     """Get current improvement suggestions."""
+    global next_suggestion_id
     suggestions = []
-    
+    active_suggestions_output = [] # What this endpoint will return
+
     # Get current health assessment
     overall_health = health_scorer.calculate_overall_health()
     
@@ -303,11 +312,76 @@ def improvement_suggestions():
             "risk_level": "low",
             "milestone": "M1"
         })
-    
+
+    # Scan for code tags (TODO, FIXME)
+    code_tags_to_scan = ['TODO', 'FIXME']
+    try:
+        found_code_tags = find_code_tags('.', code_tags_to_scan)
+        for tag_info in found_code_tags:
+            suggestions.append({
+                "type": "code_quality",
+                "priority": "low",
+                "title": f"Address {tag_info['tag']} in {tag_info['file_path']}:{tag_info['line_number']}",
+                "description": tag_info['full_comment_line'], # Using full_comment_line for more context
+                "action": "Review and address the code comment.",
+                "risk_level": "low",
+                "milestone": "M2",
+                "details": { # Adding details for better traceability
+                    "file_path": tag_info['file_path'],
+                    "line_number": tag_info['line_number'],
+                    "tag": tag_info['tag'],
+                    "comment_text": tag_info['comment']
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error scanning for code tags: {e}")
+        # Optionally, add a suggestion about the error itself
+        suggestions.append({
+            "type": "system_error",
+            "priority": "medium",
+            "title": "Code tag scanning failed",
+            "description": f"The automatic scanning for code tags (TODO, FIXME) encountered an error: {e}",
+            "action": "Investigate `code_analyzer.py` or system permissions.",
+            "risk_level": "medium",
+            "milestone": "M2"
+        })
+
+    current_time = int(time.time())
+    with log_lock:
+        for sugg in suggestions:
+            # Check if a similar pending/active suggestion already exists in the log
+            exists_in_log_active = False # Initialize here
+            for logged_sugg in improvement_log:
+                # For code_quality, title might be too specific due to line number.
+                # Let's make matching a bit more robust for code_quality types.
+                is_similar_code_tag = False
+                if sugg['type'] == 'code_quality' and logged_sugg['type'] == 'code_quality':
+                    if (logged_sugg.get('details', {}).get('file_path') == sugg.get('details', {}).get('file_path') and
+                        logged_sugg.get('details', {}).get('line_number') == sugg.get('details', {}).get('line_number') and
+                        logged_sugg.get('details', {}).get('tag') == sugg.get('details', {}).get('tag')):
+                        is_similar_code_tag = True
+
+                if ( (logged_sugg['title'] == sugg['title'] and logged_sugg['type'] == sugg['type']) or is_similar_code_tag ) and \
+                   logged_sugg['status'] in ['pending', 'active']:
+                    # Found an existing similar suggestion that's still considered active.
+                    # This suggestion (from `suggestions` list) should be presented with its existing ID and status.
+                    active_suggestions_output.append({**sugg, 'id': logged_sugg['id'], 'status': logged_sugg['status'], 'timestamp': logged_sugg['timestamp']})
+                    exists_in_log_active = True
+                    break
+
+            if not exists_in_log_active:
+                # This is a new suggestion or a previously resolved one that has reappeared.
+                # Log it as a new 'pending' entry.
+                new_id = next_suggestion_id
+                next_suggestion_id += 1
+                log_entry = {**sugg, 'id': new_id, 'status': 'pending', 'timestamp': current_time}
+                improvement_log.append(log_entry)
+                active_suggestions_output.append(log_entry) # Also include it in the current response
+
     return jsonify({
-        "suggestions": suggestions,
-        "last_updated": int(time.time()),
-        "milestone": "M1",
+        "suggestions": active_suggestions_output, # Return currently relevant suggestions with their IDs and status
+        "last_updated": current_time,
+        "milestone": "M1", # Or determine dynamically based on suggestions
         "health_score": round(overall_health.score, 1),
         "health_status": overall_health.status.value
     })
@@ -316,14 +390,24 @@ def improvement_suggestions():
 @app.route("/improvements/history")
 @monitor_performance
 def improvement_history():
-    """Get history of past improvements."""
-    # Placeholder for now - will be implemented in later milestones
+    """Get history of all logged improvement suggestions."""
+    with log_lock: # Ensure thread-safe access if we add update mechanisms later
+        # Return a copy to prevent modification of the log by callers
+        history_to_return = list(improvement_log)
+
+    # Calculate summary counts
+    total_count = len(history_to_return)
+    # These counts would be more meaningful once status updates are implemented
+    # For now, most will be 'pending'
+    status_counts = {}
+    for item in history_to_return:
+        status_counts[item['status']] = status_counts.get(item['status'], 0) + 1
+
     return jsonify({
-        "improvements": [],
-        "total_count": 0,
-        "successful_count": 0,
-        "failed_count": 0,
-        "last_improvement": None
+        "improvements_log": history_to_return,
+        "total_count": total_count,
+        "status_counts": status_counts,
+        "last_updated": int(time.time())
     })
 
 
