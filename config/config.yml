@@ -5,6 +5,13 @@ timeout: 30
 port: 5000
 log_to_file: false
 
+# Self-Building Configuration
+self_build_enabled: true
+self_build_risk_threshold: medium
+self_build_approval_required: high
+metrics_collection_interval: 60
+improvement_suggestion_frequency: weekly
+
 # AWS Configuration
 aws:
   region: us-east-1

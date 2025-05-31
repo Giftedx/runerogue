@@ -2,15 +2,21 @@
 RuneRogue Main Application
 
 Flask application with configuration and web scraping capabilities.
+Enhanced with performance monitoring and self-building capabilities.
 """
 
 import logging
 import time
+import threading
 
 from flask import Flask, jsonify, request
 
 from config import config
 from scraper import WebScraper
+from metrics import metrics
+from monitoring import PerformanceMiddleware, monitor_performance
+from health import health_scorer, HealthStatus
+from code_analyzer import find_code_tags
 
 # Configure logging
 logging.basicConfig(
@@ -22,14 +28,28 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Initialize performance monitoring
+monitoring = PerformanceMiddleware(app)
+
+# Global in-memory store for improvement suggestions
+improvement_log = []
+next_suggestion_id = 1
+log_lock = threading.Lock()
+
 
 @app.route("/")
+@monitor_performance
 def home():
     """Home endpoint."""
     return jsonify(
         {
             "message": "RuneRogue API",
             "version": "1.0.0",
+            "self_building": {
+                "enabled": config.get("self_build_enabled", True),
+                "milestone": "M1",
+                "status": "active"
+            },
             "config": {
                 "debug": config.get("debug", False),
                 "dry_run": config.get("dry_run", False),
@@ -46,6 +66,7 @@ def get_config():
 
 
 @app.route("/scrape", methods=["POST"])
+@monitor_performance
 def scrape_url():
     """Scrape a URL using multi-fallback pattern."""
     data = request.get_json()
@@ -87,13 +108,402 @@ def scrape_url():
 
 @app.route("/health")
 def health_check():
-    """Health check endpoint."""
+    """Basic health check endpoint."""
     return jsonify({"status": "healthy", "timestamp": int(time.time())})
 
 
-if __name__ == "__main__":
-    import time
+@app.route("/health/detailed")
+@monitor_performance  
+def detailed_health_check():
+    """Comprehensive health check with performance metrics and health scoring."""
+    # Calculate comprehensive health score
+    overall_health = health_scorer.calculate_overall_health()
+    
+    # Check if baseline exists
+    baseline_status = "established" if metrics.baseline else "not_established"
+    
+    # Get current performance metrics
+    current_p95 = metrics.get_percentile("http_request_duration_seconds", 95)
+    current_error_rate = metrics.get_error_rate()
+    
+    # Check for performance regressions
+    regression_check = metrics.check_performance_regression()
+    
+    health_data = {
+        "status": overall_health.status.value,
+        "timestamp": int(time.time()),
+        "health_score": {
+            "overall": round(overall_health.score, 1),
+            "components": {
+                name: {
+                    "score": round(component.score, 1),
+                    "status": component.status.value,
+                    "message": component.message
+                }
+                for name, component in overall_health.components.items()
+            },
+            "trend": overall_health.trend,
+            "alerts": overall_health.alerts
+        },
+        "performance": {
+            "baseline_status": baseline_status,
+            "current_response_time_p95": current_p95,
+            "current_error_rate": current_error_rate,
+            "regression_check": regression_check
+        },
+        "self_building": {
+            "milestone": "M1",
+            "enabled": config.get("self_build_enabled", True),
+            "last_improvement": None,
+            "health_monitoring": "active"
+        }
+    }
+    
+    return jsonify(health_data)
 
+
+@app.route("/metrics")
+def prometheus_metrics():
+    """Prometheus-style metrics endpoint."""
+    metrics_data = metrics.get_prometheus_metrics()
+    
+    # Add custom metrics headers
+    response_text = f"""# HELP http_requests_total Total HTTP requests
+# TYPE http_requests_total counter
+# HELP http_request_duration_seconds HTTP request duration
+# TYPE http_request_duration_seconds histogram
+# HELP system_cpu_usage_percent CPU usage percentage
+# TYPE system_cpu_usage_percent gauge
+# HELP system_memory_usage_bytes Memory usage in bytes
+# TYPE system_memory_usage_bytes gauge
+
+{metrics_data}
+"""
+    
+    from flask import Response
+    return Response(response_text, mimetype='text/plain')
+
+
+@app.route("/performance/baseline", methods=["GET", "POST"])
+@monitor_performance
+def performance_baseline():
+    """Manage performance baseline."""
+    if request.method == "POST":
+        # Establish new baseline
+        baseline = metrics.establish_baseline()
+        return jsonify({
+            "status": "baseline_established",
+            "baseline": {
+                "response_time_p50": baseline.response_time_p50,
+                "response_time_p95": baseline.response_time_p95,
+                "response_time_p99": baseline.response_time_p99,
+                "error_rate": baseline.error_rate,
+                "throughput": baseline.throughput,
+                "timestamp": baseline.timestamp
+            }
+        })
+    else:
+        # Get current baseline
+        if metrics.baseline:
+            return jsonify({
+                "status": "baseline_exists",
+                "baseline": {
+                    "response_time_p50": metrics.baseline.response_time_p50,
+                    "response_time_p95": metrics.baseline.response_time_p95,
+                    "response_time_p99": metrics.baseline.response_time_p99,
+                    "error_rate": metrics.baseline.error_rate,
+                    "throughput": metrics.baseline.throughput,
+                    "timestamp": metrics.baseline.timestamp,
+                    "age_hours": (time.time() - metrics.baseline.timestamp) / 3600
+                }
+            })
+        else:
+            return jsonify({
+                "status": "no_baseline",
+                "message": "No baseline established. POST to this endpoint to create one."
+            })
+
+
+@app.route("/improvements/suggestions")
+@monitor_performance
+def improvement_suggestions():
+    """Get current improvement suggestions."""
+    global next_suggestion_id
+    suggestions = []
+    active_suggestions_output = [] # What this endpoint will return
+
+    # Get current health assessment
+    overall_health = health_scorer.calculate_overall_health()
+    
+    # Check if baseline should be established
+    if not metrics.baseline:
+        suggestions.append({
+            "type": "infrastructure",
+            "priority": "high",
+            "title": "Establish Performance Baseline",
+            "description": "No performance baseline found. Establishing a baseline is critical for detecting regressions.",
+            "action": "POST /performance/baseline",
+            "risk_level": "low",
+            "milestone": "M0"
+        })
+    
+    # Health-based suggestions (M1)
+    if overall_health.score < 70:
+        suggestions.append({
+            "type": "performance",
+            "priority": "high",
+            "title": "Improve System Health Score",
+            "description": f"Current health score is {overall_health.score:.1f}. Check alerts for specific issues.",
+            "action": "investigate_health_alerts",
+            "risk_level": "medium",
+            "milestone": "M1"
+        })
+    
+    # Component-specific suggestions
+    for name, component in overall_health.components.items():
+        if component.score < 60:
+            suggestions.append({
+                "type": "system",
+                "priority": "critical" if component.score < 40 else "high",
+                "title": f"Address {name.title()} Issues",
+                "description": component.message,
+                "action": f"optimize_{name}",
+                "risk_level": "medium",
+                "milestone": "M1"
+            })
+    
+    # Performance regression suggestions
+    regression_check = metrics.check_performance_regression()
+    if regression_check["status"] == "regression_detected":
+        for regression in regression_check["regressions"]:
+            suggestions.append({
+                "type": "performance",
+                "priority": "critical",
+                "title": f"Performance Regression in {regression['metric']}",
+                "description": f"Detected {regression.get('increase_percent', regression.get('decrease_percent', 0)):.1f}% regression",
+                "action": "investigate_and_fix",
+                "risk_level": "high",
+                "milestone": "M1"
+            })
+    
+    # Trend-based suggestions (M1)
+    if overall_health.trend == "degrading":
+        suggestions.append({
+            "type": "monitoring",
+            "priority": "high",
+            "title": "Health Trend Degrading",
+            "description": "System health has been trending downward. Investigate recent changes.",
+            "action": "analyze_health_trends",
+            "risk_level": "medium",
+            "milestone": "M1"
+        })
+    
+    # Add M1-specific suggestions based on metrics availability
+    system_metrics_available = any(
+        "system_" in key for key in metrics.gauges.keys()
+    )
+    if not system_metrics_available:
+        suggestions.append({
+            "type": "monitoring",
+            "priority": "medium",
+            "title": "Enable System Resource Monitoring",
+            "description": "System resource metrics are not being collected.",
+            "action": "enable_system_monitoring",
+            "risk_level": "low",
+            "milestone": "M1"
+        })
+
+    # Scan for code tags (TODO, FIXME)
+    code_tags_to_scan = ['TODO', 'FIXME']
+    try:
+        found_code_tags = find_code_tags('.', code_tags_to_scan)
+        for tag_info in found_code_tags:
+            suggestions.append({
+                "type": "code_quality",
+                "priority": "low",
+                "title": f"Address {tag_info['tag']} in {tag_info['file_path']}:{tag_info['line_number']}",
+                "description": tag_info['full_comment_line'], # Using full_comment_line for more context
+                "action": "Review and address the code comment.",
+                "risk_level": "low",
+                "milestone": "M2",
+                "details": { # Adding details for better traceability
+                    "file_path": tag_info['file_path'],
+                    "line_number": tag_info['line_number'],
+                    "tag": tag_info['tag'],
+                    "comment_text": tag_info['comment']
+                }
+            })
+    except Exception as e:
+        logger.error(f"Error scanning for code tags: {e}")
+        # Optionally, add a suggestion about the error itself
+        suggestions.append({
+            "type": "system_error",
+            "priority": "medium",
+            "title": "Code tag scanning failed",
+            "description": f"The automatic scanning for code tags (TODO, FIXME) encountered an error: {e}",
+            "action": "Investigate `code_analyzer.py` or system permissions.",
+            "risk_level": "medium",
+            "milestone": "M2"
+        })
+
+    current_time = int(time.time())
+    with log_lock:
+        for sugg in suggestions:
+            # Check if a similar pending/active suggestion already exists in the log
+            exists_in_log_active = False # Initialize here
+            for logged_sugg in improvement_log:
+                # For code_quality, title might be too specific due to line number.
+                # Let's make matching a bit more robust for code_quality types.
+                is_similar_code_tag = False
+                if sugg['type'] == 'code_quality' and logged_sugg['type'] == 'code_quality':
+                    if (logged_sugg.get('details', {}).get('file_path') == sugg.get('details', {}).get('file_path') and
+                        logged_sugg.get('details', {}).get('line_number') == sugg.get('details', {}).get('line_number') and
+                        logged_sugg.get('details', {}).get('tag') == sugg.get('details', {}).get('tag')):
+                        is_similar_code_tag = True
+
+                if ( (logged_sugg['title'] == sugg['title'] and logged_sugg['type'] == sugg['type']) or is_similar_code_tag ) and \
+                   logged_sugg['status'] in ['pending', 'active']:
+                    # Found an existing similar suggestion that's still considered active.
+                    # This suggestion (from `suggestions` list) should be presented with its existing ID and status.
+                    active_suggestions_output.append({**sugg, 'id': logged_sugg['id'], 'status': logged_sugg['status'], 'timestamp': logged_sugg['timestamp']})
+                    exists_in_log_active = True
+                    break
+
+            if not exists_in_log_active:
+                # This is a new suggestion or a previously resolved one that has reappeared.
+                # Log it as a new 'pending' entry.
+                new_id = next_suggestion_id
+                next_suggestion_id += 1
+                log_entry = {**sugg, 'id': new_id, 'status': 'pending', 'timestamp': current_time}
+                improvement_log.append(log_entry)
+                active_suggestions_output.append(log_entry) # Also include it in the current response
+
+    return jsonify({
+        "suggestions": active_suggestions_output, # Return currently relevant suggestions with their IDs and status
+        "last_updated": current_time,
+        "milestone": "M1", # Or determine dynamically based on suggestions
+        "health_score": round(overall_health.score, 1),
+        "health_status": overall_health.status.value
+    })
+
+
+@app.route("/improvements/history")
+@monitor_performance
+def improvement_history():
+    """Get history of all logged improvement suggestions."""
+    with log_lock: # Ensure thread-safe access if we add update mechanisms later
+        # Return a copy to prevent modification of the log by callers
+        history_to_return = list(improvement_log)
+
+    # Calculate summary counts
+    total_count = len(history_to_return)
+    # These counts would be more meaningful once status updates are implemented
+    # For now, most will be 'pending'
+    status_counts = {}
+    for item in history_to_return:
+        status_counts[item['status']] = status_counts.get(item['status'], 0) + 1
+
+    return jsonify({
+        "improvements_log": history_to_return,
+        "total_count": total_count,
+        "status_counts": status_counts,
+        "last_updated": int(time.time())
+    })
+
+
+@app.route("/health/trends")
+@monitor_performance
+def health_trends():
+    """Get health trends over time (Milestone M1)."""
+    hours = request.args.get('hours', 24, type=int)
+    hours = min(hours, 168)  # Limit to 1 week
+    
+    trends = health_scorer.get_health_trends(hours)
+    
+    return jsonify({
+        "trends": trends,
+        "milestone": "M1",
+        "last_updated": int(time.time())
+    })
+
+
+@app.route("/health/score")
+@monitor_performance
+def current_health_score():
+    """Get current health score (Milestone M1)."""
+    overall_health = health_scorer.calculate_overall_health()
+    
+    return jsonify({
+        "overall_score": round(overall_health.score, 1),
+        "status": overall_health.status.value,
+        "trend": overall_health.trend,
+        "components": {
+            name: {
+                "score": round(component.score, 1),
+                "status": component.status.value,
+                "message": component.message
+            }
+            for name, component in overall_health.components.items()
+        },
+        "alerts": overall_health.alerts,
+        "last_updated": int(overall_health.last_updated),
+        "milestone": "M1"
+    })
+
+
+@app.route("/monitoring/alerts")
+@monitor_performance
+def monitoring_alerts():
+    """Get current monitoring alerts (Milestone M1)."""
+    overall_health = health_scorer.calculate_overall_health()
+    
+    # Get performance alerts
+    alerts = []
+    
+    # Add health-based alerts
+    for alert in overall_health.alerts:
+        alerts.append({
+            "type": "health",
+            "severity": "warning" if "warning" in alert.lower() else "critical",
+            "message": alert,
+            "timestamp": int(time.time()),
+            "component": alert.split(":")[0].lower()
+        })
+    
+    # Add regression alerts
+    regression_check = metrics.check_performance_regression()
+    if regression_check["status"] == "regression_detected":
+        for regression in regression_check["regressions"]:
+            alerts.append({
+                "type": "regression",
+                "severity": "critical",
+                "message": f"Performance regression in {regression['metric']}",
+                "timestamp": int(time.time()),
+                "component": "performance",
+                "details": regression
+            })
+    
+    # Add baseline alerts
+    if not metrics.baseline:
+        alerts.append({
+            "type": "configuration",
+            "severity": "warning",
+            "message": "No performance baseline established",
+            "timestamp": int(time.time()),
+            "component": "monitoring"
+        })
+    
+    return jsonify({
+        "alerts": alerts,
+        "total_count": len(alerts),
+        "critical_count": len([a for a in alerts if a["severity"] == "critical"]),
+        "warning_count": len([a for a in alerts if a["severity"] == "warning"]),
+        "last_updated": int(time.time()),
+        "milestone": "M1"
+    })
+
+
+if __name__ == "__main__":
     port = int(config.get("port", 5000))
     debug = config.get("debug", False)
 
