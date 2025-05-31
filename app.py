@@ -5,6 +5,7 @@ Flask application with configuration and web scraping capabilities.
 """
 
 import logging
+import os
 import time
 
 from flask import Flask, jsonify, request
@@ -21,6 +22,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = config.get(
+    'database_url', 'sqlite:///runerogue.db'
+)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
+from models import db
+from social import social_bp
+from realtime import socketio
+
+db.init_app(app)
+socketio.init_app(app, cors_allowed_origins="*")
+app.register_blueprint(social_bp)
+
+# Create tables
+with app.app_context():
+    db.create_all()
 
 
 @app.route("/")
@@ -92,12 +112,11 @@ def health_check():
 
 
 if __name__ == "__main__":
-    import time
-
     port = int(config.get("port", 5000))
     debug = config.get("debug", False)
 
     logger.info(f"Starting RuneRogue application on port {port}")
     logger.info(f"Configuration: {config.all()}")
 
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    # Use socketio.run instead of app.run for WebSocket support
+    socketio.run(app, host="0.0.0.0", port=port, debug=debug)
