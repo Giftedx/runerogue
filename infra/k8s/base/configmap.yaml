@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runerogue-config
+  namespace: runerogue
+  labels:
+    app: runerogue
+data:
+  config.yml: |
+    debug: false
+    dry_run: false
+    log_level: "INFO"
+    timeout: 30
+    port: 5000
+    
+    # Scraping configuration
+    scraper:
+      user_agents:
+        - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+      retry_attempts: 3
+      backoff_factor: 2
+    
+    # API configuration
+    api:
+      rate_limit: 100
+      cors_enabled: true
+      auth_required: false

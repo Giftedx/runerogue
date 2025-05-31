@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: runerogue-ingress
+  namespace: runerogue
+  labels:
+    app: runerogue
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: runerogue-ip
+    networking.gke.io/managed-certificates: runerogue-ssl-cert
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  rules:
+  - host: api.runerogue.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: runerogue-service
+            port:
+              number: 80
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: runerogue-ssl-cert
+  namespace: runerogue
+spec:
+  domains:
+    - api.runerogue.com

@@ -92,8 +92,6 @@ def health_check():
 
 
 if __name__ == "__main__":
-    import time
-
     port = int(config.get("port", 5000))
     debug = config.get("debug", False)
 

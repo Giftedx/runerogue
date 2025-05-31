@@ -1,0 +1,29 @@
+apiVersion: v2
+name: runerogue
+description: A Helm chart for RuneRogue web scraping application
+version: 0.1.0
+appVersion: "1.0.0"
+
+keywords:
+  - web-scraping
+  - flask
+  - python
+  - runescape
+
+home: https://github.com/Giftedx/runerogue
+sources:
+  - https://github.com/Giftedx/runerogue
+
+maintainers:
+  - name: RuneRogue Team
+    email: dev@runerogue.com
+
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
