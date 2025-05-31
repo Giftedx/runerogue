@@ -1,0 +1,231 @@
+AI DEVELOPMENT AGENT DIRECTIVE: INITIATE PROJECT "RUNESCAPE ROGUE PRIME" - DEFINITIVE BUILD
+
+Purpose: This document is the comprehensive, non-negotiable, and authoritative blueprint for the full-stack development and deployment of "RuneScape Rogue Prime." Your mandate is to translate every detail herein into a production-grade, highly performant, scalable, and secure application.
+
+CRITICAL DIRECTIVE ON INTERPRETATION AND SCOPE:
+
+ABSOLUTELY NO SIMPLIFICATION OR "PROTOTYPE" INTERPRETATIONS ARE ACCEPTABLE.
+Any generated plan that resembles a high-level summary, an "App Blueprint" as seen in previous unsatisfactory responses, or any plan labeled as a "prototype" will be immediately rejected. Your task is to produce the full, final, production-ready build plan based on the exhaustive details provided in this document. All frontend elements must be meticulously wired to real, interconnected backend game logic or fully defined mock APIs as a precursor to full backend integration, reflecting actual data flow and system interaction, not simulated client-side functionality. Adherence to the granular detail and comprehensive scope of this SPEC-1 document is mandatory and non-negotiable.
+Project: RuneScape Rogue Prime
+
+Tagline: Reimagining Old School RuneScape's soul within a procedurally generated roguelike epic.
+1. Executive Summary
+
+RuneScape Rogue Prime transcends typical game development, aiming for a high-fidelity, high-replayability 2D roguelike that authentically reconstitutes Old School RuneScape (OSRS) mechanics, aesthetics, and strategic depth within a procedurally emergent framework. This specification demands a state-of-the-art, cloud-native architectural substrate, intelligent AI-driven systems, and an immutable adherence to OSRS design principles. The target is a browser-native application with explicit provisions for future cross-platform expansion. The AI agent must interpret all requirements as mandating robust, scalable, secure, and performant implementations suitable for a global user base.
+2. Background
+
+RuneScape Rogue Prime is a doctoral-level reconstitution of Old School RuneScape (OSRS), contextualized within a procedurally emergent roguelike framework. This project seeks to fuse OSRS’s canonical skill-based progression, retro visual schema, and simulation-driven depth with a state-of-the-art architectural substrate that supports modular extensibility, procedural algorithmic systems, and intelligent agentic behavior. The system design targets a browser-native delivery, with explicit extensibility toward cross-platform deployment. The success of this project hinges on an unparalleled fidelity to OSRS core mechanics while innovating within the roguelike genre via advanced AI and robust backend infrastructure.
+3. Requirements (Prioritized Directives for AI Agent)
+
+The AI agent shall treat these requirements as absolute development mandates, with "Must Have" forming the Minimal Viable Product (MVP) for V1.0.0, "Should Have" as prioritized enhancements for V1.1.0, and "Could Have" as strategic targets for V2.0.0+.
+
+=== 3.1. Must Have (Critical Path for V1.0.0 Production Release)
+
+    Canonically Accurate OSRS Combat and Skill Mechanics: Implementation must be derived directly from empirically validated OSRS formulas and behavior models for hit chance, damage, XP curves, and skill effects. This includes precise simulation of attack styles, critical hits, and defensive rolls.
+
+    Multi-Biome Procedural Map Generation: A robust system capable of generating diverse, interconnected levels with distinct thematic biomes (e.g., Lumbridge plains, Varrock city, Wilderness). Each biome must correctly integrate thematic resource nodes and adversaries, balanced for procedural emergence.
+
+    Player Persistence: All player progression (skills, bank, achievements) must be implemented through transactional, ACID-compliant database models, guaranteeing data integrity and consistency across all sessions, regardless of client-side events or network interruptions.
+
+    Godot HTML5/WebGL Client: The primary game client must be developed using Godot Engine, exported to HTML5/WebGL for browser compatibility. Client-server communication for in-game state must be exclusively via WebSockets for real-time interactivity.
+
+    Synchronized Meta-UI via WebSocket and REST APIs: Out-of-game User Interfaces (login, settings, leaderboards, account management) must be implemented via React/Next.js, communicating with the backend via secure HTTPS (REST) for non-realtime operations and potentially WebSockets for certain real-time status updates (e.g., active session status).
+
+    Real-time, Authoritative Game Server with Lockstep Entity Reconciliation: The backend game server must be authoritative, performing all critical game state calculations (combat, resource yields, movement validation) server-side. It must implement lockstep or a highly deterministic reconciliation model to prevent client-side desynchronization and cheating.
+
+    Gemini API-Integrated AI Feedback Loops: The AI agent must integrate with the Gemini API (orchestrated via Genkit) to implement adaptive difficulty scaling based on player performance metrics. This system must be a closed-loop feedback mechanism, dynamically adjusting game parameters.
+
+    Cloud-Native, Horizontally Scalable Architecture: The entire infrastructure must be designed from the ground up for horizontal scalability using Google Cloud Platform (GCP) and Kubernetes (GKE) as the primary orchestration layer. Microservices must be stateless where possible to facilitate elastic scaling.
+
+=== 3.2. Should Have (Prioritized Enhancements for V1.1.0)
+
+    Seed-based World State Reproducibility: Implement a system to allow specific procedural world states to be reproducible via a persistent seed, crucial for competitive play, bug reproduction, and content sharing.
+
+    AI-driven Quest Lifecycle and Dynamic Achievement Logic: Leverage Gemini via Genkit to generate and manage dynamic, context-aware mini-quests or emergent achievement conditions within a run, enhancing narrative depth and player engagement.
+
+    Machine-learning NPC Interaction Profiles: Develop initial AI models for non-combat NPC behaviors (e.g., merchants, minor quest givers) that learn and adapt based on player interaction history, fostering more dynamic world interactions.
+
+    Real-time Minimap Overlays with Fog-of-War Exploration: Integrate a dynamic minimap into the Godot client, revealing explored areas and points of interest with a traditional roguelike fog-of-war effect.
+
+=== 3.3. Could Have (Strategic Targets for V2.0.0+)
+
+    Cross-platform Distribution via Electron or Native Engine Bindings: Explore and implement compiled desktop clients (Electron, or Godot's native export features) for enhanced performance and direct system integration.
+
+    Cosmetic Systems Tied to Achievements and Seasonal Progression: Develop a robust cosmetic system allowing players to unlock visual customizations through in-game achievements or seasonal events, ensuring non-pay-to-win monetization pathways.
+
+=== 3.4. Won't Have (Initial MVP Exclusion for V1.0.0)
+
+    Peer-versus-peer combat modalities: Direct player-vs-player combat is out of scope for V1.0.0.
+
+    Cooperative multiplayer sessions: Multiplayer gameplay, beyond leaderboards, is deferred.
+
+    Macroeconomic simulation of trade systems: A complex player-driven economy is not within the initial scope.
+
+4. Method: Comprehensive Technical Architecture (Directive for AI Agent)
+
+AI Agent Directive: Construct a robust, layered, and decoupled system architecture adhering to the following blueprint. All inter-service communication must be secure and explicitly defined (HTTPS, WSS, mTLS for internal RPC). Implement this architecture using GCP services and Kubernetes orchestration.
+4.1. Layered System Overview
+
+    Presentation Layer: Frontend; responsible for all user interaction and visual rendering (Godot for in-game, React/Next.js for meta-UI).
+
+    Application Layer: Backend; houses core game logic, AI orchestration, and state persistence. Must be authoritative.
+
+    Service Layer: Specialized microservices; provide decoupled, scalable functionalities exposed via secure RPC endpoints.
+
+    Infrastructure Layer: Cloud resources; GKE-managed Kubernetes cluster, distributed caching, ACID-compliant SQL backends, and robust object storage.
+
+4.2. Deployment Topology (Implement as GCP Kubernetes deployment)
+
+The AI agent shall interpret the following PlantUML diagram as the authoritative deployment topology. All connections must be secure.
+
+      
+@startuml
+actor Player as "Player (User)"
+node "Client Tier (Web Browser)" {
+  component "Godot HTML5 Runtime" as GodotClient
+  component "React/Next.js UI" as ReactUI
+}
+
+node "Service Tier (GKE Cluster)" {
+  cloud "Google Cloud Platform" as GCPCloud {
+    node "Load Balancer (HTTP(S) / TCP)" as LB
+    component "REST API Gateway (Node.js/TS)" as APIGateway
+    component "Authoritative Game Server (Node.js/TS)" as GameServer
+    component "Auth Microservice (Node.js/TS)" as AuthService
+    component "AI Inference Engine (Python/FastAPI)" as AIService
+    component "Telemetry Aggregator (Node.js/TS)" as Telemetry
+  }
+}
+
+node "Data Tier (Managed Services)" {
+  database "PostgreSQL (Cloud SQL)" as PostgreSQL
+  database "Redis (Memorystore)" as Redis
+  file "Asset Storage (Cloud Storage)" as GCS
+}
+
+Player --> LB : Web Browsing (HTTPS/WSS)
+LB --> ReactUI : HTTPS (for static assets and REST API calls)
+LB --> GameServer : WebSocket Secure (WSS, for real-time game state)
+
+ReactUI --> APIGateway : HTTPS (for meta-operations like login, player data)
+APIGateway --> AuthService : Internal RPC (mTLS gRPC/HTTP)
+APIGateway --> PostgreSQL : Read/Write via ORM
+
+GodotClient --> GameServer : WebSocket Secure (WSS, for in-game commands & state sync)
+
+GameServer --> AIService : Internal RPC (mTLS gRPC/HTTP)
+GameServer --> PostgreSQL : Read/Write via ORM (for persistent player data)
+GameServer --> Redis : Read/Write (for session caching, real-time data)
+GameServer --> Telemetry : Internal RPC (metrics, logs)
+
+AIService --> GeminiAPI : Secure API Calls (via Genkit)
+AIService --> Redis : Read (for cached AI context data)
+
+Telemetry --> PostgreSQL : Write (for long-term analytics)
+GCS <-- GameServer : Asset serving (via CDN)
+GCS <-- ReactUI : Asset serving (via CDN)
+
+@enduml
+### 4.3. Client-Side (Frontend / Game Client)
+
+*   **Game Engine:** **Godot Engine (HTML5 Export)**. *Justification: Best-in-class 2D engine, pixel-perfect rendering control, robust scene/node system, integrated animation tools, strong community, and MIT license. Required for core game world rendering.*
+*   **Game Logic:** Implemented directly within Godot using **GDScript** (primary) and **C#** for performance-critical modules.
+*   **Rendering Pipeline:** Configured for pixel-perfect rendering at target resolutions, utilizing Godot's built-in 2D renderer and custom shaders for OSRS-specific visual effects. The `GameScreen` component *must* correctly mount and render the Godot HTML5 export.
+*   **UI Framework:**
+    *   **Core Game UI (Player-Facing):** Designed and implemented within Godot's powerful built-in UI system (Control nodes), leveraging its flexibility for custom layouts, animations, and OSRS-style iconography (Player Stats, Equipped, Inventory, Combat Log, Skills, Minimap). This UI *must* display data fetched from the authoritative game server.
+    *   **Out-of-Game UI (Meta-UI):** Implemented using **React (via Next.js) with TypeScript and Tailwind CSS** for login, registration, settings, leaderboards, account management. This UI layer *must* communicate with the backend via a well-defined JavaScript API (for Godot integration) or HTTPS REST calls (for Next.js).
+*   **Asset Management:** Client assets *must* be version-controlled (Git LFS) and optimized.
+
+### 4.4. Server-Side (Backend / Game Server)
+
+*   **Architecture:** Authoritative Game Server + Microservices for specialized functions.
+*   **Core Game Server (Real-time Logic):**
+    *   **Language/Framework:** **Node.js with TypeScript** and a lightweight real-time framework (e.g., **Socket.IO** or `ws`).
+    *   **Responsibilities:** Authoritative Game State, Combat Resolution, Resource Gathering Validation, Player Input Processing, State Synchronization, Player & Inventory Management.
+*   **API Gateway:** **Node.js (Express/Fastify) with TypeScript**. Handles RESTful API requests (auth, leaderboards, achievements).
+*   **AI Service:** **Python (FastAPI)**. Orchestrates calls to Gemini via Genkit, processes game server inputs, and returns AI-driven decisions.
+*   **Authentication Service:** Separate microservice for user authentication (JWT-based).
+*   **Telemetry Aggregator:** Microservice for collecting and processing game metrics and logs.
+*   **Cloud Platform:** **Google Cloud Platform (GCP)**.
+*   **Containerization:** All backend services *must* be deployed as **Docker containers**.
+*   **Orchestration:** **Kubernetes (GKE)** for managing, scaling, and deploying microservices.
+
+### 4.5. Database Layer
+
+*   **Primary Database:** **PostgreSQL (via Google Cloud SQL)**. *Justification: Relational database for structured, transactional data (player accounts, persistent character data, skill levels, bank items, quest progress, achievements). ACID compliance is crucial for game state integrity.*
+*   **In-Memory Cache / Real-time State:** **Redis (via Google Cloud Memorystore)**. Used for caching frequently accessed player data, temporary game session data, and real-time lookups for AI.
+*   **Object Storage:** **Google Cloud Storage** for game assets (sprites, audio, tilemaps) and backups.
+
+### 4.6. Asset Pipeline & Sourcing
+
+*   **Version Control:** All game assets (images, audio, fonts) *must* be version-controlled using Git LFS.
+*   **Automated Atlas Sheet Creation:** Implement CLI tools (e.g., TexturePacker CLI) for automated generation of optimized sprite atlas sheets and corresponding data files.
+*   **GCS-Backed Hot-Swappable Asset Delivery:** Assets *must* be served from Google Cloud Storage (GCS) via Google Cloud CDN. Hashed URLs *must* be used for cache invalidation and hot-swappable updates.
+*   **Asset Sourcing Directive:** For all game iconography, animations, sprites, and other visual/audio assets, and all game information about OSRS (Old School RuneScape) mechanics, data, formulas, and lore, the primary and authoritative source *must* be the **OSRS Wiki: `https://oldschool.runescape.wiki/`**. All assets and data used *must* adhere to OSRS's distinct pixel-art style and lore.
+
+## 5. Development Practices & Quality Assurance
+
+**AI Agent Directive:** Implement all development phases with extreme rigor, ensuring high quality, testability, and maintainability.
+
+*   **Code Standards:** Strict adherence to TypeScript/GDScript/Python best practices, consistent naming conventions (camelCase, PascalCase), JSDoc/Sphinx documentation for all modules. All code files (excluding large data files) *must* adhere to a strict 500-line limit.
+*   **Modular Architecture:** Enforce strict separation of concerns, single responsibility principle, and clear interfaces.
+*   **Error Handling:** Robust, centralized error logging and handling across all components. Graceful degradation and clear error messages.
+*   **Code Refactoring:** Continuous, systematic refactoring to maintain code quality.
+*   **Testing Framework:** Comprehensive multi-level testing:
+    *   **Unit Tests:** Jest/Mocha (JS/TS), Pytest (Python), GDUnit (Godot) with 100% code coverage target for critical logic.
+    *   **Integration Tests:** Verify microservice interactions and client-server communication.
+    *   **End-to-End (E2E) Tests:** Automated gameplay scenarios (using headless client instances) to validate core game loops.
+    *   **Performance Benchmarks:** Regular tests for framerates, server response times, and network latency under load.
+    *   **Security Audits:** Regular vulnerability scanning and penetration testing.
+*   **CI/CD Pipeline:** Automated build, test, and deployment via GitHub Actions and GCP Cloud Build. Every commit triggers linting and all tests. Staging deployments on feature branch merges.
+*   **Monitoring & Logging:** Centralized logging (Cloud Logging) and APM (Cloud Monitoring, Prometheus/Grafana) for all services.
+*   **Security:** Implement best practices: Input validation, secure API keys (Secret Manager), DDoS protection, rate limiting, data encryption (at rest and in transit).
+
+## 6. Deployment & Scalability
+
+**AI Agent Directive:** Ensure the game is deployable globally, highly available, and elastically scalable.
+
+*   **Global Load Balancing:** Google Cloud Load Balancing for distributing traffic across regions.
+*   **Client Asset Delivery:** Google Cloud CDN for fast, global delivery of game assets.
+*   **Backend Scalability:**
+    *   **Stateless Services:** Design microservices (API Gateway, AI Service) to be stateless for horizontal scaling via Kubernetes HPA.
+    *   **Stateful Game Server:** Implement techniques for scaling stateful game servers (e.g., sharding players across instances, session affinity).
+*   **Automated Backups & Disaster Recovery:** Regular database backups with point-in-time recovery. Defined disaster recovery plan.
+
+## 7. Operational Excellence
+
+**AI Agent Directive:** Implement robust operational practices for ongoing system health and maintenance.
+
+*   **Observability:** Comprehensive metrics, tracing, and logging.
+*   **Incident Management:** Defined processes for alert triage, response, and post-mortem.
+*   **Automated Updates:** Strategy for rolling updates and zero-downtime deployments.
+
+## 8. Milestones (High-Level Timeline for AI Agent Planning)
+
+*   **M0 - Infrastructure & CI/CD Setup (Weeks 1-2)**
+*   **M1 - Godot Core Systems & Initial Rendering (Weeks 3-5)**
+*   **M2 - Procedural World Generator & Client UI (Weeks 6-9)**
+*   **M3 - Core Game Server & Network (Weeks 10-13)**
+*   **M4 - Authentication & Meta-UI (Weeks 14-17)**
+*   **M5 - OSRS Combat Engine (Weeks 18-20)**
+*   **M6 - Skill Trees & Resource/Crafting Systems (Weeks 21-24)**
+*   **M7 - AI Layer Integration (Weeks 25-28)**
+*   **M8 - Persistent Meta-Systems & Bank (Weeks 29-32)**
+*   **M9 - Comprehensive Testing & QA (Weeks 33-36)**
+
+## 9. Gathering Results (AI Agent: Implement automated monitoring & reporting)
+
+*   **Metric Collection:** Integrate Cloud Monitoring + custom exporters for real-time telemetry across all services.
+*   **Gemini Token-level Analysis:** Implement logging and analysis of Gemini API usage, event diversity, and coherence.
+*   **Procedural Entropy Scoring:** Develop metrics to quantify the uniqueness of generated levels.
+*   **Community Review & Balance Logs:** Design interfaces for collecting player feedback; automate generation of balance logs and telemetry heatmaps.
+
+---
+
+**FINAL DIRECTIVE TO AI DEVELOPMENT AGENT:**
+
+This **"RuneScape Rogue Prime - Definitive Build Blueprint"** is your complete, authoritative, and exhaustive instruction set. Your mission is to execute every detail with maximum precision, adhering strictly to all requirements, architectural patterns, and implementation guidelines. Your objective is to deliver a perfectly engineered, fully functional, highly polished, and production-ready game.
+
+**BEGIN EXECUTION.**
+
+    
