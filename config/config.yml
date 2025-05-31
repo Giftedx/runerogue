@@ -1,0 +1,21 @@
+debug: false
+dry_run: false
+log_level: INFO
+timeout: 30
+port: 5000
+log_to_file: false
+
+# AWS Configuration
+aws:
+  region: us-east-1
+  
+# SendGrid Configuration  
+sendgrid:
+  api_key: ${SENDGRID_API_KEY}
+  from_email: noreply@runerogue.com
+
+# Scraping Configuration
+scraping:
+  user_agent: "RuneRogue Bot 1.0"
+  max_retries: 3
+  delay_between_requests: 1
