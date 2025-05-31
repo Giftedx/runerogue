@@ -7,8 +7,7 @@ Flask application with configuration and web scraping capabilities.
 import logging
 import time
 
-from flask import Flask, jsonify, request
-
+from flask import Flask, jsonify, request, send_from_directory
 from config import config
 from scraper import WebScraper
 
@@ -38,6 +37,11 @@ def home():
         }
     )
 
+# Add the new /game route
+@app.route("/game")
+def game_page():
+    # Serves the Phaser game's index.html.
+    return send_from_directory('static', 'index.html')
 
 @app.route("/config")
 def get_config():
