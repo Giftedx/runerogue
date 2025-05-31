@@ -14,6 +14,7 @@ from config import config
 from scraper import WebScraper
 from metrics import metrics
 from monitoring import PerformanceMiddleware, monitor_performance
+from health import health_scorer, HealthStatus
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +40,7 @@ def home():
             "version": "1.0.0",
             "self_building": {
                 "enabled": config.get("self_build_enabled", True),
-                "milestone": "M0",
+                "milestone": "M1",
                 "status": "active"
             },
             "config": {
@@ -107,7 +108,10 @@ def health_check():
 @app.route("/health/detailed")
 @monitor_performance  
 def detailed_health_check():
-    """Comprehensive health check with performance metrics."""
+    """Comprehensive health check with performance metrics and health scoring."""
+    # Calculate comprehensive health score
+    overall_health = health_scorer.calculate_overall_health()
+    
     # Check if baseline exists
     baseline_status = "established" if metrics.baseline else "not_established"
     
@@ -119,8 +123,21 @@ def detailed_health_check():
     regression_check = metrics.check_performance_regression()
     
     health_data = {
-        "status": "healthy",
+        "status": overall_health.status.value,
         "timestamp": int(time.time()),
+        "health_score": {
+            "overall": round(overall_health.score, 1),
+            "components": {
+                name: {
+                    "score": round(component.score, 1),
+                    "status": component.status.value,
+                    "message": component.message
+                }
+                for name, component in overall_health.components.items()
+            },
+            "trend": overall_health.trend,
+            "alerts": overall_health.alerts
+        },
         "performance": {
             "baseline_status": baseline_status,
             "current_response_time_p95": current_p95,
@@ -128,15 +145,12 @@ def detailed_health_check():
             "regression_check": regression_check
         },
         "self_building": {
-            "milestone": "M0",
+            "milestone": "M1",
             "enabled": config.get("self_build_enabled", True),
-            "last_improvement": None  # Will be populated when improvements are made
+            "last_improvement": None,
+            "health_monitoring": "active"
         }
     }
-    
-    # Set overall health status based on regressions
-    if regression_check["status"] == "regression_detected":
-        health_data["status"] = "degraded"
     
     return jsonify(health_data)
 
@@ -207,8 +221,10 @@ def performance_baseline():
 @monitor_performance
 def improvement_suggestions():
     """Get current improvement suggestions."""
-    # This is a placeholder for now - will be enhanced in later milestones
     suggestions = []
+    
+    # Get current health assessment
+    overall_health = health_scorer.calculate_overall_health()
     
     # Check if baseline should be established
     if not metrics.baseline:
@@ -218,10 +234,36 @@ def improvement_suggestions():
             "title": "Establish Performance Baseline",
             "description": "No performance baseline found. Establishing a baseline is critical for detecting regressions.",
             "action": "POST /performance/baseline",
-            "risk_level": "low"
+            "risk_level": "low",
+            "milestone": "M0"
         })
     
-    # Check for performance issues
+    # Health-based suggestions (M1)
+    if overall_health.score < 70:
+        suggestions.append({
+            "type": "performance",
+            "priority": "high",
+            "title": "Improve System Health Score",
+            "description": f"Current health score is {overall_health.score:.1f}. Check alerts for specific issues.",
+            "action": "investigate_health_alerts",
+            "risk_level": "medium",
+            "milestone": "M1"
+        })
+    
+    # Component-specific suggestions
+    for name, component in overall_health.components.items():
+        if component.score < 60:
+            suggestions.append({
+                "type": "system",
+                "priority": "critical" if component.score < 40 else "high",
+                "title": f"Address {name.title()} Issues",
+                "description": component.message,
+                "action": f"optimize_{name}",
+                "risk_level": "medium",
+                "milestone": "M1"
+            })
+    
+    # Performance regression suggestions
     regression_check = metrics.check_performance_regression()
     if regression_check["status"] == "regression_detected":
         for regression in regression_check["regressions"]:
@@ -231,13 +273,43 @@ def improvement_suggestions():
                 "title": f"Performance Regression in {regression['metric']}",
                 "description": f"Detected {regression.get('increase_percent', regression.get('decrease_percent', 0)):.1f}% regression",
                 "action": "investigate_and_fix",
-                "risk_level": "high"
+                "risk_level": "high",
+                "milestone": "M1"
             })
+    
+    # Trend-based suggestions (M1)
+    if overall_health.trend == "degrading":
+        suggestions.append({
+            "type": "monitoring",
+            "priority": "high",
+            "title": "Health Trend Degrading",
+            "description": "System health has been trending downward. Investigate recent changes.",
+            "action": "analyze_health_trends",
+            "risk_level": "medium",
+            "milestone": "M1"
+        })
+    
+    # Add M1-specific suggestions based on metrics availability
+    system_metrics_available = any(
+        "system_" in key for key in metrics.gauges.keys()
+    )
+    if not system_metrics_available:
+        suggestions.append({
+            "type": "monitoring",
+            "priority": "medium",
+            "title": "Enable System Resource Monitoring",
+            "description": "System resource metrics are not being collected.",
+            "action": "enable_system_monitoring",
+            "risk_level": "low",
+            "milestone": "M1"
+        })
     
     return jsonify({
         "suggestions": suggestions,
         "last_updated": int(time.time()),
-        "milestone": "M0"
+        "milestone": "M1",
+        "health_score": round(overall_health.score, 1),
+        "health_status": overall_health.status.value
     })
 
 
@@ -252,6 +324,98 @@ def improvement_history():
         "successful_count": 0,
         "failed_count": 0,
         "last_improvement": None
+    })
+
+
+@app.route("/health/trends")
+@monitor_performance
+def health_trends():
+    """Get health trends over time (Milestone M1)."""
+    hours = request.args.get('hours', 24, type=int)
+    hours = min(hours, 168)  # Limit to 1 week
+    
+    trends = health_scorer.get_health_trends(hours)
+    
+    return jsonify({
+        "trends": trends,
+        "milestone": "M1",
+        "last_updated": int(time.time())
+    })
+
+
+@app.route("/health/score")
+@monitor_performance
+def current_health_score():
+    """Get current health score (Milestone M1)."""
+    overall_health = health_scorer.calculate_overall_health()
+    
+    return jsonify({
+        "overall_score": round(overall_health.score, 1),
+        "status": overall_health.status.value,
+        "trend": overall_health.trend,
+        "components": {
+            name: {
+                "score": round(component.score, 1),
+                "status": component.status.value,
+                "message": component.message
+            }
+            for name, component in overall_health.components.items()
+        },
+        "alerts": overall_health.alerts,
+        "last_updated": int(overall_health.last_updated),
+        "milestone": "M1"
+    })
+
+
+@app.route("/monitoring/alerts")
+@monitor_performance
+def monitoring_alerts():
+    """Get current monitoring alerts (Milestone M1)."""
+    overall_health = health_scorer.calculate_overall_health()
+    
+    # Get performance alerts
+    alerts = []
+    
+    # Add health-based alerts
+    for alert in overall_health.alerts:
+        alerts.append({
+            "type": "health",
+            "severity": "warning" if "warning" in alert.lower() else "critical",
+            "message": alert,
+            "timestamp": int(time.time()),
+            "component": alert.split(":")[0].lower()
+        })
+    
+    # Add regression alerts
+    regression_check = metrics.check_performance_regression()
+    if regression_check["status"] == "regression_detected":
+        for regression in regression_check["regressions"]:
+            alerts.append({
+                "type": "regression",
+                "severity": "critical",
+                "message": f"Performance regression in {regression['metric']}",
+                "timestamp": int(time.time()),
+                "component": "performance",
+                "details": regression
+            })
+    
+    # Add baseline alerts
+    if not metrics.baseline:
+        alerts.append({
+            "type": "configuration",
+            "severity": "warning",
+            "message": "No performance baseline established",
+            "timestamp": int(time.time()),
+            "component": "monitoring"
+        })
+    
+    return jsonify({
+        "alerts": alerts,
+        "total_count": len(alerts),
+        "critical_count": len([a for a in alerts if a["severity"] == "critical"]),
+        "warning_count": len([a for a in alerts if a["severity"] == "warning"]),
+        "last_updated": int(time.time()),
+        "milestone": "M1"
     })
 
 

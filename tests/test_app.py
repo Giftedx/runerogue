@@ -30,7 +30,7 @@ class TestFlaskApp:
         assert data["version"] == "1.0.0"
         assert "config" in data
         assert "self_building" in data
-        assert data["self_building"]["milestone"] == "M0"
+        assert data["self_building"]["milestone"] == "M1"
 
     def test_config_endpoint(self, client):
         """Test config endpoint."""
@@ -56,9 +56,45 @@ class TestFlaskApp:
         
         data = json.loads(response.data)
         assert "status" in data
+        assert "health_score" in data
         assert "performance" in data
         assert "self_building" in data
-        assert data["self_building"]["milestone"] == "M0"
+        assert data["self_building"]["milestone"] == "M1"
+        assert "health_monitoring" in data["self_building"]
+
+    def test_health_trends_endpoint(self, client):
+        """Test health trends endpoint."""
+        response = client.get("/health/trends")
+        assert response.status_code == 200
+        
+        data = json.loads(response.data)
+        assert "trends" in data
+        assert "milestone" in data
+        assert data["milestone"] == "M1"
+
+    def test_health_score_endpoint(self, client):
+        """Test current health score endpoint."""
+        response = client.get("/health/score")
+        assert response.status_code == 200
+        
+        data = json.loads(response.data)
+        assert "overall_score" in data
+        assert "status" in data
+        assert "components" in data
+        assert "alerts" in data
+        assert data["milestone"] == "M1"
+
+    def test_monitoring_alerts_endpoint(self, client):
+        """Test monitoring alerts endpoint."""
+        response = client.get("/monitoring/alerts")
+        assert response.status_code == 200
+        
+        data = json.loads(response.data)
+        assert "alerts" in data
+        assert "total_count" in data
+        assert "critical_count" in data
+        assert "warning_count" in data
+        assert data["milestone"] == "M1"
 
     def test_metrics_endpoint(self, client):
         """Test Prometheus metrics endpoint."""
@@ -91,7 +127,9 @@ class TestFlaskApp:
         data = json.loads(response.data)
         assert "suggestions" in data
         assert "milestone" in data
-        assert data["milestone"] == "M0"
+        assert data["milestone"] == "M1"
+        assert "health_score" in data
+        assert "health_status" in data
 
     def test_improvement_history(self, client):
         """Test improvement history endpoint."""

@@ -32,24 +32,31 @@ SPEC-1 defines the self-building process for RuneRogue, enabling the application
 - Automated improvement suggestions logged
 
 ### Milestone M1: Self-Monitoring Framework
-**Status**: Planned  
+**Status**: Completed  
 **Goal**: Comprehensive application self-awareness
 
 #### Requirements
-- [ ] Real-time performance metrics
-- [ ] Resource utilization monitoring
-- [ ] Error rate and quality tracking
-- [ ] User experience metrics
-- [ ] System health scoring
+- [x] Real-time performance metrics
+- [x] Resource utilization monitoring
+- [x] Error rate and quality tracking
+- [x] User experience metrics
+- [x] System health scoring
 
 #### Success Criteria
-- 95% coverage of application monitoring
-- Performance trends tracked over time
-- Automated alerts for degradation
-- Health score correlates with actual performance
+- [x] 95% coverage of application monitoring
+- [x] Performance trends tracked over time
+- [x] Automated alerts for degradation
+- [x] Health score correlates with actual performance
+
+#### Implementation Details
+- Health scoring system with component-based assessment
+- Real-time health trends and alerting
+- Enhanced monitoring endpoints (`/health/score`, `/health/trends`, `/monitoring/alerts`)
+- Performance, system, and availability health components
+- Automated health trend analysis with improving/stable/degrading detection
 
 ### Milestone M2: Automated Analysis
-**Status**: Planned  
+**Status**: In Progress  
 **Goal**: Intelligent analysis of performance and improvement opportunities
 
 #### Requirements
@@ -142,6 +149,9 @@ IMPROVEMENT_SUGGESTION_FREQUENCY=weekly
 ### Monitoring Endpoints
 - `/metrics` - Prometheus-style metrics
 - `/health/detailed` - Comprehensive health check
+- `/health/score` - Current health score and component breakdown
+- `/health/trends` - Health trends over time
+- `/monitoring/alerts` - Current monitoring alerts
 - `/performance/baseline` - Performance baseline data
 - `/improvements/suggestions` - Current improvement suggestions
 - `/improvements/history` - Past improvements and results
