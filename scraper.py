@@ -97,7 +97,7 @@ class WebScraper:
             self.update_status("Playwright not available", 0)
             logger.warning("Playwright not installed, skipping fallback")
             return None
-            
+
         try:
             self.update_status(f"Attempting Playwright for {url}", 60)
 

@@ -37,6 +37,7 @@ setup(
         "playwright>=1.20.0",
         "boto3>=1.20.0",
         "sendgrid>=6.9.0",
+        "psutil>=5.8.0",
     ],
     extras_require={
         "dev": [
