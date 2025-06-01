@@ -1,0 +1,23 @@
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Build and dependency folders (general)
+node_modules/
+dist/
+build/
+coverage/
+
+# Log files
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+!/.env.example

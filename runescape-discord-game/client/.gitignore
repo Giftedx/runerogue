@@ -1,0 +1,14 @@
+# Node.js specific (Vite uses Node.js)
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.env
+.env.*
+!/.env.example
+
+# Vite specific
+.vite/
+# Certs for local HTTPS
+localhost*.*
