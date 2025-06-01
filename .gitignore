@@ -69,4 +69,12 @@ Thumbs.db
 config/local.yml
 logs/
 temp/
+<<<<<<< HEAD
 node_modules
+=======
+
+# Godot build artifacts
+client/godot/builds/
+client/godot/.godot/
+client/godot/.import/
+>>>>>>> origin/copilot/fix-7

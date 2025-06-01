@@ -1,9 +1,14 @@
 # RuneScape Discord Game
 
+<<<<<<< HEAD
 A multiplayer RuneScape-inspired game that runs directly in Discord using Colyseus for real-time multiplayer and Discord OAuth2 for authentication.
+=======
+A full-stack web scraping application with comprehensive multi-fallback patterns and browser-based game client.
+>>>>>>> origin/copilot/fix-7
 
-## Features
+## Components
 
+<<<<<<< HEAD
 - **Real-time Multiplayer**: Built with Colyseus for seamless multiplayer experiences
 - **Discord Integration**: Login with Discord and play with friends
 - **Modern Tech Stack**: TypeScript, Node.js, and WebSockets
@@ -18,9 +23,27 @@ A multiplayer RuneScape-inspired game that runs directly in Discord using Colyse
 - Docker (for local development)
 - Discord Developer Account
 - Google Cloud Account (for deployment)
+=======
+### Backend (Python/Flask)
+- **Multi-fallback scraping**: requests → BeautifulSoup → Playwright
+- **Configuration management**: YAML config files with environment variable overrides
+- **Progress tracking**: Built-in `update_status()` function with progress reporting
+- **Dry run support**: Test functionality without making actual requests
+- **Flask web API**: RESTful endpoints for scraping operations
+- **Comprehensive testing**: Unit tests with mocking support
+- **CI/CD Pipeline**: Automated testing, linting, and deployment
+>>>>>>> origin/copilot/fix-7
+
+### Client (Godot Engine 4.x)
+- **Browser-ready**: HTML5/WebGL export for web deployment
+- **Pixel-perfect rendering**: Optimized for crisp 2D graphics
+- **Scene management**: Main menu, game scenes, and HUD system
+- **Asset pipeline**: Git LFS integration for sprites, audio, fonts
+- **CI integration**: Automated builds and exports
 
 ## Installation
 
+<<<<<<< HEAD
 1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/runerogue.git
@@ -36,6 +59,31 @@ A multiplayer RuneScape-inspired game that runs directly in Discord using Colyse
    ```bash
    cp .env.example .env
    ```
+=======
+### Backend Setup
+
+```bash
+pip install -r requirements.txt
+```
+
+### Client Setup
+
+1. Install Godot Engine 4.3+ from [godotengine.org](https://godotengine.org/download)
+2. Install Git LFS for asset management:
+   ```bash
+   git lfs install
+   git lfs pull  # Download assets
+   ```
+3. Open `client/godot/` directory in Godot Engine
+
+## Quick Start
+
+### Backend API
+
+```python
+from scraper import WebScraper
+from config import config
+>>>>>>> origin/copilot/fix-7
 
 4. Start the development server:
    ```bash
@@ -50,6 +98,18 @@ A multiplayer RuneScape-inspired game that runs directly in Discord using Colyse
 - `npm test` - Run tests
 - `npm run lint` - Run linter
 - `npm run format` - Format code
+
+### Client Development
+
+1. Open the Godot project: `client/godot/`
+2. Press F5 to run the project
+3. For web builds:
+   ```bash
+   cd client/godot
+   godot --headless --export-release "Web" builds/web/index.html
+   ```
+
+See [client/godot/README.md](client/godot/README.md) for detailed client documentation.
 
 ## Configuration
 
@@ -96,11 +156,22 @@ src/
 
 ## API Endpoints
 
+<<<<<<< HEAD
+=======
+### Backend Services
+- `GET /` - Application info
+- `GET /config` - Current configuration
+>>>>>>> origin/copilot/fix-7
 - `GET /health` - Health check
 - `GET /auth/discord` - Start Discord OAuth2 flow
 - `GET /auth/discord/callback` - Discord OAuth2 callback
 - `GET /auth/me` - Get current user info
 - `WS /` - WebSocket endpoint for game server
+
+### Client Integration
+- Client builds are served via CI/CD artifacts
+- Web client deployable to static hosting
+- Backend API provides data services for client
 
 ## Testing
 
