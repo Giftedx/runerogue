@@ -1,0 +1,106 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${MCP_GITHUB_TOKEN}"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": {}
+    },
+    "osrs": {
+      "command": "npx",
+      "args": ["-y", "@jayarrowz/mcp-osrs"],
+      "env": {}
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_SEARCH_API_KEY}"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {}
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+      }
+    },
+    "runerogue-tools": {
+      "command": "node",
+      "args": [".github/copilot/runerogue-mcp-server.js"],
+      "env": {
+        "GITHUB_TOKEN": "${MCP_GITHUB_TOKEN}"
+      }
+    }
+  },
+  "customTools": {
+    "runerogue_run_tests": {
+      "description": "Run tests for the RuneRogue project with specified modules or test paths",
+      "parameters": {
+        "properties": {
+          "testPath": {
+            "description": "Optional path to specific test file or directory",
+            "type": "string"
+          },
+          "markers": {
+            "description": "Optional pytest markers to filter tests",
+            "type": "string"
+          },
+          "verbose": {
+            "description": "Whether to run tests in verbose mode",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_lint_code": {
+      "description": "Run linting on the codebase or specified files",
+      "parameters": {
+        "properties": {
+          "filePath": {
+            "description": "Optional path to specific file or directory to lint",
+            "type": "string"
+          },
+          "fix": {
+            "description": "Whether to automatically fix linting issues when possible",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_generate_docs": {
+      "description": "Generate or update documentation for specified modules",
+      "parameters": {
+        "properties": {
+          "modulePath": {
+            "description": "Path to the module to document",
+            "type": "string"
+          },
+          "outputFormat": {
+            "description": "Output format (markdown or rst)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

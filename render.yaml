@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: runerogue
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Discord configuration - you'll need to set these in the Render dashboard
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_REDIRECT_URI
+        sync: false
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      # Session configuration
+      - key: SESSION_SECRET
+        generateValue: true
+      # Colyseus configuration
+      - key: COLYSEUS_WS_PORT
+        value: 2567
+      # Security
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      # Other environment variables can be added in the Render dashboard

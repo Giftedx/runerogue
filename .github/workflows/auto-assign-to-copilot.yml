@@ -1,0 +1,34 @@
+name: Auto-Assign to GitHub Copilot
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  assign-to-copilot:
+    runs-on: ubuntu-latest
+    # Only run this workflow when specific labels are added or present
+    if: contains(github.event.issue.labels.*.name, 'copilot') || contains(github.event.issue.labels.*.name, 'ai-task')
+    
+    steps:
+      - name: Assign to GitHub Copilot
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: ['github-copilot[bot]']
+            });
+            
+            console.log(`Issue #${context.issue.number} has been assigned to GitHub Copilot`);
+            
+            // Add a comment to indicate the assignment was done automatically
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `This issue has been automatically assigned to GitHub Copilot for processing.`
+            });

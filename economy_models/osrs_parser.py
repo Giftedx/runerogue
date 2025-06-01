@@ -1,132 +1,237 @@
+"""OSRS Wiki Parser Module
+
+This module provides tools for fetching and parsing data from the Old School RuneScape Wiki.
+It includes functions and classes for retrieving item information, parsing infoboxes,
+and extracting structured data from wiki pages.
+
+The module supports:
+- Fetching wiki pages for items, NPCs, and other game entities
+- Parsing infoboxes to extract structured data
+- Extracting combat stats, equipment requirements, and other game-specific information
+- Error handling and logging for robust operation
+
+Typical usage:
+    ```python
+    # Fetch data for an item
+    wiki_data = fetch_wiki_data("Dragon scimitar")
+    
+    # Parse HTML content
+    parser = OSRSWikiParser(html_content)
+    item_data = parser.parse_item_infobox()
+    ```
+
+This module is a core component of the RuneRogue economy system, providing
+accurate game data for item pricing, combat calculations, and game mechanics.
+"""
+
+import requests
+import json
+from bs4 import BeautifulSoup, Tag, NavigableString
+from typing import Dict, Any, Optional, cast, List, Union
+import logging
+from bs4.element import PageElement, ResultSet
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+OSRS_WIKI_BASE_URL = "https://oldschool.runescape.wiki/w/"
+
+def fetch_wiki_data(query: str) -> str:
+    """
+    A robust tool for fetching data from the OSRS Wiki.
+    
+    Args:
+        query: The item, NPC, or topic to search for.
+        
+    Returns:
+        A string containing the extracted data or an error message.
+    """
+    logger.info(f"Fetching data for: {query}")
+    
+    # Sanitize query for URL
+    url_query = query.replace(' ', '_')
+    url = f"{OSRS_WIKI_BASE_URL}{url_query}"
+    
+    try:
+        # Set a user agent to avoid being blocked
+        headers = {
+            'User-Agent': 'RuneRogue/1.0 (https://github.com/Giftedx/runerogue; contact@example.com)'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()  # Raise HTTP errors
+        
+        # Check if we got a valid HTML response
+        if 'text/html' not in response.headers.get('content-type', ''):
+            return f"Unexpected content type: {response.headers.get('content-type')}"
+            
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Try to find the main infobox, which is common on item/NPC pages
+        infobox = soup.find('table', class_='infobox')
+        if infobox and isinstance(infobox, Tag):
+            # Extract structured data from infobox
+            data: Dict[str, Any] = {}
+            rows: ResultSet[Any] = infobox.find_all('tr')
+            
+            for row in rows:
+                if not isinstance(row, Tag):
+                    continue
+                    
+                header = row.find('th')
+                data_cell = row.find('td')
+                
+                if isinstance(header, Tag) and isinstance(data_cell, Tag):
+                    key = header.get_text(strip=True).lower().replace(' ', '_')
+                    value = data_cell.get_text(' | ', strip=True)
+                    data[key] = value
+            
+            if data:
+                return json.dumps(data, indent=2)
+        
+        # Fallback: Get the first few paragraphs of content
+        content_div = soup.find('div', id='mw-content-text')
+        if content_div and isinstance(content_div, Tag):
+            paragraphs = content_div.find_all('p', recursive=False, limit=3)
+            if paragraphs:
+                content_parts: List[str] = []
+                for p in paragraphs:
+                    if isinstance(p, Tag) and hasattr(p, 'get_text') and callable(p.get_text):
+                        content_parts.append(p.get_text(strip=True))
+                if content_parts:
+                    return json.dumps({"content": '\n\n'.join(content_parts)})
+        
+        # Extract the first paragraph as a fallback
+        first_paragraph = soup.find('p')
+        if first_paragraph and hasattr(first_paragraph, 'get_text') and callable(first_paragraph.get_text):
+            try:
+                paragraph_text = first_paragraph.get_text(strip=True)
+                title = 'No title found'
+                if soup and hasattr(soup, 'title') and soup.title and hasattr(soup.title, 'string') and soup.title.string:
+                    title = soup.title.string
+                
+                return json.dumps({
+                    'title': title,
+                    'content': paragraph_text
+                }, indent=2)
+            except Exception as e:
+                logger.error(f"Error extracting text: {e}")
+        
+        # Final fallback if no content could be extracted
+        return json.dumps({
+            'title': 'No title found',
+            'content': f"Could not extract content for '{query}'"
+        }, indent=2)
+        
+    except requests.exceptions.HTTPError as http_err:
+        status_code = http_err.response.status_code if hasattr(http_err, 'response') else 'unknown'
+        logger.error(f"HTTP {status_code} error for '{query}': {http_err}")
+        return f"HTTP {status_code} error: {str(http_err)}"
+        
+    except requests.exceptions.RequestException as req_err:
+        logger.error(f"Request error for '{query}': {req_err}")
+        return f"Network error: {str(req_err)}"
+        
+    except Exception as e:
+        logger.exception(f"Unexpected error processing '{query}'")
+        return f"An unexpected error occurred: {str(e)}"
+
 from bs4 import BeautifulSoup, Tag # Import Tag
 from typing import Dict, Any, Optional, cast # Import cast
 
 class OSRSWikiParser:
+    """Parser for Old School RuneScape Wiki HTML content.
+    
+    This class provides methods to parse HTML content from the OSRS Wiki and extract
+    structured data about items, NPCs, and other game entities. It handles complex
+    parsing of infoboxes, combat stats, equipment requirements, and other game-specific
+    information.
+    
+    The parser is designed to be robust against HTML structure changes and includes
+    debugging capabilities for troubleshooting parsing issues.
+    
+    Attributes:
+        _raw_html_content (str): The raw HTML content being parsed
+        soup (BeautifulSoup): Parsed BeautifulSoup object for HTML traversal
+    """
+    
     def __init__(self, html_content: str):
+        """Initialize the parser with HTML content.
+        
+        Args:
+            html_content: Raw HTML content from the OSRS Wiki
+        """
         self._raw_html_content = html_content # Store raw HTML content
         self.soup = BeautifulSoup(html_content, 'html.parser')
 
-    def save_html_for_debug(self, html_content: str, filename: str = 'debug_osrs_page.html'):
-        """Saves the raw HTML content to a file for debugging."""
+    def save_html_for_debug(self, html_content: str, filename: str = 'debug_osrs_page.html') -> None:
+        """Saves the raw HTML content to a file for debugging.
+        
+        Args:
+            html_content: The HTML content to save
+            filename: The filename to save to
+        """
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(html_content)
 
     def parse_item_infobox(self) -> Dict[str, Any]:
-        self.save_html_for_debug(self._raw_html_content) # Save HTML for debugging
-        item_data = {}
-        infobox: Optional[Tag] = self.soup.find('table', class_='infobox-item') # type: ignore
-
-        if not infobox:
-            print("Debug: Main infobox not found.")
+        """Parse the item infobox from the HTML content.
+        
+        Returns:
+            A dictionary containing the parsed item data
+        """
+        self.save_html_for_debug(self._raw_html_content)  # Save HTML for debugging
+        item_data: Dict[str, Any] = {}
+        infobox = self.soup.find('table', class_='infobox-item')
+        if not isinstance(infobox, Tag):
             return item_data
-        else:
-            print("Debug: Main infobox found.")
 
         # Extract general properties
-        for row in infobox.find_all('tr'): # type: ignore
-            header: Optional[Tag] = row.find('th') # type: ignore
-            data: Optional[Tag] = row.find('td') # type: ignore
-            if header and data:
+        rows = infobox.find_all('tr')
+        for row in rows:
+            if not isinstance(row, Tag):
+                continue
+                
+            header = row.find('th')
+            data = row.find('td')
+            
+            if isinstance(header, Tag) and isinstance(data, Tag):
                 key = header.get_text(strip=True).replace(' ', '_').lower()
                 value = data.get_text(strip=True)
                 item_data[key] = value
         
         # Extract combat bonuses
         item_data['combat_bonuses'] = {}
-        combat_bonus_table: Optional[Tag] = self.soup.find('table', class_='infobox-bonuses') # type: ignore
-        if combat_bonus_table:
+        combat_bonus_table = self.soup.find('table', class_='infobox-bonuses')
+        
+        if isinstance(combat_bonus_table, Tag):
             print("Debug: Combat bonus table found.")
-            combat_bonuses = {}
+            combat_bonuses: Dict[str, str] = {}
+            
             # Find all infobox-subheader elements within the combat bonus table
-            subheaders = combat_bonus_table.find_all('th', class_='infobox-subheader') # type: ignore
+            subheaders = combat_bonus_table.find_all('th', class_='infobox-subheader')
 
             for header in subheaders:
+                if not isinstance(header, Tag):
+                    continue
+                    
                 header_text = header.get_text(strip=True)
                 if 'Attack bonuses' in header_text:
                     print("Debug: Attack bonuses header found.")
                     # Get the parent tr of the header
-                    header_parent_row = header.find_parent('tr') # type: ignore
-                    if header_parent_row:
-                        # Navigate past padding and icons rows to the values row
-                        padding_row = header_parent_row.find_next_sibling('tr') # type: ignore
-                        if padding_row:
-                            icons_row = padding_row.find_next_sibling('tr') # type: ignore
-                            if icons_row:
-                                values_row = icons_row.find_next_sibling('tr') # type: ignore
-                                if values_row:
-                                    print(f"Debug: Attack values row found: {values_row}")
-                                    cells = values_row.find_all('td') # type: ignore
-                                    bonus_values = [cell.get_text(strip=True) for cell in cells]
-                                    combat_bonuses.update({
-                                        'attack_stab': bonus_values[0] if len(bonus_values) > 0 else '',
-                                        'attack_slash': bonus_values[1] if len(bonus_values) > 1 else '',
-                                        'attack_crush': bonus_values[2] if len(bonus_values) > 2 else '',
-                                        'attack_magic': bonus_values[3] if len(bonus_values) > 3 else '',
-                                        'attack_ranged': bonus_values[4] if len(bonus_values) > 4 else ''
-                                    })
-                                else:
-                                    print("Debug: Attack values row NOT found.")
-                            else:
-                                print("Debug: Attack icons row NOT found.")
-                        else:
-                            print("Debug: Attack padding row NOT found.")
-                    else:
-                        print("Debug: Attack header parent row NOT found.")
-                elif 'Defence bonuses' in header_text:
-                    print("Debug: Defence bonuses header found.")
-                    header_parent_row = header.find_parent('tr') # type: ignore
-                    if header_parent_row:
-                        padding_row = header_parent_row.find_next_sibling('tr') # type: ignore
-                        if padding_row:
-                            icons_row = padding_row.find_next_sibling('tr') # type: ignore
-                            if icons_row:
-                                values_row = icons_row.find_next_sibling('tr') # type: ignore
-                                if values_row:
-                                    print(f"Debug: Defence values row found: {values_row}")
-                                    cells = values_row.find_all('td') # type: ignore
-                                    bonus_values = [cell.get_text(strip=True) for cell in cells]
-                                    combat_bonuses.update({
-                                        'defence_stab': bonus_values[0] if len(bonus_values) > 0 else '',
-                                        'defence_slash': bonus_values[1] if len(bonus_values) > 1 else '',
-                                        'defence_crush': bonus_values[2] if len(bonus_values) > 2 else '',
-                                        'defence_magic': bonus_values[3] if len(bonus_values) > 3 else '',
-                                        'defence_ranged': bonus_values[4] if len(bonus_values) > 4 else ''
-                                    })
-                                else:
-                                    print("Debug: Defence values row NOT found.")
-                            else:
-                                print("Debug: Defence icons row NOT found.")
-                        else:
-                            print("Debug: Defence padding row NOT found.")
-                    else:
-                        print("Debug: Defence header parent row NOT found.")
-                elif 'Other bonuses' in header_text:
-                    print("Debug: Other bonuses header found.")
-                    header_parent_row = header.find_parent('tr') # type: ignore
-                    if header_parent_row:
-                        padding_row = header_parent_row.find_next_sibling('tr') # type: ignore
-                        if padding_row:
-                            icons_row = padding_row.find_next_sibling('tr') # type: ignore
-                            if icons_row:
-                                values_row = icons_row.find_next_sibling('tr') # type: ignore
-                                if values_row:
-                                    print(f"Debug: Other values row found: {values_row}")
-                                    cells = values_row.find_all('td') # type: ignore
-                                    bonus_values = [cell.get_text(strip=True) for cell in cells]
-                                    combat_bonuses.update({
-                                        'melee_strength': bonus_values[0] if len(bonus_values) > 0 else '',
-                                        'ranged_strength': bonus_values[1] if len(bonus_values) > 1 else '',
-                                        'magic_damage': bonus_values[2] if len(bonus_values) > 2 else '',
-                                        'prayer': bonus_values[3] if len(bonus_values) > 3 else ''
-                                    })
-                                else:
-                                    print("Debug: Other values row NOT found.")
-                            else:
-                                print("Debug: Other icons row NOT found.")
-                        else:
-                            print("Debug: Other padding row NOT found.")
-                    else:
-                        print("Debug: Other header parent row NOT found.")
+                    parent_row = header.find_parent('tr')
+                    if isinstance(parent_row, Tag):
+                        # Find all data cells in this row
+                        data_cells = parent_row.find_all('td')
+                        if data_cells and len(data_cells) > 1:
+                            # Assuming the first cell is the label, second is the value
+                            bonus_name = data_cells[0].get_text(strip=True).lower()
+                            bonus_value = data_cells[1].get_text(strip=True)
+                            combat_bonuses[bonus_name] = bonus_value
+            
+            if combat_bonuses:  # Only add if we found any bonuses
+                item_data['combat_bonuses'] = combat_bonuses
             item_data['combat_bonuses'] = combat_bonuses
         else:
             print("Debug: Combat bonus table NOT found.")
@@ -221,10 +326,24 @@ class OSRSWikiParser:
         return item_data
 
     def parse_dragon_scimitar(self) -> Dict[str, Any]:
-        # This is a specific example for Dragon Scimitar, using the general parser
-        # and then potentially adding specific overrides or extractions.
+        """Parse Dragon Scimitar specific data from the wiki page.
+        
+        This is a specialized parser for the Dragon Scimitar item, which uses the
+        general infobox parser and then adds specific overrides or extractions
+        for this particular item.
+        
+        Returns:
+            A dictionary containing parsed data for the Dragon Scimitar
+        """
         data = self.parse_item_infobox()
-        data['item_name'] = self.soup.find('th', class_='infobox-header').get_text(strip=True) if self.soup.find('th', class_='infobox-header') else 'Unknown'
+        
+        # Safely extract the item name with proper type checking
+        infobox_header = self.soup.find('th', class_='infobox-header')
+        if infobox_header and isinstance(infobox_header, Tag):
+            data['item_name'] = infobox_header.get_text(strip=True)
+        else:
+            data['item_name'] = 'Unknown'
+            
         return data
 
 # Example Usage (for testing purposes)

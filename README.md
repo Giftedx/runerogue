@@ -2,7 +2,86 @@
 
 A RuneScape-inspired Discord game with a web-based client, powered by a Python backend that provides multi-fallback web scraping and other services.
 
+## AI-Assisted Development
+
+### MCP Configuration
+
+This project uses Model Control Protocol (MCP) for AI-assisted development. To set up MCP:
+
+1. Copy `.env.example` to `.env` and fill in your API keys:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Required API keys:
+
+   - `GITHUB_TOKEN`: GitHub Personal Access Token with appropriate permissions
+   - `BRAVE_SEARCH_API_KEY`: API key for Brave Search
+   - `FIRECRAWL_API_KEY`: API key for Firecrawl
+
+3. The MCP configuration is in `.github/copilot/mcp_config.json`. This file should not contain any secrets directly - they should be provided via environment variables.
+
+4. For development, you can use the example configuration:
+
+   ```bash
+   cp .github/copilot/mcp_config.example.json .github/copilot/mcp_config.json
+   ```
+
+### GitHub Copilot Agents Integration
+
+RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate development tasks including testing, linting, and documentation generation.
+
+### Key Features
+
+- **Automated Task Assignment**: Issues labeled with `copilot` or `ai-task` are automatically assigned to GitHub Copilot
+- **Self-hosted Runner Execution**: Tasks are processed on a self-hosted Windows runner
+- **Custom MCP Tools**: Extended capabilities for RuneRogue-specific tasks
+- **Workflow Automation**: Create and assign tasks programmatically
+
+### Documentation
+
+- [GitHub Copilot Agents Guide](docs/COPILOT_AGENTS_GUIDE.md) - Comprehensive guide to using Copilot Agents with RuneRogue
+- [GitHub Copilot Agents Integration](docs/GITHUB_COPILOT_AGENTS.md) - Technical details of the integration
+- [Environment Variables](docs/ENVIRONMENT_VARIABLES.md) - Required environment variables for the integration
+
+### Quick Start
+
+1. Create a task: Create a GitHub Issue using the Copilot Agent Task template
+2. Add labels: Add the `copilot` label to the issue
+3. Assignment: The issue will be automatically assigned to GitHub Copilot
+4. Execution: The self-hosted runner will process the task
+5. Results: GitHub Copilot will comment on the issue with the results
+
+### Example: Generate Documentation
+
+```bash
+# Using the workflow dispatch feature
+git checkout main
+git pull
+
+# Or using the test script directly
+node scripts/test_mcp_tools.js generate_docs --module_path=agents/osrs_agent_system.py --output_format=markdown
+```
+
+## Usage
+
+### Usage Instructions
+
+1. Create an issue using the Copilot Agent task template
+2. Add the `copilot` or `ai-task` label
+3. The issue will be automatically assigned to GitHub Copilot
+4. The self-hosted runner will process the task
+5. Results will be posted as comments on the issue
+
+For detailed information, see the following documentation:
+
+- [GitHub Copilot Agents Guide](docs/GITHUB_COPILOT_AGENTS.md)
+- [GitHub Actions and Runners](docs/GITHUB_ACTIONS_RUNNERS.md)
+- [Environment Variables](docs/ENVIRONMENT_VARIABLES.md)
+
 ## Components
+
 
 ### Backend (Python/Flask)
 - **Multi-fallback scraping**: requests → BeautifulSoup → Playwright

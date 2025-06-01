@@ -1,8 +1,45 @@
-"""
-RuneRogue Economy Models
+"""RuneRogue Economy System
 
-SQLAlchemy models for the economy system including items, players,
-trades, and grand exchange operations.
+This module implements the core economy system for RuneRogue, providing database models
+and functionality for managing in-game items, player inventories, trading, and the Grand Exchange.
+
+The economy system is designed to mimic the RuneScape economy with features including:
+- Player-to-player direct trading
+- Grand Exchange market for buy/sell offers
+- Item price history tracking
+- Inventory management
+- Audit logging for all economic transactions
+
+The module uses SQLAlchemy ORM for database interactions and provides a DatabaseManager
+class for connection and session management.
+
+Key Components:
+- Player: Represents game players with inventories
+- Item: Represents tradeable and non-tradeable game items
+- Trade: Handles direct player-to-player trades
+- GrandExchangeOffer: Manages buy/sell offers on the Grand Exchange
+- PriceHistory: Tracks historical price data for market analysis
+- AuditLog: Maintains a comprehensive audit trail of all economic activities
+
+Typical usage:
+    ```python
+    # Initialize database
+    db_manager = DatabaseManager(database_url="sqlite:///runerogue.db")
+    db_manager.create_tables()
+    
+    # Create a session
+    session = db_manager.get_session()
+    
+    # Create a new item
+    new_item = Item(name="Dragon Scimitar", description="A powerful slashing weapon", 
+                   base_value=100000, is_tradeable=True, is_stackable=False)
+    session.add(new_item)
+    session.commit()
+    ```
+
+This module is a critical component of the RuneRogue game economy, providing
+the foundation for all in-game economic activities and player interactions.
+
 """
 
 from datetime import datetime
