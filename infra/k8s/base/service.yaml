@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: runerogue-service
+  namespace: runerogue
+  labels:
+    app: runerogue
+    component: web
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  selector:
+    app: runerogue
+    component: web

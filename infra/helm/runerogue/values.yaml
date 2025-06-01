@@ -1,0 +1,108 @@
+# Default values for runerogue
+replicaCount: 2
+
+image:
+  repository: runerogue
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+
+ingress:
+  enabled: true
+  className: "gce"
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: runerogue-ip
+    networking.gke.io/managed-certificates: runerogue-ssl-cert
+    kubernetes.io/ingress.allow-http: "false"
+  hosts:
+    - host: api.runerogue.com
+      paths:
+        - path: /*
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Application configuration
+config:
+  debug: false
+  dryRun: false
+  logLevel: "INFO"
+  timeout: 30
+  port: 5000
+
+# External services
+postgresql:
+  enabled: false
+  auth:
+    postgresPassword: ""
+    database: runerogue
+
+redis:
+  enabled: false
+  auth:
+    enabled: false
+
+# Environment variables
+env:
+  DATABASE_URL: ""
+  REDIS_URL: ""
+  SENDGRID_API_KEY: ""
+  JWT_SECRET_KEY: ""
+
+# Secret management
+secrets:
+  create: true
+  data: {}
+
+# Health checks
+healthChecks:
+  enabled: true
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
