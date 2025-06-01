@@ -53,6 +53,35 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
 - **Tools**: pytest, pytest-mock, pytest-cov
 - **Scope**: Complete component and integration testing
 
+### 3.6 Economy and Trading Systems
+
+#### Trading Engine (`trading.py`)
+- **Direct Trading**: Player-to-player item exchanges
+- **Features**:
+  - Trade session management
+  - Item validation and verification
+  - Trade completion and rollback
+  - Anti-fraud protection
+  - Real-time trade status updates
+
+#### Grand Exchange (`grand_exchange.py`)
+- **Market System**: Automated buy/sell order matching
+- **Features**:
+  - Order placement and management
+  - Price discovery and matching
+  - Market history tracking
+  - Volume and liquidity analytics
+  - Anti-manipulation safeguards
+
+#### Economy Models (`models/economy.py`)
+- **Data Structures**: Items, Players, Trades, Orders
+- **Features**:
+  - SQLite persistence layer
+  - Audit trail logging
+  - Data integrity validation
+  - Performance optimization
+  - Backup and recovery
+
 ## Development Requirements
 
 ### Core Dependencies
@@ -64,6 +93,22 @@ beautifulsoup4>=4.9.0
 playwright>=1.20.0
 boto3>=1.20.0
 sendgrid>=6.9.0
+SQLAlchemy>=1.4.0
+```
+
+### 4.4 Economy System Dependencies
+```
+# Database and ORM
+SQLAlchemy>=1.4.0
+alembic>=1.7.0
+
+# Data validation
+marshmallow>=3.15.0
+marshmallow-sqlalchemy>=0.28.0
+
+# Performance and caching
+redis>=4.0.0
+celery>=5.2.0
 ```
 
 ### Development Dependencies
@@ -98,6 +143,16 @@ isort>=5.10.0
 - [ ] Advanced analytics and reporting
 - [ ] Enterprise authentication and authorization
 - [ ] Full production deployment automation
+
+### M8: Trading, Grand Exchange, and Player Economy (CURRENT)
+- [ ] Player-to-player direct trading system
+- [ ] Grand Exchange backend with offer matching
+- [ ] Economy data models and persistence
+- [ ] Price history and market analytics
+- [ ] Anti-abuse and validation mechanisms
+- [ ] Audit trails and logging
+- [ ] API endpoints for Godot UI integration
+- [ ] Comprehensive test coverage
 
 ## Quality Assurance Standards
 
