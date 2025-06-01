@@ -132,29 +132,38 @@ class OSRSWikiParser:
             print("Debug: Combat bonus table NOT found.")
 
         # Extract equipment requirements
-        item_data['requirements'] = {}
+        item_data['requirements'] = []
         found_requirements_header = False
         for th_tag in infobox.find_all('th'): # type: ignore
             if th_tag.get_text(strip=True) == 'Equipment requirements':
                 print("Debug: 'Equipment requirements' header found.")
                 found_requirements_header = True
-                req_td: Optional[Tag] = th_tag.find_next_sibling('td') # type: ignore
-                if req_td:
-                    print(f"Debug: Requirements TD found: {req_td}")
-                    req_list: Optional[Tag] = req_td.find('ul') # type: ignore
-                    if req_list:
-                        print(f"Debug: Requirements UL found: {req_list}")
-                        for li in req_list.find_all('li'): # type: ignore
-                            text = li.get_text(strip=True)
-                            parts = text.split(' ', 1)
-                            if len(parts) == 2 and parts[0].isdigit():
-                                level = int(parts[0])
-                                skill = parts[1].lower().replace(' ', '_')
-                                item_data['requirements'][skill] = level
+                # Look for the next <tr> element that contains the requirements <td>
+                req_tr: Optional[Tag] = th_tag.find_parent('tr') # type: ignore
+                if req_tr:
+                    next_tr: Optional[Tag] = req_tr.find_next_sibling('tr') # type: ignore
+                    if next_tr:
+                        req_td: Optional[Tag] = next_tr.find('td') # type: ignore
+                        if req_td:
+                            print(f"Debug: Requirements TD found: {req_td}")
+                            req_list: Optional[Tag] = req_td.find('ul') # type: ignore
+                            if req_list:
+                                print(f"Debug: Requirements UL found: {req_list}")
+                                for li in req_list.find_all('li'): # type: ignore
+                                    text = li.get_text(separator=' ', strip=True)
+                                    # Extract the requirement text (e.g., "70 Defence")
+                                    parts = text.split(' ', 1)
+                                    if len(parts) == 2 and parts[0].isdigit():
+                                        requirement = f"{parts[0]} {parts[1]}"
+                                        item_data['requirements'].append(requirement)
+                            else:
+                                print("Debug: Requirements UL NOT found.")
+                        else:
+                            print("Debug: Requirements TD NOT found in next TR.")
                     else:
-                        print("Debug: Requirements UL NOT found.")
+                        print("Debug: Next TR after requirements header NOT found.")
                 else:
-                    print("Debug: Requirements TD NOT found.")
+                    print("Debug: Requirements TR NOT found.")
                 break
         if not found_requirements_header:
             print("Debug: 'Equipment requirements' header NOT found in infobox.") # Found requirements, no need to continue searching th tags
