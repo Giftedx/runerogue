@@ -1,5 +1,11 @@
 # RuneRogue Meta UI
 
+This directory contains the web-based user interface for the RuneRogue project, primarily serving as a meta-interface for out-of-game functionalities. Its main purpose is to provide a user-friendly portal for account management, social interactions, and other administrative tasks that complement the core game experience provided by the Godot client.
+
+## Role in Overall Architecture
+
+The Meta UI acts as a crucial interface layer between the user and various backend services. It communicates with the authentication service (and potentially other services like leaderboards, user profiles, and settings APIs) to manage user data and state. While the Godot client focuses on real-time gameplay, the Meta UI handles persistent user data and broader community features, ensuring a cohesive user experience across the RuneRogue ecosystem.
+
 A Next.js React application providing authentication, leaderboards, and account management for RuneRogue.
 
 ## Features

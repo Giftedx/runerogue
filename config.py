@@ -33,6 +33,7 @@ class Config:
             "dry_run": os.getenv("DRY_RUN", "false").lower() == "true",
             "log_level": os.getenv("LOG_LEVEL", "INFO"),
             "timeout": int(os.getenv("TIMEOUT", "30")),
+            "SQLALCHEMY_DATABASE_URI": os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///runerogue.db"),
         }
 
         for key, value in env_vars.items():

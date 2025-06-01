@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Head from 'next/head';
 import { GameTypes } from '../../types/game';
 import styles from './GamePage.module.css';
+import { gameService } from '../../services/GameService';
 
-// Mock data for development
-const mockGameState: GameTypes.GameState = {
+// Initial game state before connecting to server
+const initialGameState: GameTypes.GameState = {
   player: {
     id: 'player-1',
     position: { x: 400, y: 300 },
@@ -47,14 +48,111 @@ const mockGameState: GameTypes.GameState = {
   },
 };
 
+// Asset mapping for items and entities
+const assetColors: Record<string, string> = {
+  // Items
+  'bronze_sword': '#cd7f32',
+  'wooden_shield': '#8b4513',
+  'logs': '#a0522d',
+  'oak_logs': '#8b4513',
+  'copper_ore': '#b87333',
+  'iron_ore': '#a19d94',
+  'raw_shrimp': '#ff6666',
+  'bones': '#f5f5dc',
+  
+  // Monsters
+  'goblin': '#7cfc00',
+  'cow': '#8b4513',
+  'chicken': '#ffffff',
+  'guard': '#4682b4',
+  'thief': '#696969',
+  'rat': '#808080',
+  'skeleton': '#f5f5dc',
+  'spider': '#000000',
+  'demon': '#8b0000',
+};
+
 const GamePage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [gameState, setGameState] = useState<GameTypes.GameState>(mockGameState);
+  const [gameState, setGameState] = useState<GameTypes.GameState>(initialGameState);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [username, setUsername] = useState(`Player_${Math.floor(Math.random() * 1000)}`);
+  const [lootDrops, setLootDrops] = useState<Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>>([]);
 
+  // Connect to game server
+  const connectToServer = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const connected = await gameService.connect(username);
+      if (connected) {
+        setIsConnected(true);
+        setError(null);
+      } else {
+        setError('Failed to connect to game server');
+      }
+    } catch (err) {
+      console.error('Connection error:', err);
+      setError('Connection error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [username]);
+
+  // Handle game state changes
   useEffect(() => {
-    // Initialize game canvas and game loop
+    const handleStateChange = (newState: GameTypes.GameState) => {
+      setGameState(newState);
+    };
+
+    const handleLootDropped = (message: { id: string; itemType: string; quantity: number; x: number; y: number }) => {
+      setLootDrops((prev: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => [...prev, {
+        id: message.id,
+        type: message.itemType as GameTypes.ItemType,
+        quantity: message.quantity,
+        position: { x: message.x, y: message.y }
+      }]);
+    };
+
+    const handleLootCollected = (message: { lootId: string }) => {
+      setLootDrops((prev: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => 
+        prev.filter((loot: {id: string}) => loot.id !== message.lootId)
+      );
+    };
+
+    const handleLootExpired = (message: { ids: string[] }) => {
+      setLootDrops((prev: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => 
+        prev.filter((loot: {id: string}) => !message.ids.includes(loot.id))
+      );
+    };
+
+    // Register event listeners
+    gameService.on('state-change', handleStateChange);
+    gameService.on('loot-dropped', handleLootDropped);
+    gameService.on('loot-collected', handleLootCollected);
+    gameService.on('loot-expired', handleLootExpired);
+
+    // Try to connect on mount
+    if (!isConnected && !isLoading && !error) {
+      connectToServer();
+    }
+
+    // Cleanup
+    return () => {
+      gameService.off('state-change', handleStateChange);
+      gameService.off('loot-dropped', handleLootDropped);
+      gameService.off('loot-collected', handleLootCollected);
+      gameService.off('loot-expired', handleLootExpired);
+      
+      if (isConnected) {
+        gameService.disconnect();
+      }
+    };
+  }, [isConnected, isLoading, error, connectToServer]);
+
+  // Initialize game canvas and game loop
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -87,8 +185,16 @@ const GamePage: React.FC = () => {
       // Draw game world
       drawWorld(ctx, gameState);
 
-      // Draw entities
-      // drawEntities(ctx, gameState);
+      // Draw loot drops
+      drawLootDrops(ctx, lootDrops);
+
+      // Draw player
+      drawPlayer(ctx, gameState.player);
+
+      // Draw other players if in multiplayer mode
+      if (isConnected) {
+        // TODO: Draw other players from gameState
+      }
 
       // Draw UI
       drawUI(ctx, gameState);
@@ -114,7 +220,7 @@ const GamePage: React.FC = () => {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameState]);
+  }, [gameState, lootDrops, isConnected]);
 
   const loadAssets = async (): Promise<void> => {
     // Load game assets here
@@ -135,6 +241,27 @@ const GamePage: React.FC = () => {
 
     ctx.fillStyle = biomeColors[currentBiome] || '#000000';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    // Draw a grid for better spatial awareness
+    const gridSize = 50;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    
+    // Draw vertical grid lines
+    for (let x = 0; x < ctx.canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, ctx.canvas.height);
+      ctx.stroke();
+    }
+    
+    // Draw horizontal grid lines
+    for (let y = 0; y < ctx.canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(ctx.canvas.width, y);
+      ctx.stroke();
+    }
   };
 
   const drawUI = (ctx: CanvasRenderingContext2D, state: GameTypes.GameState) => {
@@ -273,16 +400,146 @@ const GamePage: React.FC = () => {
     ctx.fillText('In Combat', panelX + panelWidth / 2, panelY + 20);
   };
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Draw player character
+  const drawPlayer = (ctx: CanvasRenderingContext2D, player: GameTypes.PlayerState) => {
+    const { position, inCombat } = player;
+    
+    // Draw player circle
+    ctx.fillStyle = inCombat ? '#ff0000' : '#0000ff';
+    ctx.beginPath();
+    ctx.arc(position.x, position.y, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw equipment if equipped
+    if (player.equipped.weapon) {
+      const weaponColor = assetColors[player.equipped.weapon] || '#cccccc';
+      ctx.fillStyle = weaponColor;
+      ctx.fillRect(position.x + 15, position.y - 5, 15, 10);
+    }
+    
+    if (player.equipped.shield) {
+      const shieldColor = assetColors[player.equipped.shield] || '#cccccc';
+      ctx.fillStyle = shieldColor;
+      ctx.beginPath();
+      ctx.arc(position.x - 15, position.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    
+    // Draw player name
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(player.id, position.x, position.y - 30);
+    
+    // Draw health bar
+    const healthBarWidth = 40;
+    const healthBarHeight = 5;
+    const healthPercentage = player.hp / player.maxHp;
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(
+      position.x - healthBarWidth / 2,
+      position.y - 25,
+      healthBarWidth * healthPercentage,
+      healthBarHeight
+    );
+    
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(
+      position.x - healthBarWidth / 2,
+      position.y - 25,
+      healthBarWidth,
+      healthBarHeight
+    );
+  };
+  
+  // Draw loot drops
+  const drawLootDrops = (ctx: CanvasRenderingContext2D, drops: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => {
+    drops.forEach(drop => {
+      const { position, type, quantity } = drop;
+      
+      // Draw loot circle
+      const itemColor = assetColors[type] || '#ffff00';
+      ctx.fillStyle = itemColor;
+      ctx.beginPath();
+      ctx.arc(position.x, position.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Draw sparkle effect
+      const time = Date.now() / 1000;
+      const sparkleSize = 3 + Math.sin(time * 5) * 2;
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(
+        position.x + Math.sin(time * 3) * 5,
+        position.y + Math.cos(time * 2) * 5,
+        sparkleSize,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      
+      // Draw quantity if more than 1
+      if (quantity > 1) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(quantity.toString(), position.x, position.y + 25);
+      }
+      
+      // Draw item name
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(type.replace('_', ' '), position.x, position.y - 15);
+    });
+  };
+  
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !isConnected) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Handle click on game world
-    // TODO: Implement interaction logic
+    // Check if clicked on a loot drop
+    const clickedLoot = lootDrops.find((loot: {id: string, position: GameTypes.Position}) => {
+      const dx = loot.position.x - x;
+      const dy = loot.position.y - y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      return distance <= 15; // 15px radius for clicking loot
+    });
+
+    if (clickedLoot) {
+      // Collect loot
+      gameService.collectLoot(clickedLoot.id);
+      return;
+    }
+
+    // Move player to clicked position
+    gameService.sendPlayerMove(x, y, 'walk', 'down');
+    
+    // Update local state immediately for responsiveness
+    setGameState((prevState: GameTypes.GameState) => ({
+      ...prevState,
+      player: {
+        ...prevState.player,
+        position: { x, y },
+        isMoving: true,
+      }
+    }));
   };
 
   if (isLoading) {
@@ -299,7 +556,18 @@ const GamePage: React.FC = () => {
       <div className={styles.errorContainer}>
         <h2>Error</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Reload</button>
+        <div>
+          <input 
+            type="text" 
+            value={username} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} 
+            placeholder="Enter username"
+            className={styles.usernameInput}
+          />
+          <button onClick={connectToServer} className={styles.connectButton}>
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -316,6 +584,19 @@ const GamePage: React.FC = () => {
         <div id="ui-overlay" className={styles.uiOverlay}>
           {/* UI elements will be drawn on canvas */}
         </div>
+        
+        {/* Connection status indicator */}
+        <div className={styles.connectionStatus as string}>
+          <div className={isConnected ? styles.connected as string : styles.disconnected as string}></div>
+          <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
+        </div>
+        
+        {/* Player count */}
+        {isConnected && (
+          <div className={styles.playerCount as string}>
+            Players Online: {Object.keys(gameState?.world?.players || {}).length || 1}
+          </div>
+        )}
       </div>
     </div>
   );

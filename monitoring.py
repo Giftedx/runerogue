@@ -8,36 +8,41 @@ import time
 import psutil
 import threading
 from functools import wraps
-from flask import request, g
+from flask import Flask, request, g, Response
 from metrics import metrics
 import logging
+from typing import Callable, TypeVar, ParamSpec
 
 logger = logging.getLogger(__name__)
 
 
 class PerformanceMiddleware:
     """Flask middleware for automatic performance monitoring."""
-    
-    def __init__(self, app=None):
+    app: Flask | None
+    _system_metrics_thread: threading.Thread | None
+    _stop_event: threading.Event
+
+    def __init__(self, app: Flask | None = None):
         self.app = app
         self._system_metrics_thread = None
         self._stop_event = threading.Event()
-        
+
         if app is not None:
             self.init_app(app)
             
-    def init_app(self, app):
+    def init_app(self, app: Flask) -> None:
         """Initialize the middleware with Flask app."""
-        app.before_request(self.before_request)
-        app.after_request(self.after_request)
-        app.teardown_appcontext(self.teardown_request)
+        _ = app.before_request(self.before_request)
+        _ = app.after_request(self.after_request)
+        _ = app.teardown_appcontext(self.teardown_request)
         
         # Start system metrics collection thread
         self.start_system_metrics_collection()
         
     def before_request(self):
         """Record request start time."""
-        g.start_time = time.time()
+        start_time: float = time.time()
+        g.start_time = start_time  # type: ignore
         g.request_id = id(request)
         
         # Record request counter
@@ -48,12 +53,9 @@ class PerformanceMiddleware:
             'method': method
         })
         
-    def after_request(self, response):
+    def after_request(self, response: Response) -> Response:
         """Record request completion and metrics."""
-        if not hasattr(g, 'start_time'):
-            return response
-            
-        duration = time.time() - g.start_time
+        duration: float = time.time() - g.start_time  # type: ignore
         endpoint = request.endpoint or 'unknown'
         method = request.method
         status_code = response.status_code
@@ -80,7 +82,7 @@ class PerformanceMiddleware:
             
         return response
         
-    def teardown_request(self, exception=None):
+    def teardown_request(self, exception: BaseException | None = None) -> None:
         """Handle request teardown."""
         if exception:
             try:
@@ -126,14 +128,14 @@ class PerformanceMiddleware:
         while not self._stop_event.wait(30):  # Collect every 30 seconds
             try:
                 # CPU metrics
-                cpu_percent = psutil.cpu_percent(interval=1)
+                cpu_percent: float = psutil.cpu_percent(interval=1)
                 metrics.record_gauge('system_cpu_usage_percent', cpu_percent)
                 
                 # Memory metrics
                 memory = psutil.virtual_memory()
-                metrics.record_gauge('system_memory_usage_bytes', memory.used)
-                metrics.record_gauge('system_memory_usage_percent', memory.percent)
-                metrics.record_gauge('system_memory_available_bytes', memory.available)
+                metrics.record_gauge('system_memory_usage_bytes', float(memory.used))  # type: ignore[attr-defined]
+                metrics.record_gauge('system_memory_usage_percent', float(memory.percent))  # type: ignore[attr-defined]
+                metrics.record_gauge('system_memory_available_bytes', float(memory.available))  # type: ignore[attr-defined]
                 
                 # Disk metrics
                 disk = psutil.disk_usage('/')
@@ -153,16 +155,19 @@ class PerformanceMiddleware:
                 logger.error(f"Error collecting system metrics: {e}")
 
 
-def monitor_performance(func):
+_P = ParamSpec('_P')
+_R = TypeVar('_R')
+
+def monitor_performance(func: Callable[_P, _R]) -> Callable[_P, _R]:
     """Decorator to monitor function performance."""
     @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
+    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        start_time: float = time.time()
         function_name = f"{func.__module__}.{func.__name__}"
         
         try:
             result = func(*args, **kwargs)
-            duration = time.time() - start_time
+            duration: float = time.time() - start_time
             
             metrics.record_histogram('function_duration_seconds', duration, {
                 'function': function_name,

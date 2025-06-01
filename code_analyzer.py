@@ -1,7 +1,8 @@
 import os
 import re
+from typing import Any
 
-def find_code_tags(directory, tags):
+def find_code_tags(directory: str, tags: list[str]) -> list[dict[str, Any]]:  # type: ignore
     """
     Recursively scans all .py files within the given directory for specified tags.
 
@@ -22,10 +23,10 @@ def find_code_tags(directory, tags):
 
     if not os.path.isdir(directory):
         # print(f"Directory not found: {directory}") # Optional: log this
-        return found_tags_list
+        return found_tags_list  # type: ignore
 
     if not tags: # If tags list is empty, no need to scan
-        return found_tags_list
+        return found_tags_list  # type: ignore
 
     # Create a regex pattern to find any of the tags
     # This will match lines like "# TODO: message" or "# FIXME: message"
@@ -58,59 +59,59 @@ def find_code_tags(directory, tags):
                                 comment_text = match.group(2).strip()
                                 full_comment_line = line.strip()
 
-                                found_tags_list.append({
+                                found_tags_list.append({  # type: ignore
                                     'file_path': os.path.normpath(file_path), # Normalize file path
                                     'line_number': line_number,
                                     'tag': tag_found,
                                     'comment': comment_text,
                                     'full_comment_line': full_comment_line
                                 })
-                except Exception as e:
+                except Exception as _:
                     # print(f"Error reading file {file_path}: {e}") # Silently ignore for now
                     pass
 
-    return found_tags_list
+    return found_tags_list  # type: ignore
 
 if __name__ == '__main__':
     # Example usage:
     # Create some dummy files for testing
     test_base_dir = "temp_test_dir_code_analyzer"
     if not os.path.exists(test_base_dir):
-        os.makedirs(test_base_dir + "/subdir")
-        os.makedirs(test_base_dir + "/.hidden_dir")
-        os.makedirs(test_base_dir + "/tests")
-        os.makedirs(test_base_dir + "/.venv/sub")
-        os.makedirs(test_base_dir + "/.idea") # IDE specific
-        os.makedirs(test_base_dir + "/node_modules/somelib") # Common web dev folder
+        _ = os.makedirs(test_base_dir + "/subdir")
+        _ = os.makedirs(test_base_dir + "/.hidden_dir")
+        _ = os.makedirs(test_base_dir + "/tests")
+        _ = os.makedirs(test_base_dir + "/.venv/sub")
+        _ = os.makedirs(test_base_dir + "/.idea") # IDE specific
+        _ = os.makedirs(test_base_dir + "/node_modules/somelib") # Common web dev folder
 
     with open(test_base_dir + "/test1.py", "w") as f:
-        f.write("# TODO: Implement this feature\n")
-        f.write("class Test:\n")
-        f.write("    pass # FIXME: This needs a fix\n")
+        _ = f.write("# TODO: Implement this feature\n")
+        _ = f.write("class Test:\n")
+        _ = f.write("    pass # FIXME: This needs a fix\n")
 
     with open(test_base_dir + "/subdir/test2.py", "w") as f:
-        f.write("# TODO: Another task here\n")
-        f.write("def func():\n")
-        f.write("    # Not a tag\n")
-        f.write("    print('Hello') # FIXME test this\n")
+        _ = f.write("# TODO: Another task here\n")
+        _ = f.write("def func():\n")
+        _ = f.write("    # Not a tag\n")
+        _ = f.write("    print('Hello') # FIXME test this\n")
 
     with open(test_base_dir + "/.hidden_dir/test_hidden.py", "w") as f:
-        f.write("# TODO: This should be ignored (in .hidden_dir)\n")
+        _ = f.write("# TODO: This should be ignored (in .hidden_dir)\n")
 
     with open(test_base_dir + "/tests/test_ignore.py", "w") as f:
-        f.write("# TODO: This should be ignored (in tests/)\n")
+        _ = f.write("# TODO: This should be ignored (in tests/)\n")
 
     with open(test_base_dir + "/.venv/sub/ignored_lib.py", "w") as f:
-        f.write("# FIXME: Library code, should be ignored in .venv\n")
+        _ = f.write("# FIXME: Library code, should be ignored in .venv\n")
 
-    with open(test_base_dir + "/.idea/workspace.xml", "w") as f: # Not a .py file, but in excluded dir
-        f.write("<!-- # TODO: IDE specific file -->\n")
+    with open(test_base_dir + "/.idea/workspace.xml", "w") as f:
+        _ = f.write("<!-- # TODO: IDE specific file -->\n")
 
-    with open(test_base_dir + "/.idea/some_script.py", "w") as f: # A .py file in excluded dir
-        f.write("# TODO: IDE specific script, should be ignored\n")
+    with open(test_base_dir + "/.idea/some_script.py", "w") as f:
+        _ = f.write("# TODO: IDE specific script, should be ignored\n")
 
     with open(test_base_dir + "/node_modules/somelib/some_code.py", "w") as f:
-        f.write("# TODO: node_modules code, should be ignored\n")
+        _ = f.write("# TODO: node_modules code, should be ignored\n")
 
     print(f"--- Running tests for find_code_tags in '{test_base_dir}' ---")
     tags_to_find = ['TODO', 'FIXME']
