@@ -22,12 +22,12 @@
     "typescript"
   ],
   "dependencies": {
-    "@colyseus/core": "^0.16.9",
-    "@colyseus/monitor": "^0.16.9",
-    "@colyseus/schema": "^3.0.39",
-    "@colyseus/ws-transport": "^0.16.9",
+    "@colyseus/core": "^0.14.36",
+    "@colyseus/monitor": "^0.14.22",
+    "@colyseus/schema": "^1.0.45",
+    "@colyseus/ws-transport": "^0.14.21",
     "@discordjs/rest": "^1.7.2",
-    "colyseus": "^0.16.9",
+    "colyseus": "^0.14.36",
     "cors": "^2.8.5",
     "discord-api-types": "^0.37.81",
     "discord.js": "^14.15.3",
