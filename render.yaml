@@ -2,7 +2,6 @@ services:
   - type: web
     name: runerogue
     env: node
-    instance_type: free
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
@@ -10,14 +9,3 @@ services:
         value: production
       - key: PORT
         value: 10000
-      # Colyseus configuration
-      - key: COLYSEUS_WS_PORT
-        value: 2567
-      # Session configuration
-      - key: SESSION_SECRET
-        generateValue: true
-      # Security
-      - key: JWT_SECRET_KEY
-        generateValue: true
-    # Note: Discord configuration and other sensitive variables
-    # should be added manually in the Render dashboard
