@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: runerogue
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - COLYSEUS_WS_PORT=2567
+      - FRONTEND_URL=http://localhost:5173
+    ports:
+      - "3000:3000"
+      - "2567:2567"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Redis for session storage (optional)
+  redis:
+    image: redis:alpine
+    container_name: runerogue-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
