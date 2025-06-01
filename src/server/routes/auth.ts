@@ -64,16 +64,16 @@ router.get('/discord', (_req: Request, res: Response) => {
 });
 
 // OAuth2 callback
-router.get(
-  '/discord/callback',
-  async (req: DiscordCallbackRequest, res: Response, _next: NextFunction) => {
-  const { code } = req.query;
-
-  if (!code) {
-    return res.status(400).json({ error: 'No code provided' });
-  }
-
+router.get('/discord/callback', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const discordReq = req as unknown as DiscordCallbackRequest;
+    const { code } = discordReq.query;
+
+    if (!code) {
+      res.status(400).json({ error: 'No code provided' });
+      return;
+    }
+
     // Exchange code for access token
     const tokenParams = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
@@ -128,11 +128,13 @@ router.get(
 });
 
 // Get current user
-router.get('/me', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user) {
-    return res.status(401).json({ error: 'Not authenticated' });
+router.get('/me', authenticateToken, (req: Request, res: Response) => {
+  const authenticatedReq = req as unknown as AuthenticatedRequest;
+  if (!authenticatedReq.user) {
+    res.status(401).json({ error: 'Not authenticated' });
+    return;
   }
-  res.json(req.user);
+  res.json(authenticatedReq.user);
 });
 
 export { router as authRouter };

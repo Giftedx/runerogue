@@ -70,7 +70,6 @@ config/local.yml
 logs/
 temp/
 
-<<<<<<< HEAD
 # Node.js dependencies
 node_modules/
 npm-debug.log*
@@ -105,9 +104,3 @@ yarn.lock
 
 # TypeScript
 *.tsbuildinfo
-=======
-# Godot build artifacts
-client/godot/builds/
-client/godot/.godot/
-client/godot/.import/
->>>>>>> origin/copilot/fix-7
