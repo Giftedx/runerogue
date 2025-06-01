@@ -260,6 +260,9 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [test, integration-test, security-scan, docker-build, godot-build]
+<<<<<<< HEAD
+>>>>>>> origin/copilot/fix-7
+=======
 >>>>>>> origin/copilot/fix-7
     if: github.ref == 'refs/heads/main'
     environment: production
@@ -275,7 +278,11 @@ jobs:
     name: Notification
     runs-on: ubuntu-latest
 <<<<<<< HEAD
+<<<<<<< HEAD
     needs: [test, test-auth-service, test-meta-ui, integration-test, security-scan, docker-build, godot-build]
+=======
+    needs: [test, integration-test, security-scan, godot-build]
+>>>>>>> origin/copilot/fix-7
 =======
     needs: [test, integration-test, security-scan, godot-build]
 >>>>>>> origin/copilot/fix-7
@@ -296,7 +303,11 @@ jobs:
         echo "DRY_RUN: ${{ env.DRY_RUN }}"
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.test-auth-service.result }}" == "success" && "${{ needs.test-meta-ui.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
+=======
+        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
+>>>>>>> origin/copilot/fix-7
 =======
         if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
 >>>>>>> origin/copilot/fix-7
