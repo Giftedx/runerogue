@@ -34,35 +34,35 @@ jobs:
             const issueNumber = parseInt(process.env.ISSUE_NUMBER);
             
             try {
-              console.log(`Assigning issue #${issueNumber} to github-copilot[bot]...`);
+              console.log(`Assigning issue #${issueNumber} to GitHub Copilot SWE Agent...`);
               
               await github.rest.issues.addAssignees({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                assignees: ['github-copilot[bot]']
+                assignees: ['Copilot']
               });
               
-              console.log(`Successfully assigned issue #${issueNumber} to github-copilot[bot]`);
+              console.log(`Successfully assigned issue #${issueNumber} to GitHub Copilot SWE Agent`);
               
               // Add a comment to notify
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                body: `This issue has been assigned to GitHub Copilot. The agent will start processing this task shortly.`
+                body: `This issue has been assigned to GitHub Copilot SWE Agent. The agent will start processing this task shortly.`
               });
             } catch (error) {
-              console.log(`Error assigning to github-copilot[bot]: ${error.message}`);
+              console.log(`Error assigning to Copilot: ${error.message}`);
               
               // Add a comment with error details
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                body: `## Error Assigning to GitHub Copilot
+                body: `## Error Assigning to GitHub Copilot SWE Agent
                 
-                There was an error assigning this issue to GitHub Copilot: \`${error.message}\`
+                There was an error assigning this issue to GitHub Copilot SWE Agent: \`${error.message}\`
                 
                 Please check:
                 1. The GitHub Copilot app is properly installed in this repository

@@ -78,14 +78,14 @@ You can manually trigger the assignment workflow:
 
 ## Correct Assignee Format
 
-The key to successful assignment is using the correct format for the GitHub Copilot bot. 
+The key to successful assignment is using the correct format for the GitHub Copilot SWE Agent. 
 In GitHub API calls and GitHub Actions workflows, the correct format is:
 
 ```yaml
-assignees: ['github-copilot[bot]']
+assignees: ['Copilot']
 ```
 
-Not `@github/copilot` or other variations.
+Not `github-copilot[bot]`, `@github/copilot` or other variations.
 
 ## Additional Resources
 

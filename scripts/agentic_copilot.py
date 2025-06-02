@@ -57,9 +57,10 @@ def get_github_copilot_bot_id():
     
     # Method 1: Try known ID formats for GitHub Copilot
     known_ids = [
-        "97300543",          # Common ID for github-copilot[bot]
-        "96217499",          # Another observed ID for github-copilot[bot]
-        "41898282",          # GitHub Actions bot ID - sometimes used
+        "198982749",        # GitHub Copilot SWE Agent ID
+        "97300543",         # Common ID for github-copilot[bot]
+        "96217499",         # Another observed ID for github-copilot[bot]
+        "41898282",         # GitHub Actions bot ID - sometimes used
     ]
     
     for bot_id in known_ids:
@@ -365,19 +366,25 @@ def backup_fallback_assignment(issue_number):
     """
     # Try all possible variations of the bot username and ID
     assignment_methods = [
-        # Method 1: Use github-copilot[bot] login
+        # Method 1: Use Copilot SWE Agent login
+        lambda: assign_with_login(issue_number, "Copilot"),
+        
+        # Method 2: Use github-copilot[bot] login
         lambda: assign_with_login(issue_number, "github-copilot[bot]"),
         
-        # Method 2: Use github-copilot login
+        # Method 3: Use github-copilot login
         lambda: assign_with_login(issue_number, "github-copilot"),
         
-        # Method 3: Use direct Node ID
+        # Method 4: Use direct Node ID for Copilot SWE Agent
+        lambda: assign_with_id(issue_number, "198982749"),
+        
+        # Method 5: Use direct Node ID for github-copilot[bot]
         lambda: assign_with_id(issue_number, "97300543"),
         
-        # Method 4: Use alternative Node ID
+        # Method 6: Use alternative Node ID
         lambda: assign_with_id(issue_number, "96217499"),
         
-        # Method 5: Use app/<id> format
+        # Method 7: Use app/<id> format
         lambda: assign_with_login(issue_number, "app/658127"),
     ]
     
@@ -603,7 +610,7 @@ Please perform these simple tasks:
         # Create a comment to trigger the Copilot bot
         comments_url = f"{GITHUB_API_URL}/repos/{REPO_OWNER}/{REPO_NAME}/issues/{issue_number}/comments"
         comment_data = {
-            "body": "@github-copilot[bot] Please process this task."
+            "body": "@Copilot Please process this task."
         }
         
         requests.post(comments_url, headers=REST_HEADERS, json=comment_data)

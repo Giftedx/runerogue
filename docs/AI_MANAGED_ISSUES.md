@@ -135,3 +135,30 @@ python scripts/create_agent_issue.py \
 - Ensure the GitHub token has the necessary permissions
 - Verify that the repository name and owner are correctly detected
 - Check that the issue title and body are properly formatted
+
+## GitHub Copilot SWE Agent Integration
+
+Starting June 2025, we've updated our approach to use the GitHub Copilot SWE Agent (`Copilot`) instead of the standard GitHub Copilot bot (`github-copilot[bot]`). The SWE Agent provides advanced capabilities, including:
+
+1. Automatic PR creation and management
+2. Self-assignment to issues and PRs
+3. Complex code changes across multiple files
+4. Branch creation and management
+
+When creating issues for the GitHub Copilot SWE Agent:
+
+- Use `Copilot` as the assignee (not `github-copilot[bot]`)
+- Use the `@Copilot` mention format in comments
+- Provide clear, detailed task descriptions
+- Reference the [GitHub Copilot SWE Agent guide](/docs/GITHUB_COPILOT_SWE_AGENT.md) for more details
+
+Example workflow code for assigning to the SWE Agent:
+
+```yaml
+await github.rest.issues.addAssignees({
+  owner: context.repo.owner,
+  repo: context.repo.repo,
+  issue_number: issue.data.number,
+  assignees: ['Copilot']  // Not 'github-copilot[bot]'
+});
+```

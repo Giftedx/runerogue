@@ -96,10 +96,10 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.data.number,
-              assignees: ['github-copilot[bot]']
+              assignees: ['Copilot']
             });
             
-            console.log(`Assigned issue #${issue.data.number} to GitHub Copilot`);
+            console.log(`Assigned issue #${issue.data.number} to GitHub Copilot SWE Agent`);
             
             // Add a comment to indicate the assignment was done automatically
             await github.rest.issues.createComment({
