@@ -15,8 +15,8 @@ def test_tools_endpoint():
     # First, get an access token
     print("1. Getting access token...")
     token_response = requests.post(
-        "http://localhost:8001/token",
-        data={"username": "admin", "password": "admin"},
+        "http://localhost:8000/token",
+        data={"username": "admin", "password": "secret"},  # Changed password
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     
@@ -33,7 +33,10 @@ def test_tools_endpoint():
     print("\n2. Testing /tools endpoint...")
     headers = {"Authorization": f"Bearer {access_token}"}
     
-    tools_response = requests.get("http://localhost:8001/tools", headers=headers)
+    tools_response = requests.get(
+        "http://localhost:8000/tools",  # Changed port to 8000
+        headers=headers
+    )
     
     if tools_response.status_code != 200:
         print(f"❌ Failed to get tools: {tools_response.status_code}")
@@ -41,19 +44,21 @@ def test_tools_endpoint():
         return False
     
     tools_data = tools_response.json()
-    print(f"✅ Successfully got tools list")
+    print("✅ Successfully got tools list")
     print(f"📋 Number of tools: {tools_data.get('total_count', 0)}")
     
     # Print tool details
     if "tools" in tools_data:
         print("\n📝 Available tools:")
-        for tool in tools_data["tools"]:
-            print(f"  - {tool['name']}: {tool['description']}")
-            if 'parameters' in tool:
-                print(f"    Parameters: {json.dumps(tool['parameters'], indent=6)}")
+        for tool_item in tools_data["tools"]:
+            print(f"  - {tool_item['name']}: {tool_item['description']}")
+            if 'parameters' in tool_item:
+                parameters_json = json.dumps(tool_item['parameters'], indent=6)
+                print(f"    Parameters: {parameters_json}")
             print()
     
     return True
+
 
 if __name__ == "__main__":
     try:

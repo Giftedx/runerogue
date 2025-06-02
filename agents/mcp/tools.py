@@ -12,8 +12,7 @@ from .server import Tool, ToolResult, ToolResultStatus
 from .server import tool, server
 
 # Import OSRS tools
-# Temporarily disabled due to missing OpenAI config
-# from .osrs_tools import osrs_design_tool, osrs_search_tool
+from .osrs_tools import osrs_design_tool, osrs_search_tool
 
 # Import development tools (this will register them via decorators)
 from . import development_tools  # noqa: F401
@@ -113,6 +112,5 @@ osrs_data_tool = OSRSDataTool()
 server.register_tool(osrs_data_tool)
 
 # Register additional OSRS tools
-# Temporarily disabled due to missing OpenAI config
-# server.register_tool(osrs_design_tool)
-# server.register_tool(osrs_search_tool)
+server.register_tool(osrs_design_tool)
+server.register_tool(osrs_search_tool)

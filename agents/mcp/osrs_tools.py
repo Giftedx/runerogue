@@ -6,11 +6,55 @@ This module provides tools for interacting with the OSRS agent system.
 
 import asyncio
 from typing import Dict, Any, Optional
+from enum import Enum
+from pydantic import BaseModel, Field
 
-from fastapi import HTTPException
-
-from ..osrs_agent_system import user_proxy, manager, osrs_data_agent, game_design_agent
+from ..osrs_agent_system import user_proxy, manager, osrs_data_agent
 from .server import Tool, ToolResult, ToolResultStatus
+
+
+class ContentType(str, Enum):
+    ITEM = "item"
+    NPC = "npc"
+    QUEST = "quest"
+    MINIGAME = "minigame"
+    AREA = "area"
+
+
+class DataType(str, Enum):
+    ITEM = "item"
+    NPC = "npc"
+    QUEST = "quest"
+    MINIGAME = "minigame"
+    AREA = "area"
+    ANY = "any"
+
+
+class OSRSDesignInput(BaseModel):
+    content_type: ContentType = Field(
+        ..., description="Type of content to design"
+    )
+    theme: str = Field(
+        ..., description="Theme or name of the content to design"
+    )
+    requirements: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Any specific requirements for the design"
+    )
+
+
+class OSRSSearchInput(BaseModel):
+    query: str = Field(..., description="Search query")
+    data_type: DataType = Field(
+        default=DataType.ANY,
+        description="Type of data to search for"
+    )
+    limit: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum number of results to return"
+    )
 
 
 class OSRSDesignTool(Tool):
@@ -20,34 +64,15 @@ class OSRSDesignTool(Tool):
         super().__init__(
             name="design_osrs_content",
             description="Design game content based on OSRS data",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "content_type": {
-                        "type": "string",
-                        "enum": ["item", "npc", "quest", "minigame", "area"],
-                        "description": "Type of content to design"
-                    },
-                    "theme": {
-                        "type": "string",
-                        "description": "Theme or name of the content to design"
-                    },
-                    "requirements": {
-                        "type": "object",
-                        "description": "Any specific requirements for the design",
-                        "default": {}
-                    }
-                },
-                "required": ["content_type", "theme"]
-            }
+            input_model=OSRSDesignInput
         )
     
-    async def execute(self, input_data: Dict[str, Any]) -> ToolResult:
+    async def execute(self, input_data: OSRSDesignInput) -> ToolResult:
         """Execute the design tool."""
         try:
-            content_type = input_data.get("content_type")
-            theme = input_data.get("theme")
-            requirements = input_data.get("requirements", {})
+            content_type = input_data.content_type
+            theme = input_data.theme
+            requirements = input_data.requirements
             
             # Start a chat with the manager to design the content
             task = f"Design a new {content_type} with the theme: {theme}"
@@ -87,41 +112,19 @@ class OSRSSearchTool(Tool):
         super().__init__(
             name="search_osrs_wiki",
             description="Search the OSRS Wiki for information",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "Search query"
-                    },
-                    "data_type": {
-                        "type": "string",
-                        "enum": ["item", "npc", "quest", "minigame", "area", "any"],
-                        "description": "Type of data to search for",
-                        "default": "any"
-                    },
-                    "limit": {
-                        "type": "integer",
-                        "description": "Maximum number of results to return",
-                        "default": 5,
-                        "minimum": 1,
-                        "maximum": 20
-                    }
-                },
-                "required": ["query"]
-            }
+            input_model=OSRSSearchInput
         )
     
-    async def execute(self, input_data: Dict[str, Any]) -> ToolResult:
+    async def execute(self, input_data: OSRSSearchInput) -> ToolResult:
         """Execute the search tool."""
         try:
-            query = input_data.get("query")
-            data_type = input_data.get("data_type", "any")
-            limit = input_data.get("limit", 5)
+            query = input_data.query
+            data_type = input_data.data_type
+            # limit variable is used to construct the task message
             
             # Format the query for the data agent
             task = f"Find information about: {query}"
-            if data_type != "any":
+            if data_type != DataType.ANY:
                 task += f" (type: {data_type})"
             
             # Start the chat asynchronously
@@ -138,7 +141,8 @@ class OSRSSearchTool(Tool):
             results = {
                 "query": query,
                 "results": response,
-                "result_count": 1  # This would be the actual count in a real implementation
+                # This would be the actual count in a real implementation
+                "result_count": 1
             }
             
             return ToolResult(
