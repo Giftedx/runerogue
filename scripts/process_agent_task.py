@@ -164,45 +164,7 @@ class AgentTaskProcessor:
         """
         self.issue.create_comment(comment)
     
-    def _search_todos(self) -> bool:
-        """
-        Search for 'TODO' comments in Python files and post them as a comment.
-        
-        Returns:
-            True if search completes (even if no TODOs found), False otherwise.
-        """
-        print("Searching for TODO comments...")
-        self._add_comment("🔍 Searching for TODO comments in Python files...")
 
-        returncode, stdout, stderr = self._run_command(
-            ["git", "grep", "-n", "TODO", "--", "*.py"]
-        )
-
-        if returncode == 0:
-            # Parse and format the output
-            todo_lines = stdout.strip().split('\n')
-            formatted_todos = []
-            for line in todo_lines:
-                if line.strip():
-                    # git grep output format: file:line_number:line_content
-                    parts = line.split(':', 2)
-                    if len(parts) == 3:
-                        file_path = parts[0]
-                        line_num = parts[1]
-                        content = parts[2].strip()
-                        formatted_todos.append(f"- {file_path}:{line_num}: {content}")
-            
-            if formatted_todos:
-                comment_body = "Found TODOs:\n\n" + "\n".join(formatted_todos)
-                self._add_comment(f"✅ TODO search complete:\n\n```\n{comment_body}\n```")
-            else:
-                self._add_comment("✅ TODO search complete: No TODO comments found in Python files.")
-            return True
-        else:
-            error_message = f"❌ TODO search failed:\n```\n{stderr}\n```"
-            self._add_comment(error_message)
-            print(error_message, file=sys.stderr)
-            return False
 
     def _run_tests(self) -> bool:
         """
