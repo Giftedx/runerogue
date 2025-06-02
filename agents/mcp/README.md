@@ -1,21 +1,38 @@
 # RuneRogue MCP Server
 
-Model Context Protocol (MCP) server for RuneRogue, enabling GitHub Copilot Agents to interact with RuneRogue's tooling and services.
+Model Context Protocol (MCP) server for RuneRogue, enabling GitHub Copilot Agents to interact with RuneRogue's tooling and services, with a focus on OSRS (Old School RuneScape) data and game design.
 
 ## Features
 
 - FastAPI-based MCP server implementation
 - Tool registration and discovery
-- Authentication and rate limiting
+- JWT Authentication and rate limiting
 - Health check endpoints
+- Integration with OSRS agent system
+- Tools for OSRS data retrieval and game design
 - Example tools for demonstration
 
 ## Installation
 
-1. Install the required dependencies:
+1. Clone the repository and navigate to the project directory.
+2. Create and activate a virtual environment (recommended):
 
 ```bash
-pip install -r requirements.txt
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install the required dependencies:
+
+```bash
+pip install -r agents/mcp/requirements.txt
+```
+
+4. Set up environment variables by creating a `.env` file in the project root:
+
+```env
+MCP_SECRET_KEY=your-secret-key-here
+MCP_ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 ## Usage
@@ -29,25 +46,122 @@ python -m agents.mcp.main
 ### Available Endpoints
 
 - `GET /mcp/health`: Health check endpoint
-- `GET /mcp/tools`: List all registered tools
-- `POST /mcp/tools/{tool_name}`: Execute a tool
+- `POST /mcp/token`: Get authentication token (form-data: username, password)
+- `GET /mcp/tools`: List all registered tools (requires authentication)
+- `POST /mcp/tools/{tool_name}`: Execute a tool (requires authentication)
 - `GET /mcp/info`: Get server information
 
-### Example API Requests
+## Available Tools
 
-#### List Available Tools
+### 1. OSRS Search Tool
 
+Search the OSRS Wiki for information about items, NPCs, quests, etc.
+
+**Endpoint:** `POST /mcp/tools/search_osrs_wiki`
+
+**Parameters:**
+- `query` (string, required): Search query
+- `data_type` (string, optional): Type of data to search for (item, npc, quest, minigame, area, any)
+- `limit` (integer, optional): Maximum number of results (default: 5, max: 20)
+
+**Example Request:**
 ```bash
-curl http://localhost:8000/mcp/tools
+curl -X POST http://localhost:8001/mcp/tools/search_osrs_wiki \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Dragon scimitar", "data_type": "item"}'
 ```
 
-#### Execute a Tool
+### 2. OSRS Design Tool
+
+Design game content based on OSRS data.
+
+**Endpoint:** `POST /mcp/tools/design_osrs_content`
+
+**Parameters:**
+- `content_type` (string, required): Type of content to design (item, npc, quest, minigame, area)
+- `theme` (string, required): Theme or name of the content
+- `requirements` (object, optional): Specific requirements for the design
+
+**Example Request:**
+```bash
+curl -X POST http://localhost:8001/mcp/tools/design_osrs_content \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content_type": "item",
+    "theme": "Dragon scimitar",
+    "requirements": {
+      "combat_level": 60,
+      "quest_requirement": "Monkey Madness I"
+    }
+  }'
+```
+
+### 3. Example Tools
+
+#### Echo Tool
 
 ```bash
-curl -X POST http://localhost:8000/mcp/tools/echo \
+curl -X POST http://localhost:8001/mcp/tools/echo \
+  -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"message": "Hello, world!"}'
 ```
+
+#### Add Numbers Tool
+
+```bash
+curl -X POST http://localhost:8001/mcp/tools/add_numbers \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"a": 5, "b": 7}'
+```
+
+## Authentication
+
+1. Get an access token:
+
+```bash
+curl -X POST http://localhost:8001/mcp/token \
+  -d "username=admin&password=admin" \
+  -H "Content-Type: application/x-www-form-urlencoded"
+```
+
+2. Use the token in subsequent requests:
+
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+## Development
+
+### Running Tests
+
+```bash
+pytest agents/mcp/test_*.py -v
+```
+
+### Adding New Tools
+
+1. Create a new tool class in `osrs_tools.py` or a new module
+2. Register the tool in `tools.py`
+3. Add tests in `test_osrs_tools.py`
+
+## Deployment
+
+### Docker
+
+```bash
+docker build -t runerogue-mcp -f agents/mcp/Dockerfile .
+docker run -p 8001:8001 --env-file .env runerogue-mcp
+```
+
+### Environment Variables
+
+- `MCP_SECRET_KEY`: Secret key for JWT token signing
+- `MCP_ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time (default: 30)
+- `MCP_CORS_ORIGINS`: Comma-separated list of allowed CORS origins (default: "*")
 
 ## Creating Custom Tools
 

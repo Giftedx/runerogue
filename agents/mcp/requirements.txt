@@ -1,3 +1,4 @@
+# MCP Server Dependencies
 fastapi>=0.68.0
 uvicorn>=0.15.0
 pydantic>=1.8.0
@@ -5,3 +6,19 @@ python-multipart>=0.0.5
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 python-dotenv>=0.19.0
+slowapi>=0.1.8
+python-multipart>=0.0.5
+
+# OSRS Agent System Dependencies
+pyautogen>=0.2.0
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
+
+# Async Support
+asyncio>=3.4.3
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0

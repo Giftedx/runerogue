@@ -1,8 +1,8 @@
 """
-Example tools for the MCP server.
+Tools for the MCP server.
 
-This module contains example tools that demonstrate how to create and register tools
-with the MCP server.
+This module contains tools that can be used with the MCP server,
+including both example tools and OSRS-specific tools.
 """
 
 from typing import Dict, Any
@@ -10,8 +10,10 @@ from typing import Dict, Any
 from fastapi import HTTPException
 
 from .server import Tool, ToolResult, ToolResultStatus
-
 from .server import tool, server
+
+# Import OSRS tools
+from .osrs_tools import osrs_design_tool, osrs_search_tool
 
 
 @tool(
@@ -120,3 +122,7 @@ class OSRSDataTool(Tool):
 # Register the OSRS data tool with the server
 osrs_data_tool = OSRSDataTool()
 server.register_tool(osrs_data_tool)
+
+# Register additional OSRS tools
+server.register_tool(osrs_design_tool)
+server.register_tool(osrs_search_tool)
