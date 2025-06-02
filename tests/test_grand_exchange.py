@@ -15,7 +15,7 @@ from economy.grand_exchange import (
     InvalidOfferError,
     InsufficientFundsError
 )
-from models.economy import (
+from economy_models.economy import (
     DatabaseManager,
     Player,
     Item,

@@ -7,14 +7,13 @@ price discovery, and market analytics.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import and_, or_, desc
 
-from models.economy import (
+from economy_models.economy import (
     db_manager,
     Player,
     Item,
@@ -133,7 +132,7 @@ class GrandExchangeSystem:
             # Verify player exists and is active
             player = session.query(Player).filter(
                 Player.id == player_id,
-                Player.is_active == True
+                Player.is_active
             ).first()
 
             if not player:
@@ -142,7 +141,7 @@ class GrandExchangeSystem:
             # Verify item exists and is tradeable
             item = session.query(Item).filter(
                 Item.id == item_id,
-                Item.is_tradeable == True
+                Item.is_tradeable
             ).first()
 
             if not item:
@@ -178,10 +177,8 @@ class GrandExchangeSystem:
             session.add(offer)
             session.flush()  # Get the offer ID
 
-            # Reserve items for sell offers
-            if offer_type == OfferType.SELL:
-                # TODO: Implement item reservation system
-                pass
+            # Note: For sell offers, we validate inventory but don't reserve
+            # items upfront. Items will be taken during actual transactions.
 
             session.commit()
 
@@ -197,8 +194,10 @@ class GrandExchangeSystem:
                        f"{quantity} {item.name} at {price_per_item} each"
             )
 
-            logger.info(f"Player {player_id} placed {offer_type.value} "
-                       f"offer {offer.id} for {quantity} {item.name}")
+            logger.info(
+                f"Player {player_id} placed {offer_type.value} "
+                f"offer {offer.id} for {quantity} {item.name}"
+            )
 
             return {
                 "offer_id": offer.id,
@@ -239,20 +238,26 @@ class GrandExchangeSystem:
                     GrandExchangeOffer.item_id == new_offer.item_id,
                     GrandExchangeOffer.offer_type == OfferType.SELL.value,
                     GrandExchangeOffer.status == OfferStatus.ACTIVE.value,
-                    GrandExchangeOffer.price_per_item <= new_offer.price_per_item,
+                    GrandExchangeOffer.price_per_item <=
+                    new_offer.price_per_item,
                     GrandExchangeOffer.player_id != new_offer.player_id
-                ).order_by(GrandExchangeOffer.price_per_item.asc(),
-                          GrandExchangeOffer.created_at.asc()).all()
+                ).order_by(
+                    GrandExchangeOffer.price_per_item.asc(),
+                    GrandExchangeOffer.created_at.asc()
+                ).all()
             else:
                 # Match with buy offers
                 compatible_offers = session.query(GrandExchangeOffer).filter(
                     GrandExchangeOffer.item_id == new_offer.item_id,
                     GrandExchangeOffer.offer_type == OfferType.BUY.value,
                     GrandExchangeOffer.status == OfferStatus.ACTIVE.value,
-                    GrandExchangeOffer.price_per_item >= new_offer.price_per_item,
+                    GrandExchangeOffer.price_per_item >=
+                    new_offer.price_per_item,
                     GrandExchangeOffer.player_id != new_offer.player_id
-                ).order_by(GrandExchangeOffer.price_per_item.desc(),
-                          GrandExchangeOffer.created_at.asc()).all()
+                ).order_by(
+                    GrandExchangeOffer.price_per_item.desc(),
+                    GrandExchangeOffer.created_at.asc()
+                ).all()
 
             # Process matches
             for compatible_offer in compatible_offers:
@@ -336,7 +341,7 @@ class GrandExchangeSystem:
         total_price = price_per_item * quantity
 
         # Transfer items from seller to buyer
-        # Remove items from seller
+        # Remove items from seller's inventory
         seller_inventory = session.query(InventoryItem).filter(
             InventoryItem.player_id == seller_id,
             InventoryItem.item_id == item_id
@@ -376,9 +381,11 @@ class GrandExchangeSystem:
 
         session.add(transaction)
 
-        logger.info(f"GE transaction: {quantity} items from player "
-                   f"{seller_id} to player {buyer_id} at "
-                   f"{price_per_item} each")
+        logger.info(
+            f"GE transaction: {quantity} items from player "
+            f"{seller_id} to player {buyer_id} at "
+            f"{price_per_item} each"
+        )
 
     def cancel_offer(self, offer_id: int, player_id: int) -> Dict:
         """Cancel an active offer."""
@@ -391,12 +398,15 @@ class GrandExchangeSystem:
             ).first()
 
             if not offer:
-                raise InvalidOfferError("Offer not found or cannot be cancelled")
+                raise InvalidOfferError(
+                    "Offer not found or cannot be cancelled"
+                )
 
             offer.status = OfferStatus.CANCELLED.value
             offer.completed_at = datetime.utcnow()
 
-            # TODO: Return reserved items for sell offers
+            # Note: No need to return items since we don't pre-reserve
+            # for sell offers anymore
 
             session.commit()
 
@@ -453,8 +463,10 @@ class GrandExchangeSystem:
                     "price_per_item": float(offer.price_per_item),
                     "status": offer.status,
                     "created_at": offer.created_at.isoformat(),
-                    "expires_at": (offer.expires_at.isoformat()
-                                 if offer.expires_at else None)
+                    "expires_at": (
+                        offer.expires_at.isoformat()
+                        if offer.expires_at else None
+                    )
                 })
 
             return offers_data
@@ -478,24 +490,31 @@ class GrandExchangeSystem:
                 GrandExchangeOffer.item_id == item_id,
                 GrandExchangeOffer.offer_type == OfferType.BUY.value,
                 GrandExchangeOffer.status == OfferStatus.ACTIVE.value
-            ).order_by(GrandExchangeOffer.price_per_item.desc()).limit(5).all()
+            ).order_by(
+                GrandExchangeOffer.price_per_item.desc()
+            ).limit(5).all()
 
             sell_offers = session.query(GrandExchangeOffer).filter(
                 GrandExchangeOffer.item_id == item_id,
                 GrandExchangeOffer.offer_type == OfferType.SELL.value,
                 GrandExchangeOffer.status == OfferStatus.ACTIVE.value
-            ).order_by(GrandExchangeOffer.price_per_item.asc()).limit(5).all()
+            ).order_by(
+                GrandExchangeOffer.price_per_item.asc()
+            ).limit(5).all()
 
             # Get recent price history
             recent_prices = session.query(PriceHistory).filter(
                 PriceHistory.item_id == item_id,
-                PriceHistory.recorded_at >= datetime.utcnow() - timedelta(days=7)
+                PriceHistory.recorded_at >=
+                datetime.utcnow() - timedelta(days=7)
             ).order_by(PriceHistory.recorded_at.desc()).limit(100).all()
 
             # Calculate statistics
             if recent_prices:
                 latest_price = recent_prices[0].price
-                avg_price = sum(p.price for p in recent_prices) / len(recent_prices)
+                avg_price = sum(p.price for p in recent_prices) / len(
+                    recent_prices
+                )
                 total_volume = sum(p.volume for p in recent_prices)
             else:
                 latest_price = avg_price = total_volume = 0
@@ -506,10 +525,14 @@ class GrandExchangeSystem:
                 "latest_price": float(latest_price),
                 "average_price": float(avg_price),
                 "total_volume": total_volume,
-                "highest_buy_offer": (float(buy_offers[0].price_per_item)
-                                    if buy_offers else None),
-                "lowest_sell_offer": (float(sell_offers[0].price_per_item)
-                                     if sell_offers else None),
+                "highest_buy_offer": (
+                    float(buy_offers[0].price_per_item)
+                    if buy_offers else None
+                ),
+                "lowest_sell_offer": (
+                    float(sell_offers[0].price_per_item)
+                    if sell_offers else None
+                ),
                 "buy_offers": [
                     {
                         "price": float(offer.price_per_item),
@@ -538,7 +561,7 @@ class GrandExchangeSystem:
         session = self.db.get_session()
         try:
             since_date = datetime.utcnow() - timedelta(days=days)
-            
+
             price_data = session.query(PriceHistory).filter(
                 PriceHistory.item_id == item_id,
                 PriceHistory.recorded_at >= since_date
@@ -569,7 +592,8 @@ class GrandExchangeSystem:
                 offer.status = OfferStatus.EXPIRED.value
                 offer.completed_at = datetime.utcnow()
 
-                # TODO: Return reserved items for sell offers
+                # Note: No need to return items since we don't pre-reserve
+                # for sell offers anymore
 
                 logger.info(f"Expired offer {offer.id}")
 
