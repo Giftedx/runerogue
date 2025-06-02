@@ -12,34 +12,15 @@
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
       "env": {}
     },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
-      "env": {}
-    },
     "osrs": {
       "command": "npx",
       "args": ["-y", "@jayarrowz/mcp-osrs"],
       "env": {}
     },
-    "brave-search": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
-      "env": {
-        "BRAVE_API_KEY": "${BRAVE_SEARCH_API_KEY}"
-      }
-    },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
       "env": {}
-    },
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
-      }
     },
     "runerogue-tools": {
       "command": "node",
