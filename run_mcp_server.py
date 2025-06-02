@@ -16,7 +16,9 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from agents.mcp.server import server, Tool, ToolResult, ToolResultStatus
-from agents.mcp.tools import OSRSDataTool
+# Import the tools module to ensure all tools are registered
+import agents.mcp.tools  # noqa: F401
+from pydantic import BaseModel, Field
 
 # Configure logging
 import logging
@@ -26,31 +28,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Import and register tools
-logger.info("Registering tools...")
-osrs_tool = OSRSDataTool()
-server.register_tool(osrs_tool)
+# Tools are automatically registered when agents.mcp.tools is imported
+logger.info("Registering additional tools...")
 
 # Add some example tools
+class WeatherInputModel(BaseModel):
+    location: str = Field(..., description="City and optional country code (e.g., 'London,UK')")
+
 @server.tool(
     name="get_weather",
     description="Get the current weather for a location",
-    parameters={
-        "type": "object",
-        "properties": {
-            "location": {
-                "type": "string",
-                "description": "City and optional country code (e.g., 'London,UK')"
-            }
-        },
-        "required": ["location"]
-    }
+    input_model=WeatherInputModel
 )
-async def get_weather(location: str) -> dict:
+async def get_weather(input_data: WeatherInputModel) -> dict:
     """Get the current weather for a location."""
     # This is a mock implementation
     return {
-        "location": location,
+        "location": input_data.location,
         "temperature": 22.5,
         "conditions": "sunny",
         "humidity": 0.6,
@@ -59,6 +53,12 @@ async def get_weather(location: str) -> dict:
     }
 
 # Add a more complex example tool
+class CalculatorInput(BaseModel):
+    expression: str = Field(
+        ..., 
+        description="Mathematical expression to evaluate (e.g., '2 + 2 * 3')"
+    )
+
 class CalculatorTool(Tool):
     """A simple calculator tool."""
     
@@ -66,23 +66,18 @@ class CalculatorTool(Tool):
         super().__init__(
             name="calculator",
             description="Perform basic arithmetic calculations",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "expression": {
-                        "type": "string",
-                        "description": "Mathematical expression to evaluate (e.g., '2 + 2 * 3')"
-                    }
-                },
-                "required": ["expression"]
-            }
+            input_model=CalculatorInput
         )
     
-    async def execute(self, input_data: dict) -> ToolResult:
+    async def execute(self, input_data: CalculatorInput) -> ToolResult:
         try:
             # WARNING: Using eval() is generally unsafe and should be avoided in production
             # This is just for demonstration purposes
-            result = eval(input_data["expression"], {"__builtins__": None}, {})
+            result = eval(
+                input_data.expression, 
+                {"__builtins__": None}, 
+                {}
+            )
             return ToolResult(
                 status=ToolResultStatus.SUCCESS,
                 output={"result": result},
