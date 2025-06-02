@@ -43,6 +43,7 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 
 - [GitHub Copilot Agents Guide](docs/COPILOT_AGENTS_GUIDE.md) - Comprehensive guide to using Copilot Agents with RuneRogue
 - [GitHub Copilot Agents Integration](docs/GITHUB_COPILOT_AGENTS.md) - Technical details of the integration
+- [AI-Managed Issue Creation](docs/AI_MANAGED_ISSUES.md) - System for AI agents to create and manage issues
 - [Environment Variables](docs/ENVIRONMENT_VARIABLES.md) - Required environment variables for the integration
 
 ### Quick Start

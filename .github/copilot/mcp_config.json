@@ -101,6 +101,31 @@
         },
         "type": "object"
       }
+    },
+    "runerogue_create_issue": {
+      "description": "Create a GitHub issue with specified title, body, labels, and assignees",
+      "parameters": {
+        "properties": {
+          "title": {
+            "description": "Issue title",
+            "type": "string"
+          },
+          "body": {
+            "description": "Issue body content in markdown",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Comma-separated list of labels (default: copilot)",
+            "type": "string"
+          },
+          "assignees": {
+            "description": "Comma-separated list of assignees (default: github-copilot[bot])",
+            "type": "string"
+          }
+        },
+        "required": ["title", "body"],
+        "type": "object"
+      }
     }
   }
 }
