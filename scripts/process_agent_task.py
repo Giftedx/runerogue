@@ -118,7 +118,7 @@ class AgentTaskProcessor:
                 return self._run_build()
             elif "deploy" in task_type:
                 return self._run_deployment()
-            elif "todo" in task_type:
+            elif "todo" in task_type.lower() or "search" in task_type.lower():
                 return self._search_todos()
             else:
                 # Generic task handling
@@ -318,6 +318,84 @@ class AgentTaskProcessor:
         )
         
         return True
+    
+    def _search_todos(self) -> bool:
+        """
+        Search for TODO comments in Python files.
+        
+        Returns:
+            True if search completes successfully, False otherwise
+        """
+        print("Searching for TODO comments in Python files...")
+        
+        # Use git grep to search for TODO comments in .py files
+        returncode, stdout, stderr = self._run_command([
+            "git", "grep", "-n", "TODO", "--", "*.py"
+        ])
+        
+        if returncode == 0 and stdout.strip():
+            # Parse the git grep output and format it
+            lines = stdout.strip().split('\n')
+            todo_items = []
+            actual_todos = []
+            
+            for line in lines:
+                if ':' in line:
+                    # Format: filename:line_number:content
+                    parts = line.split(':', 2)
+                    if len(parts) >= 3:
+                        file_path = parts[0]
+                        line_number = parts[1]
+                        content = parts[2].strip()
+                        
+                        # Check if it's an actual TODO comment
+                        is_actual_todo = content.strip().startswith('# TODO:')
+                        todo_item = f"- `{file_path}:{line_number}`: {content}"
+                        
+                        if is_actual_todo:
+                            actual_todos.append(todo_item)
+                        todo_items.append(todo_item)
+            
+            # Format the results
+            if actual_todos:
+                summary = (f"Found {len(actual_todos)} actual TODO comments "
+                          f"that require developer attention.")
+                result_comment = f"""## Found TODOs:
+
+**Actual TODO Comments (requiring action):**
+{chr(10).join(actual_todos)}
+
+**All TODO References:**
+{chr(10).join(todo_items)}
+
+**Summary:** {summary}"""
+            elif todo_items:
+                summary = (f"Found {len(todo_items)} TODO references "
+                          f"(including meta/test references).")
+                result_comment = f"""## Found TODOs:
+
+{chr(10).join(todo_items)}
+
+**Summary:** {summary}"""
+            else:
+                result_comment = ("## TODO Search Results:\n\n"
+                                "No TODO comments found in Python files.")
+            
+            self._add_comment(result_comment)
+            return True
+            
+        elif returncode != 0:
+            # Git grep failed
+            error_msg = f"❌ Error searching for TODOs: {stderr}"
+            print(error_msg, file=sys.stderr)
+            self._add_comment(error_msg)
+            return False
+        else:
+            # No TODOs found
+            no_todos_msg = ("## TODO Search Results:\n\n"
+                           "No TODO comments found in Python files.")
+            self._add_comment(no_todos_msg)
+            return True
 
 
 def main():
