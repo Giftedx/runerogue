@@ -130,6 +130,36 @@ Example usage in an issue:
 - Output Format: markdown
 ```
 
+### Issue Creation Tool
+
+```json
+{
+  "name": "runerogue_create_issue",
+  "description": "Create a GitHub issue with specified title, body, labels, and assignees",
+  "parameters": {
+    "title": "Issue title",
+    "body": "Issue body content in markdown",
+    "labels": "Comma-separated list of labels (default: copilot)",
+    "assignees": "Comma-separated list of assignees (default: github-copilot[bot])"
+  }
+}
+```
+
+Example usage in an issue:
+
+```
+## Custom MCP Tool Options
+
+### For Issue Creation
+
+- Title: "[BUG] Fix parsing error in OSRS parser"
+- Body: "## Description\n\nThe parser fails when processing certain item pages with special characters."
+- Labels: "copilot,bug"
+- Assignees: "github-copilot[bot]"
+```
+
+For more details on the AI-managed issue creation system, see [AI_MANAGED_ISSUES.md](AI_MANAGED_ISSUES.md).
+
 ## Creating Effective Tasks
 
 To get the best results from GitHub Copilot Agents, follow these guidelines:

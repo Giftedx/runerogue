@@ -31,6 +31,27 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Ensure 'copilot' label exists
+            console.log('Checking if copilot label exists...');
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'copilot'
+              });
+              console.log('Copilot label exists.');
+            } catch (error) {
+              console.log('Copilot label does not exist. Creating it...');
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'copilot',
+                color: '8a2be2', // BlueViolet color
+                description: 'Tasks for GitHub Copilot Agent'
+              });
+              console.log('Copilot label created.');
+            }
+            
             // Parse acceptance criteria into a list
             const criteriaList = context.payload.inputs.acceptance_criteria
               .split(',')
