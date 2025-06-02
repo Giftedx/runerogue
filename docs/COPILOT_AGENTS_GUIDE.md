@@ -60,11 +60,11 @@ RuneRogue extends GitHub Copilot's capabilities with custom MCP tools defined in
 
 ```json
 {
-  "name": "run_tests",
-  "description": "Run tests for the RuneRogue project",
+  "name": "runerogue_run_tests",
+  "description": "Run tests for the RuneRogue project with specified modules or test paths",
   "parameters": {
-    "test_path": "Path to the test file or directory",
-    "markers": "Optional test markers (e.g., unit, integration)",
+    "testPath": "Optional path to specific test file or directory",
+    "markers": "Optional pytest markers to filter tests",
     "verbose": "Whether to run tests in verbose mode"
   }
 }
@@ -86,11 +86,11 @@ Example usage in an issue:
 
 ```json
 {
-  "name": "run_linting",
-  "description": "Run linting checks on RuneRogue code",
+  "name": "runerogue_lint_code",
+  "description": "Run linting on the codebase or specified files",
   "parameters": {
-    "file_path": "Path to the file or directory to lint",
-    "auto_fix": "Whether to automatically fix linting issues"
+    "filePath": "Optional path to specific file or directory to lint",
+    "fix": "Whether to automatically fix linting issues when possible"
   }
 }
 ```
