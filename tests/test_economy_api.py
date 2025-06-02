@@ -9,7 +9,7 @@ import json
 from decimal import Decimal
 
 from app import app
-from models.economy import DatabaseManager, Player, Item, InventoryItem
+from economy_models.economy import DatabaseManager, Player, Item, InventoryItem
 
 
 class TestEconomyAPI:
@@ -22,19 +22,19 @@ class TestEconomyAPI:
         # Patch the database manager for testing
         with app.test_client() as client:
             # Override the global db_manager for tests
-            import models.economy
+            import economy_models.economy
             import economy.trading
             import economy.grand_exchange
             
-            original_db = models.economy.db_manager
-            models.economy.db_manager = db_manager
+            original_db = economy_models.economy.db_manager
+            economy_models.economy.db_manager = db_manager
             economy.trading.trading_system.db = db_manager  
             economy.grand_exchange.grand_exchange.db = db_manager
             
             yield client
             
             # Restore original db_manager
-            models.economy.db_manager = original_db
+            economy_models.economy.db_manager = original_db
 
     @pytest.fixture
     def db_manager(self):

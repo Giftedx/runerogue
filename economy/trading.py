@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from models.economy import (
+from economy_models.economy import (
     db_manager,
     Player,
     Item,

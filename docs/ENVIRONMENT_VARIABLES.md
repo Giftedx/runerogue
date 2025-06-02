@@ -42,6 +42,7 @@ Environment variables are used to configure various aspects of the RuneRogue app
 |----------|-------------|---------|----------|
 | `BRAVE_SEARCH_API_KEY` | API key for Brave Search | - | For search functionality |
 | `FIRECRAWL_API_KEY` | API key for Firecrawl | - | For web crawling |
+| `TAVILY_API_KEY` | API key for Tavily web search | - | For AI-powered web search via MCP |
 
 ## Authentication
 
