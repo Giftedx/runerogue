@@ -1,0 +1,57 @@
+#!/bin/bash
+# Secure API Key Setup for Local NPX Tavily MCP
+
+echo "🔑 SECURE TAVILY API KEY SETUP"
+echo "=============================="
+echo ""
+echo "This script helps you set your Tavily API key securely."
+echo "Choose your preferred method:"
+echo ""
+
+echo "METHOD 1: Interactive Secure Setup (RECOMMENDED)"
+echo "-----------------------------------------------"
+echo "This method hides your API key input and doesn't save it in history:"
+echo ""
+echo "read -s -p 'Enter your Tavily API key: ' TAVILY_API_KEY && export TAVILY_API_KEY && echo 'API key set securely!'"
+echo ""
+
+echo "METHOD 2: .env File Setup (PERSISTENT)"
+echo "-------------------------------------"
+echo "This method saves the key in a .env file for persistent use:"
+echo ""
+echo "1. Get your API key from: https://app.tavily.com"
+echo "2. Edit .env file:"
+echo "   nano .env"
+echo "3. Add this line:"
+echo "   TAVILY_API_KEY=your-actual-api-key-here"
+echo "4. Load the environment:"
+echo "   source .env"
+echo ""
+
+echo "METHOD 3: Quick Export (TEMPORARY)"
+echo "---------------------------------"
+echo "For quick testing (key will be lost when terminal closes):"
+echo ""
+echo "export TAVILY_API_KEY='your-actual-api-key-here'"
+echo ""
+
+echo "VERIFICATION:"
+echo "============"
+echo "After setting your key, verify it works:"
+echo ""
+echo "# Check if key is set (without showing value)"
+echo '[ ! -z "$TAVILY_API_KEY" ] && echo "✅ API key is set" || echo "❌ API key is NOT set"'
+echo ""
+echo "# Test the Tavily MCP package"
+echo "npx -y @mcptools/mcp-tavily --help"
+echo ""
+
+echo "SECURITY REMINDERS:"
+echo "=================="
+echo "- Never share your API key in chat or screenshots"
+echo "- Don't commit .env files to git (they're already in .gitignore)"
+echo "- Regenerate keys if accidentally exposed"
+echo "- Get your free API key from: https://app.tavily.com"
+echo ""
+
+echo "After setting up, run: ./validate_tavily_mcp.sh"

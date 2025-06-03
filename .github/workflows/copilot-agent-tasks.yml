@@ -6,8 +6,8 @@ on:
 
 jobs:
   process-agent-task:
-    # Only run if assigned to GitHub Copilot
-    if: github.event.assignee.login == 'github-copilot[bot]'
+    # Only run if assigned to GitHub Copilot SWE Agent
+    if: github.event.assignee.login == 'Copilot'
     runs-on: [self-hosted, Linux, X64]
     
     steps:

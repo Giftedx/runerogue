@@ -1,0 +1,72 @@
+name: GitHub Copilot Assignment
+
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to assign'
+        required: true
+
+jobs:
+  assign-to-copilot:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'issues' && (contains(github.event.issue.labels.*.name, 'copilot') || contains(github.event.issue.labels.*.name, 'ai-task'))) ||
+      github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Get issue number
+        id: get-issue
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "ISSUE_NUMBER=${{ github.event.inputs.issue_number }}" >> $GITHUB_ENV
+          else
+            echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+          fi
+      
+      - name: Assign to GitHub Copilot
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            
+            try {
+              console.log(`Assigning issue #${issueNumber} to GitHub Copilot SWE Agent...`);
+              
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                assignees: ['Copilot']
+              });
+              
+              console.log(`Successfully assigned issue #${issueNumber} to GitHub Copilot SWE Agent`);
+              
+              // Add a comment to notify
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `This issue has been assigned to GitHub Copilot SWE Agent. The agent will start processing this task shortly.`
+              });
+            } catch (error) {
+              console.log(`Error assigning to Copilot: ${error.message}`);
+              
+              // Add a comment with error details
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `## Error Assigning to GitHub Copilot SWE Agent
+                
+                There was an error assigning this issue to GitHub Copilot SWE Agent: \`${error.message}\`
+                
+                Please check:
+                1. The GitHub Copilot app is properly installed in this repository
+                2. The \`GITHUB_TOKEN\` secret has sufficient permissions
+                3. GitHub Copilot service is available`
+              });
+            }
