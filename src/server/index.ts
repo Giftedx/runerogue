@@ -13,6 +13,7 @@ import { authRouter } from './routes/auth';
 // import healthRouter from './routes/health';
 import { errorHandler } from './auth/middleware';
 import logger from './utils/logger';
+import economyIntegration from './economy-integration';
 
 // Load environment variables
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -21,6 +22,17 @@ const isProduction = NODE_ENV === 'production';
 
 // Initialize Express
 const app = express();
+
+// Initialize Economy Integration
+let economyReady = false;
+(async () => {
+  try {
+    economyReady = await economyIntegration.isReady();
+    logger.info(`Economy integration status: ${economyReady ? 'Ready' : 'Not Ready'}`);
+  } catch (error) {
+    logger.error('Failed to initialize economy integration:', error);
+  }
+})();
 
 // Security Middleware
 app.use(helmet({
@@ -64,6 +76,18 @@ app.get('/health', async (_req, res) => {
     const health = await checkHealth();
     const status = health.database && health.redis ? 'healthy' : 'degraded';
     
+    // Check economy integration health
+    let economyStatus = 'unknown';
+    try {
+      if (await economyIntegration.isReady()) {
+        economyStatus = 'healthy';
+      } else {
+        economyStatus = 'unhealthy';
+      }
+    } catch (error) {
+      economyStatus = 'error';
+    }
+    
     res.status(status === 'healthy' ? 200 : 503).json({
       status,
       timestamp: new Date().toISOString(),
@@ -71,7 +95,8 @@ app.get('/health', async (_req, res) => {
       version: process.env.npm_package_version || '0.1.0',
       services: {
         database: health.database ? 'connected' : 'disconnected',
-        redis: health.redis ? 'connected' : 'disconnected'
+        redis: health.redis ? 'connected' : 'disconnected',
+        economy: economyStatus
       }
     });
   } catch (error) {

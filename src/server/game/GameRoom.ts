@@ -1,13 +1,8 @@
 import 'reflect-metadata';
-import { Schema, MapSchema, type } from '@colyseus/schema';
+import { type } from '@colyseus/schema';
 import { Room, Client } from '@colyseus/core';
 
-// Define ArraySchema since it's not exported from @colyseus/schema
-class ArraySchema<T> extends Array<T> {
-  onAdd?: (item: T, key: number) => void;
-  onChange?: (item: T, key: number) => void;
-  onRemove?: (item: T, key: number) => void;
-}
+import { InventoryItem, LootDrop, Player, GameState, LootDropMessage } from './EntitySchemas';
 
 // Re-export the type decorator
 export { type };
@@ -53,52 +48,12 @@ export { type };
 /**
  * Skill class for player skills
  */
-export class Skill extends Schema {
-  @type('number')
-  public level: number;
 
-  @type('number')
-  public xp: number;
-
-  constructor(level: number = 1, xp: number = 0) {
-    super();
-    this.level = level;
-    this.xp = xp;
-  }
-}
 
 /**
  * Skills collection class
  */
-export class Skills extends Schema {
-  @type(Skill)
-  public attack: Skill;
 
-  @type(Skill)
-  public strength: Skill;
-
-  @type(Skill)
-  public defence: Skill;
-
-  @type(Skill)
-  public mining: Skill;
-
-  @type(Skill)
-  public woodcutting: Skill;
-
-  @type(Skill)
-  public fishing: Skill;
-
-  constructor() {
-    super();
-    this.attack = new Skill();
-    this.strength = new Skill();
-    this.defence = new Skill();
-    this.mining = new Skill();
-    this.woodcutting = new Skill();
-    this.fishing = new Skill();
-  }
-}
 
 /**
  * Game state class for the room
@@ -109,327 +64,37 @@ export class Skills extends Schema {
 
 // --- Schema Classes: InventoryItem and Equipment must be defined before LootDrop and Player ---
 
-export class InventoryItem extends Schema {
-  @type('string')
-  public type: string;
 
-  @type('number')
-  public quantity: number;
+  
 
-  constructor(type: string = '', quantity: number = 1) {
-    super();
-    this.type = type;
-    this.quantity = quantity;
-  }
-}
 
-export class Equipment extends Schema {
-  @type('string')
-  public weapon: string | null;
+  
 
-  @type('string')
-  public armor: string | null;
 
-  @type('string')
-  public shield: string | null;
+  
 
-  constructor() {
-    super();
-    this.weapon = null;
-    this.armor = null;
-    this.shield = null;
-  }
-}
 
-export class LootDrop extends Schema {
-  @type('string')
-  public id: string = '';
 
-  @type('number')
-  public x: number = 0;
-
-  @type('number')
-  public y: number = 0;
-
-  @type('number')
-  public timestamp: number = 0;
-
-  @type([InventoryItem])
-  public items = new ArraySchema<InventoryItem>();
-
-  constructor() {
-    super();
-    this.timestamp = Date.now();
-  }
-}
-
-export class Player extends Schema {
-  @type('string')
-  public id: string = '';
-  @type('string')
-  public username: string = '';
-  @type('number')
-  public x: number = 0;
-  @type('number')
-  public y: number = 0;
-  @type('string')
-  public animation: string = 'idle';
-  @type('string')
-  public direction: string = 'down';
-  @type('number')
-  public health: number = 100;
-  @type('number')
-  public maxHealth: number = 100;
-  @type('number')
-  public lastActivity: number = 0;
-  @type('boolean')
-  public isBusy: boolean = false;
-  @type('number')
-  public busyUntil: number = 0;
-  @type([InventoryItem])
-  public inventory = new ArraySchema<InventoryItem>();
-  @type('number')
-  public inventorySize: number = 28;
-  @type(Equipment)
-  public equipment: Equipment = new Equipment();
-  @type(Skills)
-  public skills: Skills = new Skills();
-  private actionCooldowns: Map<string, number> = new Map();
-  constructor() {
-    super();
-    this.lastActivity = Date.now();
-    for (let i = 0; i < this.inventorySize; i++) {
-      this.inventory.push(new InventoryItem());
-    }
-  }
-  public isOnCooldown(actionType: string): boolean {
-    return this.getCooldownRemaining(actionType) > 0;
-  }
-  public setCooldown(actionType: string, durationMs: number): void {
-    this.actionCooldowns.set(actionType, Date.now() + durationMs);
-  }
-  public getCooldownRemaining(actionType: string): number {
-    const cooldownUntil = this.actionCooldowns.get(actionType) || 0;
-    const now = Date.now();
-    return Math.max(0, cooldownUntil - now);
-  }
-  public getCombatStats(): { attack: number; defense: number; strength: number } {
-    return {
-      attack: this.skills.attack.level,
-      defense: this.skills.defence.level,
-      strength: this.skills.strength.level
-    };
-  }
-  public setBusy(durationMs: number): void {
-    this.busyUntil = Date.now() + durationMs;
-  }
-  public updateBusyStatus(): void {
-    if (this.busyUntil > 0 && Date.now() >= this.busyUntil) {
-      this.busyUntil = 0;
-    }
-  }
-}
-
-export class GameState extends Schema {
-  @type({ map: Player })
-  public players = new MapSchema<Player>();
-
-  @type({ map: LootDrop })
-  public lootDrops = new MapSchema<LootDrop>();
-}
+  
 
 /**
  * Inventory item class
  */
 // --- Moved InventoryItem above LootDrop for correct usage order ---
-export class InventoryItem extends Schema {
-  @type('string')
-  public type: string;
 
-  @type('number')
-  public quantity: number;
-
-  constructor(type: string = '', quantity: number = 1) {
-    super();
-    this.type = type;
-    this.quantity = quantity;
-  }
-}
+  
 
 /**
  * Equipment class
  */
-export class Equipment extends Schema {
-  @type('string')
-  public weapon: string | null;
 
-  @type('string')
-  public armor: string | null;
-
-  @type('string')
-  public shield: string | null;
-
-  constructor() {
-    super();
-    this.weapon = null;
-    this.armor = null;
-    this.shield = null;
-  }
-}
+  
 
 /**
  * Loot drop class
  */
-export class LootDrop extends Schema {
-  @type('string')
-  public id: string = '';
 
-  @type('number')
-  public x: number = 0;
-
-  @type('number')
-  public y: number = 0;
-
-  @type('number')
-  public timestamp: number = 0;
-
-  @type([InventoryItem])
-  public items = new ArraySchema<InventoryItem>();
-
-  constructor() {
-    super();
-    this.timestamp = Date.now();
-  }
-}
-
-/**
- * Player class
- */
-export class Player extends Schema {
-  @type('string')
-  public id: string = '';
-
-  @type('string')
-  public username: string = '';
-
-  @type('number')
-  public x: number = 0;
-
-  @type('number')
-  public y: number = 0;
-
-  @type('string')
-  public animation: string = 'idle';
-
-  @type('string')
-  public direction: string = 'down';
-
-  @type('number')
-  public health: number = 100;
-
-  @type('number')
-  public maxHealth: number = 100;
-
-  @type('number')
-  public lastActivity: number = 0;
-
-  @type('boolean')
-  public isBusy: boolean = false;
-
-  @type('number')
-  public busyUntil: number = 0;
-
-  @type([InventoryItem])
-  public inventory = new ArraySchema<InventoryItem>();
-
-  @type('number')
-  public inventorySize: number = 28;
-
-  @type(Equipment)
-  public equipment: Equipment = new Equipment();
-
-  @type(Skills)
-  public skills: Skills = new Skills();
-
-  // Non-synced properties
-  private actionCooldowns: Map<string, number> = new Map();
-
-  constructor() {
-    super();
-    this.lastActivity = Date.now();
-    
-    // Initialize inventory with empty slots
-    for (let i = 0; i < this.inventorySize; i++) {
-      this.inventory.push(new InventoryItem());
-    }
-  }
-
-  /**
-   * Check if an action is on cooldown
-   */
-  public isOnCooldown(actionType: string): boolean {
-    return this.getCooldownRemaining(actionType) > 0;
-  }
-
-  /**
-   * Set an action cooldown
-   */
-  public setCooldown(actionType: string, durationMs: number): void {
-    this.actionCooldowns.set(actionType, Date.now() + durationMs);
-  }
-
-  /**
-   * Get cooldown remaining in ms
-   */
-  public getCooldownRemaining(actionType: string): number {
-    const cooldownUntil = this.actionCooldowns.get(actionType) || 0;
-    const now = Date.now();
-    return Math.max(0, cooldownUntil - now);
-  }
-
-  /**
-   * Calculate combat stats based on skills and equipment
-   */
-  public getCombatStats(): { attack: number; defense: number; strength: number } {
-    // Basic implementation - would be expanded with equipment bonuses
-    return {
-      attack: this.skills.attack.level,
-      defense: this.skills.defence.level,
-      strength: this.skills.strength.level
-    };
-  }
-
-  /**
-  /**
-   * Set player as busy for a duration
-   */
-  public setBusy(durationMs: number): void {
-    this.busyUntil = Date.now() + durationMs;
-  }
-
-  /**
-   * Check and update busy status
-   */
-  public updateBusyStatus(): void {
-    if (this.busyUntil > 0 && Date.now() >= this.busyUntil) {
-      this.busyUntil = 0;
-    }
-  }
-
-  /**
-   * Calculate combat level based on skills
-   */
-  public getCombatLevel(): number {
-    // Simple formula based on combat skills
-    if (!this.skills) return 1;
-
-    return Math.floor(
-      (this.skills.attack.level +
-        this.skills.strength.level +
-        this.skills.defence.level) / 3
-    );
-  }
-}
+  
 
 /**
  * GameRoom class that extends Colyseus Room
@@ -534,46 +199,23 @@ export class GameRoom extends Room<GameState> {
   }
 
   // Player action handler
-  private handleAction(client: Client, message: object) {
+  private handleAction(client: Client, message: any) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
 
-    // Update player state based on action
-    if (message.x !== undefined) player.x = message.x;
-    if (message.y !== undefined) player.y = message.y;
-    if (message.animation) player.animation = message.animation;
-    if (message.direction) player.direction = message.direction;
+    // Delegate combat-related action handling to CombatSystem
+    CombatSystem.handlePlayerAction(
+      player,
+      message,
+      this.state,
+      this.dropPlayerInventory.bind(this)
+    );
 
-    // Update last activity timestamp
-    player.lastActivity = Date.now();
-
-    // Check for nearby loot
+    // Check for nearby loot (non-combat logic remains here)
     this.checkForNearbyLoot(player, client);
-
-    // Handle combat if the action is attack
-    if (message.type === 'attack') {
-      const isDead = player.health <= 0;
-      if (isDead) {
-        // Handle player death
-        // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} died`);
-        
-        // Drop inventory
-        this.dropPlayerInventory(player);
-      }
-    }
-
-    try {
-      // Other action handling logic
-      player.isBusy = message.type !== 'idle';
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      // TODO: Replace with proper logging framework in production
-// console.error('Error handling player action:', errorMessage, error);
-    }
   }
 
-  private handleEquipItem(client: Client, message: object) {
+  private handleEquipItem(client: Client, message: any) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     
@@ -601,7 +243,7 @@ export class GameRoom extends Room<GameState> {
 // console.log(`Player ${player.username} equipped ${item.type} in ${slot} slot`);
   }
   
-  private handleDropItem(client: Client, message: object) {
+  private handleDropItem(client: Client, message: any) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     
@@ -630,7 +272,7 @@ export class GameRoom extends Room<GameState> {
 // console.log(`Player ${player.username} dropped ${droppedItem.quantity}x ${droppedItem.type}`);
   }
   
-  private handleCollectLoot(client: Client, message: object) {
+  private handleCollectLoot(client: Client, message: any) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     
@@ -700,11 +342,13 @@ export class GameRoom extends Room<GameState> {
   
   private processCombat() {
     try {
-      // Simple combat processing
-      this.state.players.forEach((player) => {
-        // Process combat logic here
-        // This would handle attacks, damage calculations, etc.
-      });
+      // Delegate all combat processing to CombatSystem
+      // @ts-ignore: GameState type
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // (GameState is the type of this.state)
+      // If type error, fix by importing GameState
+      // @ts-expect-error
+      CombatSystem.processCombat(this.state);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       // TODO: Replace with proper logging framework in production

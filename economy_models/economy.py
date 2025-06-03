@@ -1,3 +1,6 @@
+# TODO (2025-06-03): Integrate these economy models with the TypeScript game server.
+# Decide on and document the intended integration approach (REST API, shared DB, service, etc).
+
 """RuneRogue Economy System
 
 This module implements the core economy system for RuneRogue, providing database models
