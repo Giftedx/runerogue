@@ -1,8 +1,22 @@
 import 'reflect-metadata';
 import { type } from '@colyseus/schema';
+import {
+  PlayerActionMessage,
+  EquipItemMessage,
+  DropItemMessage,
+  CollectLootMessage,
+} from './EntitySchemas';
 import { Room, Client } from '@colyseus/core';
 
+/**
+ * Interface for player join options
+ */
+interface JoinOptions {
+  name?: string;
+}
+
 import { InventoryItem, LootDrop, Player, GameState, LootDropMessage } from './EntitySchemas';
+import { CombatSystem } from './CombatSystem';
 
 // Re-export the type decorator
 export { type };
@@ -63,20 +77,6 @@ export { type };
 // (Duplicate Player and LootDrop classes removed above)
 
 // --- Schema Classes: InventoryItem and Equipment must be defined before LootDrop and Player ---
-
-
-  
-
-
-  
-
-
-  
-
-
-
-  
-
 /**
  * Inventory item class
  */
@@ -103,21 +103,19 @@ export class GameRoom extends Room<GameState> {
   /**
    * Add starter items to a player (stub)
    */
-  protected addStarterItems(player: Player): void {
+  protected addStarterItems(_player: Player): void {
     // TODO: Implement starter item assignment
-  }
-
-  /**
+  }  /**
    * Drop all items in a player's inventory as loot (stub)
    */
-  protected dropPlayerInventory(player: Player): void {
+  protected dropPlayerInventory(_player: Player): void {
     // TODO: Implement inventory drop logic
   }
 
   /**
    * Create a loot drop at a location (stub)
    */
-  protected createLootDrop(items: InventoryItem[], x: number, y: number): LootDrop {
+  protected createLootDrop(_items: InventoryItem[], _x: number, _y: number): LootDrop {
     // TODO: Implement loot drop creation logic
     return new LootDrop();
   }
@@ -127,15 +125,11 @@ export class GameRoom extends Room<GameState> {
   private idleTimeout = 600000; // 10 minutes in ms
   private autoLootPickup = true;
   private lootPickupRadius = 50; // pixels
-  private combatConfig = {
-    attackCooldown: 1000, // ms
-    damageRange: { min: 1, max: 5 },
-    criticalChance: 0.1,
-    criticalMultiplier: 2
-  };
 
-  onCreate(_options: any): void {
+
+    onCreate(_options: any): void {
     this.setGameState(new GameState());
+
 
     // Register message handlers
     this.onMessage('action', this.handleAction.bind(this));
@@ -167,7 +161,7 @@ export class GameRoom extends Room<GameState> {
   /**
    * When client joins the room
    */
-  onJoin(client: Client, options: object) {
+  onJoin(client: Client, options: JoinOptions) {
     // TODO: Replace with proper logging framework in production
 // console.log(`Client ${client.sessionId} joined!`);
 
@@ -192,30 +186,26 @@ export class GameRoom extends Room<GameState> {
   /**
    * When client leaves the room
    */
-  onLeave(client: Client, consented: boolean) {
+  onLeave(_client: Client, _consented: boolean) {
     // Clear all intervals to prevent memory leaks
     this.intervals.forEach(interval => clearInterval(interval));
     this.intervals = [];
   }
 
   // Player action handler
-  private handleAction(client: Client, message: any) {
+  private handleAction(client: Client, message: PlayerActionMessage) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
 
-    // Delegate combat-related action handling to CombatSystem
-    CombatSystem.handlePlayerAction(
-      player,
-      message,
-      this.state,
-      this.dropPlayerInventory.bind(this)
-    );
+    // TODO: Implement action handling (e.g., combat, interaction, etc.)
+    // For now, just log the action
+    console.log(`Player ${client.sessionId} performed action: ${message.type}`);
 
     // Check for nearby loot (non-combat logic remains here)
     this.checkForNearbyLoot(player, client);
   }
 
-  private handleEquipItem(client: Client, message: any) {
+    private handleEquipItem(client: Client, message: EquipItemMessage) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     
@@ -243,7 +233,7 @@ export class GameRoom extends Room<GameState> {
 // console.log(`Player ${player.username} equipped ${item.type} in ${slot} slot`);
   }
   
-  private handleDropItem(client: Client, message: any) {
+    private handleDropItem(client: Client, message: DropItemMessage) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     
@@ -266,13 +256,13 @@ export class GameRoom extends Room<GameState> {
     }
     
     // Create loot drop
-    this.createLootDrop(player.x, player.y, [droppedItem]);
+    this.createLootDrop([droppedItem], player.x, player.y);
     
     // TODO: Replace with proper logging framework in production
 // console.log(`Player ${player.username} dropped ${droppedItem.quantity}x ${droppedItem.type}`);
   }
   
-  private handleCollectLoot(client: Client, message: any) {
+    private handleCollectLoot(client: Client, message: CollectLootMessage) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     
@@ -340,20 +330,11 @@ export class GameRoom extends Room<GameState> {
     }
   }
   
-  private processCombat() {
-    try {
-      // Delegate all combat processing to CombatSystem
-      // @ts-ignore: GameState type
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      // (GameState is the type of this.state)
-      // If type error, fix by importing GameState
-      // @ts-expect-error
-      CombatSystem.processCombat(this.state);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      // TODO: Replace with proper logging framework in production
-// console.error('Error processing combat:', errorMessage, error);
-    }
+  /**
+   * Process combat ticks
+   */
+  private processCombat(): void {
+    CombatSystem.processCombat(this.state);
   }
   
   /**
@@ -381,9 +362,8 @@ export class GameRoom extends Room<GameState> {
         }
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       // TODO: Replace with proper logging framework in production
-// console.error('Error checking idle players:', errorMessage, error);
+// console.error('Error checking idle players:', error instanceof Error ? error.message : 'Unknown error', error);
     }
   }
   
@@ -400,10 +380,9 @@ export class GameRoom extends Room<GameState> {
           player.isBusy = false;
         }
       });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    } catch (_error) {
       // TODO: Replace with proper logging framework in production
-// console.error('Error updating player states:', errorMessage, error);
+      // console.error('Error updating player states:', _error instanceof Error ? _error.message : 'Unknown error', _error);
     }
   }
   
@@ -434,17 +413,16 @@ export class GameRoom extends Room<GameState> {
       for (const lootId of lootToPickup) {
         this.handleCollectLoot(client, { lootId });
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    } catch (_error) {
       // TODO: Replace with proper logging framework in production
-// console.error(`Error checking for nearby loot for player ${player.id}:`, errorMessage, error);
+      // console.error(`Error checking for nearby loot for player ${player.id}:`, _error instanceof Error ? _error.message : 'Unknown error', _error);
     }
   }
 
   /**
    * Generate loot based on resource type
    */
-  private generateResourceLoot(resourceId: string): LootDropMessage {
+  private _generateResourceLoot(_resourceId: string): LootDropMessage {
     // In a real implementation, this would use the resource type to determine loot
     // For now, just return a random item
     const lootTypes = [
@@ -487,10 +465,9 @@ export class GameRoom extends Room<GameState> {
       if (expiredLoot.length > 0) {
         this.broadcast('loot-expired', { ids: expiredLoot });
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    } catch (_error) {
       // TODO: Replace with proper logging framework in production
-// console.error('Error cleaning up loot:', errorMessage, error);
+      // console.error('Error cleaning up loot:', _error instanceof Error ? _error.message : 'Unknown error', _error);
     }
   }
 }

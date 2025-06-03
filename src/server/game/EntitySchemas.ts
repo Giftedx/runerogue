@@ -1,4 +1,28 @@
-import { Schema, ArraySchema, type } from '@colyseus/schema';
+import { Schema, ArraySchema, MapSchema, type } from '@colyseus/schema';
+
+// Interface for player action messages
+export interface PlayerActionMessage {
+  type: string; // e.g., 'attack', 'cast_spell', 'use_ability'
+  targetId?: string; // Optional: ID of the target entity
+  abilityId?: string; // Optional: ID of the ability/spell used
+}
+
+// Interface for equip item messages
+export interface EquipItemMessage {
+  itemIndex: number;
+  slot: 'weapon' | 'armor' | 'shield';
+}
+
+// Interface for drop item messages
+export interface DropItemMessage {
+  itemIndex: number;
+  quantity?: number;
+}
+
+// Interface for collect loot messages
+export interface CollectLootMessage {
+  lootId: string;
+}
 
 // Interface for loot drop messages
 export interface LootDropMessage {
@@ -6,7 +30,6 @@ export interface LootDropMessage {
   quantity: number;
   position: { x: number; y: number };
 }
-
 
 /**
  * Skill class for player skills
@@ -184,18 +207,15 @@ export class Player extends Schema {
   public specialEnergy: number = 100;
 
   // Active prayers (by name)
-  @type(["string"])
+  @type(['string'])
   public activePrayers = new ArraySchema<string>();
 
-  // Prayer timers (prayer name -> expiration timestamp)
-  // Not serialized, runtime only
-  private prayerTimers: Map<string, number> = new Map();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _prayerTimers: Map<string, number> = new Map();
 
-  // Special attack cooldowns (special name -> expiration timestamp)
-  // Not serialized, runtime only
-  private specialCooldowns: Map<string, number> = new Map();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _specialCooldowns: Map<string, number> = new Map();
 
-  // Private fields not serialized
   private actionCooldowns: Map<string, number> = new Map();
 
   constructor() {
