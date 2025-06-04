@@ -4,14 +4,14 @@ This document outlines a step-by-step plan for migrating from the original archi
 
 ## Migration Overview
 
-| Component | Original State | Target State | Priority | Complexity |
-|-----------|---------------|--------------|----------|------------|
-| Backend Server | Python/Flask | TypeScript/Node.js/Colyseus | High | High |
-| Web Scraping | Core Feature | Legacy/Optional | Low | Medium |
-| Economy System | Python-only | Python with TypeScript Integration | High | High |
-| API Documentation | Flask-based | Express/Colyseus-based | Medium | Medium |
-| Database Schema | SQLite, SQLAlchemy | PostgreSQL, TypeORM + SQLAlchemy | Medium | High |
-| Client Integration | Undocumented | Godot + Web Meta UI | High | Medium |
+| Component          | Original State     | Target State                       | Priority | Complexity |
+| ------------------ | ------------------ | ---------------------------------- | -------- | ---------- |
+| Backend Server     | Python/Flask       | TypeScript/Node.js/Colyseus        | High     | High       |
+| Web Scraping       | Core Feature       | Legacy/Optional                    | Low      | Medium     |
+| Economy System     | Python-only        | Python with TypeScript Integration | High     | High       |
+| API Documentation  | Flask-based        | Express/Colyseus-based             | Medium   | Medium     |
+| Database Schema    | SQLite, SQLAlchemy | PostgreSQL, TypeORM + SQLAlchemy   | Medium   | High       |
+| Client Integration | Undocumented       | Godot + Web Meta UI                | High     | Medium     |
 
 ## Phase 1: Stabilization (Weeks 1-2)
 
@@ -231,9 +231,11 @@ This document outlines a step-by-step plan for migrating from the original archi
 ### High-Risk Areas
 
 1. **Economy System Integration**: The integration between TypeScript and Python components for the economy system is complex and critical.
+
    - **Mitigation**: Start with a simple API, create extensive test cases, implement gradually
 
 2. **Database Migration**: Moving from the current database setup to a more integrated approach is risky.
+
    - **Mitigation**: Create comprehensive backup strategy, test migrations thoroughly, plan for rollback
 
 3. **Client Compatibility**: Ensuring all client applications work with the new architecture.
@@ -249,14 +251,14 @@ This document outlines a step-by-step plan for migrating from the original archi
 
 ## Timeline and Milestones
 
-| Milestone | Target Date | Deliverables |
-|-----------|------------|--------------|
-| Documentation Complete | Week 2 | Updated architecture documents |
-| Economy API Operational | Week 6 | Working API integration |
-| Client Integration Complete | Week 10 | Functional clients with all features |
-| Legacy Migration Plan | Week 14 | Clear path for legacy components |
-| Testing Complete | Week 16 | Comprehensive test coverage |
-| Project Complete | Week 18 | Final architecture operational |
+| Milestone                   | Target Date | Deliverables                         |
+| --------------------------- | ----------- | ------------------------------------ |
+| Documentation Complete      | Week 2      | Updated architecture documents       |
+| Economy API Operational     | Week 6      | Working API integration              |
+| Client Integration Complete | Week 10     | Functional clients with all features |
+| Legacy Migration Plan       | Week 14     | Clear path for legacy components     |
+| Testing Complete            | Week 16     | Comprehensive test coverage          |
+| Project Complete            | Week 18     | Final architecture operational       |
 
 ## Success Criteria
 

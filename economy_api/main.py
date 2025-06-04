@@ -9,6 +9,7 @@ As per ADR-001, this service implements the REST API integration approach.
 """
 
 import logging
+# AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import os
 import time
 from datetime import datetime

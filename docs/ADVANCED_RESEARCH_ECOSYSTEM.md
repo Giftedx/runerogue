@@ -3,6 +3,7 @@
 ## 🚀 **Vision: Multi-Modal Research Pipeline**
 
 Transform RuneRogue from basic web search to a sophisticated AI-powered research ecosystem capable of:
+
 - **Deep autonomous research** via GPT Researcher
 - **Advanced web scraping** with JavaScript rendering via Firecrawl
 - **Specialized OSRS prompts** via VS Code Copilot customization
@@ -13,6 +14,7 @@ Transform RuneRogue from basic web search to a sophisticated AI-powered research
 ## 📊 **Current State vs. Enhanced Capabilities**
 
 ### ✅ **Current: Basic Tavily Setup**
+
 - ✅ Hosted Tavily Expert MCP (ready for testing)
 - ✅ Local NPX Tavily MCP (needs API key)
 - ✅ Simple web search capabilities
@@ -20,6 +22,7 @@ Transform RuneRogue from basic web search to a sophisticated AI-powered research
 ### 🚀 **Enhanced: Multi-Modal Research Ecosystem**
 
 #### **1. GPT Researcher MCP Server**
+
 - **Purpose**: Deep, autonomous research with source validation
 - **Capabilities**:
   - `deep_research`: 30-40 second comprehensive research
@@ -29,6 +32,7 @@ Transform RuneRogue from basic web search to a sophisticated AI-powered research
 - **Perfect for**: OSRS economy analysis, market trend research, comprehensive game data gathering
 
 #### **2. Firecrawl MCP Server**
+
 - **Purpose**: Advanced web scraping with JavaScript rendering
 - **Capabilities**:
   - `fire_crawl_scrape`: Scrape dynamic web content
@@ -38,6 +42,7 @@ Transform RuneRogue from basic web search to a sophisticated AI-powered research
 - **Perfect for**: Grand Exchange data, OSRS Wiki scraping, dynamic gaming websites
 
 #### **3. Specialized OSRS Research Prompts**
+
 - **Purpose**: Domain-specific research templates
 - **Capabilities**:
   - Economy analysis prompts
@@ -50,11 +55,13 @@ Transform RuneRogue from basic web search to a sophisticated AI-powered research
 ## 🛠 **Implementation Roadmap**
 
 ### **Phase 1: Test Current Tavily Setup** ⏳
+
 - [x] **CURRENT PRIORITY**: Test hosted Tavily Expert (Issue #52)
 - [ ] Set up local Tavily NPX (optional comparison)
 - [ ] Validate basic search capabilities
 
 ### **Phase 2: Add GPT Researcher MCP** 🔬
+
 ```bash
 # Installation steps:
 git clone https://github.com/assafelovic/gpt-researcher.git
@@ -64,6 +71,7 @@ pip install -r requirements.txt
 ```
 
 **Configuration for RuneRogue:**
+
 ```json
 {
   "mcpServers": {
@@ -83,6 +91,7 @@ pip install -r requirements.txt
 ```
 
 ### **Phase 3: Add Firecrawl MCP** 🕷️
+
 ```bash
 # Installation options:
 # Option 1: Via Smithery (automatic)
@@ -95,6 +104,7 @@ npm install && npm run build
 ```
 
 ### **Phase 4: Create OSRS Research Prompts** 📝
+
 - Economy analysis templates
 - Market trend research guides
 - Grand Exchange monitoring prompts
@@ -105,15 +115,17 @@ npm install && npm run build
 ## 🎯 **Use Cases for RuneRogue**
 
 ### **1. Deep Economy Research**
+
 ```
 GPT Researcher: "Analyze current OSRS economy trends for Q2 2025, focusing on:
 - High-value item fluctuations
-- Seasonal trading patterns  
+- Seasonal trading patterns
 - Impact of recent game updates
 - Player population effects on market prices"
 ```
 
 ### **2. Advanced Web Scraping**
+
 ```
 Firecrawl: Extract structured Grand Exchange data:
 - Real-time price monitoring
@@ -123,6 +135,7 @@ Firecrawl: Extract structured Grand Exchange data:
 ```
 
 ### **3. Comprehensive Data Gathering**
+
 ```
 Combined Pipeline:
 1. GPT Researcher: Research market context
@@ -136,6 +149,7 @@ Combined Pipeline:
 ## 🔧 **Technical Architecture**
 
 ### **Multi-MCP Configuration**
+
 ```json
 {
   "mcpServers": {
@@ -155,6 +169,7 @@ Combined Pipeline:
 ```
 
 ### **Environment Variables Needed**
+
 ```bash
 # For GPT Researcher
 OPENAI_API_KEY=your-openai-key
@@ -172,17 +187,20 @@ TAVILY_API_KEY=your-tavily-key  # (same as above)
 ## 📈 **Expected Benefits**
 
 ### **Research Quality**
+
 - **Tavily**: Fast, basic web search
 - **GPT Researcher**: Deep, validated research with citations
 - **Firecrawl**: Structured data extraction from dynamic sites
 
 ### **OSRS-Specific Advantages**
+
 - **Real-time market data**: Scrape Grand Exchange directly
 - **Comprehensive analysis**: Research trends across multiple sources
 - **Automated reporting**: Generate detailed economy reports
 - **Data validation**: Cross-reference multiple sources
 
 ### **Development Workflow**
+
 - **Issue research**: Use GPT Researcher for comprehensive background
 - **Data gathering**: Use Firecrawl for structured information
 - **Quick facts**: Use Tavily for rapid verification
@@ -193,14 +211,17 @@ TAVILY_API_KEY=your-tavily-key  # (same as above)
 ## 🚦 **Current Status & Next Steps**
 
 ### **✅ Ready Now**
+
 - Hosted Tavily Expert MCP (test Issue #52)
 - Basic research capabilities available
 
 ### **🔄 In Progress**
+
 - Validating Tavily setup effectiveness
 - Planning GPT Researcher integration
 
 ### **📋 Next Actions**
+
 1. **Test hosted Tavily** (Issue #52) - restart GitHub Copilot first!
 2. **Evaluate results** and compare with basic search
 3. **Plan GPT Researcher setup** based on Tavily performance
@@ -212,12 +233,14 @@ TAVILY_API_KEY=your-tavily-key  # (same as above)
 ## 🎯 **Success Metrics**
 
 ### **Research Quality**
+
 - Comprehensive OSRS economy analysis
 - Real-time Grand Exchange monitoring
 - Predictive market insights
 - Automated trend detection
 
 ### **Technical Integration**
+
 - Multiple MCP servers working together
 - Seamless GitHub Copilot integration
 - Reliable data extraction pipelines

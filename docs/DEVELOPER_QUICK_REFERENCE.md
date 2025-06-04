@@ -18,16 +18,17 @@ The primary backend component for game functionality.
   - `src/server/game/GameRoom.ts` - Colyseus room implementation
   - `src/server/routes/auth.ts` - Authentication endpoints
 - **Development Workflow**:
+
   ```bash
   # Install dependencies
   npm install
-  
+
   # Start development server
   npm run dev
-  
+
   # Run tests
   npm test
-  
+
   # Build for production
   npm run build
   ```
@@ -42,10 +43,11 @@ AI agent integration server using FastAPI.
   - `agents/mcp/server.py` - MCP server implementation
   - `agents/mcp/tools.py` - Tool implementations
 - **Development Workflow**:
+
   ```bash
   # Install dependencies
   pip install -r requirements.txt
-  
+
   # Start MCP server
   python run_mcp_server.py
   ```
@@ -107,11 +109,11 @@ Original web scraping platform, partially integrated.
 
 ## Ports and Endpoints
 
-| Service | Default Port | Key Endpoints |
-|---------|--------------|--------------|
-| TypeScript Server | 3001 | `/auth/*`, `/health`, WebSocket |
-| MCP Server | 8000 | `/tools/*` |
-| Flask App | 5000 | `/`, `/scrape`, `/health` |
+| Service           | Default Port | Key Endpoints                   |
+| ----------------- | ------------ | ------------------------------- |
+| TypeScript Server | 3001         | `/auth/*`, `/health`, WebSocket |
+| MCP Server        | 8000         | `/tools/*`                      |
+| Flask App         | 5000         | `/`, `/scrape`, `/health`       |
 
 ## Common Development Tasks
 
@@ -127,10 +129,10 @@ Example of adding a player skill:
 ```typescript
 // In GameRoom.ts schema section
 class PlayerSkills extends Schema {
-  @type("number") mining: number = 1;
-  @type("number") fishing: number = 1;
+  @type('number') mining: number = 1;
+  @type('number') fishing: number = 1;
   // Add new skill
-  @type("number") woodcutting: number = 1;
+  @type('number') woodcutting: number = 1;
 }
 ```
 

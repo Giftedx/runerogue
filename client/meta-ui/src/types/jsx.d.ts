@@ -18,26 +18,44 @@ declare namespace JSX {
     blockquote: React.DetailedHTMLProps<React.BlockquoteHTMLAttributes<HTMLElement>, HTMLElement>;
     body: React.DetailedHTMLProps<React.HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>;
     br: React.DetailedHTMLProps<React.HTMLAttributes<HTMLBRElement>, HTMLBRElement>;
-    button: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
-    canvas: React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>;
+    button: React.DetailedHTMLProps<
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
+      HTMLButtonElement
+    >;
+    canvas: React.DetailedHTMLProps<
+      React.CanvasHTMLAttributes<HTMLCanvasElement>,
+      HTMLCanvasElement
+    >;
     caption: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     cite: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     code: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     col: React.DetailedHTMLProps<React.ColHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>;
-    colgroup: React.DetailedHTMLProps<React.ColgroupHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>;
+    colgroup: React.DetailedHTMLProps<
+      React.ColgroupHTMLAttributes<HTMLTableColElement>,
+      HTMLTableColElement
+    >;
     data: React.DetailedHTMLProps<React.DataHTMLAttributes<HTMLDataElement>, HTMLDataElement>;
-    datalist: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDataListElement>, HTMLDataListElement>;
+    datalist: React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLDataListElement>,
+      HTMLDataListElement
+    >;
     dd: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     del: React.DetailedHTMLProps<React.DelHTMLAttributes<HTMLElement>, HTMLElement>;
     details: React.DetailedHTMLProps<React.DetailsHTMLAttributes<HTMLElement>, HTMLElement>;
     dfn: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    dialog: React.DetailedHTMLProps<React.DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement>;
+    dialog: React.DetailedHTMLProps<
+      React.DialogHTMLAttributes<HTMLDialogElement>,
+      HTMLDialogElement
+    >;
     div: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
     dl: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDListElement>, HTMLDListElement>;
     dt: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     em: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     embed: React.DetailedHTMLProps<React.EmbedHTMLAttributes<HTMLEmbedElement>, HTMLEmbedElement>;
-    fieldset: React.DetailedHTMLProps<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, HTMLFieldSetElement>;
+    fieldset: React.DetailedHTMLProps<
+      React.FieldsetHTMLAttributes<HTMLFieldSetElement>,
+      HTMLFieldSetElement
+    >;
     figcaption: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     figure: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     footer: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
@@ -54,7 +72,10 @@ declare namespace JSX {
     hr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHRElement>, HTMLHRElement>;
     html: React.DetailedHTMLProps<React.HtmlHTMLAttributes<HTMLHtmlElement>, HTMLHtmlElement>;
     i: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    iframe: React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>;
+    iframe: React.DetailedHTMLProps<
+      React.IframeHTMLAttributes<HTMLIFrameElement>,
+      HTMLIFrameElement
+    >;
     img: React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>;
     input: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
     ins: React.DetailedHTMLProps<React.InsHTMLAttributes<HTMLModElement>, HTMLModElement>;
@@ -74,27 +95,48 @@ declare namespace JSX {
     nav: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     noindex: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     noscript: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    object: React.DetailedHTMLProps<React.ObjectHTMLAttributes<HTMLObjectElement>, HTMLObjectElement>;
+    object: React.DetailedHTMLProps<
+      React.ObjectHTMLAttributes<HTMLObjectElement>,
+      HTMLObjectElement
+    >;
     ol: React.DetailedHTMLProps<React.OlHTMLAttributes<HTMLOListElement>, HTMLOListElement>;
-    optgroup: React.DetailedHTMLProps<React.OptgroupHTMLAttributes<HTMLOptGroupElement>, HTMLOptGroupElement>;
-    option: React.DetailedHTMLProps<React.OptionHTMLAttributes<HTMLOptionElement>, HTMLOptionElement>;
+    optgroup: React.DetailedHTMLProps<
+      React.OptgroupHTMLAttributes<HTMLOptGroupElement>,
+      HTMLOptGroupElement
+    >;
+    option: React.DetailedHTMLProps<
+      React.OptionHTMLAttributes<HTMLOptionElement>,
+      HTMLOptionElement
+    >;
     output: React.DetailedHTMLProps<React.OutputHTMLAttributes<HTMLElement>, HTMLElement>;
     p: React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>;
     param: React.DetailedHTMLProps<React.ParamHTMLAttributes<HTMLParamElement>, HTMLParamElement>;
     picture: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     pre: React.DetailedHTMLProps<React.HTMLAttributes<HTMLPreElement>, HTMLPreElement>;
-    progress: React.DetailedHTMLProps<React.ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>;
+    progress: React.DetailedHTMLProps<
+      React.ProgressHTMLAttributes<HTMLProgressElement>,
+      HTMLProgressElement
+    >;
     q: React.DetailedHTMLProps<React.QuoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>;
     rp: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     rt: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     ruby: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     s: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     samp: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    script: React.DetailedHTMLProps<React.ScriptHTMLAttributes<HTMLScriptElement>, HTMLScriptElement>;
+    script: React.DetailedHTMLProps<
+      React.ScriptHTMLAttributes<HTMLScriptElement>,
+      HTMLScriptElement
+    >;
     section: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    select: React.DetailedHTMLProps<React.SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>;
+    select: React.DetailedHTMLProps<
+      React.SelectHTMLAttributes<HTMLSelectElement>,
+      HTMLSelectElement
+    >;
     small: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    source: React.DetailedHTMLProps<React.SourceHTMLAttributes<HTMLSourceElement>, HTMLSourceElement>;
+    source: React.DetailedHTMLProps<
+      React.SourceHTMLAttributes<HTMLSourceElement>,
+      HTMLSourceElement
+    >;
     span: React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
     strong: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     style: React.DetailedHTMLProps<React.StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>;
@@ -102,12 +144,30 @@ declare namespace JSX {
     summary: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     sup: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     table: React.DetailedHTMLProps<React.TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>;
-    tbody: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
-    td: React.DetailedHTMLProps<React.TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>;
-    textarea: React.DetailedHTMLProps<React.TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>;
-    tfoot: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
-    th: React.DetailedHTMLProps<React.ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement>;
-    thead: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+    tbody: React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLTableSectionElement>,
+      HTMLTableSectionElement
+    >;
+    td: React.DetailedHTMLProps<
+      React.TdHTMLAttributes<HTMLTableDataCellElement>,
+      HTMLTableDataCellElement
+    >;
+    textarea: React.DetailedHTMLProps<
+      React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+      HTMLTextAreaElement
+    >;
+    tfoot: React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLTableSectionElement>,
+      HTMLTableSectionElement
+    >;
+    th: React.DetailedHTMLProps<
+      React.ThHTMLAttributes<HTMLTableHeaderCellElement>,
+      HTMLTableHeaderCellElement
+    >;
+    thead: React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLTableSectionElement>,
+      HTMLTableSectionElement
+    >;
     time: React.DetailedHTMLProps<React.TimeHTMLAttributes<HTMLElement>, HTMLElement>;
     title: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTitleElement>, HTMLTitleElement>;
     tr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>;
@@ -117,8 +177,11 @@ declare namespace JSX {
     var: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     video: React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
     wbr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-    webview: React.DetailedHTMLProps<React.WebViewHTMLAttributes<HTMLWebViewElement>, HTMLWebViewElement>;
-    
+    webview: React.DetailedHTMLProps<
+      React.WebViewHTMLAttributes<HTMLWebViewElement>,
+      HTMLWebViewElement
+    >;
+
     // Custom elements used in the game UI
     'connection-status': any;
     'player-count': any;

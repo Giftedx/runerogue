@@ -7,9 +7,11 @@ This document serves as the comprehensive, authoritative full-stack development 
 ## Project Overview
 
 ### Vision Statement
+
 RuneScape Rogue Prime represents a sophisticated web scraping and data processing platform designed with enterprise-grade reliability, multi-fallback resilience patterns, and comprehensive automation capabilities.
 
 ### Core Objectives
+
 - Implement robust web scraping with intelligent fallback mechanisms
 - Deliver scalable Flask-based REST API architecture
 - Provide comprehensive configuration management system
@@ -21,6 +23,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
 ### System Components
 
 #### 1. Web Scraping Engine (`scraper.py`)
+
 - **Primary Pattern**: requests → BeautifulSoup → Playwright fallback chain
 - **Features**:
   - Multi-tier fallback resilience
@@ -30,6 +33,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
   - User-agent rotation support
 
 #### 2. Flask API Framework (`app.py`)
+
 - **Endpoints**:
   - `GET /` - Application metadata and status
   - `GET /config` - Configuration introspection
@@ -41,6 +45,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
   - Configuration-driven behavior
 
 #### 3. Configuration Management (`config.py`)
+
 - **Sources**: YAML files with environment variable overrides
 - **Capabilities**:
   - Runtime configuration updates
@@ -49,6 +54,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
   - Validation and type checking
 
 #### 4. Testing Framework (`tests/`)
+
 - **Coverage**: Unit tests with mocking capabilities
 - **Tools**: pytest, pytest-mock, pytest-cov
 - **Scope**: Complete component and integration testing
@@ -56,6 +62,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
 ### 3.6 Economy and Trading Systems
 
 #### Trading Engine (`trading.py`)
+
 - **Direct Trading**: Player-to-player item exchanges
 - **Features**:
   - Trade session management
@@ -65,6 +72,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
   - Real-time trade status updates
 
 #### Grand Exchange (`grand_exchange.py`)
+
 - **Market System**: Automated buy/sell order matching
 - **Features**:
   - Order placement and management
@@ -74,6 +82,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
   - Anti-manipulation safeguards
 
 #### Economy Models (`models/economy.py`)
+
 - **Data Structures**: Items, Players, Trades, Orders
 - **Features**:
   - SQLite persistence layer
@@ -85,6 +94,7 @@ RuneScape Rogue Prime represents a sophisticated web scraping and data processin
 ## Development Requirements
 
 ### Core Dependencies
+
 ```
 Flask>=2.0.0
 PyYAML>=6.0
@@ -97,6 +107,7 @@ SQLAlchemy>=1.4.0
 ```
 
 ### 4.4 Economy System Dependencies
+
 ```
 # Database and ORM
 SQLAlchemy>=1.4.0
@@ -112,6 +123,7 @@ celery>=5.2.0
 ```
 
 ### Development Dependencies
+
 ```
 flake8>=5.0.0
 pytest>=7.0.0
@@ -124,6 +136,7 @@ isort>=5.10.0
 ## Implementation Milestones
 
 ### Phase 1: Foundation (COMPLETED)
+
 - [x] Core scraping engine implementation
 - [x] Flask API framework setup
 - [x] Configuration management system
@@ -131,6 +144,7 @@ isort>=5.10.0
 - [x] Development environment setup
 
 ### Phase 2: Enhancement (IN PROGRESS)
+
 - [ ] Advanced error handling and recovery
 - [ ] Performance optimization and caching
 - [ ] Extended API endpoint functionality
@@ -138,6 +152,7 @@ isort>=5.10.0
 - [ ] Security hardening measures
 
 ### Phase 3: Production (PLANNED)
+
 - [ ] Load balancing and scaling architecture
 - [ ] Database integration for persistence
 - [ ] Advanced analytics and reporting
@@ -145,6 +160,7 @@ isort>=5.10.0
 - [ ] Full production deployment automation
 
 ### M8: Trading, Grand Exchange, and Player Economy (CURRENT)
+
 - [ ] Player-to-player direct trading system
 - [ ] Grand Exchange backend with offer matching
 - [ ] Economy data models and persistence
@@ -157,12 +173,14 @@ isort>=5.10.0
 ## Quality Assurance Standards
 
 ### Code Quality Requirements
+
 - **Linting**: flake8 compliance (max line length: 79)
 - **Testing**: Minimum 90% code coverage
 - **Documentation**: Comprehensive docstrings and API docs
 - **Type Hints**: Full typing support for Python 3.8+
 
 ### Testing Protocols
+
 ```bash
 # Comprehensive test execution
 pytest tests/ --cov=. --cov-report=term-missing
@@ -177,6 +195,7 @@ mypy . --ignore-missing-imports
 ## Configuration Specifications
 
 ### Environment Variables
+
 ```bash
 DEBUG=false              # Development mode toggle
 DRY_RUN=true            # Testing mode without external requests
@@ -187,18 +206,19 @@ CONFIG_FILE=config/config.yml  # Configuration file path
 ```
 
 ### YAML Configuration Structure
+
 ```yaml
 # config/config.yml
 debug: false
 dry_run: false
-log_level: "INFO"
+log_level: 'INFO'
 timeout: 30
 port: 5000
 
 # Scraping configuration
 scraper:
   user_agents:
-    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    - 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
   retry_attempts: 3
   backoff_factor: 2
 
@@ -212,13 +232,16 @@ api:
 ## Operational Directives
 
 ### Deployment Requirements
+
 1. **Environment Preparation**
+
    - Python 3.8+ runtime
    - Virtual environment isolation
    - Dependency installation via requirements.txt
    - Playwright browser installation
 
 2. **Service Configuration**
+
    - Environment variable setup
    - Configuration file deployment
    - Log directory creation
@@ -231,6 +254,7 @@ api:
    - Error rate tracking
 
 ### Security Protocols
+
 - Input validation and sanitization
 - Rate limiting implementation
 - Secure configuration management
@@ -242,8 +266,10 @@ api:
 ### Endpoint Specifications
 
 #### GET /
+
 **Purpose**: Application metadata retrieval
 **Response**:
+
 ```json
 {
   "message": "RuneRogue API",
@@ -257,8 +283,10 @@ api:
 ```
 
 #### POST /scrape
+
 **Purpose**: URL content extraction with fallback handling
 **Request**:
+
 ```json
 {
   "url": "https://example.com",
@@ -270,6 +298,7 @@ api:
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -283,12 +312,14 @@ api:
 ## Performance Specifications
 
 ### Scalability Targets
+
 - **Concurrent Requests**: 100+ simultaneous scraping operations
 - **Response Time**: <2 seconds for standard web pages
 - **Throughput**: 1000+ requests per hour sustained
 - **Memory Usage**: <512MB per worker process
 
 ### Reliability Metrics
+
 - **Uptime**: 99.9% availability target
 - **Error Rate**: <1% failed requests
 - **Recovery Time**: <30 seconds for fallback activation
@@ -297,11 +328,14 @@ api:
 ## Risk Management
 
 ### Technical Risks
+
 1. **External Service Dependencies**
+
    - Mitigation: Multi-fallback architecture
    - Monitoring: Health check validation
 
 2. **Rate Limiting and Blocking**
+
    - Mitigation: User-agent rotation, request throttling
    - Monitoring: Success rate tracking
 
@@ -310,7 +344,9 @@ api:
    - Monitoring: Memory and CPU usage alerts
 
 ### Operational Risks
+
 1. **Configuration Drift**
+
    - Mitigation: Version-controlled configuration
    - Monitoring: Configuration validation checks
 
@@ -321,12 +357,14 @@ api:
 ## Compliance and Standards
 
 ### Development Standards
+
 - **Code Style**: PEP 8 compliance
 - **Documentation**: Google-style docstrings
 - **Version Control**: Git with conventional commits
 - **Testing**: Test-driven development practices
 
 ### Security Standards
+
 - **Data Protection**: No sensitive data logging
 - **Access Control**: Role-based permissions
 - **Audit Trail**: Comprehensive request logging

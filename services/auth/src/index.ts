@@ -14,10 +14,12 @@ const PORT = process.env.PORT || 3001;
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -64,7 +66,7 @@ async function startServer() {
   try {
     // Initialize database
     await initializeDatabase();
-    
+
     app.listen(PORT, () => {
       console.log(`Auth service listening on port ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

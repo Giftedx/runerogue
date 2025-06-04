@@ -3,6 +3,7 @@
 Thank you for your interest in contributing to RuneRogue! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
+
 - [Development Environment Setup](#development-environment-setup)
 - [Project Structure](#project-structure)
 - [Coding Standards](#coding-standards)
@@ -14,6 +15,7 @@ Thank you for your interest in contributing to RuneRogue! This document provides
 ## Development Environment Setup
 
 ### Prerequisites
+
 - Python 3.9+
 - Node.js 16+
 - Docker and Docker Compose
@@ -23,12 +25,14 @@ Thank you for your interest in contributing to RuneRogue! This document provides
 ### Setting Up Your Development Environment
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Giftedx/runerogue.git
    cd runerogue
    ```
 
 2. **Set up Python environment**
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -36,22 +40,25 @@ Thank you for your interest in contributing to RuneRogue! This document provides
    ```
 
 3. **Set up Node.js environment**
+
    ```bash
    cd client
    npm install
    ```
 
 4. **Configure environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 5. **Start the development servers**
+
    ```bash
    # Backend
    python app.py
-   
+
    # Frontend
    cd client
    npm run dev
@@ -75,12 +82,14 @@ Thank you for your interest in contributing to RuneRogue! This document provides
 ## Coding Standards
 
 ### Python
+
 - Follow PEP 8 style guide
 - Use type hints
 - Write comprehensive docstrings in Google style format
 - Maximum line length of 88 characters (Black formatter)
 
 ### JavaScript/TypeScript
+
 - Follow ESLint configuration
 - Use TypeScript for type safety
 - Follow project's component structure
@@ -92,6 +101,7 @@ Thank you for your interest in contributing to RuneRogue! This document provides
 - Aim for at least 80% test coverage
 
 To run tests:
+
 ```bash
 # Run all tests
 pytest
@@ -117,17 +127,20 @@ pytest tests/test_specific_module.py
 RuneRogue uses GitHub Copilot Agents for automated task management. To interact with these agents:
 
 1. **Creating Tasks for Agents**
+
    - Create a GitHub Issue with a clear title and description
    - Use appropriate labels for categorization
    - Assign the issue to `@github/copilot`
 
 2. **Task Format**
+
    - Provide a clear description of the task
    - Include expected behavior/output
    - Reference relevant code files
    - Specify any dependencies or constraints
 
 3. **Effective Usage Patterns**
+
    - Break down large tasks into smaller, focused issues
    - Be specific and detailed in your prompts
    - Include example inputs/outputs when relevant

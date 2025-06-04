@@ -7,13 +7,14 @@ It uses the AutoGen framework to create a multi-agent system that can retrieve d
 and use it to design game mechanics, zones, items, and NPCs for the RuneRogue game.
 
 The system consists of three main agents:
+
 1. OSRS Data Agent: Retrieves data from the OSRS Wiki
 2. Game Design Agent: Creates game designs based on the retrieved data
 3. User Proxy Agent: Executes tool calls and initiates conversations
 
 Example usage:
-    from agents.osrs_agent_system import manager, user_proxy
-    
+from agents.osrs_agent_system import manager, user_proxy
+
     # Start a conversation with a design task
     user_proxy.initiate_chat(manager, message="Design a new boss based on the Abyssal Sire")
 
@@ -64,4 +65,3 @@ Type: `MagicMock`
 ### `user_proxy`
 
 Type: `MagicMock`
-

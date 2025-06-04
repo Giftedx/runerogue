@@ -3,6 +3,7 @@
 This document provides comprehensive guidance on how to use GitHub Copilot Agents within the RuneRogue project.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Setting Up GitHub Copilot Agents](#setting-up-github-copilot-agents)
 - [Task Assignment Process](#task-assignment-process)
@@ -14,6 +15,7 @@ This document provides comprehensive guidance on how to use GitHub Copilot Agent
 ## Overview
 
 GitHub Copilot Agents is an AI assistant that helps with:
+
 1. Code generation and completion
 2. Debugging assistance
 3. Code review and improvements
@@ -25,11 +27,13 @@ The agents are triggered via GitHub Issues and require explicit task assignment 
 ## Setting Up GitHub Copilot Agents
 
 ### Prerequisites
+
 - GitHub account with access to the repository
 - Proper repository permissions
 - GitHub Copilot subscription
 
 ### Configuration Steps
+
 1. Ensure the `.github/copilot` directory exists with proper configuration
 2. Copy `mcp_config.example.json` to `mcp_config.json` and update with your tokens
 3. Set up environment variables in your repository secrets
@@ -37,17 +41,20 @@ The agents are triggered via GitHub Issues and require explicit task assignment 
 ## Task Assignment Process
 
 ### Creating Tasks
+
 - Create GitHub Issues with clear titles
 - Use labels for categorization
 - Assign to `@github/copilot`
 
 ### Task Format
+
 - Clear description of the task
 - Expected behavior/output
 - Relevant code references
 - Dependencies/constraints
 
 ### Task Management
+
 - Track progress through issue comments
 - Use GitHub Projects for organization
 - Close issues when complete
@@ -55,16 +62,19 @@ The agents are triggered via GitHub Issues and require explicit task assignment 
 ## Effective Usage Patterns
 
 ### Task Structure
+
 - Break down large tasks into smaller, focused issues
 - Provide clear acceptance criteria
 - Include relevant code context
 
 ### Prompt Engineering
+
 - Be specific and detailed
 - Include example inputs/outputs when relevant
 - Specify the programming language and frameworks
 
 ### Context Provision
+
 - Reference specific files/functions
 - Include error messages for debugging
 - Provide sample data formats
@@ -74,21 +84,25 @@ The agents are triggered via GitHub Issues and require explicit task assignment 
 MCP (Model Control Plane) allows extending agent capabilities through custom tools and configurations.
 
 ### Custom Tools
+
 - Extend agent capabilities
 - Add repository-specific commands
 - Integrate with internal systems
 
 ### Configuration
+
 - Define in `mcp_config.json`
 - Set up environment variables
 - Configure API endpoints
 
 ### Security
+
 - Manage API keys securely
 - Set access controls
 - Monitor usage
 
 ### Example Configuration
+
 ```json
 {
   "mcpServers": {
@@ -115,21 +129,25 @@ MCP (Model Control Plane) allows extending agent capabilities through custom too
 ## Common Issues and Solutions
 
 ### Agent Not Responding
+
 - Verify `@github/copilot` is assigned
 - Check repository permissions
 - Ensure issue is properly formatted
 
 ### Performance Issues
+
 - Break down complex tasks
 - Provide more context if needed
 - Check for rate limits
 
 ### Unexpected Outputs
+
 - Review and refine prompts
 - Add more specific constraints
 - Provide example outputs
 
 ### Integration Problems
+
 - Verify MCP configuration
 - Check environment setup
 - Review logs for errors
@@ -167,9 +185,8 @@ jobs:
   assign-to-copilot:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'copilot') || contains(github.event.issue.labels.*.name, 'ai-task')
-    
-    steps:
 
+    steps:
       - name: Assign to GitHub Copilot
         uses: actions/github-script@v6
         with:
@@ -223,13 +240,14 @@ jobs:
   process-agent-task:
     if: github.event.assignee.login == 'github-copilot[bot]'
     runs-on: [self-hosted, Windows, X64]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       # Additional steps for the specific task
 ```
 
 For more detailed information about self-hosted runners and GitHub Actions, see [GITHUB_ACTIONS_RUNNERS.md](./GITHUB_ACTIONS_RUNNERS.md).
+
 - GitHub Actions can be used by the Copilot Agent to perform its work once triggered, but not to initiate the trigger itself

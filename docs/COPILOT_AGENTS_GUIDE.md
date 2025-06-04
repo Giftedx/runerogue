@@ -230,7 +230,7 @@ jobs:
               `,
               labels: ['copilot', 'documentation']
             });
-            
+
             // Assign to GitHub Copilot
             await github.rest.issues.addAssignees({
               owner: context.repo.owner,
@@ -294,12 +294,15 @@ Here's a complete example of using GitHub Copilot Agents to generate documentati
 title: [AGENT TASK] Generate OSRS Agent System Documentation
 
 ## Task Type
+
 - [x] Documentation - Generate or update documentation
 
 ## Priority
+
 - [x] Medium
 
 ## Description
+
 Generate comprehensive documentation for the OSRS agent system module. The documentation should include:
 
 1. Overview of the module's purpose and architecture
@@ -309,6 +312,7 @@ Generate comprehensive documentation for the OSRS agent system module. The docum
 5. API reference for public functions and classes
 
 ## Relevant Code References
+
 - agents/osrs_agent_system.py
 - economy_models/osrs_parser.py (for the fetch_wiki_data function)
 
@@ -320,6 +324,7 @@ Generate comprehensive documentation for the OSRS agent system module. The docum
 - Output Format: markdown
 
 ## Acceptance Criteria
+
 - [ ] Documentation includes overview of module purpose
 - [ ] All agents are documented with their roles
 - [ ] Agent communication flow is explained
@@ -327,6 +332,7 @@ Generate comprehensive documentation for the OSRS agent system module. The docum
 - [ ] API reference is complete
 
 ## Environment
+
 - [x] Development
 ```
 

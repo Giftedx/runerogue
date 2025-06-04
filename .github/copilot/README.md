@@ -23,9 +23,11 @@ To ensure that GitHub Copilot Agent works properly with your repository, you nee
 ### 1. Use the GitHub Actions workflow
 
 The repository includes a consolidated workflow file that handles GitHub Copilot Agent assignment:
+
 - `/.github/workflows/github-copilot-assignment.yml`
 
 This workflow is triggered when:
+
 - A new issue is created with `copilot` or `ai-task` label
 - An existing issue gets one of these labels added
 - The workflow is manually triggered for a specific issue
@@ -44,6 +46,7 @@ To create a task for GitHub Copilot Agent:
 4. If assignment is successful, GitHub Copilot Agent will respond to the issue
 
 You can also use the create-copilot-task workflow to create and assign issues in one step:
+
 ```
 Workflow: create-copilot-task
 Inputs:
@@ -59,17 +62,22 @@ Inputs:
 If GitHub Copilot Agent isn't being assigned properly:
 
 ### Check GitHub Copilot Agent activation
+
 - Confirm that GitHub Copilot Agent is enabled for your organization
 - Verify that it has access to this repository
 
 ### Manual assignment
+
 If automatic assignment fails, you can:
+
 1. Go to the issue
 2. Click on the gear icon in the "Assignees" section
 3. Type "github-copilot" and select the bot user
 
 ### Manual workflow trigger
+
 You can manually trigger the assignment workflow:
+
 1. Go to the "Actions" tab in GitHub
 2. Select "GitHub Copilot Assignment" workflow
 3. Click "Run workflow"
@@ -78,7 +86,7 @@ You can manually trigger the assignment workflow:
 
 ## Correct Assignee Format
 
-The key to successful assignment is using the correct format for the GitHub Copilot SWE Agent. 
+The key to successful assignment is using the correct format for the GitHub Copilot SWE Agent.
 In GitHub API calls and GitHub Actions workflows, the correct format is:
 
 ```yaml
@@ -90,5 +98,6 @@ Not `github-copilot[bot]`, `@github/copilot` or other variations.
 ## Additional Resources
 
 For more information about GitHub Copilot Agent integration, see the following documents:
+
 - [GitHub Copilot Agents Integration Guide](/docs/GITHUB_COPILOT_AGENTS.md)
 - [AI-Managed Issue Creation System](/docs/AI_MANAGED_ISSUES.md)

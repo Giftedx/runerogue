@@ -91,16 +91,16 @@ jobs:
     # Only run if assigned to GitHub Copilot
     if: github.event.assignee.login == 'github-copilot[bot]'
     runs-on: [self-hosted, Windows, X64]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Set up environment
         run: |
           # Setup environment for the agent task
           echo "Setting up environment for Copilot Agent task"
-      
+
       # Additional steps for the specific task type
 ```
 

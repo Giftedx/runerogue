@@ -14,17 +14,20 @@ A Node.js/TypeScript JWT-based authentication microservice for RuneRogue.
 ## Quick Start
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Set up environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with your database and JWT configuration
 ```
 
 3. Start the service:
+
 ```bash
 # Development
 npm run dev
@@ -67,6 +70,7 @@ See `.env.example` for required environment variables.
 ## Database Schema
 
 The service automatically creates the following tables:
+
 - `users` - User accounts
 - `refresh_tokens` - JWT refresh tokens
 

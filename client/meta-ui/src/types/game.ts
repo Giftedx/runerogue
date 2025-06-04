@@ -5,21 +5,46 @@
 export namespace GameTypes {
   /** Player skill types available in the game */
   export type SkillType = 'attack' | 'strength' | 'defence' | 'mining' | 'woodcutting' | 'fishing';
-  
+
   /** Combat styles affecting XP distribution */
   export type CombatStyle = 'accurate' | 'aggressive' | 'defensive';
-  
+
   /** Available biome types for procedural generation */
   export type BiomeType = 'lumbridge' | 'varrock' | 'wilderness';
-  
+
   /** Monster types per biome */
-  export type MonsterType = 'goblin' | 'cow' | 'chicken' | 'guard' | 'thief' | 'rat' | 'skeleton' | 'spider' | 'demon';
-  
+  export type MonsterType =
+    | 'goblin'
+    | 'cow'
+    | 'chicken'
+    | 'guard'
+    | 'thief'
+    | 'rat'
+    | 'skeleton'
+    | 'spider'
+    | 'demon';
+
   /** Resource types for gathering */
-  export type ResourceType = 'tree' | 'oak_tree' | 'rock' | 'iron_rock' | 'rune_rock' | 'fishing_spot' | 'fountain' | 'lava';
-  
+  export type ResourceType =
+    | 'tree'
+    | 'oak_tree'
+    | 'rock'
+    | 'iron_rock'
+    | 'rune_rock'
+    | 'fishing_spot'
+    | 'fountain'
+    | 'lava';
+
   /** Item types in the game */
-  export type ItemType = 'logs' | 'oak_logs' | 'copper_ore' | 'iron_ore' | 'raw_shrimp' | 'bones' | 'bronze_sword' | 'wooden_shield';
+  export type ItemType =
+    | 'logs'
+    | 'oak_logs'
+    | 'copper_ore'
+    | 'iron_ore'
+    | 'raw_shrimp'
+    | 'bones'
+    | 'bronze_sword'
+    | 'wooden_shield';
 
   /** Player skill data structure */
   export interface Skill {

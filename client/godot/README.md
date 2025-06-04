@@ -12,16 +12,19 @@ This directory contains the Godot Engine 4.x client for the RuneRogue browser ga
 ### Development Workflow
 
 1. **Install Godot Engine 4.3+**
+
    - Download from [https://godotengine.org/download](https://godotengine.org/download)
    - Or use package manager: `sudo snap install godot-4`
 
 2. **Clone and Setup**
+
    ```bash
    git clone https://github.com/Giftedx/runerogue.git
    cd runerogue/client/godot
    ```
 
 3. **Open in Godot**
+
    - Launch Godot Engine
    - Click "Import" and select the `client/godot` directory
    - Open the project
@@ -78,6 +81,7 @@ godot --headless --export-release "Web" builds/web/index.html
 ### CI/CD Build
 
 The project automatically builds on CI/CD pipeline:
+
 - Builds are triggered on every commit
 - Web builds are uploaded as artifacts
 - Available in GitHub Actions artifacts
@@ -87,7 +91,7 @@ The project automatically builds on CI/CD pipeline:
 Assets are managed using Git LFS for optimal repository performance:
 
 - **Images**: `.png`, `.jpg`, `.jpeg`, `.webp`
-- **Audio**: `.ogg`, `.wav`, `.mp3`  
+- **Audio**: `.ogg`, `.wav`, `.mp3`
 - **Fonts**: `.ttf`, `.otf`, `.woff`, `.woff2`
 
 ### Adding New Assets
@@ -99,19 +103,23 @@ Assets are managed using Git LFS for optimal repository performance:
 ## Scene Architecture
 
 ### Main Scene (`main.tscn`)
+
 - Entry point for the application
 - Manages scene transitions
 - Contains scene container and persistent HUD
 
 ### Main Menu (`main_menu.tscn`)
+
 - Start screen with navigation buttons
 - Handles game start, options, quit
 
 ### Game Scene (`game_scene.tscn`)
+
 - Main gameplay area
 - Contains player spawn point and game world
 
 ### HUD (`hud.tscn`)
+
 - Persistent UI overlay
 - Shows health, score, menu access
 

@@ -1,6 +1,8 @@
 """
 Direct Player-to-Player Trading System
 
+# AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
+
 Handles direct trade sessions between players with validation,
 anti-fraud protection, and audit logging.
 """

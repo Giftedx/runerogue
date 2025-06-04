@@ -1,0 +1,1385 @@
+openapi: 3.0.0
+info:
+  title: RuneRogue Game Server API
+  version: 1.0.0
+  description: API documentation for the RuneRogue TypeScript game server, Flask Legacy Backend, and Economy API.
+servers:
+  - url: http://localhost:3001
+    description: Development server
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Checks the health and status of the server and its integrated services (database, Redis, economy).
+      responses:
+        '200':
+          description: Server is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2023-10-27T10:00:00Z"
+                  environment:
+                    type: string
+                    example: development
+                  version:
+                    type: string
+                    example: 0.1.0
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        example: connected
+                      redis:
+                        type: string
+                        example: connected
+                      economy:
+                        type: string
+                        example: healthy
+        '503':
+          description: Server is degraded or unhealthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: degraded
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2023-10-27T10:00:00Z"
+                  message:
+                    type: string
+                    example: Error checking service health
+
+  /health/detailed:
+    get:
+      summary: Detailed Health Check
+      description: Provides a comprehensive health check with performance metrics and health scoring from the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Detailed health information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: integer
+                  health_score:
+                    type: object
+                    properties:
+                      overall:
+                        type: number
+                      components:
+                        type: object
+                      trend:
+                        type: string
+                      alerts:
+                        type: array
+                        items:
+                          type: string
+                  performance:
+                    type: object
+                    properties:
+                      baseline_status:
+                        type: string
+                      current_response_time_p95:
+                        type: number
+                      current_error_rate:
+                        type: number
+                      regression_check:
+                        type: object
+                  self_building:
+                    type: object
+                    properties:
+                      milestone:
+                        type: string
+                      enabled:
+                        type: boolean
+                      last_improvement:
+                        type: string
+                        nullable: true
+                      health_monitoring:
+                        type: string
+
+  /config:
+    get:
+      summary: Get Configuration
+      description: Returns the current Flask application configuration.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with configuration details.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+  /scrape:
+    post:
+      summary: Scrape URL
+      description: Scrapes a URL using a multi-fallback pattern.
+      tags:
+        - Flask Legacy Backend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  example: https://www.runerogue.com
+      responses:
+        '200':
+          description: Successful scraping response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  url:
+                    type: string
+                  content_length:
+                    type: integer
+                  dry_run:
+                    type: boolean
+        '400':
+          description: Bad Request, URL is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error, scraping failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/discord:
+    get:
+      summary: Redirect to Discord OAuth2
+      description: Redirects the user to the Discord OAuth2 authorization page to initiate the authentication flow.
+      responses:
+        '302':
+          description: Redirects to Discord authorization URL.
+
+  /auth/discord/callback:
+    get:
+      summary: Discord OAuth2 Callback
+      description: Exchanges the authorization code for an access token and user information, then redirects to the frontend with a JWT.
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: The authorization code received from Discord.
+          required: true
+        - in: query
+          name: error
+          schema:
+            type: string
+          description: Error message from Discord, if authentication failed.
+        - in: query
+          name: error_description
+          schema:
+            type: string
+          description: Detailed error description from Discord.
+      responses:
+        '302':
+          description: Redirects to the frontend with a JWT token.
+        '400':
+          description: Bad request, e.g., no code provided.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No code provided
+        '500':
+          description: Internal server error, e.g., failed to get access token or user info.
+
+  /auth/me:
+    get:
+      summary: Get Current User
+      description: Retrieves the profile information of the currently authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456789012345678"
+                  username:
+                    type: string
+                    example: "TestUser"
+                  avatar:
+                    type: string
+                    nullable: true
+                    example: "abcdef1234567890"
+                  discriminator:
+                    type: string
+                    example: "1234"
+        '401':
+          description: Unauthorized, if no token is provided or the token is invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Not authenticated
+
+  /colyseus:
+    get:
+      summary: Colyseus Monitor
+      description: Provides access to the Colyseus monitor for inspecting game room and client activity. Protected in production environments.
+      responses:
+        '200':
+          description: Successfully accessed Colyseus monitor.
+        '401':
+          description: Unauthorized. Access denied.
+        '403':
+          description: Forbidden. Access to monitor is restricted.
+
+  /players:
+    get:
+      summary: Get All Players
+      description: Retrieves a list of all players in the economy system.
+      tags:
+        - Economy API
+      responses:
+        '200':
+          description: A list of players.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "player123"
+                    username:
+                      type: string
+                      example: "PlayerOne"
+                    balance:
+                      type: number
+                      format: float
+                      example: 1000.50
+
+  /items:
+    get:
+      summary: Get All Items
+      description: Retrieves a list of all items in the game's economy.
+      tags:
+        - Economy API
+      responses:
+        '200':
+          description: A list of items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "item1"
+                    name:
+                      type: string
+                      example: "Wooden Sword"
+                    description:
+                      type: string
+                      example: "A basic wooden sword."
+                    is_tradeable:
+                      type: boolean
+                      example: true
+                    is_stackable:
+                      type: boolean
+                      example: false
+                    base_value:
+                      type: number
+                      format: float
+                      example: 10.00
+
+  /trades:
+    post:
+      summary: Create a New Trade
+      description: Initiates a new player-to-player trade.
+      tags:
+        - Economy API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                initiatorPlayerId:
+                  type: string
+                  description: The ID of the player initiating the trade.
+                targetPlayerId:
+                  type: string
+                  description: The ID of the player being traded with.
+                offeredItems:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      itemId:
+                        type: string
+                      quantity:
+                        type: integer
+                requestedItems:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      itemId:
+                        type: string
+                      quantity:
+                        type: integer
+      responses:
+        '200':
+          description: Trade successfully initiated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tradeId:
+                    type: string
+                    example: "trade123"
+                  status:
+                    type: string
+                    example: "pending"
+        '400':
+          description: Invalid trade request.
+
+  /grand-exchange/offers:
+    get:
+      summary: Get Grand Exchange Offers
+      description: Retrieves a list of all active Grand Exchange buy and sell offers.
+      tags:
+        - Economy API
+      responses:
+        '200':
+          description: A list of Grand Exchange offers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    offerId:
+                      type: string
+                      example: "ge_offer_123"
+                    playerId:
+                      type: string
+                      example: "player123"
+                    itemId:
+                      type: string
+                      example: "item456"
+                    type:
+                      type: string
+                      enum: ["buy", "sell"]
+                      example: "buy"
+                    quantity:
+                      type: integer
+                      example: 100
+                    pricePerItem:
+                      type: number
+                      format: float
+                      example: 5.50
+                    status:
+                      type: string
+                      enum: ["active", "completed", "cancelled"]
+                      example: "active"
+    post:
+      summary: Create Grand Exchange Offer
+      description: Creates a new Grand Exchange buy or sell offer.
+      tags:
+        - Economy API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playerId:
+                  type: string
+                  description: The ID of the player creating the offer.
+                itemId:
+                  type: string
+                  description: The ID of the item being offered.
+                type:
+                  type: string
+                  enum: ["buy", "sell"]
+                  description: The type of offer (buy or sell).
+                quantity:
+                  type: integer
+                  description: The quantity of the item.
+                pricePerItem:
+                  type: number
+                  format: float
+                  description: The price per item.
+      responses:
+        '200':
+          description: Grand Exchange offer successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offerId:
+                    type: string
+                    example: "ge_offer_456"
+                  status:
+                    type: string
+                    example: "active"
+        '400':
+          description: Invalid Grand Exchange offer request.
+
+  /items/{itemId}/price-history:
+    get:
+      summary: Get Item Price History
+      description: Retrieves the historical price data for a specific item.
+      tags:
+        - Economy API
+      parameters:
+        - in: path
+          name: itemId
+          schema:
+            type: string
+          required: true
+          description: The ID of the item to retrieve price history for.
+      responses:
+        '200':
+          description: Historical price data for the item.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                      example: "2023-10-27T10:00:00Z"
+                    avgPrice:
+                      type: number
+                      format: float
+                      example: 12.50
+                    minPrice:
+                      type: number
+                      format: float
+                      example: 10.00
+                    maxPrice:
+                      type: number
+                      format: float
+                      example: 15.00
+        '404':
+          description: Item not found.
+
+  /metrics:
+    get:
+      summary: Prometheus Metrics
+      description: Provides Prometheus-style metrics for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with Prometheus metrics.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '# HELP flask_http_request_duration_seconds Duration of HTTP requests in seconds.
+# TYPE flask_http_request_duration_seconds histogram
+flask_http_request_duration_seconds_bucket{le="0.1"} 0.0
+'
+
+  /performance/baseline:
+    get:
+      summary: Get Performance Baseline
+      description: Retrieves the current performance baseline for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with performance baseline details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  baseline_established:
+                    type: boolean
+                  p95_latency:
+                    type: number
+                    nullable: true
+                  error_rate:
+                    type: number
+                    nullable: true
+                  timestamp:
+                    type: integer
+                    nullable: true
+    post:
+      summary: Set Performance Baseline
+      description: Sets or updates the performance baseline for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                p95_latency:
+                  type: number
+                  description: Optional. The P95 latency to set as baseline.
+                error_rate:
+                  type: number
+                  description: Optional. The error rate to set as baseline.
+      responses:
+        '200':
+          description: Baseline updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Performance baseline updated.
+                  new_baseline:
+                    type: object
+                    properties:
+                      p95_latency:
+                        type: number
+                      error_rate:
+                        type: number
+                      timestamp:
+                        type: integer
+        '400':
+          description: Bad Request, if invalid parameters are provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /improvements:
+    get:
+      summary: Get Improvement Suggestions
+      description: Retrieves a list of current improvement suggestions for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with improvement suggestions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        description:
+                          type: string
+                        status:
+                          type: string
+                        timestamp:
+                          type: integer
+                  total_count:
+                    type: integer
+                  status_counts:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  last_updated:
+                    type: integer
+
+  /improvements/history:
+    get:
+      summary: Get Improvement History
+      description: Retrieves the history of all logged improvement suggestions for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with improvement history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  improvements_log:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        description:
+                          type: string
+                        status:
+                          type: string
+                        timestamp:
+                          type: integer
+                  total_count:
+                    type: integer
+                  status_counts:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  last_updated:
+                    type: integer
+
+  /health/trends:
+    get:
+      summary: Get Health Trends
+      description: Retrieves health trends over time for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      parameters:
+        - in: query
+          name: hours
+          schema:
+            type: integer
+            default: 24
+          description: Number of hours to retrieve health trends for (max 168).
+      responses:
+        '200':
+          description: Successful response with health trends.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trends:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: integer
+                        score:
+                          type: number
+                  milestone:
+                    type: string
+                  last_updated:
+                    type: integer
+
+  /health/score:
+    get:
+      summary: Get Current Health Score
+      description: Retrieves the current overall health score and component scores for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with current health score.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overall_score:
+                    type: number
+                  status:
+                    type: string
+                  trend:
+                    type: string
+                  components:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        score:
+                          type: number
+                        status:
+                          type: string
+                        message:
+                          type: string
+                  alerts:
+                    type: array
+                    items:
+                      type: string
+                  last_updated:
+                    type: integer
+                  milestone:
+                    type: string
+
+  /monitoring/alerts:
+    get:
+      summary: Get Monitoring Alerts
+      description: Retrieves current monitoring alerts, including health-based and performance regression alerts for the Flask Legacy Backend.
+      tags:
+        - Flask Legacy Backend
+      responses:
+        '200':
+          description: Successful response with monitoring alerts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        severity:
+                          type: string
+                        message:
+                          type: string
+                        timestamp:
+                          type: integer
+                        component:
+                          type: string
+                        details:
+                          type: object
+                  total_count:
+                    type: integer
+                  critical_count:
+                    type: integer
+                  warning_count:
+                    type: integer
+                  last_updated:
+                    type: integer
+                  milestone:
+                    type: string
+
+  # Economy API Endpoints
+  /players:
+    get:
+      summary: Get a list of players
+      description: Retrieves a list of all players from the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            default: 0
+          description: Number of records to skip.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+          description: Maximum number of records to return.
+      responses:
+        '200':
+          description: A list of players.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayerResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      summary: Create a new player
+      description: Creates a new player in the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                is_active:
+                  type: boolean
+                  default: true
+              required:
+                - username
+                - email
+      responses:
+        '200':
+          description: Player created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: Conflict, player with this email already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /players/{player_id}:
+    get:
+      summary: Get player by ID
+      description: Retrieves a single player by their unique ID from the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: player_id
+          schema:
+            type: integer
+          required: true
+          description: Unique ID of the player.
+      responses:
+        '200':
+          description: Player details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Player not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /items:
+    get:
+      summary: Get a list of items
+      description: Retrieves a list of all available items in the game from the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            default: 0
+          description: Number of records to skip.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+          description: Maximum number of records to return.
+        - in: query
+          name: is_tradeable
+          schema:
+            type: boolean
+            nullable: true
+          description: Filter by tradeable status.
+        - in: query
+          name: name_contains
+          schema:
+            type: string
+            nullable: true
+          description: Filter by item name containing this string.
+      responses:
+        '200':
+          description: A list of items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      summary: Create a new item
+      description: Creates a new item in the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                  nullable: true
+                is_tradeable:
+                  type: boolean
+                  default: true
+                is_stackable:
+                  type: boolean
+                  default: false
+                base_value:
+                  type: number
+                  format: float
+                  default: 0
+              required:
+                - name
+      responses:
+        '200':
+          description: Item created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: Conflict, item with this name already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /items/{item_id}:
+    get:
+      summary: Get item by ID
+      description: Retrieves a single item by its unique ID from the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: item_id
+          schema:
+            type: integer
+          required: true
+          description: Unique ID of the item.
+      responses:
+        '200':
+          description: Item details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Item not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /players/{player_id}/inventory:
+    get:
+      summary: Get player's inventory
+      description: Retrieves a player's inventory from the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: player_id
+          schema:
+            type: integer
+          required: true
+          description: Unique ID of the player.
+      responses:
+        '200':
+          description: A list of inventory items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryItemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Player not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Add item to player's inventory
+      description: Adds an item to a player's inventory in the Economy API.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: player_id
+          schema:
+            type: integer
+          required: true
+          description: Unique ID of the player.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                player_id:
+                  type: integer
+                item_id:
+                  type: integer
+                quantity:
+                  type: integer
+                  default: 1
+              required:
+                - player_id
+                - item_id
+      responses:
+        '200':
+          description: Item added to inventory successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemResponse'
+        '400':
+          description: Bad Request, e.g., player ID mismatch or non-stackable item already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Player or Item not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /trades:
+    get:
+      summary: Get a list of trades
+      description: Retrieves a list of trades from the Economy API, with optional filtering.
+      tags:
+        - Economy API
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            nullable: true
+            enum: [pending, accepted, rejected, completed, cancelled]
+          description: Filter trades by status.
+        - in: query
+          name: player_id
+          schema:
+            type: integer
+            nullable: true
+          description: Filter trades by initiator or receiver player ID.
+      responses:
+        '200':
+          description: A list of trades.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    initiator_id:
+                      type: integer
+                    receiver_id:
+                      type: integer
+                    status:
+                      type: string
+                    initiated_at:
+                      type: string
+                      format: date-time
+                    completed_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          item_id:
+                            type: integer
+                          quantity:
+                            type: integer
+                          from_player_id:
+                            type: integer
+                          to_player_id:
+                            type: integer
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Authentication required or invalid token.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Not authenticated
+  schemas:
+    PlayerResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the player.
+        username:
+          type: string
+          description: Player's username.
+        email:
+          type: string
+          format: email
+          description: Player's email address.
+        is_active:
+          type: boolean
+          description: Whether the player account is active.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the player account was created.
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of the player's last login.
+      required:
+        - id
+        - username
+        - email
+        - is_active
+        - created_at
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the item.
+        name:
+          type: string
+          description: Name of the item.
+        description:
+          type: string
+          nullable: true
+          description: Description of the item.
+        is_tradeable:
+          type: boolean
+          description: Whether the item can be traded.
+        is_stackable:
+          type: boolean
+          description: Whether the item can be stacked in inventory.
+        base_value:
+          type: number
+          format: float
+          description: Base value of the item.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the item was created.
+      required:
+        - id
+        - name
+        - is_tradeable
+        - is_stackable
+        - base_value
+        - created_at
+    InventoryItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the inventory item entry.
+        player_id:
+          type: integer
+          format: int64
+          description: ID of the player who owns the item.
+        item_id:
+          type: integer
+          format: int64
+          description: ID of the item.
+        quantity:
+          type: integer
+          description: Quantity of the item.
+        acquired_at:
+          type: string
+          format: date-time
+          description: Timestamp when the item was acquired.
+      required:
+        - id
+        - player_id
+        - item_id
+        - quantity
+        - acquired_at
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: A descriptive error message.
+          example: "An unexpected error occurred."
+        details:
+          type: string
+          description: Optional. More detailed information about the error.
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: "Wooden Sword"
+        description:
+          type: string
+          nullable: true
+          example: "A basic wooden sword."
+        is_tradeable:
+          type: boolean
+          example: true
+        is_stackable:
+          type: boolean
+          example: false
+        base_value:
+          type: number
+          format: float
+          example: 0
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1001
+        player_id:
+          type: integer
+          example: 1
+        item_id:
+          type: integer
+          example: 101
+        quantity:
+          type: integer
+          example: 5
+        acquired_at:
+          type: string
+          format: date-time
+          example: "2023-10-27T10:00:00Z"
+    Trade:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2001
+        initiator_id:
+          type: integer
+          example: 1
+        receiver_id:
+          type: integer
+          example: 2
+        status:
+          type: string
+          enum: [pending, accepted, rejected, completed, cancelled]
+          example: pending
+        initiated_at:
+          type: string
+          format: date-time
+          example: "2023-10-27T10:00:00Z"
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2023-10-27T10:05:00Z"
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              item_id:
+                type: integer
+                example: 101
+              quantity:
+                type: integer
+                example: 1
+              from_player_id:
+                type: integer
+                example: 1
+              to_player_id:
+                type: integer
+                example: 2

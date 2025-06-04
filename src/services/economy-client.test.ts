@@ -1,247 +1,200 @@
 /**
  * Economy API Client Tests
- * 
+ *
  * These tests verify the integration between the TypeScript game server
  * and the Python Economy API service.
  */
 
 import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
-import { EconomyClient } from './economy-client';
+import { EconomyClient, Player, Item, InventoryItem, Trade, GrandExchangeOffer } from './economy-client';
 
-// Create a mock for axios
-const mockAxios = new MockAdapter(axios);
+// Mock the axios module
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('EconomyClient', () => {
   let economyClient: EconomyClient;
-  
+  let mockAxiosInstance: {
+    get: jest.Mock;
+    post: jest.Mock;
+    patch: jest.Mock;
+    interceptors: {
+      request: {
+        use: jest.Mock;
+        eject: jest.Mock;
+      };
+      response: {
+        use: jest.Mock;
+        eject: jest.Mock;
+      };
+    };
+  };
+
   beforeEach(() => {
-    // Reset mock and create a new client instance for each test
-    mockAxios.reset();
+    // Create fresh mocks for the instance methods for each test
+    mockAxiosInstance = {
+      get: jest.fn(),
+      post: jest.fn(),
+      patch: jest.fn(),
+      interceptors: {
+        request: {
+          use: jest.fn(),
+          eject: jest.fn(),
+        },
+        response: {
+          use: jest.fn(), // This is the one being called in the constructor
+          eject: jest.fn(),
+        },
+      },
+    };
+    // Configure axios.create() to return our mock instance
+    mockedAxios.create.mockReturnValue(mockAxiosInstance as any);
+
+    // Instantiate the client, which will now use the mocked axios.create()
     economyClient = new EconomyClient('http://test-api');
   });
-  
+
   afterEach(() => {
-    mockAxios.restore();
+    jest.clearAllMocks();
   });
-  
+
   describe('Health Check', () => {
     it('should return health status', async () => {
-      // Mock the health check endpoint
-      mockAxios.onGet('http://test-api/health').reply(200, {
-        status: 'healthy',
-        timestamp: Date.now()
-      });
-      
+      const mockHealthData = { status: 'healthy', timestamp: Date.now() };
+      mockAxiosInstance.get.mockResolvedValue({ data: mockHealthData });
+
       const result = await economyClient.healthCheck();
-      
-      expect(result).toHaveProperty('status');
-      expect(result.status).toEqual('healthy');
-      expect(result).toHaveProperty('timestamp');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/health');
+      expect(result).toEqual(mockHealthData);
     });
-    
+
     it('should throw an error when API is unavailable', async () => {
-      // Mock a failed request
-      mockAxios.onGet('http://test-api/health').networkError();
-      
-      await expect(economyClient.healthCheck()).rejects.toThrow();
+      const networkError = new Error('Network Error');
+      (networkError as any).isAxiosError = true;
+      mockAxiosInstance.get.mockRejectedValue(networkError);
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      await expect(economyClient.healthCheck()).rejects.toThrow('Network Error');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/health');
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
     });
   });
-  
+
   describe('Player Methods', () => {
     it('should get a list of players', async () => {
-      const mockPlayers = [
+      const mockPlayers: Player[] = [
         { id: 1, username: 'player1', email: 'player1@example.com', is_active: true, created_at: new Date().toISOString() },
-        { id: 2, username: 'player2', email: 'player2@example.com', is_active: true, created_at: new Date().toISOString() }
+        { id: 2, username: 'player2', email: 'player2@example.com', is_active: true, created_at: new Date().toISOString() },
       ];
-      
-      mockAxios.onGet('http://test-api/players').reply(200, mockPlayers);
-      
+      mockAxiosInstance.get.mockResolvedValue({ data: mockPlayers });
+
       const players = await economyClient.getPlayers();
-      
-      expect(players).toHaveLength(2);
-      expect(players[0]).toHaveProperty('id');
-      expect(players[0]).toHaveProperty('username');
-      expect(players[0]).toHaveProperty('email');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/players', { params: {} });
+      expect(players).toEqual(mockPlayers);
     });
-    
+
     it('should get a player by ID', async () => {
-      const mockPlayer = {
-        id: 1,
-        username: 'player1',
-        email: 'player1@example.com',
-        is_active: true,
-        created_at: new Date().toISOString()
-      };
-      
-      mockAxios.onGet('http://test-api/players/1').reply(200, mockPlayer);
-      
+      const mockPlayer: Player = { id: 1, username: 'player1', email: 'player1@example.com', is_active: true, created_at: new Date().toISOString() };
+      mockAxiosInstance.get.mockResolvedValue({ data: mockPlayer });
+
       const player = await economyClient.getPlayer(1);
-      
-      expect(player).toHaveProperty('id', 1);
-      expect(player).toHaveProperty('username', 'player1');
-      expect(player).toHaveProperty('email', 'player1@example.com');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/players/1');
+      expect(player).toEqual(mockPlayer);
     });
-    
+
     it('should create a new player', async () => {
-      const newPlayer = {
-        username: 'newplayer',
-        email: 'newplayer@example.com',
-        is_active: true
-      };
-      
-      const mockResponse = {
-        ...newPlayer,
-        id: 3,
-        created_at: new Date().toISOString()
-      };
-      
-      mockAxios.onPost('http://test-api/players').reply(200, mockResponse);
-      
-      const player = await economyClient.createPlayer(newPlayer);
-      
-      expect(player).toHaveProperty('id', 3);
-      expect(player).toHaveProperty('username', 'newplayer');
-      expect(player).toHaveProperty('created_at');
+      const newPlayerData = { username: 'newplayer', email: 'newplayer@example.com', is_active: true };
+      const mockResponse: Player = { ...newPlayerData, id: 3, created_at: new Date().toISOString() };
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const player = await economyClient.createPlayer(newPlayerData);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/players', newPlayerData);
+      expect(player).toEqual(mockResponse);
     });
   });
-  
+
   describe('Item Methods', () => {
     it('should get a list of items', async () => {
-      const mockItems = [
+      const mockItems: Item[] = [
         { id: 1, name: 'Sword', description: 'A sharp sword', is_tradeable: true, is_stackable: false, base_value: 100, created_at: new Date().toISOString() },
-        { id: 2, name: 'Gold', description: 'Currency', is_tradeable: true, is_stackable: true, base_value: 1, created_at: new Date().toISOString() }
+        { id: 2, name: 'Gold', description: 'Currency', is_tradeable: true, is_stackable: true, base_value: 1, created_at: new Date().toISOString() },
       ];
-      
-      mockAxios.onGet('http://test-api/items').reply(200, mockItems);
-      
+      mockAxiosInstance.get.mockResolvedValue({ data: mockItems });
+
       const items = await economyClient.getItems();
-      
-      expect(items).toHaveLength(2);
-      expect(items[0]).toHaveProperty('id');
-      expect(items[0]).toHaveProperty('name');
-      expect(items[0]).toHaveProperty('base_value');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/items', { params: {} });
+      expect(items).toEqual(mockItems);
     });
-    
+
     it('should get an item by ID', async () => {
-      const mockItem = {
-        id: 1,
-        name: 'Sword',
-        description: 'A sharp sword',
-        is_tradeable: true,
-        is_stackable: false,
-        base_value: 100,
-        created_at: new Date().toISOString()
-      };
-      
-      mockAxios.onGet('http://test-api/items/1').reply(200, mockItem);
-      
+      const mockItem: Item = { id: 1, name: 'Sword', description: 'A sharp sword', is_tradeable: true, is_stackable: false, base_value: 100, created_at: new Date().toISOString() };
+      mockAxiosInstance.get.mockResolvedValue({ data: mockItem });
+
       const item = await economyClient.getItem(1);
-      
-      expect(item).toHaveProperty('id', 1);
-      expect(item).toHaveProperty('name', 'Sword');
-      expect(item).toHaveProperty('base_value', 100);
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/items/1');
+      expect(item).toEqual(mockItem);
     });
   });
-  
+
   describe('Inventory Methods', () => {
-    it('should get a player\'s inventory', async () => {
-      const mockInventory = [
+    it("should get a player's inventory", async () => {
+      const mockInventory: InventoryItem[] = [
         { id: 1, player_id: 1, item_id: 1, quantity: 1, acquired_at: new Date().toISOString() },
-        { id: 2, player_id: 1, item_id: 2, quantity: 100, acquired_at: new Date().toISOString() }
+        { id: 2, player_id: 1, item_id: 2, quantity: 100, acquired_at: new Date().toISOString() },
       ];
-      
-      mockAxios.onGet('http://test-api/players/1/inventory').reply(200, mockInventory);
-      
+      mockAxiosInstance.get.mockResolvedValue({ data: mockInventory });
+
       const inventory = await economyClient.getPlayerInventory(1);
-      
-      expect(inventory).toHaveLength(2);
-      expect(inventory[0]).toHaveProperty('player_id', 1);
-      expect(inventory[0]).toHaveProperty('item_id');
-      expect(inventory[0]).toHaveProperty('quantity');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/players/1/inventory');
+      expect(inventory).toEqual(mockInventory);
     });
-    
-    it('should add an item to a player\'s inventory', async () => {
-      const newItem = {
-        player_id: 1,
-        item_id: 3,
-        quantity: 5
-      };
-      
-      const mockResponse = {
-        ...newItem,
-        id: 3,
-        acquired_at: new Date().toISOString()
-      };
-      
-      mockAxios.onPost('http://test-api/players/1/inventory').reply(200, mockResponse);
-      
-      const inventoryItem = await economyClient.addInventoryItem(1, newItem);
-      
-      expect(inventoryItem).toHaveProperty('id', 3);
-      expect(inventoryItem).toHaveProperty('player_id', 1);
-      expect(inventoryItem).toHaveProperty('item_id', 3);
-      expect(inventoryItem).toHaveProperty('quantity', 5);
-      expect(inventoryItem).toHaveProperty('acquired_at');
+
+    it("should add an item to a player's inventory", async () => {
+      const newItemData = { player_id: 1, item_id: 3, quantity: 5 };
+      const mockResponse: InventoryItem = { ...newItemData, id: 3, acquired_at: new Date().toISOString() };
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const inventoryItem = await economyClient.addInventoryItem(1, { item_id: 3, quantity: 5 });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/players/1/inventory', { item_id: 3, quantity: 5 });
+      expect(inventoryItem).toEqual(mockResponse);
     });
   });
-  
+
   describe('Trade Methods', () => {
     it('should get trades with filters', async () => {
-      const mockTrades = [
-        {
-          id: 1,
-          initiator_id: 1,
-          receiver_id: 2,
-          status: 'pending',
-          initiated_at: new Date().toISOString(),
-          items: [
-            { item_id: 1, quantity: 1, from_player_id: 1, to_player_id: 2 }
-          ]
-        }
+      const mockTrades: Trade[] = [
+        { id: 1, initiator_id: 1, receiver_id: 2, status: 'pending', initiated_at: new Date().toISOString(), items: [{ item_id: 1, quantity: 1, from_player_id: 1, to_player_id: 2 }] },
       ];
-      
-      mockAxios.onGet('http://test-api/trades').reply(config => {
-        expect(config.params).toHaveProperty('status', 'pending');
-        return [200, mockTrades];
-      });
-      
+      mockAxiosInstance.get.mockResolvedValue({ data: mockTrades });
+
       const trades = await economyClient.getTrades({ status: 'pending' });
-      
-      expect(trades).toHaveLength(1);
-      expect(trades[0]).toHaveProperty('id', 1);
-      expect(trades[0]).toHaveProperty('status', 'pending');
-      expect(trades[0].items).toHaveLength(1);
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/trades', { params: { status: 'pending' } });
+      expect(trades).toEqual(mockTrades);
     });
   });
-  
+
   describe('Grand Exchange Methods', () => {
     it('should get Grand Exchange offers', async () => {
-      const mockOffers = [
-        {
-          id: 1,
-          player_id: 1,
-          item_id: 1,
-          offer_type: 'sell',
-          quantity: 1,
-          price_per_item: 100,
-          quantity_remaining: 1,
-          status: 'active',
-          created_at: new Date().toISOString()
-        }
+      const mockOffers: GrandExchangeOffer[] = [
+        { id: 1, player_id: 1, item_id: 1, offer_type: 'sell', quantity: 1, price_per_item: 100, quantity_remaining: 1, status: 'active', created_at: new Date().toISOString() },
       ];
-      
-      mockAxios.onGet('http://test-api/grand-exchange/offers').reply(config => {
-        expect(config.params).toHaveProperty('offer_type', 'sell');
-        return [200, mockOffers];
-      });
-      
+      mockAxiosInstance.get.mockResolvedValue({ data: mockOffers });
+
       const offers = await economyClient.getGrandExchangeOffers({ offer_type: 'sell' });
-      
-      expect(offers).toHaveLength(1);
-      expect(offers[0]).toHaveProperty('id', 1);
-      expect(offers[0]).toHaveProperty('offer_type', 'sell');
-      expect(offers[0]).toHaveProperty('price_per_item', 100);
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/grand-exchange/offers', { params: { offer_type: 'sell' } });
+      expect(offers).toEqual(mockOffers);
     });
   });
 });

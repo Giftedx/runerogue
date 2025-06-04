@@ -7,6 +7,7 @@ import os
 import shutil
 import uuid # For unique temp file names
 
+# AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import pytest
 
 # Import app and its globals to reset them for tests

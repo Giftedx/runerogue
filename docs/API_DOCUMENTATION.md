@@ -1,8 +1,15 @@
 # RuneRogue API Documentation
 
+**NOTE:** This document provides an overview of some API endpoints, primarily those exposed by the Python Flask Legacy Backend. For the most comprehensive and up-to-date API documentation for all services (TypeScript Game Server, Python FastAPI Economy API, Python Flask Legacy Backend, and Python FastAPI MCP Server), please refer to the consolidated OpenAPI (Swagger) documentation available at `/api-docs` (served from the TypeScript Game Server) or directly in `src/server/docs/swagger.yaml`.
+
+For an overall understanding of the system architecture and inter-service communication, please consult the [Architecture Document](ARCHITECTURE.md).
+
+
+
 This document provides comprehensive documentation for the RuneRogue API endpoints.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Authentication](#authentication)
 - [Base URL](#base-url)
@@ -47,6 +54,7 @@ The base URL for all API endpoints is:
 Returns basic information about the API.
 
 **Response:**
+
 ```json
 {
   "message": "RuneRogue API",
@@ -71,6 +79,7 @@ Returns basic information about the API.
 Serves the Phaser game's index.html.
 
 **Response:**
+
 - HTML content of the game page
 
 ### Configuration
@@ -80,6 +89,7 @@ Serves the Phaser game's index.html.
 Returns the current configuration of the application.
 
 **Response:**
+
 ```json
 {
   "debug": false,
@@ -96,6 +106,7 @@ Returns the current configuration of the application.
 Scrapes a URL using a multi-fallback pattern.
 
 **Request Body:**
+
 ```json
 {
   "url": "https://example.com"
@@ -103,6 +114,7 @@ Scrapes a URL using a multi-fallback pattern.
 ```
 
 **Response (Success):**
+
 ```json
 {
   "success": true,
@@ -113,6 +125,7 @@ Scrapes a URL using a multi-fallback pattern.
 ```
 
 **Response (Error):**
+
 ```json
 {
   "success": false,
@@ -122,6 +135,7 @@ Scrapes a URL using a multi-fallback pattern.
 ```
 
 **Status Codes:**
+
 - 200 OK: Successful scrape
 - 400 Bad Request: Missing URL
 - 500 Internal Server Error: Scraping failed
@@ -133,6 +147,7 @@ Scrapes a URL using a multi-fallback pattern.
 Basic health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -145,6 +160,7 @@ Basic health check endpoint.
 Comprehensive health check with performance metrics and health scoring.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -191,6 +207,7 @@ Comprehensive health check with performance metrics and health scoring.
 Get the current performance baseline.
 
 **Response:**
+
 ```json
 {
   "status": "baseline_exists",
@@ -211,6 +228,7 @@ Get the current performance baseline.
 Establish a new performance baseline.
 
 **Response:**
+
 ```json
 {
   "status": "baseline_established",
@@ -232,9 +250,11 @@ Establish a new performance baseline.
 Get current improvement suggestions.
 
 **Query Parameters:**
+
 - `status` (optional): Filter suggestions by status (e.g., "pending", "completed")
 
 **Response:**
+
 ```json
 [
   {
@@ -260,6 +280,7 @@ Get current improvement suggestions.
 Prometheus-style metrics endpoint.
 
 **Response:**
+
 ```
 # HELP http_requests_total Total HTTP requests
 # TYPE http_requests_total counter

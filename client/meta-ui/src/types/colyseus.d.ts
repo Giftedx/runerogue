@@ -13,10 +13,10 @@ declare module 'colyseus.js' {
     sessionId: string;
     name: string;
     state: T;
-    
+
     send(type: string, message?: any): void;
     leave(code?: number): Promise<void>;
-    
+
     onStateChange(callback: (state: T) => void): void;
     onMessage(type: string, callback: (message: any) => void): void;
     onError(callback: (code: number, message: string) => void): void;
@@ -57,20 +57,45 @@ declare module 'colyseus.js' {
     unshift(...items: T[]): number;
     indexOf(searchElement: T, fromIndex?: number): number;
     lastIndexOf(searchElement: T, fromIndex?: number): number;
-    every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
+    every<S extends T>(
+      predicate: (value: T, index: number, array: T[]) => value is S,
+      thisArg?: any
+    ): this is S[];
     every(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
     some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
     forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
     map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
-    filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+    filter<S extends T>(
+      predicate: (value: T, index: number, array: T[]) => value is S,
+      thisArg?: any
+    ): S[];
     filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
-    reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
-    reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-    reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U): U;
-    reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
-    reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-    reduceRight<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U): U;
-    find<S extends T>(predicate: (this: void, value: T, index: number, obj: T[]) => value is S, thisArg?: any): S | undefined;
+    reduce(
+      callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T
+    ): T;
+    reduce(
+      callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T,
+      initialValue: T
+    ): T;
+    reduce<U>(
+      callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U,
+      initialValue: U
+    ): U;
+    reduceRight(
+      callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T
+    ): T;
+    reduceRight(
+      callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T,
+      initialValue: T
+    ): T;
+    reduceRight<U>(
+      callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U,
+      initialValue: U
+    ): U;
+    find<S extends T>(
+      predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
+      thisArg?: any
+    ): S | undefined;
     find(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
     findIndex(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): number;
     fill(value: T, start?: number, end?: number): this;

@@ -22,10 +22,10 @@ export class GameService {
     try {
       this.room = await this.client.joinOrCreate('game', { name: username });
       this.isConnected = true;
-      
+
       // Set up event listeners
       this.setupRoomListeners();
-      
+
       return true;
     } catch (error) {
       console.error('Failed to connect to game server:', error);
@@ -62,18 +62,27 @@ export class GameService {
   /**
    * Send player movement to the server
    */
-  public sendPlayerMove(x: number, y: number, animation: string = 'walk', direction: string = 'down'): void {
+  public sendPlayerMove(
+    x: number,
+    y: number,
+    animation: string = 'walk',
+    direction: string = 'down'
+  ): void {
     if (!this.room) return;
-    
+
     this.room.send('move', { x, y, animation, direction });
   }
 
   /**
    * Send player action to the server
    */
-  public sendPlayerAction(type: 'attack' | 'gather' | 'pickup', targetId?: string, position?: { x: number, y: number }): void {
+  public sendPlayerAction(
+    type: 'attack' | 'gather' | 'pickup',
+    targetId?: string,
+    position?: { x: number; y: number }
+  ): void {
     if (!this.room) return;
-    
+
     this.room.send('action', { type, targetId, position });
   }
 
@@ -82,7 +91,7 @@ export class GameService {
    */
   public equipItem(slotIndex: number): void {
     if (!this.room) return;
-    
+
     this.room.send('equip-item', { slotIndex });
   }
 
@@ -91,7 +100,7 @@ export class GameService {
    */
   public dropItem(slotIndex: number, quantity: number = 1): void {
     if (!this.room) return;
-    
+
     this.room.send('drop-item', { slotIndex, quantity });
   }
 
@@ -100,7 +109,7 @@ export class GameService {
    */
   public collectLoot(lootId: string): void {
     if (!this.room) return;
-    
+
     this.room.send('collect-loot', { lootId });
   }
 
@@ -109,7 +118,7 @@ export class GameService {
    */
   public sendChatMessage(message: string): void {
     if (!this.room) return;
-    
+
     this.room.send('chat', message);
   }
 
@@ -120,7 +129,7 @@ export class GameService {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    
+
     this.listeners.get(event)?.add(callback);
   }
 
@@ -168,19 +177,28 @@ export class GameService {
     });
 
     // Player attack
-    this.room.onMessage('player-attack', (message: { attackerId: string; targetId: string; damage: number }) => {
-      this.emit('player-attack', message);
-    });
+    this.room.onMessage(
+      'player-attack',
+      (message: { attackerId: string; targetId: string; damage: number }) => {
+        this.emit('player-attack', message);
+      }
+    );
 
     // Loot dropped
-    this.room.onMessage('loot-dropped', (message: { id: string; itemType: string; quantity: number; x: number; y: number }) => {
-      this.emit('loot-dropped', message);
-    });
+    this.room.onMessage(
+      'loot-dropped',
+      (message: { id: string; itemType: string; quantity: number; x: number; y: number }) => {
+        this.emit('loot-dropped', message);
+      }
+    );
 
     // Loot collected
-    this.room.onMessage('loot-collected', (message: { playerId: string; lootId: string; itemType: string; quantity: number }) => {
-      this.emit('loot-collected', message);
-    });
+    this.room.onMessage(
+      'loot-collected',
+      (message: { playerId: string; lootId: string; itemType: string; quantity: number }) => {
+        this.emit('loot-collected', message);
+      }
+    );
 
     // Loot expired
     this.room.onMessage('loot-expired', (message: { ids: string[] }) => {
@@ -188,9 +206,12 @@ export class GameService {
     });
 
     // Equipment changed
-    this.room.onMessage('equipment-changed', (message: { playerId: string; slot: string; itemType: string | null }) => {
-      this.emit('equipment-changed', message);
-    });
+    this.room.onMessage(
+      'equipment-changed',
+      (message: { playerId: string; slot: string; itemType: string | null }) => {
+        this.emit('equipment-changed', message);
+      }
+    );
 
     // Chat message
     this.room.onMessage('chat', (message: { id: string; message: string }) => {
@@ -217,10 +238,10 @@ export class GameService {
   private convertColyseusState(state: any): GameTypes.GameState {
     // This is a simplified conversion - in a real implementation,
     // you would map all properties from the Colyseus schema to your GameState type
-    
+
     // Create player states
     const players: Record<string, GameTypes.PlayerState> = {};
-    
+
     state.players.forEach((player: any, id: string) => {
       // Convert skills
       const skills: GameTypes.Skills = {
@@ -231,26 +252,26 @@ export class GameService {
         woodcutting: { level: player.skills.woodcutting.level, xp: player.skills.woodcutting.xp },
         fishing: { level: player.skills.fishing.level, xp: player.skills.fishing.xp },
       };
-      
+
       // Convert inventory
       const inventory: (GameTypes.InventoryItem | null)[] = Array(28).fill(null);
-      
+
       player.inventory.forEach((item: any, index: number) => {
         if (item) {
           inventory[index] = {
             type: item.type as GameTypes.ItemType,
-            quantity: item.quantity
+            quantity: item.quantity,
           };
         }
       });
-      
+
       // Convert equipment
       const equipped: GameTypes.Equipment = {
         weapon: player.equipped.weapon as GameTypes.ItemType | null,
         armor: player.equipped.armor as GameTypes.ItemType | null,
         shield: player.equipped.shield as GameTypes.ItemType | null,
       };
-      
+
       // Create player state
       players[id] = {
         id,
@@ -271,19 +292,22 @@ export class GameService {
         currentTargetId: player.currentTargetId,
       };
     });
-    
+
     // Create loot drops
-    const lootDrops: Record<string, { id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position }> = {};
-    
+    const lootDrops: Record<
+      string,
+      { id: string; type: GameTypes.ItemType; quantity: number; position: GameTypes.Position }
+    > = {};
+
     state.lootDrops.forEach((loot: any, id: string) => {
       lootDrops[id] = {
         id,
         type: loot.itemType as GameTypes.ItemType,
         quantity: loot.quantity,
-        position: { x: loot.x, y: loot.y }
+        position: { x: loot.x, y: loot.y },
       };
     });
-    
+
     // Create world state
     const world: GameTypes.WorldState = {
       currentBiome: state.currentBiome as GameTypes.BiomeType,
@@ -291,14 +315,14 @@ export class GameService {
       rooms: [], // We don't have rooms in the server state yet
       currentRoomId: null,
     };
-    
+
     // Create UI state (client-side only)
     const ui: GameTypes.UIState = {
       selectedInventorySlot: null,
       damageNumbers: [],
       skillPopups: [],
     };
-    
+
     // Get the current player (first player for now)
     const playerIds = Object.keys(players);
     const currentPlayerId = playerIds.length > 0 ? playerIds[0] : '';
@@ -331,7 +355,7 @@ export class GameService {
       inCombat: false,
       currentTargetId: null,
     };
-    
+
     // Create game state
     return {
       player,

@@ -57,17 +57,20 @@ The Tavily MCP server is already configured in `.github/copilot/mcp_config.json`
 Perform AI-powered web searches with various options:
 
 **Parameters:**
+
 - `query` (required): Search query to perform
 - `searchDepth`: "basic" or "advanced" search depth
-- `topic`: "general", "news", or "finance" 
+- `topic`: "general", "news", or "finance"
 - `maxResults`: Maximum number of results to return
 - `includeAnswer`: Include AI-generated answer in results
 
 **Example usage in an issue:**
+
 ```markdown
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "latest developments in OSRS game updates 2024"
 - Search Depth: advanced
 - Topic: news
@@ -80,15 +83,18 @@ Perform AI-powered web searches with various options:
 Extract content from specific URLs:
 
 **Parameters:**
+
 - `urls` (required): Array of URLs to extract content from
 - `extractDepth`: "basic" or "advanced" extraction depth
 - `includeImages`: Include images in extracted content
 
 **Example usage in an issue:**
+
 ```markdown
 ## Custom MCP Tool Options
 
 ### For Content Extraction Tasks
+
 - URLs: ["https://oldschool.runescape.wiki/w/Grand_Exchange"]
 - Extract Depth: advanced
 - Include Images: false
@@ -102,11 +108,13 @@ Create an issue for research with Tavily search:
 
 ```markdown
 ## Task Description
+
 Research the latest OSRS economy trends and update our documentation.
 
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "Old School RuneScape economy trends 2024 Grand Exchange"
 - Search Depth: advanced
 - Topic: general
@@ -114,6 +122,7 @@ Research the latest OSRS economy trends and update our documentation.
 - Include Answer: true
 
 ## Acceptance Criteria
+
 - [ ] Gather current market trends
 - [ ] Update economy documentation
 - [ ] Include recent price changes
@@ -123,19 +132,22 @@ Research the latest OSRS economy trends and update our documentation.
 
 ```markdown
 ## Task Description
+
 Analyze specific OSRS wiki pages for item data extraction improvements.
 
 ## Custom MCP Tool Options
 
 ### For Content Extraction Tasks
+
 - URLs: [
-    "https://oldschool.runescape.wiki/w/Dragon_scimitar",
-    "https://oldschool.runescape.wiki/w/Abyssal_whip"
+  "https://oldschool.runescape.wiki/w/Dragon_scimitar",
+  "https://oldschool.runescape.wiki/w/Abyssal_whip"
   ]
 - Extract Depth: advanced
 - Include Images: true
 
 ## Acceptance Criteria
+
 - [ ] Extract item statistics
 - [ ] Compare current parsing vs extracted data
 - [ ] Suggest improvements
@@ -167,17 +179,21 @@ When creating issues for GitHub Copilot Agents, use this structure:
 
 ```markdown
 ## Task Type
+
 - [x] Research - Gather information from web sources
 
 ## Priority
+
 - [x] Medium
 
 ## Description
+
 [Detailed task description]
 
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "[your search query]"
 - Search Depth: advanced
 - Topic: general
@@ -185,11 +201,13 @@ When creating issues for GitHub Copilot Agents, use this structure:
 - Include Answer: true
 
 ### For Content Extraction Tasks (if needed)
+
 - URLs: ["url1", "url2"]
 - Extract Depth: advanced
 - Include Images: false
 
 ## Acceptance Criteria
+
 - [ ] Specific, measurable criteria
 - [ ] Include sources and references
 - [ ] Verify information accuracy
@@ -200,14 +218,17 @@ When creating issues for GitHub Copilot Agents, use this structure:
 ### Common Issues
 
 1. **API Key Not Set**
+
    - Error: Authentication failed
    - Solution: Ensure `TAVILY_API_KEY` environment variable is set
 
 2. **Rate Limiting**
+
    - Error: Rate limit exceeded
    - Solution: Reduce query frequency or upgrade Tavily plan
 
 3. **Invalid URLs**
+
    - Error: Failed to extract content
    - Solution: Verify URLs are accessible and public
 
@@ -220,11 +241,13 @@ When creating issues for GitHub Copilot Agents, use this structure:
 To debug Tavily MCP server issues:
 
 1. Check environment variables:
+
    ```bash
    echo $TAVILY_API_KEY
    ```
 
 2. Test NPX installation:
+
    ```bash
    npx -y @mcptools/mcp-tavily --help
    ```
@@ -247,6 +270,7 @@ To debug Tavily MCP server issues:
 ## Support
 
 For issues with:
+
 - Tavily API: Contact [Tavily Support](https://tavily.com/support)
 - MCP Configuration: Check [GitHub Copilot MCP Documentation](https://docs.github.com/en/copilot)
 - RuneRogue Integration: Create an issue in this repository

@@ -55,11 +55,11 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
       res.status(403).json({ error: 'Invalid or expired token' });
       return;
     }
-    
+
     if (decoded && typeof decoded === 'object') {
       req.user = decoded as UserPayload;
     }
-    
+
     next();
   });
 };
@@ -72,21 +72,21 @@ export const errorHandler = (
 ) => {
   // Log the error for debugging
   console.error(`[${new Date().toISOString()}] Error:`, err);
-  
+
   // Handle specific error types
   if (err.name === 'UnauthorizedError') {
     return res.status(401).json({ error: 'Invalid token' });
   }
-  
+
   // Default to 500 if no status code is set
   const statusCode = err.status || 500;
-  
+
   // Don't leak stack traces in production
   const errorResponse = {
     error: {
       message: statusCode === 500 ? 'Internal Server Error' : err.message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    },
   };
 
   res.status(statusCode).json(errorResponse);

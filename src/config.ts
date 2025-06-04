@@ -1,6 +1,6 @@
 /**
  * Application Configuration
- * 
+ *
  * This module provides centralized configuration for the RuneRogue game server,
  * allowing environment-based configuration for different services
  * including the Economy API integration.
@@ -26,9 +26,9 @@ export const config = {
     isDevelopment,
     isProduction,
     isTest,
-    corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*']
+    corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*'],
   },
-  
+
   // Database configuration
   database: {
     host: process.env.DB_HOST || 'localhost',
@@ -37,37 +37,37 @@ export const config = {
     password: process.env.DB_PASSWORD || 'password',
     database: process.env.DB_DATABASE || 'runerogue',
     synchronize: !isProduction,
-    logging: isDevelopment
+    logging: isDevelopment,
   },
-  
+
   // Economy API configuration
   economyApi: {
     baseUrl: process.env.ECONOMY_API_URL || 'http://localhost:8001',
     timeout: parseInt(process.env.ECONOMY_API_TIMEOUT || '10000', 10), // 10 seconds
     authToken: process.env.ECONOMY_API_TOKEN,
     retryAttempts: parseInt(process.env.ECONOMY_API_RETRY_ATTEMPTS || '3', 10),
-    retryDelay: parseInt(process.env.ECONOMY_API_RETRY_DELAY || '1000', 10) // 1 second
+    retryDelay: parseInt(process.env.ECONOMY_API_RETRY_DELAY || '1000', 10), // 1 second
   },
-  
+
   // Redis configuration
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
     password: process.env.REDIS_PASSWORD,
-    prefix: 'runerogue:'
+    prefix: 'runerogue:',
   },
-  
+
   // Auth configuration
   auth: {
     jwtSecret: process.env.JWT_SECRET || 'your-jwt-secret-key-change-me-in-production',
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d'
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
-  
+
   // Logging configuration
   logging: {
     level: process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info'),
-    prettyPrint: isDevelopment
-  }
+    prettyPrint: isDevelopment,
+  },
 };
 
 // Export default config

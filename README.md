@@ -1,6 +1,8 @@
 # RuneRogue
 
-A RuneScape-inspired Discord game with a web-based client, powered by a Python backend that provides multi-fallback web scraping and other services.
+A RuneScape-inspired game project featuring a polyglot architecture with a TypeScript game server, Python FastAPI economy API, Python Flask legacy backend, and a Python FastAPI MCP server. It includes a web-based client and integrates AI-assisted development.
+
+For a comprehensive overview of the system architecture, refer to the [Architecture Document](docs/ARCHITECTURE.md).
 
 ## AI-Assisted Development
 
@@ -83,23 +85,13 @@ For detailed information, see the following documentation:
 
 ## Components
 
+### Core Components
 
-### Backend (Python/Flask)
-- **Multi-fallback scraping**: requests → BeautifulSoup → Playwright
-- **Configuration management**: YAML config files with environment variable overrides
-- **Progress tracking**: Built-in `update_status()` function with progress reporting
-- **Dry run support**: Test functionality without making actual requests
-- **Flask web API**: RESTful endpoints for scraping operations
-- **Comprehensive testing**: Unit tests with mocking support
-- **CI/CD Pipeline**: Automated testing, linting, and deployment
-
-### Client (TypeScript/React - `client/meta-ui`)
-- **RuneScape-inspired game client**: Web-based interactive game.
-- **Modern Stack**: Built with TypeScript, React, and Vite.
-
-### Discord Integration (Potentially Deprecated/Future Feature)
-- **Discord Integration**: User authentication via Discord OAuth2
-- **Multiplayer Gameplay**: Real-time multiplayer using Colyseus
+*   **TypeScript Game Server**: Manages game state, real-time multiplayer (Colyseus), Discord OAuth2, and integrates with other backend services.
+*   **Python FastAPI Economy API**: Handles all game economy operations, including players, items, trades, and Grand Exchange.
+*   **Python Flask Legacy Backend**: Provides web scraping, health monitoring, and other legacy functionalities.
+*   **Python FastAPI MCP Server**: Facilitates AI agent interactions, tool execution, and research capabilities.
+*   **Clients**: Godot Game Client and Web Meta UI (TypeScript/React) for interactive gameplay.
 
 ## Getting Started
 
@@ -109,8 +101,8 @@ For detailed information, see the following documentation:
 - npm or yarn
 - Python 3.9+
 - pip
-- Discord Application (for OAuth2) - *if Discord features are to be used*
-- MongoDB (for persistent storage) - *if Discord/Colyseus features are to be used*
+- Discord Application (for OAuth2) - _if Discord features are to be used_
+- MongoDB (for persistent storage) - _if Discord/Colyseus features are to be used_
 
 ### Installation
 
@@ -209,6 +201,7 @@ from config import config
 - `docs/`: Additional documentation.
 
 ## API Endpoints (Backend Services)
+
 - `GET /` - Application info
 - `GET /config` - Current configuration
 - `GET /health` - Health check

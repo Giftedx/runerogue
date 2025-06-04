@@ -15,14 +15,14 @@ const config: Phaser.Types.Core.GameConfig = {
     default: 'arcade',
     arcade: {
       gravity: { y: 0 },
-      debug: false // Set to true for debugging physics bodies
-    }
+      debug: false, // Set to true for debugging physics bodies
+    },
   },
   scene: [BootScene, PreloadScene, MainMenuScene, GameScene, UIScene],
   render: {
     pixelArt: true, // For OSRS style
-    roundPixels: true // For OSRS style
-  }
+    roundPixels: true, // For OSRS style
+  },
 };
 
 const game = new Phaser.Game(config);

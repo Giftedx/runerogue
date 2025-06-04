@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: RuneRogue API
+  version: 1.0.0
+paths:
+  /players/{player_id}/inventory/sync:
+    post:
+      summary: Sync player's inventory
+      parameters:
+        - in: path
+          name: player_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventorySyncPayload'
+      responses:
+        '200':
+          description: Successful inventory sync
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  player_id:
+                    type: integer
+components:
+  schemas:
+    InventorySyncPayload:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            description: Details of an inventory item (to be defined more precisely)
+      required:
+        - items

@@ -26,6 +26,7 @@ The GitHub Copilot Agent workflow was triggered but appears to have failed. The 
 **You need to manually check these URLs (I cannot access them from VS Code):**
 
 1. **GitHub Actions Log**: https://github.com/Giftedx/runerogue/actions
+
    - Find the most recent "Copilot Agent Tasks" workflow run
    - Click on the job to see the complete log
    - Look for specific error patterns:
@@ -81,6 +82,7 @@ When the workflow succeeds, you should see a comment on issue #42 like this:
 ## Found TODOs:
 
 **Actual TODO Comments (requiring action):**
+
 - `economy/grand_exchange.py:183`: # TODO: Implement item reservation system
 - `economy/grand_exchange.py:399`: # TODO: Return reserved items for sell offers
 - `economy/grand_exchange.py:572`: # TODO: Return reserved items for sell offers
@@ -96,17 +98,22 @@ When the workflow succeeds, you should see a comment on issue #42 like this:
 If the main approach still doesn't work, we have backup options:
 
 ### Option A: Alternative Workflow Approach
+
 - Modify the workflow to use a different GitHub Copilot Agent approach
 - Check if there are permission issues with the GitHub token
 
 ### Option B: Manual Testing Script
+
 Use the simple test script we created:
+
 ```bash
 python3 scripts/simple_todo_search.py
 ```
 
 ### Option C: Direct TODO Search
+
 Run manual TODO search to verify results:
+
 ```bash
 # Using grep
 grep -rn "TODO" --include="*.py" .
@@ -117,7 +124,7 @@ git grep -n "TODO" -- "*.py"
 
 ## 📋 Key Files to Reference:
 
-- **Main Script**: `scripts/process_agent_task.py` (lines 120-122 for TODO detection, line 284+ for _search_todos method)
+- **Main Script**: `scripts/process_agent_task.py` (lines 120-122 for TODO detection, line 284+ for \_search_todos method)
 - **Workflow**: `.github/workflows/copilot-agent-tasks.yml`
 - **Requirements**: `requirements.txt` (should include PyGithub>=1.55)
 - **Test Script**: `test_todo_functionality.py`
@@ -140,6 +147,7 @@ git grep -n "TODO" -- "*.py"
 ## 🚨 If You Need Further Help:
 
 If any step fails or produces unexpected results, provide:
+
 1. The complete error message from GitHub Actions logs
 2. The current status of issue #42 (any comments present)
 3. Results from running the local test commands

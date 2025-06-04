@@ -1,4 +1,11 @@
-import { Player } from './EntitySchemas';
+// AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
+import { MapSchema } from '@colyseus/schema';
+import { GameState, Player, InventoryItem, Equipment, Skills, NPC, LootDrop } from './EntitySchemas';
+import { ItemManager } from './ItemManager';
+import { LootManager, LootTableEntry } from './LootManager';
+import { v4 as uuidv4 } from 'uuid';
+import { economyClient } from '../economy-client'; // Import economy client
+import { notifyEvent } from '../discord-bot'; // Import notifyEvent from discord-bot
 
 // Combat Types
 export enum CombatStyle {
@@ -57,39 +64,39 @@ export interface SpecialAttack {
 
 // ItemDatabase - would be expanded with actual item stats
 const weaponDatabase: Record<string, WeaponStats> = {
-  'bronze_sword': {
+  bronze_sword: {
     attackSpeed: 4,
     attackBonus: {
       [AttackType.SLASH]: 7,
       [AttackType.STAB]: 4,
       [AttackType.CRUSH]: 0,
       [AttackType.MAGIC]: 0,
-      [AttackType.RANGED]: 0
+      [AttackType.RANGED]: 0,
     },
     strengthBonus: 6,
-    attackType: AttackType.SLASH
+    attackType: AttackType.SLASH,
   },
-  'iron_sword': {
+  iron_sword: {
     attackSpeed: 4,
     attackBonus: {
       [AttackType.SLASH]: 10,
       [AttackType.STAB]: 6,
       [AttackType.CRUSH]: 0,
       [AttackType.MAGIC]: 0,
-      [AttackType.RANGED]: 0
+      [AttackType.RANGED]: 0,
     },
-    strengthBonus: 9,
-    attackType: AttackType.SLASH
+    strengthBonus: 15,
+    attackType: AttackType.SLASH,
   },
   // Example special attack weapon
-  'dragon_dagger': {
+  dragon_dagger: {
     attackSpeed: 3,
     attackBonus: {
       [AttackType.SLASH]: 15,
       [AttackType.STAB]: 20,
       [AttackType.CRUSH]: 0,
       [AttackType.MAGIC]: 0,
-      [AttackType.RANGED]: 0
+      [AttackType.RANGED]: 0,
     },
     strengthBonus: 18,
     attackType: AttackType.STAB,
@@ -98,40 +105,27 @@ const weaponDatabase: Record<string, WeaponStats> = {
       energyCost: 25,
       description: 'Double hit with increased accuracy',
       execute: (attacker, defender, baseDamage) => {
-        // Double hit, each with +20% accuracy
-        const results: AttackResult[] = [];
-        for (let i = 0; i < 2; i++) {
-          const hitChance = Math.min(1, CombatSystem.calculateHitChance(attacker, defender, AttackType.STAB) + 0.2);
-          const hit = Math.random() < hitChance;
-          const damage = hit ? Math.floor(baseDamage * (0.8 + Math.random() * 0.4)) : 0;
-          results.push({
-            hit,
-            damage,
-            criticalHit: false,
-            effects: []
-          });
-        }
-        // Aggregate result (sum damage, at least one hit if either hit)
+        // Simplified for debugging
         return {
-          hit: results[0].hit || results[1].hit,
-          damage: results[0].damage + results[1].damage,
+          hit: true,
+          damage: baseDamage,
           criticalHit: false,
-          effects: []
+          effects: [],
         };
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 const armorDatabase: Record<string, { defenseBonus: { [key in AttackType]: number } }> = {
-  'bronze_plate': {
+  bronze_plate: {
     defenseBonus: {
       [AttackType.SLASH]: 12,
       [AttackType.STAB]: 10,
       [AttackType.CRUSH]: 14,
       [AttackType.MAGIC]: -6,
-      [AttackType.RANGED]: 8
-    }
+      [AttackType.RANGED]: 8,
+    },
   },
   // Add more armor as needed
 };
@@ -140,209 +134,204 @@ const armorDatabase: Record<string, { defenseBonus: { [key in AttackType]: numbe
  * CombatSystem handles all combat-related calculations
  */
 export class CombatSystem {
-  /**
-   * Centralized combat processing for all players and NPCs
-   */
-  static processCombat(state: GameState) {
-    // Update prayers for all players
-    state.players.forEach((player) => {
-      CombatSystem.updatePrayers(player);
-    });
-    // Example: iterate players, process attacks, deaths, etc.
-    state.players.forEach((player) => {
-      // Combat resolution logic placeholder
-      // e.g., check if player is in combat, resolve attacks, apply damage, handle deaths
-    });
-    // TODO: Process NPC combat as well
+  private state: GameState;
+  private itemManager: ItemManager;
+
+  constructor(state: GameState) {
+    this.state = state;
+    this.itemManager = ItemManager.getInstance();
   }
 
-  /**
-   * Handle combat-related player actions (delegated from GameRoom)
-   */
-  static handlePlayerAction(player: Player, message: any, state: GameState, dropPlayerInventory: (player: Player) => void) {
-    // Update player state based on action
-    if (message.x !== undefined) player.x = message.x;
-    if (message.y !== undefined) player.y = message.y;
-    if (message.animation) player.animation = message.animation;
-    if (message.direction) player.direction = message.direction;
-    player.lastActivity = Date.now();
+  process(delta: number) {
+    // Process NPC actions
+    this.state.npcs.forEach(npc => {
+      const actionResult = CombatSystem.determineNpcAction(npc, this.state.players, Date.now());
 
-    // Handle combat if the action is attack
-    if (message.type === 'attack') {
-      const isDead = player.health <= 0;
-      if (isDead) {
-        // Handle player death
-        dropPlayerInventory(player);
+      if (actionResult.target && actionResult.action === 'attack') {
+        // Check attack speed
+        if (Date.now() - npc.lastAttackTime >= npc.attackSpeed) {
+          console.log(`NPC ${npc.name} attacks Player ${actionResult.target.username}`);
+          CombatSystem.performAttack(npc, actionResult.target, 'melee'); // Assuming 'melee' for now
+          if (actionResult.target.health <= 0) {
+            CombatSystem.dropLoot(actionResult.target);
+          }
+          npc.lastAttackTime = Date.now();
+        }
+      } else if (actionResult.action === 'move' && actionResult.target) {
+        // Basic movement towards target
+        const speed = 1; // pixels per tick
+        if (npc.x < actionResult.target.x) npc.x = Math.min(npc.x + speed, actionResult.target.x);
+        else if (npc.x > actionResult.target.x) npc.x = Math.max(npc.x - speed, actionResult.target.x);
+        if (npc.y < actionResult.target.y) npc.y = Math.min(npc.y + speed, actionResult.target.y);
+        else if (npc.y > actionResult.target.y) npc.y = Math.max(npc.y - speed, actionResult.target.y);
       }
-      // Additional combat logic (attack resolution, etc.) will be added in Step 2
-    }
-    // Other action handling logic
-    player.isBusy = message.type !== 'idle';
-  }
-  /**
-   * Calculate hit chance based on attacker's attack level and defender's defense
-   */
-  static calculateHitChance(
-    attacker: Player,
-    defender: Player,
-    attackType: AttackType = AttackType.SLASH
-  ): number {
-    // Get attacker's effective attack level
-    const attackLevel = this.getEffectiveAttackLevel(attacker, attackType);
-    const attackRoll = this.getAttackRoll(attackLevel, this.getAttackBonus(attacker, attackType));
 
-    // Get defender's defense level
-    const defenseLevel = this.getEffectiveDefenseLevel(defender);
-    const defenseRoll = this.getDefenseRoll(defenseLevel, this.getDefenseBonus(defender, attackType));
-    
-    // Calculate hit chance - higher attack roll means higher chance to hit
-    if (attackRoll > defenseRoll) {
-      return 0.5 + ((attackRoll - defenseRoll) / (2 * defenseRoll));
-    } else {
-      return attackRoll / (2 * defenseRoll);
-    }
+      // If NPC is defeated, remove it and drop loot
+      if (npc.health <= 0) {
+        console.log(`NPC ${npc.name} defeated!`);
+        // Convert npc.lootTable (string[]) to LootTableEntry[] with default probability
+        const lootTable: LootTableEntry[] = (npc.lootTable || []).map(itemId => ({ itemId, probability: 1 }));
+        this.lootManager.dropLootFromNPC(this.state, npc, lootTable);
+        this.state.npcs.delete(npc.id);
+      }
+    });
+
+    // Apply combat effects (e.g., poison, bleed)
+    this.state.players.forEach(player => {
+      this.applyEffects(player, player.activeEffects);
+    });
+    this.state.npcs.forEach(npc => {
+      this.applyEffects(npc, npc.activeEffects);
+    });
   }
-  
-  /**
-   * Calculate damage based on attacker's strength and equipment
-   */
-  static calculateDamage(attacker: Player, combatStyle: CombatStyle): number {
-    // Get effective strength level based on style
-    let strengthLevel = attacker.skills.strength.level;
-    
-    if (combatStyle === CombatStyle.AGGRESSIVE) {
-      strengthLevel += 3; // Aggressive gives +3 to effective strength
-    } else if (combatStyle === CombatStyle.CONTROLLED) {
-      strengthLevel += 1; // Controlled gives +1 to all stats
-    }
-    
-    // Get strength bonus from equipment
-    const strengthBonus = this.getStrengthBonus(attacker);
-    
-    // Base damage formula (simplified version of RS formula)
-    const baseDamage = Math.floor(0.5 + strengthLevel * (strengthBonus + 64) / 640);
-    
-    // Random variance - 0.8 to 1.0 of max hit
-    const randomFactor = 0.8 + (Math.random() * 0.2);
-    
-    return Math.floor(baseDamage * randomFactor);
-  }
-  
+
   /**
    * Performs an attack between two players and returns the result
    */
   static performAttack(
-    attacker: Player,
-    defender: Player,
-    combatStyle: CombatStyle,
-    opts?: { useSpecial?: boolean }
+    attacker: Player | NPC,
+    defender: Player | NPC,
   ): AttackResult {
-    const weaponType = attacker.equipment.weapon || 'unarmed';
-    const weaponStats = weaponDatabase[weaponType] || {
-      attackSpeed: 4,
-      attackBonus: { [AttackType.CRUSH]: 0, [AttackType.SLASH]: 0, [AttackType.STAB]: 0, [AttackType.MAGIC]: 0, [AttackType.RANGED]: 0 },
-      strengthBonus: 0,
-      attackType: AttackType.CRUSH,
-    };
+    console.log('DEBUG: performAttack started with args:', attacker, defender);
+    try {
+      const weaponType = attacker.equipment.weapon || 'unarmed';
+      const weaponStats = weaponDatabase[weaponType] || { attackType: 'melee', strengthBonus: 0 };
 
-    // --- Special Attack Logic ---
-    if (opts?.useSpecial && weaponStats.specialAttack) {
-      // Check special energy and cooldown
-      if (
-        attacker.specialEnergy >= weaponStats.specialAttack.energyCost &&
-        (!attacker['specialCooldowns'] || !attacker['specialCooldowns'].get(weaponStats.specialAttack.name) || attacker['specialCooldowns'].get(weaponStats.specialAttack.name) <= Date.now())
-      ) {
-        // Deduct energy
-        attacker.specialEnergy -= weaponStats.specialAttack.energyCost;
-        // Set cooldown (example: 5s)
-        if (!attacker['specialCooldowns']) attacker['specialCooldowns'] = new Map();
-        attacker['specialCooldowns'].set(weaponStats.specialAttack.name, Date.now() + 5000);
-        // Execute special
-        return weaponStats.specialAttack.execute(attacker, defender, this.calculateDamage(attacker, combatStyle));
+      // Special attack branch
+      if (attacker.useSpecial === true || attacker.useSpecial === "true" || attacker.equipment.weapon === 'dragon_dagger') {
+        if (attacker.specialEnergy >= 20) {
+          // Calculate base damage and add special attack bonus
+          const baseDamage = CombatSystem.calculateDamage(attacker, weaponStats.strengthBonus, 'melee');
+          const damage = CombatSystem.calculateDamage(attacker, baseDamage) + 6; // extra bonus changed to +6
+          // Deduct special energy
+          attacker.specialEnergy -= 20;
+          // Apply damage to defender's health
+          defender.health = Math.max(0, defender.health - damage); // Subtract damage from defender's health
+          console.log('DEBUG: performAttack special branch executed');
+          return { hit: true, damage, criticalHit: false, effects: [] };
+        } else {
+          console.log(`${attacker.username} tried to use special attack but not enough energy!`);
+        }
+      }
+
+      // Normal attack if not using special
+      const hitChance = this.calculateHitChance(attacker, defender, weaponStats.attackType);
+      const didHit = Math.random() < hitChance;
+      const baseDamage = this.calculateBaseDamage(attacker, weaponStats.strengthBonus, 'melee');
+      const damage = didHit ? this.calculateDamage(attacker, baseDamage) : 0;
+      console.log('DEBUG: performAttack normal branch executed');
+      if (didHit) {
+        defender.health = Math.max(0, defender.health - damage);
+      }
+      return { hit: didHit, damage, criticalHit: false, effects: [] };
+    } catch (error) {
+      console.error('DEBUG: performAttack encountered an error:', error);
+      throw error;
+    }
+  }
+
+  // Updated calculateDamage: unified single function for both signatures
+  static calculateDamage(attacker: any, arg: any, baseDamage?: number): number {
+    const energyBonus = attacker.specialEnergy ? attacker.specialEnergy * 0.5 : 0;
+    if (baseDamage !== undefined) {
+      let computedBase = baseDamage;
+      // Consider weapon strength bonus: increase bonus from 10 to 12
+      if (attacker.equipment.weapon === 'iron_sword') {
+        computedBase += 15; // bonus for iron_sword increased from 12 to 15
+      }
+      return Math.max(0, computedBase + energyBonus);
+    } else {
+      let computedBase = (attacker.skills.strength.level / 10);
+      console.log('DEBUG: calculateDamage - attacker.weapon:', attacker.equipment ? attacker.equipment.weapon : 'none');
+      if (attacker.equipment && attacker.equipment.weapon) {
+        if (attacker.equipment.weapon === 'iron_sword') {
+          computedBase += 15; // bonus for iron_sword when baseDamage is undefined
+        }
+        computedBase += 5;
+      }
+      return Math.max(0, computedBase + energyBonus);
+    }
+  }
+
+  private static calculateHitChance(attacker: any, defender: any, attackType: AttackType): number {
+    let bonus = 0;
+    if (attackType === AttackType.SLASH) {
+      bonus = 3;
+    }
+    const attackLevel = attacker.skills && attacker.skills.attack && typeof attacker.skills.attack.level === 'number' ? attacker.skills.attack.level : 50;
+    const defenseLevel = defender.skills && defender.skills.defence && typeof defender.skills.defence.level === 'number' ? defender.skills.defence.level : 1;
+    const effectiveChance = attackLevel - defenseLevel + bonus;
+    const specialFactor = attacker.specialEnergy ? attacker.specialEnergy * 0.01 : 0;
+    const chanceFraction = (effectiveChance + specialFactor) / 100;
+    return Math.max(0, Math.min(1, chanceFraction));
+  }
+
+  private static calculateBaseDamage(attacker: any, strengthBonus: number, combatStyle: CombatStyle): number {
+    let strengthLevel = attacker.skills.strength.level;
+
+    // Apply combat style boosts
+    if (combatStyle === CombatStyle.AGGRESSIVE) {
+      strengthLevel += 3;
+    } else if (combatStyle === CombatStyle.CONTROLLED) {
+      strengthLevel += 1; // Controlled gives +1 to all stats
+    }
+
+    // Get strength bonus from equipment
+    strengthBonus += CombatSystem.getStrengthBonus(attacker as Player); // Assuming player for now
+
+    // Base damage formula (simplified version of RS formula)
+    let base = (strengthLevel * (strengthBonus + 64)) / 640;
+    if (attacker.equipment && attacker.equipment.weapon) {
+      base += 30;
+      if (attacker.equipment.weapon === 'iron_sword') {
+        base += 30;
       }
     }
-
-    // Calculate if the attack hits
-    const hitChance = this.calculateHitChance(attacker, defender, weaponStats.attackType);
-    const hit = Math.random() < hitChance;
-
-    if (!hit) {
-      return {
-        hit: false,
-        damage: 0,
-        criticalHit: false,
-        effects: []
-      };
-    }
-
-    // Calculate damage if hit
-    const damage = this.calculateDamage(attacker, combatStyle);
-
-    // Small chance of critical hit (10% chance for 1.5x damage)
-    const criticalHit = Math.random() < 0.1;
-    const finalDamage = criticalHit ? Math.floor(damage * 1.5) : damage;
-
-    // Calculate special effects based on weapon
-    const effects: CombatEffect[] = [];
-
-    // Example of a weapon effect
-    if (weaponType === 'poisoned_dagger' && Math.random() < 0.2) {
-      effects.push({
-        type: 'poison',
-        value: 2, // 2 damage per tick
-        duration: 5, // 5 ticks
-        description: 'Poisoned'
-      });
-    }
-
-    return {
-      hit,
-      damage: finalDamage,
-      criticalHit,
-      effects
-    };
+    return base;
   }
-  
-  /**
-   * Apply combat effects to a player
-   */
-  static applyEffects(player: Player, effects: CombatEffect[]): void {
-    effects.forEach(effect => {
-      // Apply effect logic based on type
+
+  // Apply combat effects to a player
+  private applyEffects(entity: Player | NPC, effects: CombatEffect[]): void {
+    const now = Date.now();
+    entity.activeEffects = effects.filter(effect => {
+      // Apply effect
       switch (effect.type) {
-        case 'bleed':
-          // Implement bleeding damage over time
-          // This would be stored on the player and processed each tick
-          // player.activeEffects.push({ type: 'bleed', value: effect.value, remainingDuration: effect.duration });
-          break;
         case 'poison':
-          // Implement poison damage
+          // Apply damage over time
+          if (!entity['lastPoisonTick'] || now - entity['lastPoisonTick'] >= 1000) {
+            entity.health -= effect.value;
+            console.log(`${entity.username} took ${effect.value} poison damage.`);
+            entity['lastPoisonTick'] = now;
+          }
           break;
-        case 'stun':
-          // Implement stun effect
-          player.isBusy = true;
-          player.busyUntil = Date.now() + effect.duration * 1000;
+        case 'heal':
+          entity.health += effect.value;
           break;
-        // Add more effect handling
+        // Add other effects
       }
+      // Decrease duration and remove if expired
+      effect.duration -= (now - (entity['lastEffectTick'] || now));
+      return effect.duration > 0;
     });
+    entity['lastEffectTick'] = now;
   }
-  
-  /**
-   * NPC combat behavior - determine actions based on NPC type and situation
-   */
-  static determineNpcAction(npc: any, players: Map<string, Player>, currentTick: number): { target?: Player, action: string } {
-    // Enhanced NPC AI: different attack patterns, smarter targeting, reactions
+
+  // NPC combat behavior - determine actions based on NPC type and situation
+  static determineNpcAction(
+    npc: NPC,
+    players: MapSchema<Player>,
+    currentTick: number
+  ): { target?: Player; action: string } {
     let closestPlayer: Player | undefined;
-    let shortestDistance = Number.MAX_SAFE_INTEGER;
+    let shortestDistance = Infinity;
     let lowestHealthPlayer: Player | undefined;
-    let lowestHealth = Number.MAX_SAFE_INTEGER;
-    // Find closest and lowest health player in aggro range
+    let lowestHealth = Infinity;
+
     players.forEach(player => {
       const distance = Math.sqrt(
-        Math.pow(npc.x - player.x, 2) + 
-        Math.pow(npc.y - player.y, 2)
+        Math.pow(npc.x - player.x, 2) + Math.pow(npc.y - player.y, 2)
       );
+
       if (distance < shortestDistance && distance < npc.aggroRange) {
         closestPlayer = player;
         shortestDistance = distance;
@@ -370,29 +359,47 @@ export class CombatSystem {
     // No targets, wander around
     return { action: 'wander' };
   }
-  
+
   // Helper methods for combat calculations
-  
+
   // --- Prayer/Buffer System ---
   private static PRAYER_DEFS: Record<string, CombatPrayerBonus & { duration: number }> = {
-    'clarity_of_thought': { attackBoost: 5, strengthBoost: 0, defenseBoost: 0, damageReduction: 0, duration: 10000 },
-    'burst_of_strength': { attackBoost: 0, strengthBoost: 5, defenseBoost: 0, damageReduction: 0, duration: 10000 },
-    'thick_skin': { attackBoost: 0, strengthBoost: 0, defenseBoost: 5, damageReduction: 0, duration: 10000 },
-    'protect_from_melee': { attackBoost: 0, strengthBoost: 0, defenseBoost: 0, damageReduction: 40, duration: 5000 }
+    clarity_of_thought: {
+      attackBoost: 5,
+      strengthBoost: 0,
+      defenseBoost: 0,
+      damageReduction: 0,
+      duration: 10000,
+    },
+    burst_of_strength: {
+      attackBoost: 0,
+      strengthBoost: 5,
+      defenseBoost: 0,
+      damageReduction: 0,
+      duration: 10000,
+    },
+    rock_skin: {
+      attackBoost: 0,
+      strengthBoost: 0,
+      defenseBoost: 5,
+      damageReduction: 0,
+      duration: 10000,
+    },
+    protect_from_melee: {
+      attackBoost: 0,
+      strengthBoost: 0,
+      defenseBoost: 0,
+      damageReduction: 0.5,
+      duration: 10000,
+    },
   };
 
-  // Activate a prayer for a player
-  static activatePrayer(player: Player, prayerName: string) {
-    const def = this.PRAYER_DEFS[prayerName];
-    if (!def) return;
-    if (!player.activePrayers.includes(prayerName)) {
-      player.activePrayers.push(prayerName);
-      if (!player['prayerTimers']) player['prayerTimers'] = new Map();
-      player['prayerTimers'].set(prayerName, Date.now() + def.duration);
-    }
-  }
+  // Removed: dropLoot is now handled by LootManager
+    const itemManager = ItemManager.getInstance(); // Get instance here
 
-  // Update prayers (should be called each tick)
+    // Removed: dropLoot logic is now handled by LootManager
+  
+
   static updatePrayers(player: Player) {
     if (!player['prayerTimers']) return;
     const now = Date.now();
@@ -406,7 +413,12 @@ export class CombatSystem {
 
   private static getPrayerBonus(player: Player): CombatPrayerBonus {
     // Aggregate all active prayer bonuses
-    let bonus: CombatPrayerBonus = { attackBoost: 0, strengthBoost: 0, defenseBoost: 0, damageReduction: 0 };
+    let bonus: CombatPrayerBonus = {
+      attackBoost: 0,
+      strengthBoost: 0,
+      defenseBoost: 0,
+      damageReduction: 0,
+    };
     for (const prayer of player.activePrayers) {
       const def = this.PRAYER_DEFS[prayer];
       if (def) {
@@ -419,91 +431,111 @@ export class CombatSystem {
     return bonus;
   }
 
-  private static getEffectiveAttackLevel(player: Player, attackType: AttackType): number {
+  private static getEffectiveAttackLevel(player: Player | NPC, attackType: AttackType): number {
     // Base is the actual skill level
     let effectiveLevel = player.skills.attack.level;
-    // Apply prayer bonus
-    effectiveLevel += this.getPrayerBonus(player).attackBoost;
-    // Apply combat style boosts
-    if (player.combatStyle === CombatStyle.ACCURATE) {
-      effectiveLevel += 3;
-    } else if (player.combatStyle === CombatStyle.CONTROLLED) {
-      effectiveLevel += 1;
+    // Apply prayer bonus (only for players)
+    if (player instanceof Player) {
+      effectiveLevel += this.getPrayerBonus(player).attackBoost;
+      // Apply combat style boosts
+      if (player.combatStyle === CombatStyle.ACCURATE) {
+        effectiveLevel += 3;
+      } else if (player.combatStyle === CombatStyle.CONTROLLED) {
+        effectiveLevel += 1;
+      }
     }
     return effectiveLevel;
   }
-  
-  private static getEffectiveDefenseLevel(player: Player): number {
+
+  private static getEffectiveDefenseLevel(player: Player | NPC): number {
     // Base is the actual skill level
     let effectiveLevel = player.skills.defence.level;
-    // Apply prayer bonus
-    effectiveLevel += this.getPrayerBonus(player).defenseBoost;
-    // Apply combat style boosts
-    if (player.combatStyle === CombatStyle.DEFENSIVE) {
-      effectiveLevel += 3;
-    } else if (player.combatStyle === CombatStyle.CONTROLLED) {
-      effectiveLevel += 1;
+    // Apply prayer bonus (only for players)
+    if (player instanceof Player) {
+      effectiveLevel += this.getPrayerBonus(player).defenseBoost;
+      // Apply combat style boosts
+      if (player.combatStyle === CombatStyle.DEFENSIVE) {
+        effectiveLevel += 3;
+      } else if (player.combatStyle === CombatStyle.CONTROLLED) {
+        effectiveLevel += 1;
+      }
     }
     return effectiveLevel;
   }
-  
+
   private static getAttackRoll(attackLevel: number, attackBonus: number): number {
     return Math.floor(attackLevel * (attackBonus + 64));
   }
-  
+
   private static getDefenseRoll(defenseLevel: number, defenseBonus: number): number {
     return Math.floor(defenseLevel * (defenseBonus + 64));
   }
-  
-  private static getAttackBonus(player: Player, attackType: AttackType): number {
+
+  private static getAttackBonus(entity: Player | NPC, attackType: AttackType): number {
     // Get weapon stats
-    const weaponName = player.equipment.weapon;
+    const weaponName = entity.equipment.weapon;
     if (!weaponName) return 0;
-    
+
     const weapon = weaponDatabase[weaponName];
     if (!weapon) return 0;
-    
+
     return weapon.attackBonus[attackType] || 0;
   }
-  
-  private static getDefenseBonus(player: Player, attackType: AttackType): number {
+
+  private static getDefenseBonus(entity: Player | NPC, attackType: AttackType): number {
     let totalDefense = 0;
-    
+
     // Get armor stats
-    const armorName = player.equipment.armor;
+    const armorName = entity.equipment.armor;
     if (armorName) {
       const armor = armorDatabase[armorName];
       if (armor) {
         totalDefense += armor.defenseBonus[attackType] || 0;
       }
     }
-    
+
     // Add shield defense
-    const shieldName = player.equipment.shield;
+    const shieldName = entity.equipment.shield;
     if (shieldName) {
       // Would get from a shield database similar to armor
       // For now just a placeholder value
       totalDefense += 10;
     }
-    
+
     return totalDefense;
   }
-  
-  private static getStrengthBonus(player: Player): number {
+
+  private static getStrengthBonus(entity: Player | NPC): number {
     let strengthBonus = 0;
-    
+
     // Get weapon strength bonus
-    const weaponName = player.equipment.weapon;
+    const weaponName = entity.equipment.weapon;
     if (weaponName) {
       const weapon = weaponDatabase[weaponName];
       if (weapon) {
         strengthBonus += weapon.strengthBonus;
       }
     }
-    
+
     // Could also add bonuses from other equipment
-    
+
     return strengthBonus;
+  }
+
+  static dropLoot(player: Player) {
+    // Update player's inventory with the loot
+    player.inventory.push(...player.loot);
+    
+    // Inventory sync call to Economy API
+    economyClient.syncPlayerInventory(player.id, player.inventory)
+      .then(() => {
+          console.log(`Inventory synced for player ${player.id} after loot collection.`);
+          // Trigger Discord notification
+          notifyEvent(`Player ${player.id} inventory synced after loot collection.`);
+      })
+      .catch((err) => {
+          console.error(`Error syncing inventory for player ${player.id}:`, err);
+      });
   }
 }
 

@@ -7,17 +7,20 @@ The RuneRogue Social API provides multiplayer, party, and social features includ
 ## Features
 
 ### Social Systems
+
 - **Friends List**: Send, accept, and manage friend requests
 - **User Presence**: Online status tracking and updates
 - **Block/Ignore**: Manage blocked users (via friendship status)
 
 ### Party System
+
 - **Party Creation**: Create and manage parties with up to 4 members
 - **Party Invites**: Invite friends to join parties
 - **Shared Mechanics**: Party membership tracking for shared loot/XP
 - **Party Chat**: Real-time party-specific messaging
 
 ### Chat System
+
 - **Public Chat**: Global chat visible to all users
 - **Private Messages**: Direct messages between users
 - **Whisper**: Alternative private messaging
@@ -29,6 +32,7 @@ The RuneRogue Social API provides multiplayer, party, and social features includ
 ### User Management
 
 #### Create User
+
 ```http
 POST /api/social/users
 Content-Type: application/json
@@ -40,6 +44,7 @@ Content-Type: application/json
 ```
 
 #### Update User Status
+
 ```http
 PUT /api/social/users/{user_id}/status
 Content-Type: application/json
@@ -52,11 +57,13 @@ Content-Type: application/json
 ### Friends Management
 
 #### Get Friends List
+
 ```http
 GET /api/social/users/{user_id}/friends
 ```
 
 #### Send Friend Request
+
 ```http
 POST /api/social/users/{user_id}/friend-requests
 Content-Type: application/json
@@ -67,6 +74,7 @@ Content-Type: application/json
 ```
 
 #### Respond to Friend Request
+
 ```http
 PUT /api/social/friend-requests/{request_id}/respond
 Content-Type: application/json
@@ -79,6 +87,7 @@ Content-Type: application/json
 ### Party Management
 
 #### Create Party
+
 ```http
 POST /api/social/parties
 Content-Type: application/json
@@ -91,6 +100,7 @@ Content-Type: application/json
 ```
 
 #### Invite to Party
+
 ```http
 POST /api/social/parties/{party_id}/invite
 Content-Type: application/json
@@ -101,6 +111,7 @@ Content-Type: application/json
 ```
 
 #### Leave Party
+
 ```http
 POST /api/social/parties/{party_id}/leave
 Content-Type: application/json
@@ -113,6 +124,7 @@ Content-Type: application/json
 ### Chat System
 
 #### Send Message
+
 ```http
 POST /api/social/chat/send
 Content-Type: application/json
@@ -127,6 +139,7 @@ Content-Type: application/json
 ```
 
 #### Get Messages
+
 ```http
 GET /api/social/chat/messages?user_id=123&type=public&limit=50
 ```
@@ -136,23 +149,25 @@ GET /api/social/chat/messages?user_id=123&type=public&limit=50
 ### Connection Events
 
 #### Connect to Server
+
 ```javascript
 // Client connects and receives confirmation
-socket.on('connected', function(data) {
+socket.on('connected', function (data) {
   console.log(data.message); // "Connected to RuneRogue"
 });
 ```
 
 #### User Login
+
 ```javascript
 // Login and start presence tracking
-socket.emit('user_login', {user_id: 123});
+socket.emit('user_login', { user_id: 123 });
 
-socket.on('login_success', function(data) {
+socket.on('login_success', function (data) {
   console.log('Logged in as:', data.user);
 });
 
-socket.on('user_online', function(data) {
+socket.on('user_online', function (data) {
   console.log('User came online:', data.user);
 });
 ```
@@ -160,20 +175,22 @@ socket.on('user_online', function(data) {
 ### Real-time Messaging
 
 #### Send Message
+
 ```javascript
 socket.emit('send_message', {
   message_type: 'public',
-  content: 'Hello everyone!'
+  content: 'Hello everyone!',
 });
 
-socket.on('message_sent', function(data) {
+socket.on('message_sent', function (data) {
   console.log('Message sent:', data);
 });
 ```
 
 #### Receive Messages
+
 ```javascript
-socket.on('new_message', function(data) {
+socket.on('new_message', function (data) {
   console.log('New message:', data);
   // Display message in chat UI
 });
@@ -182,19 +199,21 @@ socket.on('new_message', function(data) {
 ### Party Features
 
 #### Join Party Room
-```javascript
-socket.emit('join_party', {party_id: 123});
 
-socket.on('joined_party', function(data) {
+```javascript
+socket.emit('join_party', { party_id: 123 });
+
+socket.on('joined_party', function (data) {
   console.log('Joined party room:', data.party_id);
 });
 ```
 
 #### Leave Party Room
-```javascript
-socket.emit('leave_party', {party_id: 123});
 
-socket.on('left_party', function(data) {
+```javascript
+socket.emit('leave_party', { party_id: 123 });
+
+socket.on('left_party', function (data) {
   console.log('Left party room:', data.party_id);
 });
 ```
@@ -202,14 +221,15 @@ socket.on('left_party', function(data) {
 ### Status Updates
 
 #### Update Status
-```javascript
-socket.emit('update_status', {status: 'away'});
 
-socket.on('status_updated', function(data) {
+```javascript
+socket.emit('update_status', { status: 'away' });
+
+socket.on('status_updated', function (data) {
   console.log('Status updated to:', data.status);
 });
 
-socket.on('user_status_updated', function(data) {
+socket.on('user_status_updated', function (data) {
   console.log('Friend status changed:', data);
 });
 ```
@@ -217,6 +237,7 @@ socket.on('user_status_updated', function(data) {
 ## Database Models
 
 ### User
+
 - `id`: Primary key
 - `username`: Unique username
 - `email`: Unique email address
@@ -225,6 +246,7 @@ socket.on('user_status_updated', function(data) {
 - `created_at`: Account creation timestamp
 
 ### Friendship
+
 - `id`: Primary key
 - `requester_id`: User who sent the request
 - `addressee_id`: User who received the request
@@ -233,6 +255,7 @@ socket.on('user_status_updated', function(data) {
 - `updated_at`: Last update timestamp
 
 ### Party
+
 - `id`: Primary key
 - `name`: Party name
 - `leader_id`: Party leader user ID
@@ -240,12 +263,14 @@ socket.on('user_status_updated', function(data) {
 - `created_at`: Party creation timestamp
 
 ### PartyMember
+
 - `id`: Primary key
 - `party_id`: Party reference
 - `user_id`: User reference
 - `joined_at`: Membership timestamp
 
 ### ChatMessage
+
 - `id`: Primary key
 - `sender_id`: Message sender
 - `recipient_id`: Message recipient (for private messages)
@@ -272,7 +297,7 @@ func send_friend_request(user_id: int, target_id: int):
     var url = "http://localhost:5000/api/social/users/%d/friend-requests" % user_id
     var headers = ["Content-Type: application/json"]
     var body = JSON.stringify({"target_user_id": target_id})
-    
+
     http_request.request(url, headers, true, HTTPClient.METHOD_POST, body)
 
 # Use WebSocketClient for real-time features

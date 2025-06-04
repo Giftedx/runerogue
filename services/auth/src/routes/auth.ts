@@ -9,13 +9,12 @@ const router = Router();
 const registerValidation = [
   body('email').isEmail().normalizeEmail(),
   body('username').isLength({ min: 3, max: 50 }).trim(),
-  body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+  body('password')
+    .isLength({ min: 8 })
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
 ];
 
-const loginValidation = [
-  body('email').isEmail().normalizeEmail(),
-  body('password').notEmpty(),
-];
+const loginValidation = [body('email').isEmail().normalizeEmail(), body('password').notEmpty()];
 
 // Public routes
 router.post('/register', registerValidation, AuthController.register);

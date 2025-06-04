@@ -11,6 +11,7 @@ GitHub Copilot SWE Agent is an advanced AI assistant that can handle complex sof
 There are two different GitHub Copilot entities:
 
 1. **GitHub Copilot [bot]** (`github-copilot[bot]`, ID: 97300543)
+
    - The standard GitHub Copilot suggestion bot
    - Limited to code completion and issue responses
 
@@ -29,7 +30,7 @@ To properly integrate with GitHub Copilot SWE Agent:
 When assigning issues to GitHub Copilot SWE Agent, use:
 
 ```yaml
-assignees: ['Copilot']  # Not 'github-copilot[bot]'
+assignees: ['Copilot'] # Not 'github-copilot[bot]'
 ```
 
 ### 2. Proper mention format
@@ -90,15 +91,19 @@ For best results, follow this format:
 
 ```markdown
 ## Task Description
+
 [Clear description of what needs to be done]
 
 ## Success Criteria
+
 - [List measurable success criteria]
 
 ## Implementation Guidelines
+
 - [Any specific guidelines to follow]
 
 ## Related Code
+
 - [List relevant files or directories]
 ```
 

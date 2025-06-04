@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 x-common-env: &common-env
   NODE_ENV: ${NODE_ENV-development}
@@ -6,7 +6,7 @@ x-common-env: &common-env
   COLYSEUS_WS_PORT: ${COLYSEUS_WS_PORT-2567}
   FRONTEND_URL: ${FRONTEND_URL-http://localhost:5173}
   MONGODB_URI: ${MONGODB_URI-mongodb://mongodb:27017/runerogue}
-  REDIS_URL: ${REDIS_URL-redis://redis:6379}
+  REDIS_URL: ${REDIS_URL-redis:6379}
   JWT_SECRET: ${JWT_SECRET}
   DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
   DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
@@ -30,12 +30,7 @@ services:
     depends_on:
       - mongodb
       - redis
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:${PORT:-3000}/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+
     deploy:
       resources:
         limits:
@@ -43,6 +38,8 @@ services:
           memory: 1G
     volumes:
       - ./logs:/app/logs
+
+
     command: >
       sh -c "if [ "$$NODE_ENV" = 'development' ]; then 
         npm run dev; 

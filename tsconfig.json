@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "node16",
     "lib": ["es2018", "DOM", "esnext"],
     "outDir": "./dist",
     "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
+    "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "sourceMap": true,
@@ -22,16 +23,8 @@
       "@client/*": ["src/client/*"],
       "@/*": ["src/*"]
     },
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
-    ],
-    "types": [
-      "node",
-      "express",
-      "ws",
-      "jest"
-    ],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "express", "ws"],
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "noImplicitAny": false,
@@ -43,17 +36,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.d.ts",
-    "jest.config.ts",
-    "jest.setup.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "jest.config.ts", "jest.setup.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -5,19 +5,24 @@ This document contains test cases to validate Tavily MCP functionality with GitH
 ## Test Case 1: OSRS Market Research
 
 ### Issue Template
+
 ```markdown
 ## Task Type
+
 - [x] Research - Gather information from web sources
 
 ## Priority
+
 - [x] High
 
 ## Description
+
 Research current Old School RuneScape Grand Exchange trends for Dragon equipment to update our item pricing algorithm.
 
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "Old School RuneScape Dragon equipment Grand Exchange prices trends 2025"
 - Search Depth: advanced
 - Topic: finance
@@ -25,6 +30,7 @@ Research current Old School RuneScape Grand Exchange trends for Dragon equipment
 - Include Answer: true
 
 ## Acceptance Criteria
+
 - [ ] Gather current Dragon scimitar, Dragon longsword, and Dragon dagger prices
 - [ ] Identify price trend patterns over the last 3 months
 - [ ] Compare prices across different sources (OSRS Wiki, GE Tracker, etc.)
@@ -32,26 +38,32 @@ Research current Old School RuneScape Grand Exchange trends for Dragon equipment
 - [ ] Include data sources and timestamps
 
 ## Expected Tavily Usage
+
 The agent should use `tavily_search` to find current market data and trends.
 ```
 
 ## Test Case 2: Game Update Analysis
 
 ### Issue Template
+
 ```markdown
 ## Task Type
+
 - [x] Research - Gather information from web sources
 - [x] Analysis - Process and synthesize information
 
 ## Priority
+
 - [x] Medium
 
 ## Description
+
 Analyze recent OSRS game updates to identify impacts on our scraping and data collection systems.
 
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "Old School RuneScape game updates December 2024 January 2025 API changes"
 - Search Depth: advanced
 - Topic: news
@@ -59,14 +71,16 @@ Analyze recent OSRS game updates to identify impacts on our scraping and data co
 - Include Answer: true
 
 ### For Content Extraction Tasks
+
 - URLs: [
-    "https://oldschool.runescape.wiki/w/Game_updates",
-    "https://secure.runescape.com/m=news/oldschool"
+  "https://oldschool.runescape.wiki/w/Game_updates",
+  "https://secure.runescape.com/m=news/oldschool"
   ]
 - Extract Depth: advanced
 - Include Images: false
 
 ## Acceptance Criteria
+
 - [ ] Identify all game updates since December 2024
 - [ ] Analyze potential impacts on Grand Exchange API
 - [ ] Check for new items or economy changes
@@ -74,25 +88,31 @@ Analyze recent OSRS game updates to identify impacts on our scraping and data co
 - [ ] Provide update recommendations for our codebase
 
 ## Expected Tavily Usage
+
 The agent should use both `tavily_search` and `tavily_extract` tools.
 ```
 
 ## Test Case 3: Competitor Analysis
 
 ### Issue Template
+
 ```markdown
 ## Task Type
+
 - [x] Research - Gather information from web sources
 
 ## Priority
+
 - [x] Low
 
 ## Description
+
 Research other OSRS economy tracking tools and APIs to identify feature gaps and opportunities.
 
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "OSRS economy tracking tools Grand Exchange API alternatives 2025"
 - Search Depth: advanced
 - Topic: general
@@ -100,6 +120,7 @@ Research other OSRS economy tracking tools and APIs to identify feature gaps and
 - Include Answer: true
 
 ## Acceptance Criteria
+
 - [ ] Identify 5+ competitor tools/APIs
 - [ ] Document their key features and pricing
 - [ ] Analyze their data sources and update frequencies
@@ -107,26 +128,32 @@ Research other OSRS economy tracking tools and APIs to identify feature gaps and
 - [ ] Assess market positioning opportunities
 
 ## Expected Tavily Usage
+
 The agent should use `tavily_search` with general topic for comprehensive results.
 ```
 
 ## Test Case 4: Technical Documentation Research
 
 ### Issue Template
+
 ```markdown
 ## Task Type
+
 - [x] Research - Gather information from web sources
 - [x] Documentation - Create or update documentation
 
 ## Priority
+
 - [x] Medium
 
 ## Description
+
 Research best practices for Python FastAPI + GitHub Copilot Agents integration to improve our MCP server architecture.
 
 ## Custom MCP Tool Options
 
 ### For Web Search Tasks
+
 - Query: "Python FastAPI GitHub Copilot Agents MCP server best practices 2025"
 - Search Depth: advanced
 - Topic: general
@@ -134,14 +161,16 @@ Research best practices for Python FastAPI + GitHub Copilot Agents integration t
 - Include Answer: true
 
 ### For Content Extraction Tasks
+
 - URLs: [
-    "https://docs.github.com/en/copilot",
-    "https://fastapi.tiangolo.com/advanced/"
+  "https://docs.github.com/en/copilot",
+  "https://fastapi.tiangolo.com/advanced/"
   ]
 - Extract Depth: advanced
 - Include Images: false
 
 ## Acceptance Criteria
+
 - [ ] Gather current best practices for FastAPI + MCP integration
 - [ ] Identify security considerations for agent-server communication
 - [ ] Find performance optimization techniques
@@ -149,6 +178,7 @@ Research best practices for Python FastAPI + GitHub Copilot Agents integration t
 - [ ] Update our MCP server implementation recommendations
 
 ## Expected Tavily Usage
+
 The agent should use both search and extraction tools for comprehensive research.
 ```
 

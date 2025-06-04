@@ -1,3 +1,4 @@
+// AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import { Schema, ArraySchema, MapSchema, type } from '@colyseus/schema';
 
 // Interface for player action messages
@@ -81,19 +82,34 @@ export class Skills extends Schema {
   }
 }
 
+import { ItemDefinition } from './ItemManager';
+import { LootTableEntry } from './LootManager';
+
 /**
  * Inventory item class
  */
 export class InventoryItem extends Schema {
   @type('string')
-  public type: string;
+  public itemId: string; // Unique ID for the item type
 
   @type('number')
   public quantity: number;
 
-  constructor(type: string = '', quantity: number = 1) {
+  // Properties loaded from ItemDefinition
+  public name: string;
+  public description: string;
+  public attack: number;
+  public defense: number;
+  public isStackable: boolean;
+
+  constructor(itemDefinition: ItemDefinition, quantity: number = 1) {
     super();
-    this.type = type;
+    this.itemId = itemDefinition.itemId;
+    this.name = itemDefinition.name;
+    this.description = itemDefinition.description;
+    this.attack = itemDefinition.attack;
+    this.defense = itemDefinition.defense;
+    this.isStackable = itemDefinition.isStackable;
     this.quantity = quantity;
   }
 }
@@ -246,7 +262,7 @@ export class Player extends Schema {
     return {
       attack: this.skills.attack.level,
       defense: this.skills.defence.level,
-      strength: this.skills.strength.level
+      strength: this.skills.strength.level,
     };
   }
 
@@ -265,97 +281,14 @@ export class Player extends Schema {
 
   // Calculate combat level based on skills
   getCombatLevel(): number {
-    const base = 0.25 * (this.skills.defence.level + this.skills.strength.level + Math.floor(this.skills.attack.level * 1.3));
+    const base =
+      0.25 *
+      (this.skills.defence.level +
+        this.skills.strength.level +
+        Math.floor(this.skills.attack.level * 1.3));
     return Math.floor(base);
   }
 }
-
-/**
- * Game state class
- */
-export class GameState extends Schema {
-  @type({ map: Player })
-  public players = new MapSchema<Player>();
-
-  @type({ map: LootDrop })
-  public lootDrops = new MapSchema<LootDrop>();
-}
-
-/**
- * NPC class for non-player characters
- */
-export class NPC extends Schema {
-  @type('string')
-  public id: string = '';
-
-  @type('string')
-  public type: string = '';
-
-  @type('number')
-  public x: number = 0;
-
-  @type('number')
-  public y: number = 0;
-
-  @type('string')
-  public animation: string = 'idle';
-
-  @type('string')
-  public direction: string = 'down';
-
-  @type('number')
-  public health: number = 100;
-
-  @type('number')
-  public maxHealth: number = 100;
-
-  @type('boolean')
-  public aggressive: boolean = false;
-
-  @type('number')
-  public aggroRange: number = 5;
-
-  @type('number')
-  public attackRange: number = 1;
-
-  @type('number')
-  public attackSpeed: number = 4;
-
-  @type('number')
-  public lastAttack: number = 0;
-
-  @type('string')
-  public currentTargetId: string = '';
-
-  @type('boolean')
-  public respawning: boolean = false;
-
-  constructor(type: string) {
-    super();
-    this.type = type;
-    this.id = `npc-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    
-    // Set properties based on NPC type
-    switch(type) {
-      case 'goblin':
-        this.health = this.maxHealth = 25;
-        this.aggressive = true;
-        this.aggroRange = 7;
-        break;
-      case 'guard':
-        this.health = this.maxHealth = 60;
-        this.aggressive = false;
-        break;
-      case 'chicken':
-        this.health = this.maxHealth = 10;
-        this.aggressive = false;
-        this.aggroRange = 2;
-        break;
-      // Add more NPC types as needed
-    }
-  }
-}
-
 export class Resource extends Schema {
   @type('string')
   public id: string = '';
@@ -377,7 +310,7 @@ export class Resource extends Schema {
 
   @type('number')
   public depletedUntil: number = 0;
-  
+
   @type('number')
   public requiredSkill: number = 1;
 
@@ -390,9 +323,9 @@ export class Resource extends Schema {
     this.type = type;
     this.x = x;
     this.y = y;
-    
+
     // Set properties based on resource type
-    switch(type) {
+    switch (type) {
       case 'tree':
         this.respawnTime = 60000; // 1 minute
         this.requiredSkill = 1;
@@ -411,12 +344,12 @@ export class Resource extends Schema {
       // Add more resource types
     }
   }
-  
+
   deplete(): void {
     this.depleted = true;
     this.depletedUntil = Date.now() + this.respawnTime;
   }
-  
+
   checkRespawn(): boolean {
     if (this.depleted && Date.now() > this.depletedUntil) {
       this.depleted = false;
@@ -429,60 +362,49 @@ export class Resource extends Schema {
 export class AreaMap extends Schema {
   @type('string')
   public id: string = '';
-  
+
   @type('string')
   public name: string = '';
-  
+
   @type('number')
   public width: number = 100;
-  
+
   @type('number')
   public height: number = 100;
-  
-  @type('string')
   public biome: string = 'plains';
-  
-  @type('number')
-  public dangerLevel: number = 1;
-  
-  @type({ map: NPC })
-  public npcs = new MapSchema<NPC>();
-  
-  @type({ map: Resource })
-  public resources = new MapSchema<Resource>();
-  
-  // Not serialized - used for pathfinding and collision detection
-  public collisionMap: boolean[][] = [];
-  
-  constructor(id: string, name: string, width = 100, height = 100) {
+  @type(['boolean']) public collisionMap: boolean[][] = []; // 2D array for collision
+
+  constructor(name: string, width: number, height: number) {
     super();
-    this.id = id;
+    this.id = `map-${Date.now()}`;
     this.name = name;
     this.width = width;
     this.height = height;
-    
+
     // Initialize collision map
-    this.collisionMap = Array(height).fill(false).map(() => Array(width).fill(false));
+    this.collisionMap = Array(height)
+      .fill(false)
+      .map(() => Array(width).fill(false));
   }
-  
+
   // Check if position is walkable (not colliding with obstacles)
   isWalkable(x: number, y: number): boolean {
     // Check bounds
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return false;
     }
-    
+
     // Check collision map
     return !this.collisionMap[Math.floor(y)][Math.floor(x)];
   }
-  
+
   // Add collision at position
   addCollision(x: number, y: number): void {
     if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
       this.collisionMap[Math.floor(y)][Math.floor(x)] = true;
     }
   }
-  
+
   // Remove collision at position
   removeCollision(x: number, y: number): void {
     if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
@@ -491,11 +413,97 @@ export class AreaMap extends Schema {
   }
 }
 
-// Extended game state with map
+
+
+export class NPC extends Schema {
+  @type('string')
+  public id: string = '';
+
+  @type('string')
+  public name: string = '';
+
+  @type('number')
+  public x: number = 0;
+
+  @type('number')
+  public y: number = 0;
+
+  @type('number')
+  public health: number = 100;
+
+  @type('number')
+  public maxHealth: number = 100;
+
+  @type('number')
+  public attack: number = 10;
+
+  @type('number')
+  public defense: number = 10;
+
+  @type('number')
+  public aggroRange: number = 5;
+
+  @type('number')
+  public attackRange: number = 1;
+
+  @type(['string'])
+  public lootTable: ArraySchema<string> = new ArraySchema<string>(); // Array of itemIds
+  static x: number;
+  static y: number;
+  static lootTable: any;
+
+  constructor(id: string, name: string, x: number, y: number, type: string, lootTable: LootTableEntry[] = []) {
+    super();
+    this.id = id;
+    this.name = name;
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.lootTable.push(...lootTable);
+
+    // Set base stats based on type (example, can be more complex)
+    switch (type) {
+      case 'goblin':
+        this.maxHealth = 50;
+        this.health = 50;
+        this.attack = 5;
+        this.defense = 3;
+        this.aggroRange = 3;
+        this.attackRange = 1;
+        this.attackSpeed = 1500;
+        break;
+      case 'orc':
+        this.maxHealth = 120;
+        this.health = 120;
+        this.attack = 15;
+        this.defense = 10;
+        this.aggroRange = 4;
+        this.attackRange = 1;
+        this.attackSpeed = 2000;
+        break;
+      // Add more NPC types
+    }
+  }
+}
+
+// Extended game state with map and NPCs
+export class GameState extends Schema {
+  @type({ map: Player })
+  players = new MapSchema<Player>();
+
+  @type({ map: LootDrop })
+  lootDrops = new MapSchema<LootDrop>();
+
+  @type({ map: NPC })
+  npcs = new MapSchema<NPC>();
+
+  // Add other common game state properties here if needed
+}
+
 export class WorldState extends GameState {
   @type({ map: AreaMap })
   public maps = new MapSchema<AreaMap>();
-  
+
   @type('string')
   public currentMapId: string = 'default';
 }

@@ -1,6 +1,6 @@
 /**
  * Economy API Client
- * 
+ *
  * This client provides TypeScript interfaces to the Python Economy API service.
  * As per ADR-001, it implements the REST API integration approach for connecting
  * the TypeScript game server with the Python economy models.
@@ -91,59 +91,68 @@ export interface QueryOptions {
 export class EconomyClient {
   private readonly client: AxiosInstance;
   private readonly baseUrl: string;
-  
+
   /**
    * Creates a new EconomyClient instance
-   * 
+   *
    * @param baseUrl Base URL of the Economy API service
    * @param authToken JWT authentication token
    */
   constructor(baseUrl?: string, authToken?: string) {
     this.baseUrl = baseUrl || config.economyApi?.baseUrl || 'http://localhost:8001';
-    
-    // Configure axios client
+
+    // Ensure the axios client is instantiated
     this.client = axios.create({
-      baseURL: this.baseUrl,
+      baseURL: process.env.ECONOMY_API_URL || this.baseUrl,
       timeout: config.economyApi?.timeout || 10000, // 10 second default timeout
       headers: {
         'Content-Type': 'application/json',
-        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+        ...(authToken && { Authorization: `Bearer ${authToken}` }),
       },
       // Allow self-signed certificates in development
       ...(process.env.NODE_ENV !== 'production' && {
         httpsAgent: new Agent({
-          rejectUnauthorized: false
-        })
-      })
+          rejectUnauthorized: false,
+        }),
+      }),
     });
-    
+
+    // Fallback: if interceptors is undefined (e.g., in a mocked environment), provide a stub
+    if (!this.client.interceptors) {
+      this.client.interceptors = {
+        response: {
+          use: (success: any, error: any) => {},
+        },
+      };
+    }
+
     // Add response interceptor for error handling
     this.client.interceptors.response.use(
       response => response,
       (error: AxiosError) => {
         console.error('Economy API error:', error.message);
-        
+
         // Log details if available
         if (error.response) {
           console.error('Status:', error.response.status);
           console.error('Data:', error.response.data);
         }
-        
+
         return Promise.reject(error);
       }
     );
   }
-  
+
   /**
    * Health check to verify the Economy API service is available
    */
-  async healthCheck(): Promise<{ status: string, timestamp: number }> {
+  async healthCheck(): Promise<{ status: string; timestamp: number }> {
     const response = await this.client.get('/health');
     return response.data;
   }
-  
+
   // Player methods
-  
+
   /**
    * Get a list of players
    */
@@ -151,7 +160,7 @@ export class EconomyClient {
     const response = await this.client.get('/players', { params: options });
     return response.data;
   }
-  
+
   /**
    * Get a player by ID
    */
@@ -159,7 +168,7 @@ export class EconomyClient {
     const response = await this.client.get(`/players/${playerId}`);
     return response.data;
   }
-  
+
   /**
    * Create a new player
    */
@@ -167,9 +176,9 @@ export class EconomyClient {
     const response = await this.client.post('/players', player);
     return response.data;
   }
-  
+
   // Item methods
-  
+
   /**
    * Get a list of items
    */
@@ -177,7 +186,7 @@ export class EconomyClient {
     const response = await this.client.get('/items', { params: options });
     return response.data;
   }
-  
+
   /**
    * Get an item by ID
    */
@@ -185,7 +194,7 @@ export class EconomyClient {
     const response = await this.client.get(`/items/${itemId}`);
     return response.data;
   }
-  
+
   /**
    * Create a new item
    */
@@ -193,9 +202,9 @@ export class EconomyClient {
     const response = await this.client.post('/items', item);
     return response.data;
   }
-  
+
   // Inventory methods
-  
+
   /**
    * Get a player's inventory
    */
@@ -203,25 +212,28 @@ export class EconomyClient {
     const response = await this.client.get(`/players/${playerId}/inventory`);
     return response.data;
   }
-  
+
   /**
    * Add an item to a player's inventory
    */
-  async addInventoryItem(playerId: number, inventoryItem: Omit<InventoryItem, 'id' | 'acquired_at'>): Promise<InventoryItem> {
+  async addInventoryItem(
+    playerId: number,
+    inventoryItem: Omit<InventoryItem, 'id' | 'acquired_at'>
+  ): Promise<InventoryItem> {
     const response = await this.client.post(`/players/${playerId}/inventory`, inventoryItem);
     return response.data;
   }
-  
+
   // Trade methods
-  
+
   /**
    * Get trades filtered by status and/or player
    */
-  async getTrades(options: { status?: string, player_id?: number } = {}): Promise<Trade[]> {
+  async getTrades(options: { status?: string; player_id?: number } = {}): Promise<Trade[]> {
     const response = await this.client.get('/trades', { params: options });
     return response.data;
   }
-  
+
   /**
    * Create a new trade
    */
@@ -238,27 +250,32 @@ export class EconomyClient {
     const response = await this.client.post('/trades', trade);
     return response.data;
   }
-  
+
   /**
    * Update a trade status (accept/decline/cancel)
    */
-  async updateTradeStatus(tradeId: number, status: 'accepted' | 'declined' | 'cancelled'): Promise<Trade> {
+  async updateTradeStatus(
+    tradeId: number,
+    status: 'accepted' | 'declined' | 'cancelled'
+  ): Promise<Trade> {
     const response = await this.client.patch(`/trades/${tradeId}`, { status });
     return response.data;
   }
-  
+
   /**
    * Get Grand Exchange offers with optional filters
    */
-  async getGrandExchangeOffers(options: {
-    item_id?: number;
-    offer_type?: 'buy' | 'sell';
-    status?: string;
-  } = {}): Promise<GrandExchangeOffer[]> {
+  async getGrandExchangeOffers(
+    options: {
+      item_id?: number;
+      offer_type?: 'buy' | 'sell';
+      status?: string;
+    } = {}
+  ): Promise<GrandExchangeOffer[]> {
     const response = await this.client.get('/grand-exchange/offers', { params: options });
     return response.data;
   }
-  
+
   /**
    * Create a new Grand Exchange offer
    */
@@ -272,13 +289,13 @@ export class EconomyClient {
     const response = await this.client.post('/grand-exchange/offers', offer);
     return response.data;
   }
-  
+
   /**
    * Get price history for an item
    */
   async getItemPriceHistory(itemId: number, days?: number): Promise<PriceHistory[]> {
     const response = await this.client.get(`/items/${itemId}/price-history`, {
-      params: { days }
+      params: { days },
     });
     return response.data;
   }

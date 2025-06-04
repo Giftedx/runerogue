@@ -1,9 +1,11 @@
 # OSRS Research Prompt Templates
+
 # For use with advanced MCP research ecosystem
 
 ## 🏦 **Grand Exchange Economy Analysis**
 
 ### Deep Research Template (GPT Researcher)
+
 ```
 Conduct comprehensive research on the current Old School RuneScape Grand Exchange economy:
 
@@ -36,6 +38,7 @@ Conduct comprehensive research on the current Old School RuneScape Grand Exchang
 ```
 
 ### Advanced Scraping Template (Firecrawl)
+
 ```
 Extract comprehensive Grand Exchange data using structured scraping:
 
@@ -70,6 +73,7 @@ Extract comprehensive Grand Exchange data using structured scraping:
 ## ⚔️ **Item Meta Analysis**
 
 ### Combat Equipment Research
+
 ```
 Research current combat equipment meta for Old School RuneScape:
 
@@ -101,6 +105,7 @@ Research current combat equipment meta for Old School RuneScape:
 ## 📊 **Market Prediction Research**
 
 ### Trend Forecasting Template
+
 ```
 Analyze factors that could influence OSRS economy in the next 3-6 months:
 
@@ -136,6 +141,7 @@ Analyze factors that could influence OSRS economy in the next 3-6 months:
 ## 🤖 **Bot Detection & Market Manipulation**
 
 ### Advanced Pattern Analysis
+
 ```
 Investigate potential market manipulation and bot activity:
 
@@ -167,6 +173,7 @@ Investigate potential market manipulation and bot activity:
 ## 🏗️ **Skill Economy Analysis**
 
 ### Resource Market Research
+
 ```
 Analyze the economics of skill-related resources and outputs:
 
@@ -198,6 +205,7 @@ Analyze the economics of skill-related resources and outputs:
 ## 📱 **Multi-Platform Data Integration**
 
 ### Comprehensive Data Pipeline
+
 ```
 Create a unified view of OSRS economy data from multiple sources:
 
@@ -229,16 +237,19 @@ Create a unified view of OSRS economy data from multiple sources:
 ## 🎯 **Quick Research Templates**
 
 ### Daily Market Check (Tavily)
+
 ```
 Quick daily check: "What are the current OSRS Grand Exchange trending items and any major price changes in the last 24 hours?"
 ```
 
 ### Update Impact Assessment (GPT Researcher)
+
 ```
 "Analyze the economic impact of [specific OSRS update] on the Grand Exchange market, including affected items and predicted long-term effects."
 ```
 
 ### Real-time Price Extraction (Firecrawl)
+
 ```
 "Extract current prices for [item list] from the OSRS Grand Exchange and compare with historical averages."
 ```
@@ -246,6 +257,7 @@ Quick daily check: "What are the current OSRS Grand Exchange trending items and 
 ---
 
 **Usage Notes:**
+
 - Use GPT Researcher for comprehensive, multi-source analysis
 - Use Firecrawl for structured data extraction from gaming websites
 - Use Tavily for quick fact-checking and recent news

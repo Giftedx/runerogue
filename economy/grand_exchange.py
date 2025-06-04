@@ -1,6 +1,8 @@
 """
 Grand Exchange System
 
+# AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
+
 Automated marketplace for buying and selling items with order matching,
 price discovery, and market analytics.
 """

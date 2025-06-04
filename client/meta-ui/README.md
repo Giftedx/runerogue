@@ -20,17 +20,20 @@ A Next.js React application providing authentication, leaderboards, and account 
 ## Quick Start
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Set up environment variables:
+
 ```bash
 cp .env.local.example .env.local
 # Edit .env.local with your API URL
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```

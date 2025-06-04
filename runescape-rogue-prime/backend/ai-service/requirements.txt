@@ -1,0 +1,6 @@
+fastapi==0.110.0
+uvicorn==0.29.0
+genkit==0.6.0
+google-cloud-aiplatform==1.47.0
+pydantic==2.7.1
+redis==5.0.4

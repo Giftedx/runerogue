@@ -2,7 +2,8 @@ import { Room, Client } from 'colyseus';
 import { GameState } from './schema/GameState';
 import { PlayerState } from './schema/PlayerState'; // Import PlayerState
 
-export class GameRoom extends Room<GameState> { // Use GameState
+export class GameRoom extends Room<GameState> {
+  // Use GameState
   maxClients = 3;
 
   onCreate(options: any) {
@@ -17,10 +18,10 @@ export class GameRoom extends Room<GameState> { // Use GameState
 
     // Example: Log player count changes
     this.state.players.onAdd((player, key) => {
-      console.log(player.id, "has been added at", key);
+      console.log(player.id, 'has been added at', key);
     });
     this.state.players.onRemove((player, key) => {
-      console.log(player.id, "has been removed at", key);
+      console.log(player.id, 'has been removed at', key);
     });
   }
 

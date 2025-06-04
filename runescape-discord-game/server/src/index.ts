@@ -25,21 +25,31 @@ apiRouter.post('/auth/discord-token-exchange', async (req: Request, res: Respons
     return res.status(400).json({ error: 'Authorization code is required.' });
   }
 
-  console.log(`Token Exchange: Received Discord auth code: ${code.substring(0,10)}... Attempting to exchange for token.`);
+  console.log(
+    `Token Exchange: Received Discord auth code: ${code.substring(0, 10)}... Attempting to exchange for token.`
+  );
 
   // !!! SECURITY WARNING !!!
   // These should be loaded from environment variables and managed securely (e.g., Google Secret Manager).
   // DO NOT commit actual secrets to your repository.
   const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || 'YOUR_DISCORD_CLIENT_ID_PLACEHOLDER';
-  const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'YOUR_DISCORD_CLIENT_SECRET_PLACEHOLDER';
+  const DISCORD_CLIENT_SECRET =
+    process.env.DISCORD_CLIENT_SECRET || 'YOUR_DISCORD_CLIENT_SECRET_PLACEHOLDER';
 
   // This redirect URI must match exactly one of the URIs configured in your Discord Developer Portal
   // For Embedded App SDK, this is often a placeholder like http://127.0.0.1 or your main app URL.
   const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'http://127.0.0.1/callback'; // Example placeholder
 
-  if (DISCORD_CLIENT_ID === 'YOUR_DISCORD_CLIENT_ID_PLACEHOLDER' || DISCORD_CLIENT_SECRET === 'YOUR_DISCORD_CLIENT_SECRET_PLACEHOLDER') {
-    console.error("Token Exchange: CRITICAL - Discord Client ID or Secret is not configured in environment variables.");
-    return res.status(500).json({ error: "Server configuration error: Discord credentials missing." });
+  if (
+    DISCORD_CLIENT_ID === 'YOUR_DISCORD_CLIENT_ID_PLACEHOLDER' ||
+    DISCORD_CLIENT_SECRET === 'YOUR_DISCORD_CLIENT_SECRET_PLACEHOLDER'
+  ) {
+    console.error(
+      'Token Exchange: CRITICAL - Discord Client ID or Secret is not configured in environment variables.'
+    );
+    return res
+      .status(500)
+      .json({ error: 'Server configuration error: Discord credentials missing.' });
   }
 
   const params = new URLSearchParams();
@@ -58,7 +68,9 @@ apiRouter.post('/auth/discord-token-exchange', async (req: Request, res: Respons
 
     const { access_token, refresh_token, expires_in, token_type, scope } = discordResponse.data;
 
-    console.log(`Token Exchange: Successfully exchanged code for Discord access token. Token Type: ${token_type}, Scope: ${scope}`);
+    console.log(
+      `Token Exchange: Successfully exchanged code for Discord access token. Token Type: ${token_type}, Scope: ${scope}`
+    );
     // console.log('Access Token:', access_token); // Be careful logging tokens
 
     // TODO:
@@ -73,7 +85,6 @@ apiRouter.post('/auth/discord-token-exchange', async (req: Request, res: Respons
       discord_access_token: access_token, // Client will need this for Discord SDK auth
       // firebase_custom_token: "TODO" // This will be added in a later step
     });
-
   } catch (error: any) {
     console.error('Token Exchange: Error exchanging Discord authorization code for token:');
     if (axios.isAxiosError(error) && error.response) {
@@ -81,7 +92,7 @@ apiRouter.post('/auth/discord-token-exchange', async (req: Request, res: Respons
       console.error('Discord API Error Data:', error.response.data);
       res.status(error.response.status || 500).json({
         error: 'Failed to exchange code with Discord.',
-        details: error.response.data
+        details: error.response.data,
       });
     } else {
       console.error('Unexpected error:', error.message);
@@ -108,9 +119,14 @@ app.get('/health', (req, res) => {
 });
 
 // Start listening
-gameServer.listen(port).then(() => {
+gameServer
+  .listen(port)
+  .then(() => {
     console.log(`[GameServer] Listening on http://localhost:${port}`);
-    console.log(`[HttpServer] API endpoint for Discord auth available at POST /api/auth/discord-token-exchange`);
-}).catch(err => {
+    console.log(
+      `[HttpServer] API endpoint for Discord auth available at POST /api/auth/discord-token-exchange`
+    );
+  })
+  .catch(err => {
     console.error(`[GameServer] Failed to listen on port ${port}`, err);
-});
+  });

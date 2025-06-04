@@ -25,33 +25,33 @@ This document outlines the database schema for the RuneRogue economy system, as 
 
 Represents the status of a trade between players.
 
-| Value       | Description                       |
-|-------------|-----------------------------------|
-| `PENDING`   | Trade request has been sent.      |
+| Value       | Description                              |
+| ----------- | ---------------------------------------- |
+| `PENDING`   | Trade request has been sent.             |
 | `ACCEPTED`  | Trade has been accepted by both parties. |
-| `DECLINED`  | Trade request has been declined.  |
-| `COMPLETED` | Trade has been successfully completed. |
-| `CANCELLED` | Trade has been cancelled.         |
+| `DECLINED`  | Trade request has been declined.         |
+| `COMPLETED` | Trade has been successfully completed.   |
+| `CANCELLED` | Trade has been cancelled.                |
 
 ### OfferType
 
 Represents the type of a Grand Exchange offer.
 
-| Value   | Description                       |
-|---------|-----------------------------------|
-| `BUY`   | An offer to buy items.            |
-| `SELL`  | An offer to sell items.           |
+| Value  | Description             |
+| ------ | ----------------------- |
+| `BUY`  | An offer to buy items.  |
+| `SELL` | An offer to sell items. |
 
 ### OfferStatus
 
 Represents the status of a Grand Exchange offer.
 
-| Value       | Description                       |
-|-------------|-----------------------------------|
-| `ACTIVE`    | Offer is currently active.        |
-| `COMPLETED` | Offer has been fully completed.   |
-| `CANCELLED` | Offer has been cancelled.         |
-| `EXPIRED`   | Offer has expired.                |
+| Value       | Description                     |
+| ----------- | ------------------------------- |
+| `ACTIVE`    | Offer is currently active.      |
+| `COMPLETED` | Offer has been fully completed. |
+| `CANCELLED` | Offer has been cancelled.       |
+| `EXPIRED`   | Offer has expired.              |
 
 ## Models
 
@@ -59,14 +59,14 @@ Represents the status of a Grand Exchange offer.
 
 Represents a player in the economy system.
 
-| Column       | Type         | Constraints/Description                               |
-|--------------|--------------|-------------------------------------------------------|
-| `id`         | `Integer`    | Primary Key                                           |
-| `username`   | `String(50)` | Unique, Not Null, Indexed                             |
-| `email`      | `String(120)`| Unique, Not Null                                      |
-| `is_active`  | `Boolean`    | Default: `True`                                       |
-| `created_at` | `DateTime`   | Default: `utcnow`                                     |
-| `last_login` | `DateTime`   |                                                       |
+| Column       | Type          | Constraints/Description   |
+| ------------ | ------------- | ------------------------- |
+| `id`         | `Integer`     | Primary Key               |
+| `username`   | `String(50)`  | Unique, Not Null, Indexed |
+| `email`      | `String(120)` | Unique, Not Null          |
+| `is_active`  | `Boolean`     | Default: `True`           |
+| `created_at` | `DateTime`    | Default: `utcnow`         |
+| `last_login` | `DateTime`    |                           |
 
 **Relationships:**
 
@@ -79,15 +79,15 @@ Represents a player in the economy system.
 
 Represents a tradeable item in the game.
 
-| Column       | Type           | Constraints/Description                               |
-|--------------|----------------|-------------------------------------------------------|
-| `id`         | `Integer`      | Primary Key                                           |
-| `name`       | `String(100)`  | Not Null, Indexed                                     |
-| `description`| `Text`         |                                                       |
-| `is_tradeable`| `Boolean`      | Default: `True`                                       |
-| `is_stackable`| `Boolean`      | Default: `False`                                      |
-| `base_value` | `Numeric(10,2)`| Default: `0`                                          |
-| `created_at` | `DateTime`     | Default: `utcnow`                                     |
+| Column         | Type            | Constraints/Description |
+| -------------- | --------------- | ----------------------- |
+| `id`           | `Integer`       | Primary Key             |
+| `name`         | `String(100)`   | Not Null, Indexed       |
+| `description`  | `Text`          |                         |
+| `is_tradeable` | `Boolean`       | Default: `True`         |
+| `is_stackable` | `Boolean`       | Default: `False`        |
+| `base_value`   | `Numeric(10,2)` | Default: `0`            |
+| `created_at`   | `DateTime`      | Default: `utcnow`       |
 
 **Relationships:**
 
@@ -100,13 +100,13 @@ Represents a tradeable item in the game.
 
 Represents an item in a player's inventory.
 
-| Column       | Type      | Constraints/Description                               |
-|--------------|-----------|-------------------------------------------------------|
-| `id`         | `Integer` | Primary Key                                           |
-| `player_id`  | `Integer` | Foreign Key to `players.id`, Not Null                 |
-| `item_id`    | `Integer` | Foreign Key to `items.id`, Not Null                   |
-| `quantity`   | `Integer` | Default: `1`                                          |
-| `acquired_at`| `DateTime`| Default: `utcnow`                                     |
+| Column        | Type       | Constraints/Description               |
+| ------------- | ---------- | ------------------------------------- |
+| `id`          | `Integer`  | Primary Key                           |
+| `player_id`   | `Integer`  | Foreign Key to `players.id`, Not Null |
+| `item_id`     | `Integer`  | Foreign Key to `items.id`, Not Null   |
+| `quantity`    | `Integer`  | Default: `1`                          |
+| `acquired_at` | `DateTime` | Default: `utcnow`                     |
 
 **Relationships:**
 
@@ -121,16 +121,16 @@ Represents an item in a player's inventory.
 
 Represents a direct player-to-player trade.
 
-| Column         | Type         | Constraints/Description                               |
-|----------------|--------------|-------------------------------------------------------|
-| `id`           | `Integer`    | Primary Key                                           |
-| `initiator_id` | `Integer`    | Foreign Key to `players.id`, Not Null                 |
-| `receiver_id`  | `Integer`    | Foreign Key to `players.id`, Not Null                 |
-| `status`       | `String(20)` | Default: `PENDING`                                    |
-| `initiated_at` | `DateTime`   | Default: `utcnow`                                     |
-| `completed_at` | `DateTime`   |                                                       |
-| `cancelled_at` | `DateTime`   |                                                       |
-| `notes`        | `Text`       |                                                       |
+| Column         | Type         | Constraints/Description               |
+| -------------- | ------------ | ------------------------------------- |
+| `id`           | `Integer`    | Primary Key                           |
+| `initiator_id` | `Integer`    | Foreign Key to `players.id`, Not Null |
+| `receiver_id`  | `Integer`    | Foreign Key to `players.id`, Not Null |
+| `status`       | `String(20)` | Default: `PENDING`                    |
+| `initiated_at` | `DateTime`   | Default: `utcnow`                     |
+| `completed_at` | `DateTime`   |                                       |
+| `cancelled_at` | `DateTime`   |                                       |
+| `notes`        | `Text`       |                                       |
 
 **Relationships:**
 
@@ -148,14 +148,14 @@ Represents a direct player-to-player trade.
 
 Represents an item included in a trade.
 
-| Column         | Type      | Constraints/Description                               |
-|----------------|-----------|-------------------------------------------------------|
-| `id`           | `Integer` | Primary Key                                           |
-| `trade_id`     | `Integer` | Foreign Key to `trades.id`, Not Null                  |
-| `item_id`      | `Integer` | Foreign Key to `items.id`, Not Null                   |
-| `quantity`     | `Integer` | Not Null                                              |
-| `from_player_id`| `Integer` | Foreign Key to `players.id`, Not Null                 |
-| `to_player_id` | `Integer` | Foreign Key to `players.id`, Not Null                 |
+| Column           | Type      | Constraints/Description               |
+| ---------------- | --------- | ------------------------------------- |
+| `id`             | `Integer` | Primary Key                           |
+| `trade_id`       | `Integer` | Foreign Key to `trades.id`, Not Null  |
+| `item_id`        | `Integer` | Foreign Key to `items.id`, Not Null   |
+| `quantity`       | `Integer` | Not Null                              |
+| `from_player_id` | `Integer` | Foreign Key to `players.id`, Not Null |
+| `to_player_id`   | `Integer` | Foreign Key to `players.id`, Not Null |
 
 **Relationships:**
 
@@ -166,19 +166,19 @@ Represents an item included in a trade.
 
 Represents a buy or sell offer on the Grand Exchange.
 
-| Column           | Type           | Constraints/Description                               |
-|------------------|----------------|-------------------------------------------------------|
-| `id`             | `Integer`      | Primary Key                                           |
-| `player_id`      | `Integer`      | Foreign Key to `players.id`, Not Null                 |
-| `item_id`        | `Integer`      | Foreign Key to `items.id`, Not Null                   |
-| `offer_type`     | `String(10)`   | Not Null (`buy` or `sell`)                            |
-| `quantity`       | `Integer`      | Not Null                                              |
-| `price_per_item` | `Numeric(10,2)`| Not Null                                              |
-| `quantity_remaining`| `Integer`      |                                                       |
-| `status`         | `String(20)`   | Default: `ACTIVE`                                     |
-| `created_at`     | `DateTime`     | Default: `utcnow`                                     |
-| `completed_at`   | `DateTime`     |                                                       |
-| `expires_at`     | `DateTime`     |                                                       |
+| Column               | Type            | Constraints/Description               |
+| -------------------- | --------------- | ------------------------------------- |
+| `id`                 | `Integer`       | Primary Key                           |
+| `player_id`          | `Integer`       | Foreign Key to `players.id`, Not Null |
+| `item_id`            | `Integer`       | Foreign Key to `items.id`, Not Null   |
+| `offer_type`         | `String(10)`    | Not Null (`buy` or `sell`)            |
+| `quantity`           | `Integer`       | Not Null                              |
+| `price_per_item`     | `Numeric(10,2)` | Not Null                              |
+| `quantity_remaining` | `Integer`       |                                       |
+| `status`             | `String(20)`    | Default: `ACTIVE`                     |
+| `created_at`         | `DateTime`      | Default: `utcnow`                     |
+| `completed_at`       | `DateTime`      |                                       |
+| `expires_at`         | `DateTime`      |                                       |
 
 **Relationships:**
 
@@ -196,17 +196,17 @@ Represents a buy or sell offer on the Grand Exchange.
 
 Represents a completed transaction on the Grand Exchange.
 
-| Column           | Type           | Constraints/Description                               |
-|------------------|----------------|-------------------------------------------------------|
-| `id`             | `Integer`      | Primary Key                                           |
-| `offer_id`       | `Integer`      | Foreign Key to `ge_offers.id`, Not Null               |
-| `buyer_id`       | `Integer`      | Foreign Key to `players.id`, Not Null                 |
-| `seller_id`      | `Integer`      | Foreign Key to `players.id`, Not Null                 |
-| `item_id`        | `Integer`      | Foreign Key to `items.id`, Not Null                   |
-| `quantity`       | `Integer`      | Not Null                                              |
-| `price_per_item` | `Numeric(10,2)`| Not Null                                              |
-| `total_price`    | `Numeric(12,2)`| Not Null                                              |
-| `completed_at`   | `DateTime`     | Default: `utcnow`                                     |
+| Column           | Type            | Constraints/Description                 |
+| ---------------- | --------------- | --------------------------------------- |
+| `id`             | `Integer`       | Primary Key                             |
+| `offer_id`       | `Integer`       | Foreign Key to `ge_offers.id`, Not Null |
+| `buyer_id`       | `Integer`       | Foreign Key to `players.id`, Not Null   |
+| `seller_id`      | `Integer`       | Foreign Key to `players.id`, Not Null   |
+| `item_id`        | `Integer`       | Foreign Key to `items.id`, Not Null     |
+| `quantity`       | `Integer`       | Not Null                                |
+| `price_per_item` | `Numeric(10,2)` | Not Null                                |
+| `total_price`    | `Numeric(12,2)` | Not Null                                |
+| `completed_at`   | `DateTime`      | Default: `utcnow`                       |
 
 **Relationships:**
 
@@ -219,14 +219,14 @@ Represents a completed transaction on the Grand Exchange.
 
 Tracks the historical prices of items.
 
-| Column       | Type           | Constraints/Description                               |
-|--------------|----------------|-------------------------------------------------------|
-| `id`         | `Integer`      | Primary Key                                           |
-| `item_id`    | `Integer`      | Foreign Key to `items.id`, Not Null                   |
-| `timestamp`  | `DateTime`     | Default: `utcnow`, Not Null                           |
-| `avg_price`  | `Numeric(10,2)`| Average price at the timestamp, Not Null              |
-| `min_price`  | `Numeric(10,2)`| Minimum observed price, Not Null                      |
-| `max_price`  | `Numeric(10,2)`| Maximum observed price, Not Null                      |
+| Column      | Type            | Constraints/Description                  |
+| ----------- | --------------- | ---------------------------------------- |
+| `id`        | `Integer`       | Primary Key                              |
+| `item_id`   | `Integer`       | Foreign Key to `items.id`, Not Null      |
+| `timestamp` | `DateTime`      | Default: `utcnow`, Not Null              |
+| `avg_price` | `Numeric(10,2)` | Average price at the timestamp, Not Null |
+| `min_price` | `Numeric(10,2)` | Minimum observed price, Not Null         |
+| `max_price` | `Numeric(10,2)` | Maximum observed price, Not Null         |
 
 **Relationships:**
 
@@ -240,14 +240,14 @@ Tracks the historical prices of items.
 
 Logs significant economic actions.
 
-| Column       | Type         | Constraints/Description                               |
-|--------------|--------------|-------------------------------------------------------|
-| `id`         | `Integer`    | Primary Key                                           |
-| `player_id`  | `Integer`    | Foreign Key to `players.id`, Nullable                 |
-| `trade_id`   | `Integer`    | Foreign Key to `trades.id`, Nullable                  |
-| `action_type`| `String(50)` | Not Null (e.g., `TRADE_INITIATED`, `ITEM_ACQUIRED`)   |
-| `details`    | `Text`       | JSON string of action details                         |
-| `timestamp`  | `DateTime`   | Default: `utcnow`, Not Null                           |
+| Column        | Type         | Constraints/Description                             |
+| ------------- | ------------ | --------------------------------------------------- |
+| `id`          | `Integer`    | Primary Key                                         |
+| `player_id`   | `Integer`    | Foreign Key to `players.id`, Nullable               |
+| `trade_id`    | `Integer`    | Foreign Key to `trades.id`, Nullable                |
+| `action_type` | `String(50)` | Not Null (e.g., `TRADE_INITIATED`, `ITEM_ACQUIRED`) |
+| `details`     | `Text`       | JSON string of action details                       |
+| `timestamp`   | `DateTime`   | Default: `utcnow`, Not Null                         |
 
 **Relationships:**
 

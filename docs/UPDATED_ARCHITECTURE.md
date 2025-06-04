@@ -13,6 +13,7 @@ RuneRogue has evolved from its original conception as a web scraping platform in
 ### Core Components
 
 #### 1. TypeScript Game Server (`src/server/`)
+
 - **Technology**: Node.js, Express.js, Colyseus
 - **Purpose**: Primary game server with real-time multiplayer functionality
 - **Port**: 3001 (default)
@@ -29,6 +30,7 @@ RuneRogue has evolved from its original conception as a web scraping platform in
   - Helmet, rate limiting for security
 
 #### 2. Python FastAPI MCP Server (`agents/mcp/`)
+
 - **Technology**: Python, FastAPI
 - **Purpose**: Model Context Protocol (MCP) server for AI agent integration
 - **Port**: 8000
@@ -41,6 +43,7 @@ RuneRogue has evolved from its original conception as a web scraping platform in
   - Supports AI-assisted gameplay
 
 #### 3. Legacy Python Flask Application (`app.py`)
+
 - **Technology**: Python, Flask, SQLAlchemy
 - **Purpose**: Web scraping and data processing (original core functionality)
 - **Port**: 5000 (inferred from documentation)
@@ -52,6 +55,7 @@ RuneRogue has evolved from its original conception as a web scraping platform in
 - **Current Status**: Partially integrated, likely being phased out or repurposed
 
 #### 4. Economy System (`economy_models/`)
+
 - **Technology**: Python, SQLAlchemy
 - **Purpose**: In-game economy, trading, and Grand Exchange
 - **Key Features**:
@@ -65,6 +69,7 @@ RuneRogue has evolved from its original conception as a web scraping platform in
 ### Client Applications
 
 #### 1. Godot Game Client (`client/godot/`)
+
 - **Technology**: Godot Engine
 - **Purpose**: Primary game client
 - **Features**:
@@ -73,6 +78,7 @@ RuneRogue has evolved from its original conception as a web scraping platform in
   - Real-time communication with game server
 
 #### 2. Meta UI (`client/meta-ui/`)
+
 - **Technology**: Web-based (likely React or Vue, details not confirmed)
 - **Purpose**: Out-of-game interface
 - **Features**:
@@ -85,10 +91,12 @@ RuneRogue has evolved from its original conception as a web scraping platform in
 The project appears to use multiple database models:
 
 1. **Game Data** (TypeScript/TypeORM)
+
    - Player game state
    - Authentication
 
 2. **Social System** (Python/SQLAlchemy)
+
    - Users, Friendships, Parties
    - Chat messages
 
@@ -100,29 +108,32 @@ The project appears to use multiple database models:
 ## Integration Points & Communication Flow
 
 ### Server-to-Server Communication
+
 - **Game Server ↔ MCP Server**: REST API calls (exact mechanism undocumented)
 - **Game Server ↔ Flask App**: Likely minimal or non-existent integration
 
 ### Client-to-Server Communication
-- **Godot Client ↔ Game Server**: 
+
+- **Godot Client ↔ Game Server**:
   - WebSockets for real-time game state (Colyseus)
   - HTTP for authentication and non-real-time actions
 - **Meta UI ↔ Game Server**: HTTP API calls
 - **Meta UI ↔ Flask App**: Possibly some legacy integrations
 
 ### Database Access
+
 - TypeScript server uses TypeORM
 - Python components use SQLAlchemy
 - Database sharing strategy is unclear from the code examined
 
 ## Port Configuration
 
-| Component               | Port | Environment Variable       |
-|-------------------------|------|----------------------------|
-| TypeScript Game Server  | 3001 | PORT                       |
-| Python MCP Server       | 8000 | (Not explicitly documented)|
-| Flask Application       | 5000 | PORT (inferred)            |
-| Frontend/Meta UI        | 3000 | (Referenced in CORS config)|
+| Component              | Port | Environment Variable        |
+| ---------------------- | ---- | --------------------------- |
+| TypeScript Game Server | 3001 | PORT                        |
+| Python MCP Server      | 8000 | (Not explicitly documented) |
+| Flask Application      | 5000 | PORT (inferred)             |
+| Frontend/Meta UI       | 3000 | (Referenced in CORS config) |
 
 ## Development Workflow
 

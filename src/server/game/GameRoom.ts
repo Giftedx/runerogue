@@ -1,473 +1,227 @@
-import 'reflect-metadata';
-import { type } from '@colyseus/schema';
-import {
-  PlayerActionMessage,
-  EquipItemMessage,
-  DropItemMessage,
-  CollectLootMessage,
-} from './EntitySchemas';
+// AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import { Room, Client } from '@colyseus/core';
-
-/**
- * Interface for player join options
- */
-interface JoinOptions {
-  name?: string;
-}
-
-import { InventoryItem, LootDrop, Player, GameState, LootDropMessage } from './EntitySchemas';
+import { GameState, Player, InventoryItem, LootDrop, NPC } from './EntitySchemas';
 import { CombatSystem } from './CombatSystem';
+import { ItemManager } from './ItemManager';
+import { LootManager } from './LootManager';
+import economyIntegration from '../economy-integration';
+import { sendDiscordNotification } from '../discord-bot';
+import { broadcastPlayerState } from './multiplayerSync';
 
-// Re-export the type decorator
-export { type };
-
-// ==========================================
-// Interface Declarations
-// ==========================================
-
-/**
- * Interface for player movement messages
- */
-
-/**
- * Interface for player action messages
- */
-
-/**
- * Interface for loot drop messages
- */
-
-/**
- * Interface for inventory item
- */
-
-/**
- * Interface for player skills
- */
-
-/**
- * Interface for player join options
- */
-
-/**
- * Interface for room metadata
- */
-
-// Define type mappings for schema serialization
-
-// ==========================================
-// Schema Classes
-// ==========================================
-
-/**
- * Skill class for player skills
- */
-
-
-/**
- * Skills collection class
- */
-
-
-/**
- * Game state class for the room
- */
-// Forward declarations for schema types - these are just placeholders
-// Removed to avoid duplicate class declarations
-// (Duplicate Player and LootDrop classes removed above)
-
-// --- Schema Classes: InventoryItem and Equipment must be defined before LootDrop and Player ---
-/**
- * Inventory item class
- */
-// --- Moved InventoryItem above LootDrop for correct usage order ---
-
-  
-
-/**
- * Equipment class
- */
-
-  
-
-/**
- * Loot drop class
- */
-
-  
-
-/**
- * GameRoom class that extends Colyseus Room
- */
 export class GameRoom extends Room<GameState> {
-  /**
-   * Add starter items to a player (stub)
-   */
-  protected addStarterItems(_player: Player): void {
-    // TODO: Implement starter item assignment
-  }  /**
-   * Drop all items in a player's inventory as loot (stub)
-   */
-  protected dropPlayerInventory(_player: Player): void {
-    // TODO: Implement inventory drop logic
-  }
+  maxClients = 4;
+  private combatSystem!: CombatSystem;
+  private itemManager!: ItemManager;
 
-  /**
-   * Create a loot drop at a location (stub)
-   */
-  protected createLootDrop(_items: InventoryItem[], _x: number, _y: number): LootDrop {
-    // TODO: Implement loot drop creation logic
-    return new LootDrop();
-  }
+  onCreate(options: any): void {
+    this.setState(new GameState());
+    this.combatSystem = new CombatSystem(this.state);
+    this.itemManager = ItemManager.getInstance();
 
-  private intervals: NodeJS.Timeout[] = [];
-  private lootExpiration = 300000; // 5 minutes in ms
-  private idleTimeout = 600000; // 10 minutes in ms
-  private autoLootPickup = true;
-  private lootPickupRadius = 50; // pixels
+    // Add some initial NPCs with structured loot tables
+    const goblin1 = new NPC('goblin_1', 'Goblin', 5, 5, 'goblin', [
+      { itemId: 'bronze_sword', probability: 0.5, quantity: 1 },
+      { itemId: 'bronze_plate', probability: 0.25, quantity: 1 }
+    ]);
+    const orc1 = new NPC('orc_1', 'Orc', 15, 15, 'orc', [
+      { itemId: 'iron_sword', probability: 0.7, quantity: 1 }
+    ]);
+    this.state.npcs.set(goblin1.id, goblin1);
+    this.state.npcs.set(orc1.id, orc1);
 
+    console.log('Initial NPCs added:', Array.from(this.state.npcs.values()).map(npc => npc.name));
 
-    onCreate(_options: any): void {
-    this.setGameState(new GameState());
+    console.log('GameRoom created:', options);
 
+    this.onMessage('player_action', (client, message) => {
+      console.log(`Player action from ${client.sessionId}:`, message);
+      this.combatSystem.handlePlayerAction(client.sessionId, message);
+      broadcastPlayerState(this, client.sessionId, this.state.players.get(client.sessionId));
+    });
 
-    // Register message handlers
-    this.onMessage('action', this.handleAction.bind(this));
-    this.onMessage('equipItem', this.handleEquipItem.bind(this));
-    this.onMessage('dropItem', this.handleDropItem.bind(this));
-    this.onMessage('collectLoot', this.handleCollectLoot.bind(this));
-
-    // Set up game loops
-    this.intervals.push(
-      setInterval(() => this.processCombat(), 100),
-      setInterval(() => this.updatePlayerStates(), 50),
-      setInterval(() => this.checkIdlePlayers(), 60000)
-    );
-
-    // Set up loot cleanup
-    this.intervals.push(
-      setInterval(() => this.cleanupLoot(), 60000)
-    );
-
-    // TODO: Replace with proper logging framework in production
-// console.log('Game room created!');
-  }
-  
-  // Helper method to set game state (workaround for TypeScript error)
-  private setGameState(state: GameState): void {
-    (this as any).setState(state);
-  }
-
-  /**
-   * When client joins the room
-   */
-  onJoin(client: Client, options: JoinOptions) {
-    // TODO: Replace with proper logging framework in production
-// console.log(`Client ${client.sessionId} joined!`);
-
-    // Create a new player instance
-    const player = new Player();
-    player.id = client.sessionId;
-    player.username = options.name || `Player ${client.sessionId.substr(0, 4)}`;
-    player.x = Math.floor(Math.random() * 400) + 100;
-    player.y = Math.floor(Math.random() * 400) + 100;
-    player.lastActivity = Date.now();
-
-    // Add player to the room state
-    this.state.players.set(client.sessionId, player);
-
-    // Add starter items to the player
-    this.addStarterItems(player);
-
-    // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} joined with id ${player.id}`);
-  }
-
-  /**
-   * When client leaves the room
-   */
-  onLeave(_client: Client, _consented: boolean) {
-    // Clear all intervals to prevent memory leaks
-    this.intervals.forEach(interval => clearInterval(interval));
-    this.intervals = [];
-  }
-
-  // Player action handler
-  private handleAction(client: Client, message: PlayerActionMessage) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player) return;
-
-    // TODO: Implement action handling (e.g., combat, interaction, etc.)
-    // For now, just log the action
-    console.log(`Player ${client.sessionId} performed action: ${message.type}`);
-
-    // Check for nearby loot (non-combat logic remains here)
-    this.checkForNearbyLoot(player, client);
-  }
-
-    private handleEquipItem(client: Client, message: EquipItemMessage) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player) return;
-    
-    const { itemIndex, slot } = message;
-    if (itemIndex === undefined || itemIndex < 0 || itemIndex >= player.inventory.length) {
-      return;
-    }
-    
-    const item = player.inventory[itemIndex];
-    if (!item || !item.type) return; // Empty slot or invalid item
-    
-    // Equip the item based on slot
-    if (slot === 'weapon') {
-      player.equipment.weapon = item.type;
-    } else if (slot === 'armor') {
-      player.equipment.armor = item.type;
-    } else if (slot === 'shield') {
-      player.equipment.shield = item.type;
-    }
-    
-    // Remove from inventory
-    player.inventory[itemIndex] = new InventoryItem();
-    
-    // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} equipped ${item.type} in ${slot} slot`);
-  }
-  
-    private handleDropItem(client: Client, message: DropItemMessage) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player) return;
-    
-    const { itemIndex, quantity = 1 } = message;
-    if (itemIndex === undefined || itemIndex < 0 || itemIndex >= player.inventory.length) {
-      return;
-    }
-    
-    const item = player.inventory[itemIndex];
-    if (!item || !item.type) return; // Empty slot or invalid item
-    
-    // Create a copy of the item to drop
-    const droppedItem = new InventoryItem(item.type, Math.min(quantity, item.quantity));
-    
-    // Update or remove from inventory
-    if (quantity >= item.quantity) {
-      player.inventory[itemIndex] = new InventoryItem();
-    } else {
-      item.quantity -= quantity;
-    }
-    
-    // Create loot drop
-    this.createLootDrop([droppedItem], player.x, player.y);
-    
-    // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} dropped ${droppedItem.quantity}x ${droppedItem.type}`);
-  }
-  
-    private handleCollectLoot(client: Client, message: CollectLootMessage) {
-    const player = this.state.players.get(client.sessionId);
-    if (!player) return;
-    
-    const lootId = message.lootId;
-    if (!lootId) return;
-    
-    const lootDrop = this.state.lootDrops.get(lootId);
-    if (!lootDrop) return;
-    
-    // Check if player is close enough to the loot
-    const distance = Math.sqrt(
-      Math.pow(player.x - lootDrop.x, 2) + 
-      Math.pow(player.y - lootDrop.y, 2)
-    );
-    
-    if (distance > this.lootPickupRadius) {
-      // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} is too far from loot ${lootId}`);
-      return;
-    }
-    
-    // Add items to player's inventory
-    let allItemsCollected = true;
-    
-    for (const item of lootDrop.items) {
-      // Find an empty slot or stack with existing item
-      let added = false;
-      
-      // First try to stack with existing items
-      for (let i = 0; i < player.inventory.length; i++) {
-        const inventoryItem = player.inventory[i];
-        if (inventoryItem.type === item.type) {
-          inventoryItem.quantity += item.quantity;
-          added = true;
-          break;
-        }
+    this.onMessage('player_movement', (client, message) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        player.x = message.x;
+        player.y = message.y;
+        console.log(`Player ${client.sessionId} moved to (${player.x}, ${player.y})`);
+        broadcastPlayerState(this, client.sessionId, player);
       }
-      
-      // If couldn't stack, find an empty slot
-      if (!added) {
-        for (let i = 0; i < player.inventory.length; i++) {
-          const inventoryItem = player.inventory[i];
-          if (!inventoryItem.type) {
-            player.inventory[i] = new InventoryItem(item.type, item.quantity);
-            added = true;
-            break;
-          }
-        }
-      }
-      
-      // If couldn't add the item, inventory is full
-      if (!added) {
-        allItemsCollected = false;
-        // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} inventory is full`);
-        break;
-      }
-    }
-    
-    // Remove loot drop if all items were collected
-    if (allItemsCollected) {
-      this.state.lootDrops.delete(lootId);
-      // TODO: Replace with proper logging framework in production
-// console.log(`Player ${player.username} collected loot ${lootId}`);
-    }
-  }
-  
-  /**
-   * Process combat ticks
-   */
-  private processCombat(): void {
-    CombatSystem.processCombat(this.state);
-  }
-  
-  /**
-   * Check for idle players and potentially disconnect them
-   */
-  private checkIdlePlayers(): void {
-    try {
-      const now = Date.now();
-      const idlePlayers: string[] = [];
-      
-      this.state.players.forEach((player, sessionId) => {
-        if (now - player.lastActivity > this.idleTimeout) {
-          idlePlayers.push(sessionId);
-        }
-      });
-      
-      // Disconnect idle players
-      for (const sessionId of idlePlayers) {
-        const client = this.clients.find(c => c.sessionId === sessionId);
-        if (client) {
-          // TODO: Replace with proper logging framework in production
-// console.log(`Disconnecting idle player: ${sessionId}`);
-          client.send('idle-timeout', { message: 'You have been disconnected due to inactivity.' });
-          client.leave(1000); // Graceful disconnect with 1 second delay
-        }
-      }
-    } catch (error) {
-      // TODO: Replace with proper logging framework in production
-// console.error('Error checking idle players:', error instanceof Error ? error.message : 'Unknown error', error);
-    }
-  }
-  
-  /**
-   * Update player states (cooldowns, busy status, etc.)
-   */
-  private updatePlayerStates(): void {
-    try {
-      const now = Date.now();
-      
-      this.state.players.forEach((player) => {
-        // Update busy status
-        if (player.isBusy && player.busyUntil <= now) {
-          player.isBusy = false;
-        }
-      });
-    } catch (_error) {
-      // TODO: Replace with proper logging framework in production
-      // console.error('Error updating player states:', _error instanceof Error ? _error.message : 'Unknown error', _error);
-    }
-  }
-  
-  /**
-   * Check for nearby loot and auto-pickup if enabled
-   */
-  private checkForNearbyLoot(player: Player, client: Client): void {
-    try {
-      // Skip if auto-pickup is disabled
-      if (!this.autoLootPickup) {
+    });
+
+    // Loot collection handler
+    this.onMessage('collect_loot', (client, message) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) {
+        console.warn(`Player ${client.sessionId} not found for loot collection.`);
         return;
       }
-      
-      const lootToPickup: string[] = [];
-      
-      this.state.lootDrops.forEach((loot, lootId) => {
-        const distance = Math.sqrt(
-          Math.pow(loot.x - player.x, 2) + 
-          Math.pow(loot.y - player.y, 2)
-        );
-        
-        if (distance <= this.lootPickupRadius) {
-          lootToPickup.push(lootId);
-        }
-      });
-      
-      // Pickup nearby loot
-      for (const lootId of lootToPickup) {
-        this.handleCollectLoot(client, { lootId });
+      const lootId = message.lootId;
+      const lootDrop = this.state.lootDrops.get(lootId);
+      if (!lootDrop) {
+        console.warn(`Loot drop ${lootId} not found.`);
+        return;
       }
-    } catch (_error) {
-      // TODO: Replace with proper logging framework in production
-      // console.error(`Error checking for nearby loot for player ${player.id}:`, _error instanceof Error ? _error.message : 'Unknown error', _error);
+      // Optional: Validate player is near the loot drop
+      const dx = Math.abs(player.x - lootDrop.x);
+      const dy = Math.abs(player.y - lootDrop.y);
+      if (dx > 2 || dy > 2) {
+        console.warn(`Player ${player.id} is too far from loot drop ${lootId}.`);
+        return;
+      }
+      const result = LootManager.collectLoot(this.state, player, lootId);
+      if (result) {
+        console.log(`Player ${player.id} collected loot ${lootId}.`);
+        // ECONOMY API SYNC: Add collected items to player's economy inventory
+        // Assume lootDrop still contains the items (if not, store items before collection)
+        if (lootDrop && lootDrop.items && lootDrop.items.length > 0) {
+          economyIntegration.getOrCreatePlayerProfile(player.name)
+            .then((profile) => {
+              const economyId = profile.id;
+              lootDrop.items.forEach((item) => {
+                economyIntegration.addItemToInventory(economyId, item.itemId, item.quantity)
+                  .catch(err => {
+                    console.error(`Failed to sync item ${item.itemId} for player ${economyId}:`, err);
+                  });
+              });
+              // Discord notification
+              sendDiscordNotification && sendDiscordNotification(`:tada: ${player.name} collected loot: ${lootDrop.items.map(i => i.name).join(', ')}`);
+            })
+            .catch(err => {
+              console.error(`Failed to resolve economy profile for player ${player.name}:`, err);
+            });
+        }
+        broadcastPlayerState(this, client.sessionId, player);
+      } else {
+        console.warn(`Player ${player.id} failed to collect loot ${lootId}.`);
+      }
+    });
+    // Other message handlers can be added here
+
+    // Schedule NPC movement update loop
+    setInterval(() => {
+      this.updateNPCs();
+      this.updateNPCBehavior();
+    }, 1000);
+  }
+
+  onJoin(client: Client, options: any): void {
+    console.log(client.sessionId, 'joined the room!', options);
+
+    const player = new Player();
+    player.id = client.sessionId;
+    player.name = `Player ${client.sessionId.substring(0, 4)}`;
+    player.x = Math.floor(Math.random() * 10);
+    player.y = Math.floor(Math.random() * 10);
+
+    // Add starter items
+    const starterSwordDef = this.itemManager.getItemDefinition('sword_of_heroes');
+    if (starterSwordDef) {
+      const starterSword = new InventoryItem(starterSwordDef, 1);
+      player.inventory.push(starterSword);
     }
+
+    const starterPotionDef = this.itemManager.getItemDefinition('health_potion');
+    if (starterPotionDef) {
+      const starterPotion = new InventoryItem(starterPotionDef, 3);
+      player.inventory.push(starterPotion);
+    }
+
+    this.state.players.set(client.sessionId, player);
+    broadcastPlayerState(this, client.sessionId, player);
   }
 
-  /**
-   * Generate loot based on resource type
-   */
-  private _generateResourceLoot(_resourceId: string): LootDropMessage {
-    // In a real implementation, this would use the resource type to determine loot
-    // For now, just return a random item
-    const lootTypes = [
-      { type: 'logs', skill: 'woodcutting' },
-      { type: 'oak_logs', skill: 'woodcutting' },
-      { type: 'copper_ore', skill: 'mining' },
-      { type: 'iron_ore', skill: 'mining' },
-      { type: 'raw_shrimp', skill: 'fishing' }
-    ];
-    
-    const randomLoot = lootTypes[Math.floor(Math.random() * lootTypes.length)];
-    
-    return {
-      itemType: randomLoot.type,
-      quantity: Math.floor(Math.random() * 3) + 1,
-      position: { x: 0, y: 0 } // Will be set by the caller
-    };
-  }
+  async onLeave(client: Client, consented: boolean): Promise<void> {
+    if (this.state.players.has(client.sessionId)) {
+      console.log(client.sessionId, 'left the room.');
+      const player = this.state.players.get(client.sessionId);
 
-  /**
-   * Clean up old loot drops
-   */
-  private cleanupLoot(): void {
+      // If player has inventory, create a loot drop using LootManager
+      if (player && player.inventory.length > 0) {
+        const lootDrop = LootManager.dropLootFromPlayer(this.state, player);
+        // ECONOMY API SYNC: Remove dropped items from player's economy inventory
+        if (lootDrop && lootDrop.items && lootDrop.items.length > 0) {
+          economyIntegration.getOrCreatePlayerProfile(player.name)
+            .then(profile => {
+              const economyId = profile.id;
+              lootDrop.items.forEach((item: InventoryItem) => {
+                economyIntegration.removeItemFromInventory(economyId, item.itemId, item.quantity)
+                  .then(() => {
+                    console.log(`Synced removal of item ${item.itemId} x${item.quantity} from Economy API for player ${economyId}`);
+                  })
+                  .catch(err => {
+                    console.error(`Failed to sync removal of item ${item.itemId} for player ${economyId}:`, err);
+                  });
+              });
+            })
+            .catch(err => {
+              console.error(`Failed to resolve economy profile for player ${player.name}:`, err);
+            });
+        }
+      }
+
+      this.state.players.delete(client.sessionId);
+    }
+
     try {
-      const now = Date.now();
-      const expiredLoot: string[] = [];
+      if (consented) {
+        throw new Error('player consented to leave');
+      }
 
-      this.state.lootDrops.forEach((loot, id) => {
-        if (now - loot.timestamp > this.lootExpiration) {
-          expiredLoot.push(id);
+      console.log('waiting for reconnection for', client.sessionId);
+      const newClient = await this.allowReconnection(client, 10);
+      console.log('reconnected!', newClient.sessionId);
+
+      // Update client sessionId for the reconnected player
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        player.id = newClient.sessionId;
+        this.state.players.delete(client.sessionId);
+        this.state.players.set(newClient.sessionId, player);
+        broadcastPlayerState(this, newClient.sessionId, player);
+      }
+
+    } catch (e) {
+      console.log(client.sessionId, 'could not reconnect.', e.message);
+      this.state.players.delete(client.sessionId);
+    }
+  }
+
+  onDispose(): void {
+    console.log('GameRoom disposed.');
+  }
+
+  private updateNPCs(): void {
+    // Iterate over each NPC and update its position randomly
+    this.state.npcs.forEach((npc) => {
+      const deltaX = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+      const deltaY = Math.floor(Math.random() * 3) - 1;
+      // Update NPC position, ensuring they don't go negative (could add upper bounds as needed)
+      npc.x = Math.max(0, npc.x + deltaX);
+      npc.y = Math.max(0, npc.y + deltaY);
+    });
+    console.log('Updated NPC positions:', Array.from(this.state.npcs.values()).map(npc => ({ id: npc.id, x: npc.x, y: npc.y })));
+  }
+
+  private updateNPCBehavior(): void {
+    // Iterate over each NPC
+    this.state.npcs.forEach((npc) => {
+      // For each player, check if they are within attack range (using Manhattan distance)
+      this.state.players.forEach((player) => {
+        const distance = Math.abs(npc.x - player.x) + Math.abs(npc.y - player.y);
+        if (distance <= 2) {
+          this.npcAttack(npc, player);
+          broadcastPlayerState(this, player.id, player);
         }
       });
+    });
+    console.log('Updated NPC behavior - checked for nearby players to attack.');
+  }
 
-      // Remove expired loot
-      expiredLoot.forEach(id => {
-        this.state.lootDrops.delete(id);
-      });
-
-      // Notify clients if any loot was removed
-      if (expiredLoot.length > 0) {
-        this.broadcast('loot-expired', { ids: expiredLoot });
-      }
-    } catch (_error) {
-      // TODO: Replace with proper logging framework in production
-      // console.error('Error cleaning up loot:', _error instanceof Error ? _error.message : 'Unknown error', _error);
-    }
+  private npcAttack(npc: NPC, player: Player): void {
+    // NPC deals random damage between 8 and 12
+    const damage = 8 + Math.floor(Math.random() * 5);
+    player.health = Math.max(0, player.health - damage);
+    console.log(`NPC ${npc.name} attacked Player ${player.id} for ${damage} damage. Player health is now ${player.health}.`);
   }
 }

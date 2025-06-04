@@ -1,5 +1,9 @@
 # RuneRogue API Contract Documentation
 
+**NOTE:** The primary authentication mechanism for the RuneRogue TypeScript Game Server is currently Discord OAuth2. This document describes a more generic authentication service that may represent a future planned service or an outdated specification. Please refer to the TypeScript Game Server's `src/server/routes/auth.ts` for the current authentication implementation.
+
+
+
 ## Authentication Service API
 
 Base URL: `https://auth.runerogue.com` (production) or `http://localhost:3001` (development)
@@ -7,6 +11,7 @@ Base URL: `https://auth.runerogue.com` (production) or `http://localhost:3001` (
 ### Authentication Flow
 
 The authentication service uses JWT tokens with the following flow:
+
 1. User registers or logs in
 2. Service returns access token (expires in 7 days) and refresh token (expires in 30 days)
 3. Client includes access token in `Authorization: Bearer <token>` header for protected requests
@@ -17,9 +22,11 @@ The authentication service uses JWT tokens with the following flow:
 #### Public Endpoints
 
 ##### POST /api/auth/register
+
 Register a new user account.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -29,11 +36,13 @@ Register a new user account.
 ```
 
 **Validation Rules:**
+
 - `email`: Valid email format, unique
 - `username`: 3-50 characters, unique
 - `password`: Minimum 8 characters, must contain uppercase, lowercase, and number
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -55,6 +64,7 @@ Register a new user account.
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -63,9 +73,11 @@ Register a new user account.
 ```
 
 ##### POST /api/auth/login
+
 Authenticate user with email and password.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -74,6 +86,7 @@ Authenticate user with email and password.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -94,6 +107,7 @@ Authenticate user with email and password.
 ```
 
 **Error Response (401 Unauthorized):**
+
 ```json
 {
   "success": false,
@@ -106,9 +120,11 @@ Authenticate user with email and password.
 All protected endpoints require the `Authorization: Bearer <access-token>` header.
 
 ##### GET /api/auth/validate
+
 Validate current session and return user information.
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -125,6 +141,7 @@ Validate current session and return user information.
 ```
 
 **Error Response (401/403):**
+
 ```json
 {
   "success": false,
@@ -133,9 +150,11 @@ Validate current session and return user information.
 ```
 
 ##### GET /api/auth/profile
+
 Get detailed user profile information.
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -152,9 +171,11 @@ Get detailed user profile information.
 #### Health Check
 
 ##### GET /health
+
 Service health check endpoint.
 
 **Response (200 OK):**
+
 ```json
 {
   "status": "healthy",
@@ -176,6 +197,7 @@ All endpoints follow a consistent error response format:
 ```
 
 Common HTTP status codes:
+
 - `200` - Success
 - `201` - Created (registration)
 - `400` - Bad Request (validation errors)
@@ -193,6 +215,7 @@ Common HTTP status codes:
 ### Security Headers
 
 All responses include security headers:
+
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `X-XSS-Protection: 1; mode=block`
@@ -209,6 +232,7 @@ All responses include security headers:
 ### Meta UI Integration
 
 The Meta UI client automatically:
+
 1. Stores JWT tokens in secure HTTP-only cookies
 2. Includes tokens in API requests via interceptors
 3. Handles token expiration and redirects to login
@@ -225,6 +249,7 @@ The Meta UI client automatically:
 The authentication service manages these PostgreSQL tables:
 
 **users table:**
+
 - `id` (UUID, primary key)
 - `email` (varchar, unique)
 - `username` (varchar, unique)
@@ -234,6 +259,7 @@ The authentication service manages these PostgreSQL tables:
 - `is_active` (boolean)
 
 **refresh_tokens table:**
+
 - `id` (UUID, primary key)
 - `user_id` (UUID, foreign key to users)
 - `token_hash` (varchar)

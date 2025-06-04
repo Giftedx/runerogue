@@ -1,11 +1,13 @@
 # GitHub Copilot Agent TODO Search - Next Steps Continuation Prompt
 
 ## CURRENT STATUS
+
 The GitHub Copilot Agent TODO search functionality has been implemented and committed to the repository. The code is ready but needs verification and potential troubleshooting.
 
 ## IMMEDIATE NEXT STEPS TO EXECUTE
 
 ### 1. VERIFY WORKFLOW EXECUTION
+
 First, check if the GitHub Actions workflow has executed successfully:
 
 ```
@@ -16,6 +18,7 @@ Look for recent workflow runs triggered by issue assignments or pushes to verify
 ```
 
 ### 2. CHECK ISSUE COMMENT STATUS
+
 Verify if the bot successfully posted a comment on the target issue:
 
 ```
@@ -29,18 +32,21 @@ Look for a comment from github-copilot[bot] containing TODO search results. The 
 ```
 
 ### 3. TROUBLESHOOT IF WORKFLOW FAILED
+
 If the workflow failed or no comment was posted, execute these debugging steps:
 
 #### A. Check Workflow Logs
+
 ```
 Examine the workflow logs in GitHub Actions for:
 - PyGithub import errors (should be resolved with our requirements.txt update)
-- Git command execution failures  
+- Git command execution failures
 - Script execution errors
 - Permission issues with posting comments
 ```
 
 #### B. Re-trigger Workflow
+
 ```
 If needed, re-trigger the workflow by:
 1. Going to issue #42: https://github.com/Giftedx/runerogue/issues/42
@@ -49,6 +55,7 @@ If needed, re-trigger the workflow by:
 ```
 
 #### C. Test Local Functionality
+
 ```
 If workflow issues persist, test the functionality locally by running:
 
@@ -59,13 +66,15 @@ This will verify the TODO search logic works correctly outside of the GitHub Act
 ```
 
 ### 4. VALIDATE TODO SEARCH RESULTS
+
 Once the bot comment appears, verify the results are accurate:
 
 #### Expected Results Should Include:
+
 ```
 ✅ ACTUAL TODO COMMENTS (3 found):
 - economy/grand_exchange.py:183 - TODO: Implement item search functionality
-- economy/grand_exchange.py:399 - TODO: Add price history tracking  
+- economy/grand_exchange.py:399 - TODO: Add price history tracking
 - economy/grand_exchange.py:572 - TODO: Implement advanced filtering
 
 📝 TODO REFERENCES (multiple found):
@@ -76,6 +85,7 @@ Once the bot comment appears, verify the results are accurate:
 ### 5. HANDLE POTENTIAL ISSUES
 
 #### If No Comment Posted:
+
 ```
 1. Check workflow permissions - ensure GITHUB_TOKEN has issue write access
 2. Verify the workflow trigger conditions match the issue assignment
@@ -83,6 +93,7 @@ Once the bot comment appears, verify the results are accurate:
 ```
 
 #### If Incorrect Results:
+
 ```
 1. Verify the git grep command is finding all TODO instances
 2. Check if the categorization logic correctly distinguishes actual TODOs
@@ -90,6 +101,7 @@ Once the bot comment appears, verify the results are accurate:
 ```
 
 #### If Workflow Errors Persist:
+
 ```
 1. Check for any merge conflicts or file corruption
 2. Verify all dependencies in requirements.txt are correctly specified
@@ -98,9 +110,11 @@ Once the bot comment appears, verify the results are accurate:
 ```
 
 ### 6. FINAL VERIFICATION STEPS
+
 Once everything is working:
 
 #### A. Test Complete Workflow
+
 ```
 1. Create a new test issue
 2. Assign it to @github/copilot with TODO search request
@@ -108,6 +122,7 @@ Once everything is working:
 ```
 
 #### B. Document Success
+
 ```
 1. Update project documentation with the new TODO search capability
 2. Add examples of how to use the feature
@@ -115,6 +130,7 @@ Once everything is working:
 ```
 
 ### 7. OPTIMIZATION (IF TIME PERMITS)
+
 Consider these enhancements:
 
 ```
@@ -126,17 +142,20 @@ Consider these enhancements:
 ```
 
 ## FILES TO MONITOR
+
 - `scripts/process_agent_task.py` - Main implementation
 - `requirements.txt` - Dependencies
 - `.github/workflows/copilot-agent-tasks.yml` - Workflow configuration
 - GitHub issue #42 - Target test issue
 
 ## BACKUP RESOURCES
+
 - `scripts/simple_todo_search.py` - Alternative implementation
 - `test_todo_functionality.py` - Local testing script
 - `NEXT_CHAT_PROMPT.md` - Original next steps documentation
 
 ## SUCCESS CRITERIA
+
 ✅ GitHub Actions workflow executes without errors
 ✅ Bot successfully posts formatted comment on assigned issues  
 ✅ TODO search results are accurate and properly categorized
@@ -144,6 +163,7 @@ Consider these enhancements:
 ✅ All dependencies are correctly resolved
 
 ## CONTACT POINTS
+
 - Repository: https://github.com/Giftedx/runerogue
 - Target Issue: https://github.com/Giftedx/runerogue/issues/42
 - Workflow: https://github.com/Giftedx/runerogue/actions

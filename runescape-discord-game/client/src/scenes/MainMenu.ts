@@ -37,7 +37,7 @@ export class MainMenuScene extends Phaser.Scene {
         this.statusText.setText('Discord SDK Ready. Authorizing...');
 
         const auth = await this.discordService.authorize();
-        this.statusText.setText(`Authorized! Code: ${auth.code.substring(0,10)}...`);
+        this.statusText.setText(`Authorized! Code: ${auth.code.substring(0, 10)}...`);
         console.log('Authorization successful in MainMenuScene, code:', auth.code);
 
         // Next step: Send this code to your backend, then sign in with Firebase,

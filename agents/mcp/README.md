@@ -60,11 +60,13 @@ Search the OSRS Wiki for information about items, NPCs, quests, etc.
 **Endpoint:** `POST /mcp/tools/search_osrs_wiki`
 
 **Parameters:**
+
 - `query` (string, required): Search query
 - `data_type` (string, optional): Type of data to search for (item, npc, quest, minigame, area, any)
 - `limit` (integer, optional): Maximum number of results (default: 5, max: 20)
 
 **Example Request:**
+
 ```bash
 curl -X POST http://localhost:8001/mcp/tools/search_osrs_wiki \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -79,11 +81,13 @@ Design game content based on OSRS data.
 **Endpoint:** `POST /mcp/tools/design_osrs_content`
 
 **Parameters:**
+
 - `content_type` (string, required): Type of content to design (item, npc, quest, minigame, area)
 - `theme` (string, required): Theme or name of the content
 - `requirements` (object, optional): Specific requirements for the design
 
 **Example Request:**
+
 ```bash
 curl -X POST http://localhost:8001/mcp/tools/design_osrs_content \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -161,7 +165,7 @@ docker run -p 8001:8001 --env-file .env runerogue-mcp
 
 - `MCP_SECRET_KEY`: Secret key for JWT token signing
 - `MCP_ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time (default: 30)
-- `MCP_CORS_ORIGINS`: Comma-separated list of allowed CORS origins (default: "*")
+- `MCP_CORS_ORIGINS`: Comma-separated list of allowed CORS origins (default: "\*")
 
 ## Creating Custom Tools
 
@@ -205,7 +209,7 @@ class MyTool(Tool):
                 "required": ["param1"]
             }
         )
-    
+
     async def execute(self, input_data: dict) -> ToolResult:
         try:
             result = f"Processed: {input_data['param1']}"

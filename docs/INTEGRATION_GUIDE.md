@@ -4,14 +4,14 @@ This document provides detailed guidance on how the different components of the 
 
 ## Component Integration Matrix
 
-| Component A | Component B | Integration Method | Status | Notes |
-|-------------|-------------|-------------------|--------|-------|
-| TypeScript Game Server | Godot Client | WebSockets (Colyseus) | Implemented | Primary real-time game communication |
-| TypeScript Game Server | Web Meta UI | REST API | Implemented | Account management, configuration |
-| TypeScript Game Server | MCP Server | REST API | Partial | AI agent integration needs strengthening |
-| TypeScript Game Server | Economy System | Indirect | Missing | **Needs implementation** |
-| MCP Server | Economy System | Python Imports | Partial | Data access without full integration |
-| Flask App | Economy System | Python Imports | Implemented | Legacy integration |
+| Component A            | Component B    | Integration Method    | Status      | Notes                                    |
+| ---------------------- | -------------- | --------------------- | ----------- | ---------------------------------------- |
+| TypeScript Game Server | Godot Client   | WebSockets (Colyseus) | Implemented | Primary real-time game communication     |
+| TypeScript Game Server | Web Meta UI    | REST API              | Implemented | Account management, configuration        |
+| TypeScript Game Server | MCP Server     | REST API              | Partial     | AI agent integration needs strengthening |
+| TypeScript Game Server | Economy System | Indirect              | Missing     | **Needs implementation**                 |
+| MCP Server             | Economy System | Python Imports        | Partial     | Data access without full integration     |
+| Flask App              | Economy System | Python Imports        | Implemented | Legacy integration                       |
 
 ## Communication Protocols
 
@@ -24,13 +24,13 @@ The primary game state synchronization happens through Colyseus:
 ```typescript
 // Client-side connection (Godot with TypeScript)
 const client = new Colyseus.Client('ws://localhost:3001');
-const room = await client.joinOrCreate('game_room', { 
+const room = await client.joinOrCreate('game_room', {
   playerName: 'Player1',
-  authToken: 'jwt-token'
+  authToken: 'jwt-token',
 });
 
 // Listen for state changes
-room.onStateChange((state) => {
+room.onStateChange(state => {
   updateGameState(state);
 });
 
@@ -63,7 +63,7 @@ async function login(username, password) {
   const response = await fetch('http://localhost:3001/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password }),
   });
   return response.json();
 }
@@ -250,10 +250,12 @@ Ensure all services have proper CORS configuration:
 
 ```typescript
 // TypeScript server
-app.use(cors({
-  origin: process.env.FRONTEND_URL?.split(',') || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL?.split(',') || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 ```
 
 ```python
@@ -278,8 +280,8 @@ When one service calls another, authentication needs to be propagated:
 async function getPlayerInventory(playerId: string, authToken: string) {
   const response = await fetch(`http://localhost:8001/players/${playerId}/inventory`, {
     headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
+      Authorization: `Bearer ${authToken}`,
+    },
   });
   return response.json();
 }
@@ -290,6 +292,7 @@ async function getPlayerInventory(playerId: string, authToken: string) {
 This integration guide provides a roadmap for connecting the various components of the RuneRogue architecture. By following these guidelines, developers can ensure that the system functions cohesively despite its polyglot nature.
 
 The most critical integration points to address are:
+
 1. TypeScript Game Server ↔ Economy System
 2. Enhanced TypeScript Game Server ↔ MCP Server communication
 3. Legacy Flask App migration or retirement

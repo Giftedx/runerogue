@@ -7,7 +7,9 @@ import { DiscordSDK, Events } from '@discord/embedded-app-sdk';
 const VITE_DISCORD_CLIENT_ID = 'YOUR_DISCORD_CLIENT_ID_PLACEHOLDER';
 
 if (VITE_DISCORD_CLIENT_ID === 'YOUR_DISCORD_CLIENT_ID_PLACEHOLDER') {
-  console.warn('DiscordService: VITE_DISCORD_CLIENT_ID is not set. Please set it in your environment or .env file.');
+  console.warn(
+    'DiscordService: VITE_DISCORD_CLIENT_ID is not set. Please set it in your environment or .env file.'
+  );
 }
 
 export class DiscordService {
@@ -54,8 +56,8 @@ export class DiscordService {
       throw new Error('Discord SDK is not ready. Call ready() first.');
     }
     if (this.authResult) {
-        console.log('Already have auth code:', this.authResult.code);
-        return this.authResult;
+      console.log('Already have auth code:', this.authResult.code);
+      return this.authResult;
     }
 
     console.log('Requesting Discord authorization...');
@@ -100,14 +102,14 @@ export class DiscordService {
     }
   }
 
-   // Example function to get instance connected participants (will be needed later)
-   async getInstanceConnectedParticipants() {
+  // Example function to get instance connected participants (will be needed later)
+  async getInstanceConnectedParticipants() {
     if (!this.isReady || !this.discordSdk.commands.getInstanceConnectedParticipants) {
       console.warn('Discord SDK not ready or command not available');
       return null;
     }
     try {
-      const {participants} = await this.discordSdk.commands.getInstanceConnectedParticipants();
+      const { participants } = await this.discordSdk.commands.getInstanceConnectedParticipants();
       console.log('Connected participants:', participants);
       return participants;
     } catch (error) {

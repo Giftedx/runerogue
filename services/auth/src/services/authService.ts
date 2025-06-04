@@ -13,10 +13,10 @@ export class AuthService {
     const { email, username, password } = userData;
 
     // Check if user already exists
-    const existingUser = await query(
-      'SELECT id FROM users WHERE email = $1 OR username = $2',
-      [email, username]
-    );
+    const existingUser = await query('SELECT id FROM users WHERE email = $1 OR username = $2', [
+      email,
+      username,
+    ]);
 
     if (existingUser.rows.length > 0) {
       throw new Error('User with this email or username already exists');
@@ -37,10 +37,9 @@ export class AuthService {
   }
 
   static async authenticateUser(email: string, password: string): Promise<User | null> {
-    const result = await query(
-      'SELECT * FROM users WHERE email = $1 AND is_active = true',
-      [email]
-    );
+    const result = await query('SELECT * FROM users WHERE email = $1 AND is_active = true', [
+      email,
+    ]);
 
     if (result.rows.length === 0) {
       return null;
@@ -63,11 +62,9 @@ export class AuthService {
       expiresIn: this.JWT_EXPIRE,
     });
 
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      this.JWT_SECRET,
-      { expiresIn: this.JWT_REFRESH_EXPIRE }
-    );
+    const refreshToken = jwt.sign({ userId: user.id }, this.JWT_SECRET, {
+      expiresIn: this.JWT_REFRESH_EXPIRE,
+    });
 
     // Store refresh token hash in database
     const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
@@ -80,7 +77,7 @@ export class AuthService {
     );
 
     const decoded = jwt.decode(accessToken) as JwtPayload;
-    
+
     return {
       accessToken,
       refreshToken,
@@ -91,12 +88,11 @@ export class AuthService {
   static async validateToken(token: string): Promise<JwtPayload | null> {
     try {
       const decoded = jwt.verify(token, this.JWT_SECRET) as JwtPayload;
-      
+
       // Check if user still exists and is active
-      const result = await query(
-        'SELECT id FROM users WHERE id = $1 AND is_active = true',
-        [decoded.userId]
-      );
+      const result = await query('SELECT id FROM users WHERE id = $1 AND is_active = true', [
+        decoded.userId,
+      ]);
 
       return result.rows.length > 0 ? decoded : null;
     } catch (error) {

@@ -72,12 +72,12 @@ Unit tests should focus on testing individual functions or classes in isolation:
 ```python
 def test_calculate_combat_level():
     # Given
-    stats = {"attack": 60, "strength": 70, "defence": 55, "hitpoints": 70, 
+    stats = {"attack": 60, "strength": 70, "defence": 55, "hitpoints": 70,
              "prayer": 43, "ranged": 49, "magic": 60}
-    
+
     # When
     result = calculate_combat_level(stats)
-    
+
     # Then
     assert result == 71
 ```
@@ -90,13 +90,13 @@ Integration tests verify that components work together correctly:
 def test_item_purchase_updates_inventory(client, mock_user, mock_item):
     # Given
     login_user(client, mock_user)
-    
+
     # When
     response = client.post('/api/economy/purchase', json={
         'item_id': mock_item.id,
         'quantity': 1
     })
-    
+
     # Then
     assert response.status_code == 200
     data = response.get_json()
@@ -112,7 +112,7 @@ API tests verify that endpoints work as expected:
 def test_get_item_details(client, mock_item):
     # When
     response = client.get(f'/api/items/{mock_item.id}')
-    
+
     # Then
     assert response.status_code == 200
     data = response.get_json()
@@ -165,12 +165,12 @@ For tests that involve external services (like the OSRS Wiki), use the `response
 def test_fetch_wiki_data():
     # Mock the external API response
     responses.add(
-        responses.GET, 
+        responses.GET,
         "https://oldschool.runescape.wiki/w/Dragon_scimitar",
         body="<html>Mock content</html>",
         status=200
     )
-    
+
     # Test the function that makes the request
     result = fetch_wiki_data("Dragon_scimitar")
     assert "Mock content" in result
@@ -214,10 +214,10 @@ Example:
 def test_create_agent_task(mock_create_issue):
     # Setup
     mock_create_issue.return_value = {'id': 123, 'number': 42}
-    
+
     # Execute
     result = create_agent_task("Test task", "Description", ["label1"])
-    
+
     # Verify
     assert result['number'] == 42
     mock_create_issue.assert_called_once_with(
