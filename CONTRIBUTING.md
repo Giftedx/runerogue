@@ -34,15 +34,17 @@ Thank you for your interest in contributing to RuneRogue! This document provides
 2. **Set up Python environment**
 
    ```bash
+   cd tools-python
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
+   cd ..
    ```
 
 3. **Set up Node.js environment**
 
    ```bash
-   cd client
+   cd server-ts
    npm install
    ```
 
@@ -56,18 +58,26 @@ Thank you for your interest in contributing to RuneRogue! This document provides
 5. **Start the development servers**
 
    ```bash
-   # Backend
+   # Python tools server
+   cd tools-python
    python app.py
+   cd ..
 
-   # Frontend
-   cd client
+   # Node game server
+   cd server-ts
+   npm run dev
+
+   # Client UI
+   cd server-ts/client
    npm run dev
    ```
 
 ## Project Structure
 
-- `agents/`: GitHub Copilot Agent system and related utilities
-- `client/`: Frontend applications (React, Godot)
+- `server-ts/`: TypeScript game server, Colyseus integration, Discord bot, Docker & CI configs.
+- `server-ts/client/`: Web UI (React/Godot) code and assets.
+- `tools-python/`: Python tooling, FastAPI economy API, Flask legacy backend, MCP server, scripts.
+- `archives/`: Legacy prototypes, microservices, archived docs and infra code.
 - `config/`: Configuration files and utilities
 - `docs/`: Project documentation
 - `economy/`: Economy and trading system

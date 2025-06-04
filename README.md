@@ -116,13 +116,21 @@ For detailed information, see the following documentation:
 2. **Backend Setup (Python):**
 
    ```bash
+   cd tools-python
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
+   cd ..
    ```
 
 3. **Frontend Setup (TypeScript/React):**
 
    ```bash
-   cd client/meta-ui
+   cd server-ts
+   npm install
+   cd ..
+
+   cd server-ts/client
    npm install
    cd ../..
    ```
