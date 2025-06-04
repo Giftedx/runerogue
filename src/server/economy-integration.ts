@@ -10,7 +10,7 @@
 
 import { Room } from 'colyseus';
 import { Client } from 'colyseus';
-import logger from './logger';
+import logger from '../logger';
 import economyClient, {
   EconomyClient,
   Player as EconomyPlayer,

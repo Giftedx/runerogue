@@ -32,6 +32,25 @@ export interface LootDropMessage {
   position: { x: number; y: number };
 }
 
+// Interface for trade request messages
+export interface TradeRequestMessage {
+  targetPlayerId: string;
+}
+
+// Interface for trade offer messages
+export interface TradeOfferMessage {
+  offeredItems: { itemId: string; quantity: number }[];
+}
+
+// Interface for trade accept/cancel messages
+export interface TradeAcceptMessage {
+  tradeId: string;
+}
+
+export interface TradeCancelMessage {
+  tradeId: string;
+}
+
 /**
  * Skill class for player skills
  */
@@ -487,6 +506,33 @@ export class NPC extends Schema {
 }
 
 // Extended game state with map and NPCs
+export class Trade extends Schema {
+  @type('string')
+  tradeId: string = '';
+
+  @type('string')
+  proposerId: string = '';
+
+  @type('string')
+  accepterId: string = '';
+
+  @type([InventoryItem])
+  proposerItems = new ArraySchema<InventoryItem>();
+
+  @type([InventoryItem])
+  accepterItems = new ArraySchema<InventoryItem>();
+
+  @type('string')
+  status: 'pending' | 'offered' | 'accepted' | 'completed' | 'cancelled' = 'pending';
+
+  constructor(tradeId: string, proposerId: string, accepterId: string) {
+    super();
+    this.tradeId = tradeId;
+    this.proposerId = proposerId;
+    this.accepterId = accepterId;
+  }
+}
+
 export class GameState extends Schema {
   @type({ map: Player })
   players = new MapSchema<Player>();
@@ -496,6 +542,9 @@ export class GameState extends Schema {
 
   @type({ map: NPC })
   npcs = new MapSchema<NPC>();
+
+  @type({ map: Trade })
+  trades = new MapSchema<Trade>();
 
   // Add other common game state properties here if needed
 }

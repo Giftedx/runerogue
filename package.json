@@ -5,11 +5,11 @@
   "main": "dist/server/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server/index.js",
+    "start": "node dist/src/server/index.js",
     "dev": "npm run build && node dist/server/index.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
-    "test": "cross-env COLYSEUS_URI=ws://localhost:2567 NODE_OPTIONS=\"\" jest --json --outputFile=jest_results.json",
+    "test": "cross-env COLYSEUS_URI=ws://localhost:2567 jest --json --outputFile=jest_results.json --no-cache --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
@@ -27,6 +27,7 @@
     "@colyseus/ws-transport": "^0.16.0",
     "@discordjs/rest": "^2.0.0",
     "@types/winston": "^2.4.4",
+    "axios-retry": "^4.5.0",
     "colyseus": "^0.16.0",
     "cors": "^2.8.5",
     "discord-api-types": "^0.37.81",

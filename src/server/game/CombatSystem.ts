@@ -4,7 +4,7 @@ import { GameState, Player, InventoryItem, Equipment, Skills, NPC, LootDrop } fr
 import { ItemManager } from './ItemManager';
 import { LootManager, LootTableEntry } from './LootManager';
 import { v4 as uuidv4 } from 'uuid';
-import { economyClient } from '../economy-client'; // Import economy client
+import { economyClient } from '../../services/economy-client'; // Import economy client
 import { notifyEvent } from '../discord-bot'; // Import notifyEvent from discord-bot
 
 // Combat Types

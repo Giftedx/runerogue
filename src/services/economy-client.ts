@@ -7,6 +7,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
+import axiosRetry from 'axios-retry';
 import { Agent } from 'https';
 import { config } from '../config';
 
@@ -115,6 +116,19 @@ export class EconomyClient {
           rejectUnauthorized: false,
         }),
       }),
+    });
+
+    // Configure axios-retry
+    axiosRetry(this.client, {
+      retries: 3, // Number of retry attempts
+      retryDelay: axiosRetry.exponentialDelay, // Exponential back-off delay between retries
+      retryCondition: (error) => {
+        // Retry on network errors or 5xx status codes
+        return axiosRetry.isNetworkError(error) || axiosRetry.isRetryableError(error);
+      },
+      onRetry: (retryCount, error, requestConfig) => {
+        console.warn(`Retry attempt ${retryCount} for ${requestConfig.url}: ${error.message}`);
+      },
     });
 
     // Fallback: if interceptors is undefined (e.g., in a mocked environment), provide a stub
