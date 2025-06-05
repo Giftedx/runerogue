@@ -37,17 +37,7 @@ jest.mock('../../game/ItemManager', () => ({
   },
 }));
 
-// Mock the economyIntegration module
-jest.mock('../../economy-integration', () => ({
-  __esModule: true,
-  default: {
-    getOrCreatePlayerProfile: jest.fn(() => Promise.resolve({ id: 'mockEconomyId', name: 'MockPlayer' })),
-    getPlayerInventory: jest.fn(() => Promise.resolve([])),
-    addItemToInventory: jest.fn(() => Promise.resolve()),
-    removeItemFromInventory: jest.fn(() => Promise.resolve()),
-  },
-}));
-import economyIntegration from '../../economy-integration';
+// import economyIntegration from '../../economy-integration'; // Will be undefined in tests due to module's own conditional export
 
 jest.mock('../../game/multiplayerSync', () => ({
   broadcastPlayerState: jest.fn(),

@@ -41,7 +41,10 @@ export class ItemManager {
       useClones: false,
     });
     
-    this.initialize();
+    // Skip external sync during tests
+    if (process.env.NODE_ENV !== 'test') {
+      this.initialize();
+    }
   }
 
   public static getInstance(): ItemManager {
@@ -147,7 +150,8 @@ export class ItemManager {
     // Try to fetch from economy service if not found
     try {
       if (await economyIntegration.isReady()) {
-        const item = await economyIntegration.getItemById(itemId);
+        // Fetch single item by ID
+        const item = await economyIntegration.getItem(itemId);
         if (item) {
           this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
           this.itemDefinitions.set(itemId, item);
@@ -176,18 +180,20 @@ export class ItemManager {
       }
     }
 
-    // If we have missing items and economy service is available, try to fetch them
+    // Fetch missing items individually if economy service is available
     if (missingIds.length > 0 && await economyIntegration.isReady()) {
-      try {
-        const items = await economyIntegration.getItemsByIds(missingIds);
-        for (const item of items) {
-          const cacheKey = `item:${item.itemId}`;
-          this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
-          this.itemDefinitions.set(item.itemId, item);
-          result.set(item.itemId, item);
+      for (const id of missingIds) {
+        try {
+          const item = await economyIntegration.getItem(id);
+          if (item) {
+            const cacheKey = `item:${id}`;
+            this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
+            this.itemDefinitions.set(id, item);
+            result.set(id, item);
+          }
+        } catch (error) {
+          logger.error(`Failed to fetch item ${id} from economy service:`, error);
         }
-      } catch (error) {
-        logger.error('Failed to fetch multiple items from economy service:', error);
       }
     }
 

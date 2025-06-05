@@ -119,7 +119,7 @@ export class EconomyClient {
     });
 
     // Configure axios-retry only when not in test and interceptors are available
-    if (process.env.NODE_ENV !== 'test' && this.client.interceptors) {
+    if (process.env.NODE_ENV !== 'test' && this.client.interceptors && this.client.interceptors.response) {
       axiosRetry(this.client, {
         retries: 3, // Number of retry attempts
         retryDelay: axiosRetry.exponentialDelay, // Exponential back-off delay between retries
@@ -134,7 +134,7 @@ export class EconomyClient {
     }
 
     // Fallback: if interceptors is undefined (e.g., in a mocked environment), provide a stub
-    if (!this.client.interceptors) {
+    if (!this.client.interceptors || !this.client.interceptors.response) {
       this.client.interceptors = {
         response: {
           use: (success: any, error: any) => {},
@@ -163,8 +163,15 @@ export class EconomyClient {
    * Health check to verify the Economy API service is available
    */
   async healthCheck(): Promise<{ status: string; timestamp: number }> {
-    const response = await this.client.get('/health');
-    return response.data;
+    // Log invocation for testing
+    console.error('EconomyClient.healthCheck invoked');
+    try {
+      const response = await this.client.get('/health');
+      return response.data;
+    } catch (error) {
+      console.error('EconomyClient.healthCheck error:', (error as Error).message);
+      throw error;
+    }
   }
 
   // Player methods
@@ -318,4 +325,7 @@ export class EconomyClient {
 }
 
 // Export a default instance that can be used throughout the application
-export default new EconomyClient();
+// Default instance is not created in test environment to avoid side effects
+const defaultEconomyClient: EconomyClient | undefined =
+  process.env.NODE_ENV === 'test' ? undefined : new EconomyClient();
+export default defaultEconomyClient;

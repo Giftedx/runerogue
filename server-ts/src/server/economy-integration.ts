@@ -276,6 +276,9 @@ export class EconomyIntegration {
 }
 
 /**
- * Create and export a default instance
+ * Create and export a default instance.
+ * In a test environment, this will be undefined to allow for easier mocking.
  */
-export default new EconomyIntegration();
+const economyIntegration: EconomyIntegration | undefined =
+  process.env.NODE_ENV === 'test' ? undefined : new EconomyIntegration();
+export default economyIntegration;

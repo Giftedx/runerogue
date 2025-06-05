@@ -1,6 +1,8 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import { Room, Client } from '@colyseus/core';
-import { GameState, Player, InventoryItem, LootDrop, NPC, Trade, TradeRequestMessage, TradeOfferMessage, TradeAcceptMessage, TradeCancelMessage, CollectLootMessage, EquipItemMessage, DropItemMessage } from './EntitySchemas';
+import { WorldState, Player, InventoryItem, LootDrop, NPC, Trade, TradeRequestMessage, TradeOfferMessage, TradeAcceptMessage, TradeCancelMessage, CollectLootMessage, EquipItemMessage, DropItemMessage, AreaMap } from './EntitySchemas';
+import { MapBlueprintSchema, type MapBlueprint } from './MapBlueprintSchema';
+import { ZodError } from 'zod';
 import { CombatSystem } from './CombatSystem';
 import { ItemManager } from './ItemManager';
 import { LootManager } from './LootManager';
@@ -8,13 +10,87 @@ import economyIntegration from '../economy-integration';
 import { sendDiscordNotification } from '../discord-bot';
 import { broadcastPlayerState } from './multiplayerSync';
 
-export class GameRoom extends Room<GameState> {
+export class GameRoom extends Room<WorldState> {
+
+  // Method to load, validate, and add a map blueprint
+  public loadAndValidateMapBlueprint(blueprintData: unknown, makeCurrent: boolean = true): AreaMap | null {
+    try {
+      const validatedBlueprint = MapBlueprintSchema.parse(blueprintData) as MapBlueprint;
+
+      // Create AreaMap instance from validated data
+      // Note: The AreaMap constructor in EntitySchemas.ts currently auto-generates an ID.
+      // If blueprintData.id is preferred, the AreaMap constructor or this logic might need adjustment.
+      const newMap = new AreaMap(validatedBlueprint.name, validatedBlueprint.width, validatedBlueprint.height);
+      newMap.id = validatedBlueprint.id; // Override auto-generated ID if schema provides one
+      newMap.biome = validatedBlueprint.biome || 'plains'; // Set biome, defaulting if necessary
+      newMap.collisionMap = validatedBlueprint.collisionMap;
+
+      this.state.maps.set(newMap.id, newMap);
+      console.log(`Map blueprint '${newMap.name}' (ID: ${newMap.id}) loaded and validated successfully.`);
+
+      if (makeCurrent || !this.state.currentMapId) {
+        this.state.currentMapId = newMap.id;
+        console.log(`Map '${newMap.name}' set as current map.`);
+      }
+      return newMap;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        console.error('Map blueprint validation failed:', error.errors);
+      } else {
+        console.error('An unexpected error occurred during map blueprint loading:', error);
+      }
+      return null;
+    }
+  }
+
+  private initializeDefaultMap(): void {
+    // Example of loading a default map blueprint
+    // In a real scenario, this data would come from a file, database, or configuration
+    const defaultMapBlueprintData = {
+      id: 'default_map_001',
+      name: 'Starting Plains',
+      width: 20,
+      height: 15,
+      biome: 'plains',
+      collisionMap: Array(15).fill(null).map(() => Array(20).fill(false)), // Example: 15x20 all walkable
+      // Example of adding a collision point:
+      // collisionMap[5][10] = true;
+    };
+
+    // Modify a point for testing collisionMap validation if dimensions mismatch in schema
+    // defaultMapBlueprintData.collisionMap[0] = Array(19).fill(false); // This would fail width validation
+    // defaultMapBlueprintData.height = 14; // This would fail height validation
+
+    const map = this.loadAndValidateMapBlueprint(defaultMapBlueprintData, true);
+    if (map) {
+        // Example: Add a collision point to the loaded map
+        map.addCollision(5,5); 
+        console.log(`Collision added at 5,5 on map ${map.id}`);
+        // NPCs could be loaded here based on map data if blueprints included NPC spawns
+    } else {
+        console.error("Failed to initialize default map. GameRoom may not function correctly without a map.");
+        // Potentially throw an error or prevent room creation if a map is critical
+    }
+
+    // Example of an invalid blueprint for testing
+    const invalidBlueprintData = {
+        id: 'invalid_map_002',
+        name: 'Broken Lands',
+        width: -10, // Invalid width
+        height: 10,
+        // collisionMap missing - will fail schema validation
+    };
+    console.log("Attempting to load an invalid map blueprint (expect errors):");
+    this.loadAndValidateMapBlueprint(invalidBlueprintData, false);
+  }
+
   maxClients = 4;
   private combatSystem!: CombatSystem;
   private itemManager!: ItemManager;
 
   onCreate(options: any): void {
-    this.setState(new GameState());
+    this.setState(new WorldState());
+    this.initializeDefaultMap(); // Initialize with a default or sample map
     this.combatSystem = new CombatSystem(this.state);
     this.itemManager = ItemManager.getInstance();
 
