@@ -1,14 +1,15 @@
 import { DiscordSDK } from '@discord/embedded-app-sdk';
 import { Client } from 'colyseus.js';
 import { CONFIG } from './config';
+import { AssetLoader } from './game/AssetLoader';
+import { AudioManager } from './game/AudioManager';
 import { GameClient } from './game/GameClient';
 import { GameState } from './game/GameState';
-import { GameRenderer } from './game/GameRenderer';
-import { SpriteManager } from './game/SpriteManager';
+import { IGameRenderer } from './game/IGameRenderer';
 import { InputManager } from './game/InputManager';
+import { OSRSStyleRenderer } from './game/OSRSStyleRenderer';
+import { SpriteManager } from './game/SpriteManager';
 import { UIManager } from './game/UIManager';
-import { AudioManager } from './game/AudioManager';
-import { AssetLoader } from './game/AssetLoader';
 
 // Main entry point for the RuneRogue Discord-embedded game client
 document.addEventListener('DOMContentLoaded', async () => {
@@ -56,8 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Make gameState available globally for debugging
     (window as any).gameState = gameState;
 
-    // Initialize game renderer
-    const gameRenderer = new GameRenderer(canvas, ctx, spriteManager);
+    // Initialize OSRS-style game renderer
+    const gameRenderer = new OSRSStyleRenderer(spriteManager);
 
     // Initialize UI manager
     const uiManager = new UIManager(discord, user);
@@ -359,7 +360,7 @@ function updateDiscordPresence(discord: DiscordSDK, gameState: GameState): void 
 function gameLoop(
   gameClient: GameClient,
   gameState: GameState,
-  gameRenderer: GameRenderer,
+  gameRenderer: IGameRenderer,
   uiManager: UIManager,
   audioManager: AudioManager,
   discord: DiscordSDK

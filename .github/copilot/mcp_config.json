@@ -35,6 +35,54 @@
       "env": {
         "TAVILY_API_KEY": "${TAVILY_API_KEY}"
       }
+    },
+    "browser-tools": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/browser-tools-mcp",
+      "env": {}
+    },
+    "mcpso": {
+      "command": "node",
+      "args": ["server.js"],
+      "cwd": "mcp-repos/mcpso",
+      "env": {}
+    },
+    "mcp-obsidian": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/mcp-obsidian",
+      "env": {}
+    },
+    "blender-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/blender-mcp",
+      "env": {}
+    },
+    "open-mcp-client": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/open-mcp-client",
+      "env": {}
+    },
+    "magic-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/magic-mcp",
+      "env": {}
+    },
+    "upsonic": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/Upsonic",
+      "env": {}
+    },
+    "cognee-starter": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/cognee-starter",
+      "env": {}
     }
   },
   "customTools": {

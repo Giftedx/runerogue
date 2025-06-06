@@ -420,10 +420,13 @@ export class GameRoom extends Room<WorldState> {
 
       // Determine if player is proposer or accepter in this trade
       const isProposer = trade.proposerId === player.id;
-      const playerItems = isProposer ? trade.proposerItems : trade.accepterItems;
 
-      // Clear previous offer if any
-      playerItems.length = 0;
+      // Clear previous offer if any using safe methods
+      if (isProposer) {
+        trade.clearProposerItems();
+      } else {
+        trade.clearAccepterItems();
+      }
 
       // Validate and add offered items to the trade
       for (const offeredItem of message.offeredItems) {
@@ -441,8 +444,13 @@ export class GameRoom extends Room<WorldState> {
           return;
         }
 
-        // Add item to trade object
-        playerItems.push(new InventoryItem(itemDef, offeredItem.quantity));
+        // Add item to trade object using safe methods
+        const tradeItem = new InventoryItem(itemDef, offeredItem.quantity);
+        if (isProposer) {
+          trade.addProposerItem(tradeItem);
+        } else {
+          trade.addAccepterItem(tradeItem);
+        }
 
         // Remove items from player's inventory (in-game state)
         playerInventoryItem.quantity -= offeredItem.quantity;

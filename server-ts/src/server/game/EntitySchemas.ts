@@ -593,6 +593,41 @@ export class Trade extends Schema {
     this.tradeId = tradeId;
     this.proposerId = proposerId;
     this.accepterId = accepterId;
+    // Ensure ArraySchema instances are properly initialized
+    this.proposerItems = new ArraySchema<InventoryItem>();
+    this.accepterItems = new ArraySchema<InventoryItem>();
+  }
+
+  // Helper method to safely add items while maintaining schema integrity
+  public addProposerItem(item: InventoryItem): void {
+    if (!(this.proposerItems instanceof ArraySchema)) {
+      this.proposerItems = new ArraySchema<InventoryItem>();
+    }
+    this.proposerItems.push(item);
+  }
+
+  public addAccepterItem(item: InventoryItem): void {
+    if (!(this.accepterItems instanceof ArraySchema)) {
+      this.accepterItems = new ArraySchema<InventoryItem>();
+    }
+    this.accepterItems.push(item);
+  }
+
+  // Helper method to clear items safely
+  public clearProposerItems(): void {
+    if (this.proposerItems instanceof ArraySchema) {
+      this.proposerItems.clear();
+    } else {
+      this.proposerItems = new ArraySchema<InventoryItem>();
+    }
+  }
+
+  public clearAccepterItems(): void {
+    if (this.accepterItems instanceof ArraySchema) {
+      this.accepterItems.clear();
+    } else {
+      this.accepterItems = new ArraySchema<InventoryItem>();
+    }
   }
 }
 
