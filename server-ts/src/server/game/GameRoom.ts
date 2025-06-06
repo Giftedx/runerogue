@@ -1,7 +1,7 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import { Client, Room } from '@colyseus/core';
 import { ZodError } from 'zod';
-import { sendDiscordNotification } from '../discord-bot';
+import { sendDiscordNotification, sendGameEventNotification } from '../discord-bot';
 import economyIntegration from '../economy-integration';
 import { CombatSystem } from './CombatSystem';
 import {
@@ -169,10 +169,44 @@ export class GameRoom extends Room<WorldState> {
               const lootDrop = await LootManager.dropLootFromNPC(this.state, npc, npc.lootTable);
               if (lootDrop) {
                 this.broadcast('loot_spawn', lootDrop);
+                
+                // Check for rare drops and send Discord notification
+                for (const item of lootDrop.items) {
+                  const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+                  // Consider items with high base value as rare (e.g., > 10000)
+                  // Or items with specific names containing 'dragon', 'rune', etc.
+                  if (itemDef && (
+                    itemDef.baseValue > 10000 || 
+                    itemDef.name.toLowerCase().includes('dragon') ||
+                    itemDef.name.toLowerCase().includes('rune') ||
+                    itemDef.name.toLowerCase().includes('unique')
+                  )) {
+                    sendGameEventNotification('rare_drop', {
+                      playerName: this.state.players.get(client.sessionId)?.username || 'Unknown',
+                      itemName: itemDef.name,
+                      source: npc.name,
+                      dropRate: 100 // Mock drop rate for now
+                    });
+                  }
+                }
               }
               this.broadcast('npc_dead', { npcId: targetId });
               this.state.npcs.delete(targetId);
             } else {
+              // Player death
+              const deadPlayer = this.state.players.get(targetId);
+              const killer = this.state.players.get(client.sessionId);
+              
+              if (deadPlayer && killer) {
+                sendGameEventNotification('player_death', {
+                  playerName: deadPlayer.username,
+                  killedBy: killer.username,
+                  x: deadPlayer.x,
+                  y: deadPlayer.y,
+                  combatLevel: deadPlayer.combatLevel || 1
+                });
+              }
+              
               client.send('player_dead', { playerId: targetId });
             }
           }
@@ -338,6 +372,9 @@ export class GameRoom extends Room<WorldState> {
         }
       }
       this.state.trades.set(tradeId, newTrade);
+
+      // Start trade timeout timer
+      this.startTradeTimeout(tradeId);
 
       // Validate state after trade creation
       this.validateStateIntegrity();
@@ -533,6 +570,60 @@ export class GameRoom extends Room<WorldState> {
         return;
       }
 
+      // Validate inventory space for both players
+      const MAX_INVENTORY_SIZE = 28; // OSRS standard inventory size
+      
+      // Check if proposer has space for accepter's items
+      const proposerFinalInventorySize = proposer.inventory.length - trade.proposerItems.length + trade.accepterItems.length;
+      if (proposerFinalInventorySize > MAX_INVENTORY_SIZE) {
+        client.send('trade_error', { message: 'Proposer does not have enough inventory space.' });
+        this.clients
+          .find(c => c.sessionId === trade.proposerId)
+          ?.send('trade_error', { message: 'You do not have enough inventory space for this trade.' });
+        return;
+      }
+
+      // Check if accepter has space for proposer's items
+      const accepterFinalInventorySize = accepter.inventory.length - trade.accepterItems.length + trade.proposerItems.length;
+      if (accepterFinalInventorySize > MAX_INVENTORY_SIZE) {
+        client.send('trade_error', { message: 'You do not have enough inventory space for this trade.' });
+        this.clients
+          .find(c => c.sessionId === trade.proposerId)
+          ?.send('trade_error', { message: 'Accepter does not have enough inventory space.' });
+        return;
+      }
+
+      // Double-check that all offered items still exist in inventories
+      // This prevents item duplication exploits
+      for (const item of trade.proposerItems) {
+        const invItem = proposer.inventory.find(i => i.itemId === item.itemId && i.quantity >= item.quantity);
+        if (!invItem) {
+          client.send('trade_error', { message: 'Trade failed: Proposer no longer has all offered items.' });
+          this.clients
+            .find(c => c.sessionId === trade.proposerId)
+            ?.send('trade_error', { message: 'Trade failed: You no longer have all offered items.' });
+          // Cancel the trade and return items
+          this.cancelTradeAndReturnItems(trade);
+          return;
+        }
+      }
+
+      for (const item of trade.accepterItems) {
+        const invItem = accepter.inventory.find(i => i.itemId === item.itemId && i.quantity >= item.quantity);
+        if (!invItem) {
+          client.send('trade_error', { message: 'Trade failed: You no longer have all offered items.' });
+          this.clients
+            .find(c => c.sessionId === trade.proposerId)
+            ?.send('trade_error', { message: 'Trade failed: Accepter no longer has all offered items.' });
+          // Cancel the trade and return items
+          this.cancelTradeAndReturnItems(trade);
+          return;
+        }
+      }
+
+      // Mark trade as processing to prevent double-accepts
+      trade.status = 'processing';
+
       // Transfer items (in-game state)
       // Proposer gives items to accepter
       for (const item of trade.proposerItems) {
@@ -610,6 +701,17 @@ export class GameRoom extends Room<WorldState> {
       console.log(
         `Trade ${trade.tradeId} completed between ${proposer.username} and ${accepter.username}.`
       );
+
+      // Send Discord notification for trade completion
+      const proposerItemsStr = trade.proposerItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
+      const accepterItemsStr = trade.accepterItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
+      
+      sendGameEventNotification('trade_completed', {
+        player1: proposer.username,
+        player2: accepter.username,
+        player1Items: proposerItemsStr,
+        player2Items: accepterItemsStr
+      });
 
       // Validate state after trade completion
       this.validateStateIntegrity();
@@ -1292,5 +1394,71 @@ export class GameRoom extends Room<WorldState> {
 
     // eslint-disable-next-line no-console
     console.log('✅ State integrity validation complete');
+  }
+
+  /**
+   * Helper method to cancel a trade and return all items to their owners
+   */
+  private async cancelTradeAndReturnItems(trade: Trade): Promise<void> {
+    // Return proposer's items
+    const proposer = this.state.players.get(trade.proposerId);
+    if (proposer) {
+      for (const item of trade.proposerItems) {
+        // Find existing stack or add new item
+        const existingItem = proposer.inventory.find(i => i.itemId === item.itemId && i.isStackable);
+        if (existingItem) {
+          existingItem.quantity += item.quantity;
+        } else {
+          proposer.inventory.push(new InventoryItem(item, item.quantity));
+        }
+      }
+    }
+
+    // Return accepter's items
+    const accepter = this.state.players.get(trade.accepterId);
+    if (accepter) {
+      for (const item of trade.accepterItems) {
+        // Find existing stack or add new item
+        const existingItem = accepter.inventory.find(i => i.itemId === item.itemId && i.isStackable);
+        if (existingItem) {
+          existingItem.quantity += item.quantity;
+        } else {
+          accepter.inventory.push(new InventoryItem(item, item.quantity));
+        }
+      }
+    }
+
+    // Remove the trade
+    this.state.trades.delete(trade.tradeId);
+  }
+
+  /**
+   * Start a timeout for a trade - trades expire after 2 minutes of inactivity
+   */
+  private startTradeTimeout(tradeId: string): void {
+    const TRADE_TIMEOUT = 120000; // 2 minutes
+    
+    setTimeout(() => {
+      const trade = this.state.trades.get(tradeId);
+      if (trade && trade.status !== 'completed') {
+        // Notify both players
+        const proposerClient = this.clients.find(c => c.sessionId === trade.proposerId);
+        const accepterClient = this.clients.find(c => c.sessionId === trade.accepterId);
+        
+        proposerClient?.send('trade_timeout', { 
+          tradeId, 
+          message: 'Trade timed out due to inactivity.' 
+        });
+        accepterClient?.send('trade_timeout', { 
+          tradeId, 
+          message: 'Trade timed out due to inactivity.' 
+        });
+        
+        // Cancel and return items
+        this.cancelTradeAndReturnItems(trade);
+        
+        console.log(`Trade ${tradeId} timed out and was cancelled.`);
+      }
+    }, TRADE_TIMEOUT);
   }
 }

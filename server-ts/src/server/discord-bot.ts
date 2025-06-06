@@ -2,14 +2,14 @@
 // Discord Bot Integration for RuneRogue
 // This service connects a Discord bot for notifications and commands.
 
-import { Client, GatewayIntentBits, TextChannel, Events } from 'discord.js';
+import { Client, GatewayIntentBits, TextChannel, Events, EmbedBuilder, ColorResolvable } from 'discord.js';
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID; // Target channel for notifications
 const DISCORD_NOTIFICATION_CHANNEL_ID = process.env.DISCORD_NOTIFICATION_CHANNEL_ID;
 
 export const discordClient = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
 export async function startDiscordBot() {
@@ -34,6 +34,92 @@ export async function sendDiscordNotification(message: string) {
   }
 }
 
+// Enhanced notification with embeds for game events
+export async function sendGameEventNotification(eventType: string, data: any): Promise<void> {
+  const channelId = DISCORD_NOTIFICATION_CHANNEL_ID || DISCORD_CHANNEL_ID;
+  if (!channelId) {
+    console.error('No Discord channel configured for notifications');
+    return;
+  }
+  
+  try {
+    const channel = await discordClient.channels.fetch(channelId);
+    if (!channel || !channel.isTextBased()) return;
+    
+    const embed = new EmbedBuilder()
+      .setTimestamp()
+      .setFooter({ text: 'RuneRogue' });
+    
+    switch (eventType) {
+      case 'player_death':
+        embed
+          .setTitle('☠️ Player Death')
+          .setDescription(`**${data.killedBy}** has slain **${data.playerName}**!`)
+          .setColor('#FF0000' as ColorResolvable)
+          .addFields(
+            { name: 'Location', value: `(${data.x}, ${data.y})`, inline: true },
+            { name: 'Combat Level', value: `${data.combatLevel}`, inline: true }
+          );
+        break;
+        
+      case 'rare_drop':
+        embed
+          .setTitle('🎉 Rare Drop!')
+          .setDescription(`**${data.playerName}** received a rare drop!`)
+          .setColor('#FFD700' as ColorResolvable)
+          .addFields(
+            { name: 'Item', value: data.itemName, inline: true },
+            { name: 'From', value: data.source, inline: true },
+            { name: 'Rarity', value: `1/${data.dropRate}`, inline: true }
+          );
+        break;
+        
+      case 'trade_completed':
+        embed
+          .setTitle('🤝 Trade Completed')
+          .setDescription(`Trade between **${data.player1}** and **${data.player2}** completed!`)
+          .setColor('#00FF00' as ColorResolvable)
+          .addFields(
+            { name: `${data.player1} gave`, value: data.player1Items || 'Nothing', inline: true },
+            { name: `${data.player2} gave`, value: data.player2Items || 'Nothing', inline: true }
+          );
+        break;
+        
+      case 'boss_spawn':
+        embed
+          .setTitle('⚔️ Boss Spawned!')
+          .setDescription(`**${data.bossName}** has appeared!`)
+          .setColor('#9B59B6' as ColorResolvable)
+          .addFields(
+            { name: 'Location', value: `${data.location}`, inline: true },
+            { name: 'Combat Level', value: `${data.combatLevel}`, inline: true }
+          );
+        break;
+        
+      case 'achievement':
+        embed
+          .setTitle('🏆 Achievement Unlocked!')
+          .setDescription(`**${data.playerName}** earned an achievement!`)
+          .setColor('#3498DB' as ColorResolvable)
+          .addFields(
+            { name: 'Achievement', value: data.achievementName, inline: true },
+            { name: 'Points', value: `${data.points}`, inline: true }
+          );
+        break;
+        
+      default:
+        embed
+          .setTitle('📢 Game Event')
+          .setDescription(data.message || 'Something happened in RuneRogue!')
+          .setColor('#95A5A6' as ColorResolvable);
+    }
+    
+    (channel as TextChannel).send({ embeds: [embed] });
+  } catch (error) {
+    console.error('Error sending Discord game event notification:', error);
+  }
+}
+
 export function notifyEvent(message: string): void {
   const channelId = DISCORD_NOTIFICATION_CHANNEL_ID;
   if (!channelId) {
@@ -50,13 +136,66 @@ export function notifyEvent(message: string): void {
   });
 }
 
-// Command handler for !stats <player>
-discordClient.on(Events.MessageCreate, msg => {
-  if (msg.content.startsWith('!stats')) {
-    const parts = msg.content.split(' ');
-    const playerName = parts[1] || 'unknown';
-    // TODO: Integrate with game server for real stats
-    msg.reply(`Stats for ${playerName}: Level 42, 100 HP, 1,337 gold. (Mock data)`);
+// Enhanced command handler with more game commands
+discordClient.on(Events.MessageCreate, async msg => {
+  if (msg.author.bot) return;
+  
+  const args = msg.content.split(' ');
+  const command = args[0].toLowerCase();
+  
+  switch (command) {
+    case '!stats':
+      const playerName = args[1] || 'unknown';
+      // TODO: Integrate with game server for real stats
+      msg.reply(`Stats for ${playerName}: Level 42, 100 HP, 1,337 gold. (Mock data)`);
+      break;
+      
+    case '!online':
+      // TODO: Get real player count from game server
+      msg.reply('Currently 12 players online across 3 game rooms.');
+      break;
+      
+    case '!leaderboard':
+      // TODO: Fetch from game server
+      const leaderboardEmbed = new EmbedBuilder()
+        .setTitle('🏆 RuneRogue Leaderboard')
+        .setColor('#FFD700' as ColorResolvable)
+        .addFields(
+          { name: '1. PlayerOne', value: 'Level 99 | 50M XP', inline: false },
+          { name: '2. PlayerTwo', value: 'Level 87 | 35M XP', inline: false },
+          { name: '3. PlayerThree', value: 'Level 75 | 20M XP', inline: false }
+        )
+        .setTimestamp()
+        .setFooter({ text: 'Top players by total XP' });
+      msg.reply({ embeds: [leaderboardEmbed] });
+      break;
+      
+    case '!help':
+      const helpEmbed = new EmbedBuilder()
+        .setTitle('RuneRogue Bot Commands')
+        .setColor('#3498DB' as ColorResolvable)
+        .addFields(
+          { name: '!stats [player]', value: 'View player statistics', inline: false },
+          { name: '!online', value: 'Show online player count', inline: false },
+          { name: '!leaderboard', value: 'View top players', inline: false },
+          { name: '!drops [npc]', value: 'View NPC drop table', inline: false },
+          { name: '!wiki [item]', value: 'Get item information', inline: false }
+        )
+        .setFooter({ text: 'RuneRogue Discord Bot' });
+      msg.reply({ embeds: [helpEmbed] });
+      break;
+      
+    case '!drops':
+      const npcName = args.slice(1).join(' ') || 'goblin';
+      // TODO: Fetch real drop tables
+      msg.reply(`Drop table for ${npcName}: Bronze sword (50%), Bronze plate (25%), Coins (100%)`);
+      break;
+      
+    case '!wiki':
+      const itemName = args.slice(1).join(' ') || 'bronze sword';
+      // TODO: Fetch real item data
+      msg.reply(`**${itemName}**: Attack +7, Strength +6, Speed 4. A basic bronze weapon.`);
+      break;
   }
 });
 
@@ -85,6 +224,27 @@ app.post('/notify', async (req, res) => {
     res.json({ status: 'ok' });
   } catch (e) {
     res.status(500).json({ error: 'Failed to send notification', details: (e as Error).message });
+  }
+});
+
+// Enhanced endpoint for game event notifications
+app.post('/game-event', async (req, res) => {
+  if (NOTIFY_SECRET && req.headers['x-notify-secret'] !== NOTIFY_SECRET) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+  
+  const { eventType, data } = req.body;
+  if (!eventType || !data) {
+    res.status(400).json({ error: 'Missing eventType or data' });
+    return;
+  }
+  
+  try {
+    await sendGameEventNotification(eventType, data);
+    res.json({ status: 'ok' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to send game event notification', details: (e as Error).message });
   }
 });
 

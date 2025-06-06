@@ -1,26 +1,42 @@
 # Project Roadmap
 
 ## Current Sprint Goals
-- Align directory structure for clarity and maintainability
-- Ensure loot/inventory sync between TypeScript game server and Python Economy API
-- Expand Discord integration for notifications and gameplay events
+- ✅ Complete trading system with validation and safety features
+- ✅ Enhance Discord integration with rich notifications
+- ✅ Improve multiplayer sync with delta updates and lag compensation
+- Implement basic skills system (mining, woodcutting, fishing)
+- Add procedural dungeon generation
 
 ## Next Milestones
-- Refactor agents/ and services/ directories for clarity
-- Consolidate economy logic under a single directory
-- Improve onboarding docs for new contributors and AI agents
+- Skills System: Mining, Woodcutting, Fishing with XP progression
+- Achievement System with Discord notifications
+- Guild/Party system for group play
+- Advanced procedural generation (dungeons, boss rooms)
+- PvP zones with ELO ranking
 
 ## Recently Completed
-- Modularized loot system and loot API sync
-- Enhanced multiplayer and loot collection logic
 
-## Known Blockers
-- Some legacy files and misaligned directories
-- Occasional AI confusion in agents/ and services/
+### [2025-06-05] Trading System Enhancements
+- Added inventory space validation to prevent overflow
+- Implemented trade timeout mechanism (2 minutes)
+- Added item validation to prevent duplication exploits
+- Added Discord notifications for completed trades
+- Fixed trade state management and reconciliation
 
----
+### [2025-06-05] Discord Integration Expansion
+- Enhanced Discord bot with rich embeds for game events
+- Added notifications for: player deaths, rare drops, trade completions, boss spawns, achievements
+- Expanded bot commands: !stats, !online, !leaderboard, !drops, !wiki, !help
+- Added game event webhook endpoint for external notifications
 
-## [2025-06-04] Directory Alignment & Refactor Plan
+### [2025-06-05] Multiplayer Sync Improvements
+- Implemented delta updates instead of full state broadcasts
+- Added state snapshot history for reconciliation
+- Implemented player input buffering for lag compensation
+- Added critical update broadcasting for high-priority events
+- Enhanced state synchronization with interpolation hints
+
+### [2025-06-04] Directory Alignment & Refactor Plan
 - Consolidate all documentation under /docs/
 - Move all test files to /tests/ or subsystem-specific tests/ folders
 - Flatten single-item subdirectories in src/server/ unless future expansion is planned
