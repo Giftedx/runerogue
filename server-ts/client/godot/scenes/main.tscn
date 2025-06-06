@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://b4n5k3vxj8m4f"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_0xkjo"]
+[ext_resource type="PackedScene" uid="uid://c7xj2n8m4p5kh" path="res://scenes/main_menu.tscn" id="2_1yxka"]
+[ext_resource type="PackedScene" uid="uid://d3k8vj8m4p5kh" path="res://scenes/hud.tscn" id="3_hud"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_0xkjo")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(512, 384)
+zoom = Vector2(1, 1)
+
+[node name="SceneContainer" type="Node2D" parent="."]
+
+[node name="MainMenu" parent="SceneContainer" instance=ExtResource("2_1yxka")]
+visible = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="CanvasLayer" instance=ExtResource("3_hud")]
+visible = false
