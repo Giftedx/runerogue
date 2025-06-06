@@ -8,7 +8,9 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID; // Target channel for notifications
 const DISCORD_NOTIFICATION_CHANNEL_ID = process.env.DISCORD_NOTIFICATION_CHANNEL_ID;
 
-export const discordClient = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
+export const discordClient = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+});
 
 export async function startDiscordBot() {
   if (!DISCORD_BOT_TOKEN) {
@@ -49,7 +51,7 @@ export function notifyEvent(message: string): void {
 }
 
 // Command handler for !stats <player>
-discordClient.on(Events.MessageCreate, (msg) => {
+discordClient.on(Events.MessageCreate, msg => {
   if (msg.content.startsWith('!stats')) {
     const parts = msg.content.split(' ');
     const playerName = parts[1] || 'unknown';

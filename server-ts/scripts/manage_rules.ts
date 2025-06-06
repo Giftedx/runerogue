@@ -73,7 +73,7 @@ program
 program
   .command('clean-rules <targetDir>')
   .description('Remove generated project_rules folder in target project')
-  .action((targetDir) => {
+  .action(targetDir => {
     const target = path.resolve(targetDir, 'project_rules');
     fs.rmSync(target, { recursive: true, force: true });
     console.log(`Removed ${target}`);
@@ -82,7 +82,7 @@ program
 program
   .command('sync <targetDir>')
   .description('Generate platform-specific rules from project_rules')
-  .action((targetDir) => {
+  .action(targetDir => {
     console.log(`Syncing rules for ${targetDir}`);
     // Read project_rules
     const projectRulesDir = path.resolve(targetDir, 'project_rules');

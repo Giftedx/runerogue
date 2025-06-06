@@ -22,23 +22,22 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   // Mock console methods
-
 });
 
 afterEach(() => {
   // Restore all mocks after each test
   jest.restoreAllMocks();
 
-// Global test setup
-// global.console = {
-//   ...console,
-//   // Override specific console methods if needed
-//   log: jest.fn(),
-//   error: jest.fn(),
-//   warn: jest.fn(),
-//   info: jest.fn(),
-//   debug: jest.fn(),
-// };
+  // Global test setup
+  // global.console = {
+  //   ...console,
+  //   // Override specific console methods if needed
+  //   log: jest.fn(),
+  //   error: jest.fn(),
+  //   warn: jest.fn(),
+  //   info: jest.fn(),
+  //   debug: jest.fn(),
+  // };
 });
 
 // Mock WebSocket

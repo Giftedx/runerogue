@@ -1,32 +1,54 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
-import { Room, Client } from '@colyseus/core';
-import { WorldState, Player, InventoryItem, LootDrop, NPC, Trade, TradeRequestMessage, TradeOfferMessage, TradeAcceptMessage, TradeCancelMessage, CollectLootMessage, EquipItemMessage, DropItemMessage, AreaMap } from './EntitySchemas';
-import { MapBlueprintSchema, type MapBlueprint } from './MapBlueprintSchema';
+import { Client, Room } from '@colyseus/core';
 import { ZodError } from 'zod';
+import { sendDiscordNotification } from '../discord-bot';
+import economyIntegration from '../economy-integration';
 import { CombatSystem } from './CombatSystem';
+import {
+  AreaMap,
+  CollectLootMessage,
+  DropItemMessage,
+  EquipItemMessage,
+  InventoryItem,
+  NPC,
+  Player,
+  Trade,
+  TradeAcceptMessage,
+  TradeCancelMessage,
+  TradeOfferMessage,
+  TradeRequestMessage,
+  WorldState,
+} from './EntitySchemas';
 import { ItemManager } from './ItemManager';
 import { LootManager } from './LootManager';
-import economyIntegration from '../economy-integration';
-import { sendDiscordNotification } from '../discord-bot';
+import { MapBlueprintSchema, type MapBlueprint } from './MapBlueprintSchema';
 import { broadcastPlayerState } from './multiplayerSync';
 
 export class GameRoom extends Room<WorldState> {
-
   // Method to load, validate, and add a map blueprint
-  public loadAndValidateMapBlueprint(blueprintData: unknown, makeCurrent: boolean = true): AreaMap | null {
+  public loadAndValidateMapBlueprint(
+    blueprintData: unknown,
+    makeCurrent: boolean = true
+  ): AreaMap | null {
     try {
       const validatedBlueprint = MapBlueprintSchema.parse(blueprintData) as MapBlueprint;
 
       // Create AreaMap instance from validated data
       // Note: The AreaMap constructor in EntitySchemas.ts currently auto-generates an ID.
       // If blueprintData.id is preferred, the AreaMap constructor or this logic might need adjustment.
-      const newMap = new AreaMap(validatedBlueprint.name, validatedBlueprint.width, validatedBlueprint.height);
+      const newMap = new AreaMap(
+        validatedBlueprint.name,
+        validatedBlueprint.width,
+        validatedBlueprint.height
+      );
       newMap.id = validatedBlueprint.id; // Override auto-generated ID if schema provides one
       newMap.biome = validatedBlueprint.biome || 'plains'; // Set biome, defaulting if necessary
       newMap.collisionMap = validatedBlueprint.collisionMap;
 
       this.state.maps.set(newMap.id, newMap);
-      console.log(`Map blueprint '${newMap.name}' (ID: ${newMap.id}) loaded and validated successfully.`);
+      console.log(
+        `Map blueprint '${newMap.name}' (ID: ${newMap.id}) loaded and validated successfully.`
+      );
 
       if (makeCurrent || !this.state.currentMapId) {
         this.state.currentMapId = newMap.id;
@@ -52,7 +74,9 @@ export class GameRoom extends Room<WorldState> {
       width: 20,
       height: 15,
       biome: 'plains',
-      collisionMap: Array(15).fill(null).map(() => Array(20).fill(false)), // Example: 15x20 all walkable
+      collisionMap: Array(15)
+        .fill(null)
+        .map(() => Array(20).fill(false)), // Example: 15x20 all walkable
       // Example of adding a collision point:
       // collisionMap[5][10] = true;
     };
@@ -63,24 +87,26 @@ export class GameRoom extends Room<WorldState> {
 
     const map = this.loadAndValidateMapBlueprint(defaultMapBlueprintData, true);
     if (map) {
-        // Example: Add a collision point to the loaded map
-        map.addCollision(5,5); 
-        console.log(`Collision added at 5,5 on map ${map.id}`);
-        // NPCs could be loaded here based on map data if blueprints included NPC spawns
+      // Example: Add a collision point to the loaded map
+      map.addCollision(5, 5);
+      console.log(`Collision added at 5,5 on map ${map.id}`);
+      // NPCs could be loaded here based on map data if blueprints included NPC spawns
     } else {
-        console.error("Failed to initialize default map. GameRoom may not function correctly without a map.");
-        // Potentially throw an error or prevent room creation if a map is critical
+      console.error(
+        'Failed to initialize default map. GameRoom may not function correctly without a map.'
+      );
+      // Potentially throw an error or prevent room creation if a map is critical
     }
 
     // Example of an invalid blueprint for testing
     const invalidBlueprintData = {
-        id: 'invalid_map_002',
-        name: 'Broken Lands',
-        width: -10, // Invalid width
-        height: 10,
-        // collisionMap missing - will fail schema validation
+      id: 'invalid_map_002',
+      name: 'Broken Lands',
+      width: -10, // Invalid width
+      height: 10,
+      // collisionMap missing - will fail schema validation
     };
-    console.log("Attempting to load an invalid map blueprint (expect errors):");
+    console.log('Attempting to load an invalid map blueprint (expect errors):');
     this.loadAndValidateMapBlueprint(invalidBlueprintData, false);
   }
 
@@ -107,25 +133,28 @@ export class GameRoom extends Room<WorldState> {
     // Add some initial NPCs with structured loot tables
     const goblin1 = new NPC('goblin_1', 'Goblin', 5, 5, 'goblin', [
       { itemId: 'bronze_sword', probability: 0.5, quantity: 1 },
-      { itemId: 'bronze_plate', probability: 0.25, quantity: 1 }
+      { itemId: 'bronze_plate', probability: 0.25, quantity: 1 },
     ]);
     const orc1 = new NPC('orc_1', 'Orc', 15, 15, 'orc', [
-      { itemId: 'iron_sword', probability: 0.7, quantity: 1 }
+      { itemId: 'iron_sword', probability: 0.7, quantity: 1 },
     ]);
     this.state.npcs.set(goblin1.id, goblin1);
     this.state.npcs.set(orc1.id, orc1);
 
-    console.log('Initial NPCs added:', Array.from(this.state.npcs.values()).map(npc => npc.name));
+    console.log(
+      'Initial NPCs added:',
+      Array.from(this.state.npcs.values()).map(npc => npc.name)
+    );
 
     console.log('GameRoom created:', options);
 
-    this.onMessage('player_action', (client, message) => {
+    this.onMessage('player_action', async (client, message) => {
       console.log(`Player action from ${client.sessionId}:`, message);
       const actionResult = this.combatSystem.handlePlayerAction(client.sessionId, message);
       if (actionResult) {
         const { result, targetId } = actionResult;
         // Apply damage to target
-        let targetEntity = this.state.npcs.get(targetId) || this.state.players.get(targetId);
+        const targetEntity = this.state.npcs.get(targetId) || this.state.players.get(targetId);
         if (targetEntity) {
           targetEntity.health = Math.max(0, targetEntity.health - result.damage);
           broadcastPlayerState(this, targetId, targetEntity);
@@ -133,10 +162,10 @@ export class GameRoom extends Room<WorldState> {
           if (targetEntity.health === 0) {
             if (this.state.npcs.has(targetId)) {
               const npc = this.state.npcs.get(targetId)!;
-              LootManager.dropLootFromNPC(this.state, npc, npc.lootTable);
-              const lootArray = Array.from(this.state.lootDrops.values());
-              const newLoot = lootArray[lootArray.length - 1];
-              this.broadcast('loot_spawn', newLoot);
+              const lootDrop = await LootManager.dropLootFromNPC(this.state, npc, npc.lootTable);
+              if (lootDrop) {
+                this.broadcast('loot_spawn', lootDrop);
+              }
               this.broadcast('npc_dead', { npcId: targetId });
               this.state.npcs.delete(targetId);
             } else {
@@ -179,13 +208,18 @@ export class GameRoom extends Room<WorldState> {
     });
 
     // Drop item handler
-    this.onMessage('drop_item', (client, message: DropItemMessage) => {
+    this.onMessage('drop_item', async (client, message: DropItemMessage) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return client.send('drop_error', { message: 'Player not found.' });
       const invItem = player.inventory[message.itemIndex];
       if (!invItem) return client.send('drop_error', { message: 'Inventory slot empty.' });
       const quantity = message.quantity || invItem.quantity;
-      const lootDrop = LootManager.dropSpecificItem(this.state, player, invItem.itemId, quantity);
+      const lootDrop = await LootManager.dropSpecificItem(
+        this.state,
+        player,
+        invItem.itemId,
+        quantity
+      );
       if (lootDrop) {
         this.broadcast('loot_spawn', lootDrop);
         broadcastPlayerState(this, client.sessionId, player);
@@ -209,8 +243,11 @@ export class GameRoom extends Room<WorldState> {
 
       // Check if either player is already in a trade
       const existingTrade = Array.from(this.state.trades.values()).find(
-        trade => (trade.proposerId === player.id || trade.accepterId === player.id) ||
-                 (trade.proposerId === targetPlayer.id || trade.accepterId === targetPlayer.id)
+        trade =>
+          trade.proposerId === player.id ||
+          trade.accepterId === player.id ||
+          trade.proposerId === targetPlayer.id ||
+          trade.accepterId === targetPlayer.id
       );
 
       if (existingTrade) {
@@ -224,13 +261,17 @@ export class GameRoom extends Room<WorldState> {
 
       // Notify both players
       client.send('trade_request_sent', { tradeId, targetPlayerName: targetPlayer.name });
-      this.clients.find(c => c.sessionId === targetPlayer.id)?.send('trade_request_received', {
-        tradeId,
-        proposerPlayerId: player.id,
-        proposerPlayerName: player.name,
-      });
+      this.clients
+        .find(c => c.sessionId === targetPlayer.id)
+        ?.send('trade_request_received', {
+          tradeId,
+          proposerPlayerId: player.id,
+          proposerPlayerName: player.name,
+        });
 
-      console.log(`Trade request sent from ${player.name} to ${targetPlayer.name} (ID: ${tradeId})`);
+      console.log(
+        `Trade request sent from ${player.name} to ${targetPlayer.name} (ID: ${tradeId})`
+      );
     });
 
     // Trade offer handler
@@ -260,7 +301,9 @@ export class GameRoom extends Room<WorldState> {
           return;
         }
 
-        const playerInventoryItem = player.inventory.find(item => item.itemId === offeredItem.itemId);
+        const playerInventoryItem = player.inventory.find(
+          item => item.itemId === offeredItem.itemId
+        );
         if (!playerInventoryItem || playerInventoryItem.quantity < offeredItem.quantity) {
           client.send('trade_error', { message: `Not enough ${itemDef.name} in inventory.` });
           return;
@@ -279,11 +322,20 @@ export class GameRoom extends Room<WorldState> {
         try {
           const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.name);
           if (economyProfile && economyProfile.id) {
-            await economyIntegration.removeItemFromInventory(economyProfile.id, offeredItem.itemId, offeredItem.quantity);
-            console.log(`Synced removal of ${offeredItem.quantity}x ${offeredItem.itemId} from Economy API for player ${economyProfile.id}`);
+            await economyIntegration.removeItemFromInventory(
+              economyProfile.id,
+              offeredItem.itemId,
+              offeredItem.quantity
+            );
+            console.log(
+              `Synced removal of ${offeredItem.quantity}x ${offeredItem.itemId} from Economy API for player ${economyProfile.id}`
+            );
           }
         } catch (error) {
-          console.error(`Failed to sync item removal for ${offeredItem.itemId} from Economy API for player ${player.id}:`, error);
+          console.error(
+            `Failed to sync item removal for ${offeredItem.itemId} from Economy API for player ${player.id}:`,
+            error
+          );
           // Potentially revert in-game inventory changes if API sync fails
         }
       }
@@ -292,12 +344,18 @@ export class GameRoom extends Room<WorldState> {
       // Notify both players about the updated offer
       const targetPlayer = this.state.players.get(isProposer ? trade.accepterId : trade.proposerId);
       if (targetPlayer) {
-        client.send('trade_offer_updated', { tradeId: trade.tradeId, offeredItems: message.offeredItems, isProposer: isProposer });
-        this.clients.find(c => c.sessionId === targetPlayer.id)?.send('trade_offer_updated', {
+        client.send('trade_offer_updated', {
           tradeId: trade.tradeId,
           offeredItems: message.offeredItems,
-          isProposer: !isProposer,
+          isProposer: isProposer,
         });
+        this.clients
+          .find(c => c.sessionId === targetPlayer.id)
+          ?.send('trade_offer_updated', {
+            tradeId: trade.tradeId,
+            offeredItems: message.offeredItems,
+            isProposer: !isProposer,
+          });
       }
       console.log(`Trade offer updated for trade ID ${trade.tradeId} by ${player.name}.`);
     });
@@ -319,7 +377,9 @@ export class GameRoom extends Room<WorldState> {
 
       // Check if the player accepting is the intended accepter
       if (player.id !== trade.accepterId) {
-        client.send('trade_error', { message: 'You are not the intended recipient of this trade offer.' });
+        client.send('trade_error', {
+          message: 'You are not the intended recipient of this trade offer.',
+        });
         return;
       }
 
@@ -327,7 +387,9 @@ export class GameRoom extends Room<WorldState> {
       const accepter = this.state.players.get(trade.accepterId);
 
       if (!proposer || !accepter) {
-        client.send('trade_error', { message: 'One or both players not found for trade completion.' });
+        client.send('trade_error', {
+          message: 'One or both players not found for trade completion.',
+        });
         return;
       }
 
@@ -339,11 +401,20 @@ export class GameRoom extends Room<WorldState> {
         try {
           const economyProfile = await economyIntegration.getOrCreatePlayerProfile(accepter.name);
           if (economyProfile && economyProfile.id) {
-            await economyIntegration.addItemToInventory(economyProfile.id, item.itemId, item.quantity);
-            console.log(`Synced addition of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`);
+            await economyIntegration.addItemToInventory(
+              economyProfile.id,
+              item.itemId,
+              item.quantity
+            );
+            console.log(
+              `Synced addition of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
+            );
           }
         } catch (error) {
-          console.error(`Failed to sync item addition for ${item.itemId} to Economy API for player ${accepter.id}:`, error);
+          console.error(
+            `Failed to sync item addition for ${item.itemId} to Economy API for player ${accepter.id}:`,
+            error
+          );
         }
       }
 
@@ -354,11 +425,20 @@ export class GameRoom extends Room<WorldState> {
         try {
           const economyProfile = await economyIntegration.getOrCreatePlayerProfile(proposer.name);
           if (economyProfile && economyProfile.id) {
-            await economyIntegration.addItemToInventory(economyProfile.id, item.itemId, item.quantity);
-            console.log(`Synced addition of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`);
+            await economyIntegration.addItemToInventory(
+              economyProfile.id,
+              item.itemId,
+              item.quantity
+            );
+            console.log(
+              `Synced addition of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
+            );
           }
         } catch (error) {
-          console.error(`Failed to sync item addition for ${item.itemId} to Economy API for player ${proposer.id}:`, error);
+          console.error(
+            `Failed to sync item addition for ${item.itemId} to Economy API for player ${proposer.id}:`,
+            error
+          );
         }
       }
 
@@ -366,13 +446,20 @@ export class GameRoom extends Room<WorldState> {
       this.state.trades.delete(trade.tradeId);
 
       // Notify both players
-      client.send('trade_completed', { tradeId: trade.tradeId, message: 'Trade completed successfully!' });
-      this.clients.find(c => c.sessionId === trade.proposerId)?.send('trade_completed', {
+      client.send('trade_completed', {
         tradeId: trade.tradeId,
         message: 'Trade completed successfully!',
       });
+      this.clients
+        .find(c => c.sessionId === trade.proposerId)
+        ?.send('trade_completed', {
+          tradeId: trade.tradeId,
+          message: 'Trade completed successfully!',
+        });
 
-      console.log(`Trade ${trade.tradeId} completed between ${proposer.name} and ${accepter.name}.`);
+      console.log(
+        `Trade ${trade.tradeId} completed between ${proposer.name} and ${accepter.name}.`
+      );
     });
 
     // Trade cancel handler
@@ -400,11 +487,20 @@ export class GameRoom extends Room<WorldState> {
           try {
             const economyProfile = await economyIntegration.getOrCreatePlayerProfile(proposer.name);
             if (economyProfile && economyProfile.id) {
-              await economyIntegration.addItemToInventory(economyProfile.id, item.itemId, item.quantity);
-              console.log(`Synced return of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`);
+              await economyIntegration.addItemToInventory(
+                economyProfile.id,
+                item.itemId,
+                item.quantity
+              );
+              console.log(
+                `Synced return of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
+              );
             }
           } catch (error) {
-            console.error(`Failed to sync item return for ${item.itemId} to Economy API for player ${proposer.id}:`, error);
+            console.error(
+              `Failed to sync item return for ${item.itemId} to Economy API for player ${proposer.id}:`,
+              error
+            );
           }
         }
       }
@@ -418,11 +514,20 @@ export class GameRoom extends Room<WorldState> {
           try {
             const economyProfile = await economyIntegration.getOrCreatePlayerProfile(accepter.name);
             if (economyProfile && economyProfile.id) {
-              await economyIntegration.addItemToInventory(economyProfile.id, item.itemId, item.quantity);
-              console.log(`Synced return of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`);
+              await economyIntegration.addItemToInventory(
+                economyProfile.id,
+                item.itemId,
+                item.quantity
+              );
+              console.log(
+                `Synced return of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
+              );
             }
           } catch (error) {
-            console.error(`Failed to sync item return for ${item.itemId} to Economy API for player ${accepter.id}:`, error);
+            console.error(
+              `Failed to sync item return for ${item.itemId} to Economy API for player ${accepter.id}:`,
+              error
+            );
           }
         }
       }
@@ -433,15 +538,19 @@ export class GameRoom extends Room<WorldState> {
       // Notify both players
       client.send('trade_cancelled', { tradeId: trade.tradeId, message: 'Trade cancelled.' });
       if (player.id === trade.proposerId) {
-        this.clients.find(c => c.sessionId === trade.accepterId)?.send('trade_cancelled', {
-          tradeId: trade.tradeId,
-          message: 'Trade cancelled by proposer.',
-        });
+        this.clients
+          .find(c => c.sessionId === trade.accepterId)
+          ?.send('trade_cancelled', {
+            tradeId: trade.tradeId,
+            message: 'Trade cancelled by proposer.',
+          });
       } else {
-        this.clients.find(c => c.sessionId === trade.proposerId)?.send('trade_cancelled', {
-          tradeId: trade.tradeId,
-          message: 'Trade cancelled by accepter.',
-        });
+        this.clients
+          .find(c => c.sessionId === trade.proposerId)
+          ?.send('trade_cancelled', {
+            tradeId: trade.tradeId,
+            message: 'Trade cancelled by accepter.',
+          });
       }
 
       console.log(`Trade ${trade.tradeId} cancelled by ${player.name}.`);
@@ -490,17 +599,25 @@ export class GameRoom extends Room<WorldState> {
         // ECONOMY API SYNC: Add collected items to player's economy inventory
         // Assume lootDrop still contains the items (if not, store items before collection)
         if (lootDrop && lootDrop.items && lootDrop.items.length > 0) {
-          economyIntegration.getOrCreatePlayerProfile(player.name)
-            .then((profile) => {
+          economyIntegration
+            .getOrCreatePlayerProfile(player.name)
+            .then(profile => {
               const economyId = profile.id;
-              lootDrop.items.forEach((item) => {
-                economyIntegration.addItemToInventory(economyId, item.itemId, item.quantity)
+              lootDrop.items.forEach(item => {
+                economyIntegration
+                  .addItemToInventory(economyId, item.itemId, item.quantity)
                   .catch(err => {
-                    console.error(`Failed to sync item ${item.itemId} for player ${economyId}:`, err);
+                    console.error(
+                      `Failed to sync item ${item.itemId} for player ${economyId}:`,
+                      err
+                    );
                   });
               });
               // Discord notification
-              sendDiscordNotification && sendDiscordNotification(`:tada: ${player.name} collected loot: ${lootDrop.items.map(i => i.name).join(', ')}`);
+              sendDiscordNotification &&
+                sendDiscordNotification(
+                  `:tada: ${player.name} collected loot: ${lootDrop.items.map(i => i.name).join(', ')}`
+                );
             })
             .catch(err => {
               console.error(`Failed to resolve economy profile for player ${player.name}:`, err);
@@ -545,15 +662,23 @@ export class GameRoom extends Room<WorldState> {
         try {
           const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.name);
           if (economyProfile && economyProfile.id) {
-            await economyIntegration.removeItemFromInventory(economyProfile.id, itemId, removedQuantity);
-            console.log(`Synced removal of ${removedQuantity}x ${itemId} from Economy API for player ${economyProfile.id}`);
+            await economyIntegration.removeItemFromInventory(
+              economyProfile.id,
+              itemId,
+              removedQuantity
+            );
+            console.log(
+              `Synced removal of ${removedQuantity}x ${itemId} from Economy API for player ${economyProfile.id}`
+            );
           }
         } catch (error) {
           console.error(`Failed to sync item usage for ${itemId} for player ${player.id}:`, error);
         }
         broadcastPlayerState(this, client.sessionId, player);
       } else {
-        console.warn(`Player ${player.id} attempted to use ${itemId} but does not have it or enough quantity.`);
+        console.warn(
+          `Player ${player.id} attempted to use ${itemId} but does not have it or enough quantity.`
+        );
       }
     });
 
@@ -568,7 +693,7 @@ export class GameRoom extends Room<WorldState> {
       const { itemId, quantity = 1 } = message;
 
       // Drop item using LootManager
-      const droppedLoot = LootManager.dropSpecificItem(this.state, player, itemId, quantity);
+      const droppedLoot = await LootManager.dropSpecificItem(this.state, player, itemId, quantity);
 
       if (droppedLoot) {
         // Sync with Economy API
@@ -576,7 +701,9 @@ export class GameRoom extends Room<WorldState> {
           const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.name);
           if (economyProfile && economyProfile.id) {
             await economyIntegration.removeItemFromInventory(economyProfile.id, itemId, quantity);
-            console.log(`Synced drop of ${quantity}x ${itemId} from Economy API for player ${economyProfile.id}`);
+            console.log(
+              `Synced drop of ${quantity}x ${itemId} from Economy API for player ${economyProfile.id}`
+            );
           }
         } catch (error) {
           console.error(`Failed to sync item drop for ${itemId} for player ${player.id}:`, error);
@@ -620,22 +747,38 @@ export class GameRoom extends Room<WorldState> {
               console.warn(`Item definition not found for economy item ID: ${ecoItem.itemId}`);
             }
           }
-          console.log(`Player ${player.id} loaded ${player.inventory.length} items from economy inventory.`);
+          console.log(
+            `Player ${player.id} loaded ${player.inventory.length} items from economy inventory.`
+          );
         } else {
-          console.log(`Player ${player.id} has no existing economy inventory. Adding starter items.`);
+          console.log(
+            `Player ${player.id} has no existing economy inventory. Adding starter items.`
+          );
           // Add starter items if no economy inventory exists
-          const starterSwordDef = await this.itemManager.getItemDefinition('sword_of_heroes');
+          const starterSwordDef = await this.itemManager.getItemDefinition('starter_sword');
           if (starterSwordDef) {
             const starterSword = new InventoryItem(starterSwordDef, 1);
             player.inventory.push(starterSword);
-            await economyIntegration.addItemToInventory(economyProfile.id, starterSword.itemId, starterSword.quantity);
+            if (economyIntegration) {
+              await economyIntegration.addItemToInventory(
+                economyProfile.id,
+                starterSword.itemId,
+                starterSword.quantity
+              );
+            }
           }
 
-          const starterPotionDef = await this.itemManager.getItemDefinition('health_potion');
-          if (starterPotionDef) {
-            const starterPotion = new InventoryItem(starterPotionDef, 3);
-            player.inventory.push(starterPotion);
-            await economyIntegration.addItemToInventory(economyProfile.id, starterPotion.itemId, starterPotion.quantity);
+          const starterShieldDef = await this.itemManager.getItemDefinition('starter_shield');
+          if (starterShieldDef) {
+            const starterShield = new InventoryItem(starterShieldDef, 1);
+            player.inventory.push(starterShield);
+            if (economyIntegration) {
+              await economyIntegration.addItemToInventory(
+                economyProfile.id,
+                starterShield.itemId,
+                starterShield.quantity
+              );
+            }
           }
         }
       } else {
@@ -666,58 +809,91 @@ export class GameRoom extends Room<WorldState> {
   }
 
   async onLeave(client: Client, consented: boolean): Promise<void> {
+    // First, check and remove the player from state to avoid serialization issues
     if (this.state.players.has(client.sessionId)) {
-      console.log(client.sessionId, 'left the room.');
-      const player = this.state.players.get(client.sessionId);
+      try {
+        // Cache player reference and information before removing from state
+        const player = this.state.players.get(client.sessionId);
+        const playerName = player ? player.username : 'unknown';
 
-      // If player has inventory, create a loot drop using LootManager
-      if (player && player.inventory.length > 0) {
-        const lootDrop = LootManager.dropLootFromPlayer(this.state, player);
-        // ECONOMY API SYNC: Remove dropped items from player's economy inventory
-        if (lootDrop && lootDrop.items && lootDrop.items.length > 0) {
-          economyIntegration.getOrCreatePlayerProfile(player.name)
-            .then(profile => {
-              const economyId = profile.id;
-              lootDrop.items.forEach((item: InventoryItem) => {
-                economyIntegration.removeItemFromInventory(economyId, item.itemId, item.quantity)
-                  .then(() => {
-                    console.log(`Synced removal of item ${item.itemId} x${item.quantity} from Economy API for player ${economyId}`);
-                  })
-                  .catch(err => {
-                    console.error(`Failed to sync removal of item ${item.itemId} for player ${economyId}:`, err);
-                  });
-              });
-            })
-            .catch(err => {
-              console.error(`Failed to resolve economy profile for player ${player.name}:`, err);
-            });
-        }
-      }
+        // Check if player has items
+        const hasItems = player && player.inventory && player.inventory.length > 0;
 
-      this.state.players.delete(client.sessionId);
-    }
-
-    try {
-      if (consented) {
-        throw new Error('player consented to leave');
-      }
-
-      console.log('waiting for reconnection for', client.sessionId);
-      const newClient = await this.allowReconnection(client, 10);
-      console.log('reconnected!', newClient.sessionId);
-
-      // Update client sessionId for the reconnected player
-      const player = this.state.players.get(client.sessionId);
-      if (player) {
-        player.id = newClient.sessionId;
+        // First, remove the player from state to avoid serialization issues in broadcasts
         this.state.players.delete(client.sessionId);
-        this.state.players.set(newClient.sessionId, player);
-        broadcastPlayerState(this, newClient.sessionId, player);
-      }
 
-    } catch (e) {
-      console.log(client.sessionId, 'could not reconnect.', e.message);
-      this.state.players.delete(client.sessionId);
+        // Broadcast the player left event with minimal data
+        this.broadcast('player_left', { playerId: client.sessionId });
+
+        // After player is removed, handle loot drop if not reconnecting
+        if (!consented && hasItems && player) {
+          try {
+            // Create a loot drop for the player's inventory
+            const lootDrop = await LootManager.dropLootFromPlayer(this.state, player);
+
+            // Sync with economy API if integration is available
+            if (lootDrop && lootDrop.items && lootDrop.items.length > 0 && economyIntegration) {
+              try {
+                const profile = await economyIntegration.getOrCreatePlayerProfile(playerName);
+                if (profile && profile.id) {
+                  const economyId = profile.id;
+
+                  // Process items one by one with await to ensure proper completion
+                  for (const item of lootDrop.items) {
+                    try {
+                      if (typeof economyIntegration.removeItemFromInventory === 'function') {
+                        await economyIntegration.removeItemFromInventory(
+                          economyId,
+                          item.itemId,
+                          item.quantity
+                        );
+                      }
+                    } catch (error) {
+                      // Silently log errors but continue processing
+                      console.error(`Economy sync error: ${(error as Error).message}`);
+                    }
+                  }
+                }
+              } catch (error) {
+                // Silently log errors but continue processing
+                console.error(`Player profile error: ${(error as Error).message}`);
+              }
+            }
+          } catch (error) {
+            // Log loot drop errors but continue
+            console.error(`Loot drop error: ${(error as Error).message}`);
+          }
+        }
+
+        // Handle reconnection
+        if (consented) {
+          try {
+            console.log('waiting for reconnection for', client.sessionId);
+            const newClient = await this.allowReconnection(client, 10);
+            console.log('reconnected!', newClient.sessionId);
+
+            // Store player in a temporary variable for reconnection
+            if (!this.state.players.has(newClient.sessionId) && player) {
+              player.id = newClient.sessionId;
+              this.state.players.set(newClient.sessionId, player);
+
+              // Use imported broadcast function instead of broadcastPlayerState
+              this.broadcast('player_rejoined', {
+                playerId: newClient.sessionId,
+                x: player.x,
+                y: player.y,
+              });
+            }
+          } catch (error) {
+            // Player couldn't reconnect, handle as a normal leave
+            console.error(`Reconnection failed: ${(error as Error).message}`);
+          }
+        }
+      } catch (error) {
+        // Ensure player is removed even if an error occurs
+        console.error(`Error in onLeave: ${(error as Error).message}`);
+        this.state.players.delete(client.sessionId);
+      }
     }
   }
 
@@ -727,25 +903,33 @@ export class GameRoom extends Room<WorldState> {
 
   private updateNPCs(): void {
     // Iterate over each NPC and update its position randomly
-    this.state.npcs.forEach((npc) => {
+    this.state.npcs.forEach(npc => {
       const deltaX = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
       const deltaY = Math.floor(Math.random() * 3) - 1;
       // Update NPC position, ensuring they don't go negative (could add upper bounds as needed)
       npc.x = Math.max(0, npc.x + deltaX);
       npc.y = Math.max(0, npc.y + deltaY);
     });
-    console.log('Updated NPC positions:', Array.from(this.state.npcs.values()).map(npc => ({ id: npc.id, x: npc.x, y: npc.y })));
+    console.log(
+      'Updated NPC positions:',
+      Array.from(this.state.npcs.values()).map(npc => ({ id: npc.id, x: npc.x, y: npc.y }))
+    );
   }
 
   private updateNPCBehavior(): void {
     // Iterate over each NPC
-    this.state.npcs.forEach((npc) => {
+    this.state.npcs.forEach(npc => {
       // For each player, check if they are within attack range (using Manhattan distance)
-      this.state.players.forEach((player) => {
+      this.state.players.forEach(player => {
         const distance = Math.abs(npc.x - player.x) + Math.abs(npc.y - player.y);
         if (distance <= 2) {
           this.npcAttack(npc, player);
-          broadcastPlayerState(this, player.id, player);
+          this.broadcast('player_state', {
+            playerId: player.id,
+            health: player.health,
+            x: player.x,
+            y: player.y,
+          });
         }
       });
     });
@@ -756,6 +940,8 @@ export class GameRoom extends Room<WorldState> {
     // NPC deals random damage between 8 and 12
     const damage = 8 + Math.floor(Math.random() * 5);
     player.health = Math.max(0, player.health - damage);
-    console.log(`NPC ${npc.name} attacked Player ${player.id} for ${damage} damage. Player health is now ${player.health}.`);
+    console.log(
+      `NPC ${npc.name} attacked Player ${player.id} for ${damage} damage. Player health is now ${player.health}.`
+    );
   }
 }

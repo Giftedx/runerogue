@@ -40,10 +40,12 @@ let economyReady = false;
 })();
 
 // Security Middleware
-app.use(helmet({
-  contentSecurityPolicy: isProduction ? undefined : false,
-  crossOriginEmbedderPolicy: isProduction,
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: isProduction ? undefined : false,
+    crossOriginEmbedderPolicy: isProduction,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -68,7 +70,9 @@ app.use(cors(corsOptions));
 // Request logging
 if (isProduction) {
   const morgan = require('morgan');
-  app.use(morgan('combined', { stream: { write: (message: string) => logger.http(message.trim()) } }));
+  app.use(
+    morgan('combined', { stream: { write: (message: string) => logger.http(message.trim()) } })
+  );
 }
 
 // Body parsing
@@ -80,7 +84,7 @@ app.get('/health', async (_req, res) => {
   try {
     const health = await checkHealth();
     const status = health.database && health.redis ? 'healthy' : 'degraded';
-    
+
     // Check economy integration health
     let economyStatus = 'unknown';
     try {
@@ -92,7 +96,7 @@ app.get('/health', async (_req, res) => {
     } catch (error) {
       economyStatus = 'error';
     }
-    
+
     res.status(status === 'healthy' ? 200 : 503).json({
       status,
       timestamp: new Date().toISOString(),
@@ -101,15 +105,15 @@ app.get('/health', async (_req, res) => {
       services: {
         database: health.database ? 'connected' : 'disconnected',
         redis: health.redis ? 'connected' : 'disconnected',
-        economy: economyStatus
-      }
+        economy: economyStatus,
+      },
     });
   } catch (error) {
     logger.error('Health check error:', error);
     res.status(500).json({
       status: 'error',
       timestamp: new Date().toISOString(),
-      message: 'Error checking service health'
+      message: 'Error checking service health',
     });
   }
 });
@@ -134,11 +138,11 @@ app.use(
       const auth = { login: 'admin', password: process.env.ADMIN_PASSWORD || 'admin' };
       const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
       const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
-      
+
       if (login === auth.login && password === auth.password) {
         return next();
       }
-      
+
       res.set('WWW-Authenticate', 'Basic');
       return res.status(401).send('Authentication required.');
     }
@@ -158,7 +162,7 @@ app.use((_req, res) => {
 // Health check function for database and Redis
 const checkHealth = async (): Promise<{ database: boolean; redis: boolean }> => {
   const health = { database: false, redis: false };
-  
+
   try {
     // Check database connection
     // This would typically use a lightweight query to test the connection
@@ -167,7 +171,7 @@ const checkHealth = async (): Promise<{ database: boolean; redis: boolean }> => 
   } catch (error) {
     logger.error('Database health check failed:', error);
   }
-  
+
   try {
     // Check Redis connection
     try {
@@ -181,7 +185,7 @@ const checkHealth = async (): Promise<{ database: boolean; redis: boolean }> => 
   } catch (error) {
     logger.error('Redis health check failed:', error);
   }
-  
+
   return health;
 };
 
@@ -213,7 +217,7 @@ export const startApplication = async (testMode: boolean = false) => {
       retryStrategy: (times: number) => {
         // reconnect after
         return Math.min(times * 50, 2000);
-      }
+      },
     });
   }
 
@@ -225,7 +229,9 @@ export const startApplication = async (testMode: boolean = false) => {
 
   const connectToDatabase = async (retryCount = 0): Promise<boolean> => {
     try {
-      logger.info(`Attempting to connect to database (Attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+      logger.info(
+        `Attempting to connect to database (Attempt ${retryCount + 1}/${MAX_RETRIES})...`
+      );
       await createConnection({
         type: 'sqlite',
         database: isProduction ? 'database.sqlite' : 'database.test.sqlite',
@@ -299,7 +305,7 @@ export const startApplication = async (testMode: boolean = false) => {
         logger.warn('Partial shutdown completed with some issues');
         process.exit(1);
       }
-      
+
       // Force close after timeout as a last resort
       setTimeout(() => {
         logger.error('Could not complete shutdown in time, forcefully exiting');
@@ -311,23 +317,25 @@ export const startApplication = async (testMode: boolean = false) => {
     }
   };
 
-
-
   const dbConnected = await connectToDatabase();
 
   server.listen(PORT, () => {
     logger.info(`Server is running in ${NODE_ENV} mode on port ${PORT}`);
     if (isProduction) {
-      logger.info(`Colyseus monitor available at https://<your-domain>/colyseus (protected by authentication)`);
+      logger.info(
+        `Colyseus monitor available at https://<your-domain>/colyseus (protected by authentication)`
+      );
     } else {
       logger.info(`Colyseus monitor available at http://localhost:${PORT}/colyseus`);
     }
-    
+
     if (!dbConnected && isProduction) {
-      logger.warn('Server started without database connection. Some functionality will be limited.');
+      logger.warn(
+        'Server started without database connection. Some functionality will be limited.'
+      );
     }
   });
-  
+
   // Set up periodic health checks in production
   if (isProduction) {
     setInterval(async () => {

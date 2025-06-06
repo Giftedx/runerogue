@@ -50,7 +50,8 @@
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
     "ws": "^8.18.2",
-    "yamljs": "^0.3.0"
+    "yamljs": "^0.3.0",
+    "zod": "^3.25.51"
   },
   "devDependencies": {
     "@colyseus/testing": "^0.16.0",

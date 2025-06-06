@@ -40,7 +40,7 @@ export class ItemManager {
       checkperiod: 120, // Check for expired keys every 2 minutes
       useClones: false,
     });
-    
+
     // Skip external sync during tests
     if (process.env.NODE_ENV !== 'test') {
       this.initialize();
@@ -58,10 +58,10 @@ export class ItemManager {
     try {
       // Load from local definitions first
       this.loadLocalItemDefinitions();
-      
+
       // Then sync with economy service
       await this.syncWithEconomy();
-      
+
       // Set up periodic sync
       setInterval(() => this.syncWithEconomy(), this.SYNC_INTERVAL);
     } catch (error) {
@@ -94,7 +94,7 @@ export class ItemManager {
 
     const startTime = performance.now();
     this.syncInProgress = true;
-    
+
     try {
       // Check if economy integration is ready
       if (!(await economyIntegration.isReady())) {
@@ -104,23 +104,25 @@ export class ItemManager {
       // Get all items from economy service
       // Note: This assumes the economy client has a getItems method
       const items = await economyIntegration.getItems();
-      
+
       // Update local cache and definitions
       let updatedCount = 0;
       for (const item of items) {
         const cacheKey = `item:${item.itemId}`;
         const existingItem = this.cache.get<ItemDefinition>(cacheKey);
-        
+
         // Only update if item is new or modified
-        if (!existingItem || 
-            existingItem.name !== item.name || 
-            existingItem.description !== item.description) {
+        if (
+          !existingItem ||
+          existingItem.name !== item.name ||
+          existingItem.description !== item.description
+        ) {
           this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
           this.itemDefinitions.set(item.itemId, item);
           updatedCount++;
         }
       }
-      
+
       this.lastSyncTime = Date.now();
       logger.info(`Synced ${items.length} items with economy service (${updatedCount} updated)`);
     } catch (error) {
@@ -181,7 +183,7 @@ export class ItemManager {
     }
 
     // Fetch missing items individually if economy service is available
-    if (missingIds.length > 0 && await economyIntegration.isReady()) {
+    if (missingIds.length > 0 && (await economyIntegration.isReady())) {
       for (const id of missingIds) {
         try {
           const item = await economyIntegration.getItem(id);

@@ -119,11 +119,15 @@ export class EconomyClient {
     });
 
     // Configure axios-retry only when not in test and interceptors are available
-    if (process.env.NODE_ENV !== 'test' && this.client.interceptors && this.client.interceptors.response) {
+    if (
+      process.env.NODE_ENV !== 'test' &&
+      this.client.interceptors &&
+      this.client.interceptors.response
+    ) {
       axiosRetry(this.client, {
         retries: 3, // Number of retry attempts
         retryDelay: axiosRetry.exponentialDelay, // Exponential back-off delay between retries
-        retryCondition: (error) => {
+        retryCondition: error => {
           // Retry on network errors or 5xx status codes
           return axiosRetry.isNetworkError(error) || axiosRetry.isRetryableError(error);
         },

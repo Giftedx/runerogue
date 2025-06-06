@@ -1,25 +1,25 @@
 export const CONFIG = {
   // Discord integration
   DISCORD_CLIENT_ID: 'YOUR_DISCORD_CLIENT_ID', // Replace with actual client ID
-  
+
   // Server connection
   SERVER_URL: 'ws://localhost:2567', // WebSocket URL for Colyseus server
-  
+
   // Game settings
   CANVAS_WIDTH: 800,
   CANVAS_HEIGHT: 600,
   TILE_SIZE: 32,
-  
+
   // Game physics
   PLAYER_MOVE_SPEED: 3,
   NPC_MOVE_SPEED: 1.5,
-  
+
   // UI settings
   UI_SCALE: 1,
-  
+
   // Debug settings
   DEBUG_MODE: false,
-  
+
   // Asset paths
   ASSETS: {
     SPRITES: {

@@ -13,22 +13,22 @@ import { AssetLoader } from './game/AssetLoader';
 // Main entry point for the RuneRogue Discord-embedded game client
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('RuneRogue Discord Game Client initializing...');
-  
+
   try {
     // Initialize Discord SDK
     const discord = new DiscordSDK(CONFIG.DISCORD_CLIENT_ID);
     await discord.ready();
-    
+
     // Get authenticated user
     const user = await discord.user.fetch();
     console.log(`Authenticated as Discord user: ${user.username}`);
-    
+
     // Create loading screen
     showLoadingScreen('Loading RuneRogue...');
-    
+
     // Initialize asset loader and load assets
     const assetLoader = new AssetLoader();
-    
+
     try {
       // Try to load assets
       await assetLoader.loadAllAssets();
@@ -36,64 +36,64 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.warn('Failed to load assets, using placeholders instead:', error);
       assetLoader.createPlaceholderAssets();
     }
-    
+
     // Initialize audio manager
     const audioManager = new AudioManager();
-    
+
     // Initialize sprite manager
     const spriteManager = new SpriteManager(assetLoader);
-    
+
     // Create game canvas
     const canvas = createGameCanvas();
     const ctx = canvas.getContext('2d')!;
-    
+
     // Enable pixelated rendering
     ctx.imageSmoothingEnabled = false;
-    
+
     // Initialize game state
     const gameState = new GameState();
-    
+
     // Make gameState available globally for debugging
     (window as any).gameState = gameState;
-    
+
     // Initialize game renderer
     const gameRenderer = new GameRenderer(canvas, ctx, spriteManager);
-    
+
     // Initialize UI manager
     const uiManager = new UIManager(discord, user);
-    
+
     // Initialize input manager
     const inputManager = new InputManager(discord);
-    
+
     // Set up input callbacks
     inputManager.onMove = (x, y) => {
       if (gameClient) {
         gameClient.sendMoveCommand(x, y);
       }
     };
-    
-    inputManager.onAttack = (targetId) => {
+
+    inputManager.onAttack = targetId => {
       if (gameClient) {
         gameClient.sendAttackCommand(targetId);
         audioManager.playAttackSound();
       }
     };
-    
-    inputManager.onCollectLoot = (lootId) => {
+
+    inputManager.onCollectLoot = lootId => {
       if (gameClient) {
         gameClient.sendCollectCommand(lootId);
       }
     };
-    
-    inputManager.onUseItem = (itemIndex) => {
+
+    inputManager.onUseItem = itemIndex => {
       if (gameClient) {
         gameClient.sendUseItemCommand(itemIndex);
       }
     };
-    
+
     // Initialize Colyseus client
     const colyseusClient = new Client(CONFIG.SERVER_URL);
-    
+
     // Initialize game client
     const gameClient = new GameClient(
       colyseusClient,
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       discord,
       user
     );
-    
+
     // Set up event listeners for game events
     document.addEventListener('item-use', (event: any) => {
       const itemIndex = event.detail.itemIndex;
@@ -112,37 +112,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         gameClient.sendUseItemCommand(itemIndex);
       }
     });
-    
+
     // Connect to game server
     updateLoadingScreen('Connecting to server...');
-    
+
     try {
       await gameClient.connect();
       console.log('Connected to game server');
-      
+
       // Hide loading screen
       hideLoadingScreen();
-      
+
       // Show game UI
       uiManager.showGameUI();
-      
+
       // Start playing background music
       audioManager.playMusic();
-      
+
       // Update Discord rich presence
       updateDiscordPresence(discord, gameState);
-      
+
       // Start the game loop
       gameLoop(gameClient, gameState, gameRenderer, uiManager, audioManager, discord);
-      
     } catch (error) {
       console.error('Failed to connect to game server:', error);
       showErrorScreen('Failed to connect to game server. Please try again later.');
     }
-    
   } catch (error) {
     console.error('Failed to initialize Discord SDK:', error);
-    showErrorScreen('Failed to initialize Discord SDK. Please make sure you are running this app within Discord.');
+    showErrorScreen(
+      'Failed to initialize Discord SDK. Please make sure you are running this app within Discord.'
+    );
   }
 });
 
@@ -153,7 +153,7 @@ function createGameCanvas(): HTMLCanvasElement {
   if (existingCanvas) {
     existingCanvas.remove();
   }
-  
+
   // Create game container if it doesn't exist
   let gameContainer = document.getElementById('game-container');
   if (!gameContainer) {
@@ -161,16 +161,16 @@ function createGameCanvas(): HTMLCanvasElement {
     gameContainer.id = 'game-container';
     document.body.appendChild(gameContainer);
   }
-  
+
   // Create canvas
   const canvas = document.createElement('canvas');
   canvas.id = 'game-canvas';
   canvas.width = CONFIG.CANVAS_WIDTH;
   canvas.height = CONFIG.CANVAS_HEIGHT;
-  
+
   // Add canvas to container
   gameContainer.appendChild(canvas);
-  
+
   return canvas;
 }
 
@@ -192,7 +192,7 @@ function showLoadingScreen(message: string): void {
     loadingScreen.style.justifyContent = 'center';
     loadingScreen.style.alignItems = 'center';
     loadingScreen.style.zIndex = '1000';
-    
+
     // Add RuneRogue logo
     const logo = document.createElement('div');
     logo.textContent = 'RuneRogue';
@@ -201,14 +201,14 @@ function showLoadingScreen(message: string): void {
     logo.style.color = '#ffcc00';
     logo.style.marginBottom = '20px';
     loadingScreen.appendChild(logo);
-    
+
     // Add loading message
     const loadingMessage = document.createElement('div');
     loadingMessage.id = 'loading-message';
     loadingMessage.style.color = '#fff';
     loadingMessage.style.fontSize = '18px';
     loadingScreen.appendChild(loadingMessage);
-    
+
     // Add loading bar
     const loadingBarContainer = document.createElement('div');
     loadingBarContainer.style.width = '300px';
@@ -216,31 +216,31 @@ function showLoadingScreen(message: string): void {
     loadingBarContainer.style.backgroundColor = '#333';
     loadingBarContainer.style.marginTop = '20px';
     loadingBarContainer.style.border = '2px solid #3e2415';
-    
+
     const loadingBar = document.createElement('div');
     loadingBar.id = 'loading-bar';
     loadingBar.style.width = '0%';
     loadingBar.style.height = '100%';
     loadingBar.style.backgroundColor = '#ffcc00';
     loadingBar.style.transition = 'width 0.5s';
-    
+
     loadingBarContainer.appendChild(loadingBar);
     loadingScreen.appendChild(loadingBarContainer);
-    
+
     document.body.appendChild(loadingScreen);
   }
-  
+
   // Update loading message
   const loadingMessage = document.getElementById('loading-message');
   if (loadingMessage) {
     loadingMessage.textContent = message;
   }
-  
+
   // Animate loading bar
   const loadingBar = document.getElementById('loading-bar');
   if (loadingBar) {
     loadingBar.style.width = '0%';
-    
+
     let progress = 0;
     const interval = setInterval(() => {
       progress += 1;
@@ -259,7 +259,7 @@ function updateLoadingScreen(message: string): void {
   if (loadingMessage) {
     loadingMessage.textContent = message;
   }
-  
+
   const loadingBar = document.getElementById('loading-bar');
   if (loadingBar) {
     loadingBar.style.width = '50%';
@@ -272,7 +272,7 @@ function hideLoadingScreen(): void {
   if (loadingScreen) {
     loadingScreen.style.opacity = '0';
     loadingScreen.style.transition = 'opacity 0.5s';
-    
+
     setTimeout(() => {
       loadingScreen.remove();
     }, 500);
@@ -283,7 +283,7 @@ function hideLoadingScreen(): void {
 function showErrorScreen(message: string): void {
   // Hide loading screen first
   hideLoadingScreen();
-  
+
   // Create error screen
   const errorScreen = document.createElement('div');
   errorScreen.id = 'error-screen';
@@ -298,7 +298,7 @@ function showErrorScreen(message: string): void {
   errorScreen.style.justifyContent = 'center';
   errorScreen.style.alignItems = 'center';
   errorScreen.style.zIndex = '1000';
-  
+
   // Add error message
   const errorMessage = document.createElement('div');
   errorMessage.textContent = message;
@@ -308,7 +308,7 @@ function showErrorScreen(message: string): void {
   errorMessage.style.textAlign = 'center';
   errorMessage.style.marginBottom = '20px';
   errorScreen.appendChild(errorMessage);
-  
+
   // Add retry button
   const retryButton = document.createElement('button');
   retryButton.textContent = 'Retry';
@@ -318,11 +318,11 @@ function showErrorScreen(message: string): void {
   retryButton.style.color = '#fff';
   retryButton.style.border = '2px solid #ffcc00';
   retryButton.style.cursor = 'pointer';
-  
+
   retryButton.addEventListener('click', () => {
     window.location.reload();
   });
-  
+
   errorScreen.appendChild(retryButton);
   document.body.appendChild(errorScreen);
 }
@@ -330,23 +330,25 @@ function showErrorScreen(message: string): void {
 // Update Discord rich presence
 function updateDiscordPresence(discord: DiscordSDK, gameState: GameState): void {
   if (!gameState.player) return;
-  
+
   // Set Discord rich presence
-  discord.presence.update({
-    details: `Level ${gameState.player.combatLevel} Player`,
-    state: `Room ${gameState.roomId || 'Lobby'}`,
-    partySize: gameState.players.size,
-    partyMax: CONFIG.MAX_PLAYERS_PER_ROOM,
-    startTimestamp: Date.now(),
-    largeImageKey: 'game_logo',
-    largeImageText: 'RuneRogue',
-    smallImageKey: 'player_icon',
-    smallImageText: gameState.player.username,
-    instance: false,
-  }).catch(error => {
-    console.error('Failed to update Discord presence:', error);
-  });
-  
+  discord.presence
+    .update({
+      details: `Level ${gameState.player.combatLevel} Player`,
+      state: `Room ${gameState.roomId || 'Lobby'}`,
+      partySize: gameState.players.size,
+      partyMax: CONFIG.MAX_PLAYERS_PER_ROOM,
+      startTimestamp: Date.now(),
+      largeImageKey: 'game_logo',
+      largeImageText: 'RuneRogue',
+      smallImageKey: 'player_icon',
+      smallImageText: gameState.player.username,
+      instance: false,
+    })
+    .catch(error => {
+      console.error('Failed to update Discord presence:', error);
+    });
+
   // Update presence every 60 seconds
   setTimeout(() => {
     updateDiscordPresence(discord, gameState);
@@ -363,29 +365,29 @@ function gameLoop(
   discord: DiscordSDK
 ): void {
   let lastTime = performance.now();
-  
+
   // Animation frame loop
   function animate(currentTime: number): void {
     // Calculate delta time
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
-    
+
     // Update game state
     gameClient.update(deltaTime);
-    
+
     // Update UI
     if (gameState.player) {
       uiManager.updatePlayerInfo(gameState.player);
       uiManager.updateMinimap(gameState);
     }
-    
+
     // Render game
     gameRenderer.render(gameState, deltaTime);
-    
+
     // Request next frame
     requestAnimationFrame(animate);
   }
-  
+
   // Start animation loop
   requestAnimationFrame(animate);
 }

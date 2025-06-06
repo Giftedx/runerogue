@@ -133,7 +133,10 @@ process.on('uncaughtException', (error: Error) => {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
-  logger.error('Unhandled Rejection at:', JSON.parse(JSON.stringify({ promise, reason }, jsonReplacer())));
+  logger.error(
+    'Unhandled Rejection at:',
+    JSON.parse(JSON.stringify({ promise, reason }, jsonReplacer()))
+  );
   if (process.env.NODE_ENV === 'production') {
     process.exit(1);
   }

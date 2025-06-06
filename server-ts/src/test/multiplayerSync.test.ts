@@ -8,7 +8,7 @@ describe('multiplayerSync module', () => {
       broadcast: (type: string, payload: any) => {
         messages.push({ type, payload });
       },
-      getMessages: () => messages
+      getMessages: () => messages,
     };
   };
 
@@ -20,23 +20,19 @@ describe('multiplayerSync module', () => {
     broadcastPlayerState(dummyServer, playerId, playerState);
 
     const messages = dummyServer.getMessages();
-    expect(messages).toEqual([
-      { type: 'updatePlayerState', payload: { playerId, playerState } }
-    ]);
+    expect(messages).toEqual([{ type: 'updatePlayerState', payload: { playerId, playerState } }]);
   });
 
   test('should broadcast sync for all player states correctly', () => {
     const dummyServer = createDummyServer();
     const allPlayerStates = {
       player1: { x: 5, y: 5, health: 90 },
-      player2: { x: 15, y: 30, health: 80 }
+      player2: { x: 15, y: 30, health: 80 },
     };
 
     syncAllPlayerStates(dummyServer, allPlayerStates);
 
     const messages = dummyServer.getMessages();
-    expect(messages).toEqual([
-      { type: 'syncAllPlayers', payload: allPlayerStates }
-    ]);
+    expect(messages).toEqual([{ type: 'syncAllPlayers', payload: allPlayerStates }]);
   });
 });

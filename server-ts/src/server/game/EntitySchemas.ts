@@ -90,6 +90,9 @@ export class Skills extends Schema {
   @type(Skill)
   public fishing: Skill;
 
+  @type(Skill)
+  public prayer: Skill;
+
   constructor() {
     super();
     this.attack = new Skill();
@@ -98,6 +101,7 @@ export class Skills extends Schema {
     this.mining = new Skill();
     this.woodcutting = new Skill();
     this.fishing = new Skill();
+    this.prayer = new Skill();
   }
 }
 
@@ -109,26 +113,37 @@ import { LootTableEntry } from './LootManager';
  */
 export class InventoryItem extends Schema {
   @type('string')
-  public itemId: string; // Unique ID for the item type
+  public itemId: string = ''; // Unique ID for the item type
 
   @type('number')
-  public quantity: number;
+  public quantity: number = 1;
 
   // Properties loaded from ItemDefinition
-  public name: string;
-  public description: string;
-  public attack: number;
-  public defense: number;
-  public isStackable: boolean;
+  @type('string')
+  public name: string = '';
 
-  constructor(itemDefinition: ItemDefinition, quantity: number = 1) {
+  @type('string')
+  public description: string = '';
+
+  @type('number')
+  public attack: number = 0;
+
+  @type('number')
+  public defense: number = 0;
+
+  @type('boolean')
+  public isStackable: boolean = false;
+
+  constructor(itemDefinition?: ItemDefinition, quantity: number = 1) {
     super();
-    this.itemId = itemDefinition.itemId;
-    this.name = itemDefinition.name;
-    this.description = itemDefinition.description;
-    this.attack = itemDefinition.attack;
-    this.defense = itemDefinition.defense;
-    this.isStackable = itemDefinition.isStackable;
+    if (itemDefinition) {
+      this.itemId = itemDefinition.itemId;
+      this.name = itemDefinition.name;
+      this.description = itemDefinition.description;
+      this.attack = itemDefinition.attack;
+      this.defense = itemDefinition.defense;
+      this.isStackable = itemDefinition.isStackable;
+    }
     this.quantity = quantity;
   }
 }
@@ -138,19 +153,19 @@ export class InventoryItem extends Schema {
  */
 export class Equipment extends Schema {
   @type('string')
-  public weapon: string | null;
+  public weapon: string = '';
 
   @type('string')
-  public armor: string | null;
+  public armor: string = '';
 
   @type('string')
-  public shield: string | null;
+  public shield: string = '';
 
   constructor() {
     super();
-    this.weapon = null;
-    this.armor = null;
-    this.shield = null;
+    this.weapon = '';
+    this.armor = '';
+    this.shield = '';
   }
 }
 
@@ -241,15 +256,25 @@ export class Player extends Schema {
   @type('number')
   public specialEnergy: number = 100;
 
-  // Active prayers (by name)
+  // Prayer points (0 to Prayer level)
+  @type('number')
+  public prayerPoints: number = 1;
+
+  // Active combat effects
+  @type(['string'])
+  public activeEffects = new ArraySchema<string>();
+
+  // Maximum prayer points (equal to Prayer level)
+  @type('number')
+  public maxPrayerPoints: number = 1;
+
+  // Active prayers (by prayer ID)
   @type(['string'])
   public activePrayers = new ArraySchema<string>();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _prayerTimers: Map<string, number> = new Map();
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _specialCooldowns: Map<string, number> = new Map();
+  // Prayer bonus from equipment
+  @type('number')
+  public prayerBonus: number = 0;
 
   private actionCooldowns: Map<string, number> = new Map();
 
@@ -306,6 +331,25 @@ export class Player extends Schema {
         this.skills.strength.level +
         Math.floor(this.skills.attack.level * 1.3));
     return Math.floor(base);
+  }
+
+  // Update maximum prayer points based on Prayer level
+  updateMaxPrayerPoints(): void {
+    this.maxPrayerPoints = this.skills.prayer.level;
+    // Ensure current prayer points don't exceed max
+    if (this.prayerPoints > this.maxPrayerPoints) {
+      this.prayerPoints = this.maxPrayerPoints;
+    }
+  }
+
+  // Restore prayer points (capped at max)
+  restorePrayerPoints(amount: number): void {
+    this.prayerPoints = Math.min(this.prayerPoints + amount, this.maxPrayerPoints);
+  }
+
+  // Drain prayer points (minimum 0)
+  drainPrayerPoints(amount: number): void {
+    this.prayerPoints = Math.max(this.prayerPoints - amount, 0);
   }
 }
 export class Resource extends Schema {
@@ -390,8 +434,13 @@ export class AreaMap extends Schema {
 
   @type('number')
   public height: number = 100;
+
+  @type('string')
   public biome: string = 'plains';
-  @type(['boolean']) public collisionMap: boolean[][] = []; // 2D array for collision
+
+  // Note: 2D array collision map is not serialized via Colyseus
+  // It's managed locally on the server
+  public collisionMap: boolean[][] = [];
 
   constructor(name: string, width: number, height: number) {
     super();
@@ -432,14 +481,15 @@ export class AreaMap extends Schema {
   }
 }
 
-
-
 export class NPC extends Schema {
   @type('string')
   public id: string = '';
 
   @type('string')
   public name: string = '';
+
+  @type('string')
+  public type: string = '';
 
   @type('number')
   public x: number = 0;
@@ -465,20 +515,32 @@ export class NPC extends Schema {
   @type('number')
   public attackRange: number = 1;
 
-  @type(['string'])
-  public lootTable: ArraySchema<string> = new ArraySchema<string>(); // Array of itemIds
-  static x: number;
-  static y: number;
-  static lootTable: any;
+  @type('number')
+  public attackSpeed: number = 2000;
 
-  constructor(id: string, name: string, x: number, y: number, type: string, lootTable: LootTableEntry[] = []) {
+  @type(['string'])
+  public lootTable = new ArraySchema<string>(); // Array of itemIds
+
+  // Active combat effects
+  @type(['string'])
+  public activeEffects = new ArraySchema<string>();
+
+  constructor(
+    id: string,
+    name: string,
+    x: number,
+    y: number,
+    type: string,
+    lootTable: LootTableEntry[] = []
+  ) {
     super();
     this.id = id;
     this.name = name;
     this.x = x;
     this.y = y;
     this.type = type;
-    this.lootTable.push(...lootTable);
+    // Convert LootTableEntry objects to itemId strings
+    this.lootTable.push(...lootTable.map(entry => entry.itemId));
 
     // Set base stats based on type (example, can be more complex)
     switch (type) {
@@ -508,22 +570,22 @@ export class NPC extends Schema {
 // Extended game state with map and NPCs
 export class Trade extends Schema {
   @type('string')
-  tradeId: string = '';
+  public tradeId: string = '';
 
   @type('string')
-  proposerId: string = '';
+  public proposerId: string = '';
 
   @type('string')
-  accepterId: string = '';
+  public accepterId: string = '';
 
   @type([InventoryItem])
-  proposerItems = new ArraySchema<InventoryItem>();
+  public proposerItems = new ArraySchema<InventoryItem>();
 
   @type([InventoryItem])
-  accepterItems = new ArraySchema<InventoryItem>();
+  public accepterItems = new ArraySchema<InventoryItem>();
 
   @type('string')
-  status: 'pending' | 'offered' | 'accepted' | 'completed' | 'cancelled' = 'pending';
+  public status: 'pending' | 'offered' | 'accepted' | 'completed' | 'cancelled' = 'pending';
 
   constructor(tradeId: string, proposerId: string, accepterId: string) {
     super();

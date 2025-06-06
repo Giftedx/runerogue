@@ -46,30 +46,29 @@ export class GameClient {
   async start(): Promise<void> {
     try {
       console.log('Connecting to game server...');
-      
+
       // Connect to the Colyseus server
       this.room = await this.client.joinOrCreate('game_room', {
         username: this.user.username,
         avatarUrl: this.user.avatar,
-        discordId: this.user.id
+        discordId: this.user.id,
       });
 
       console.log('Connected to room:', this.room.id);
-      
+
       // Set up room message handlers
       this.setupRoomHandlers();
-      
+
       // Start the game loop
       this.isRunning = true;
       this.gameLoop();
-      
+
       // Update UI with initial state
       this.uiManager.updatePlayerInfo(this.gameState.player);
       this.uiManager.showGameUI();
-      
+
       // Play background music
       this.audioManager.playMusic('main');
-      
     } catch (error) {
       console.error('Failed to join room:', error);
       this.uiManager.showError('Failed to connect to game server');
@@ -80,7 +79,7 @@ export class GameClient {
     if (!this.room) return;
 
     // Handle state changes
-    this.room.onStateChange((state) => {
+    this.room.onStateChange(state => {
       this.gameState.updateFromServer(state);
       this.uiManager.updatePlayerInfo(this.gameState.player);
     });
@@ -89,7 +88,7 @@ export class GameClient {
     this.room.state.players.onAdd((player, sessionId) => {
       console.log('Player joined:', sessionId);
       this.gameState.addPlayer(sessionId, player);
-      
+
       // Play sound effect for new player
       if (sessionId !== this.room?.sessionId) {
         this.audioManager.playSfx('playerJoin');
@@ -121,39 +120,39 @@ export class GameClient {
     });
 
     // Handle custom messages from server
-    this.room.onMessage('combat_result', (message) => {
+    this.room.onMessage('combat_result', message => {
       console.log('Combat result:', message);
-      
+
       // Show combat feedback in UI
       this.uiManager.showCombatResult(message);
-      
+
       // Play appropriate sound effect
       if (message.hit) {
         this.audioManager.playSfx('hit');
       } else {
         this.audioManager.playSfx('miss');
       }
-      
+
       // Show damage numbers
       if (message.damage > 0) {
         this.renderer.showDamageNumber(message.targetId, message.damage);
       }
     });
 
-    this.room.onMessage('skill_increase', (message) => {
+    this.room.onMessage('skill_increase', message => {
       console.log('Skill increase:', message);
       this.uiManager.showSkillIncrease(message.skill, message.level, message.xp);
       this.audioManager.playSfx('levelUp');
     });
 
-    this.room.onMessage('item_collected', (message) => {
+    this.room.onMessage('item_collected', message => {
       console.log('Item collected:', message);
       this.uiManager.showItemCollected(message.item);
       this.audioManager.playSfx('collect');
     });
 
     // Handle disconnection
-    this.room.onLeave((code) => {
+    this.room.onLeave(code => {
       console.log('Left room:', code);
       this.isRunning = false;
       this.uiManager.showDisconnected();
@@ -175,10 +174,10 @@ export class GameClient {
 
     // Update game state
     this.gameState.update(deltaTime);
-    
+
     // Render the game
     this.renderer.render(this.gameState, deltaTime);
-    
+
     // Request next frame
     requestAnimationFrame(() => this.gameLoop());
   }
@@ -186,7 +185,7 @@ export class GameClient {
   // Input handlers
   private handleMove(x: number, y: number): void {
     if (!this.room) return;
-    
+
     this.room.send('player_movement', { x, y });
     // Client-side prediction
     this.gameState.moveLocalPlayer(x, y);
@@ -194,12 +193,12 @@ export class GameClient {
 
   private handleAttack(targetId: string): void {
     if (!this.room) return;
-    
-    this.room.send('player_action', { 
+
+    this.room.send('player_action', {
       type: 'attack',
-      targetId 
+      targetId,
     });
-    
+
     // Play attack animation and sound
     this.gameState.setPlayerAnimation('attack');
     this.audioManager.playSfx('attack');
@@ -207,19 +206,19 @@ export class GameClient {
 
   private handleCollectLoot(lootId: string): void {
     if (!this.room) return;
-    
+
     this.room.send('collect_loot', { lootId });
   }
 
   private handleUseItem(itemIndex: number): void {
     if (!this.room) return;
-    
+
     this.room.send('use_item', { itemIndex });
   }
 
   private handleEquipItem(itemIndex: number, slot: string): void {
     if (!this.room) return;
-    
+
     this.room.send('equip_item', { itemIndex, slot });
   }
 

@@ -6,7 +6,14 @@
  */
 
 import axios from 'axios';
-import { EconomyClient, Player, Item, InventoryItem, Trade, GrandExchangeOffer } from './economy-client';
+import {
+  EconomyClient,
+  Player,
+  Item,
+  InventoryItem,
+  Trade,
+  GrandExchangeOffer,
+} from './economy-client';
 
 // Mock the axios module
 jest.mock('axios');
@@ -86,8 +93,20 @@ describe('EconomyClient', () => {
   describe('Player Methods', () => {
     it('should get a list of players', async () => {
       const mockPlayers: Player[] = [
-        { id: 1, username: 'player1', email: 'player1@example.com', is_active: true, created_at: new Date().toISOString() },
-        { id: 2, username: 'player2', email: 'player2@example.com', is_active: true, created_at: new Date().toISOString() },
+        {
+          id: 1,
+          username: 'player1',
+          email: 'player1@example.com',
+          is_active: true,
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          username: 'player2',
+          email: 'player2@example.com',
+          is_active: true,
+          created_at: new Date().toISOString(),
+        },
       ];
       mockAxiosInstance.get.mockResolvedValue({ data: mockPlayers });
 
@@ -98,7 +117,13 @@ describe('EconomyClient', () => {
     });
 
     it('should get a player by ID', async () => {
-      const mockPlayer: Player = { id: 1, username: 'player1', email: 'player1@example.com', is_active: true, created_at: new Date().toISOString() };
+      const mockPlayer: Player = {
+        id: 1,
+        username: 'player1',
+        email: 'player1@example.com',
+        is_active: true,
+        created_at: new Date().toISOString(),
+      };
       mockAxiosInstance.get.mockResolvedValue({ data: mockPlayer });
 
       const player = await economyClient.getPlayer(1);
@@ -108,8 +133,16 @@ describe('EconomyClient', () => {
     });
 
     it('should create a new player', async () => {
-      const newPlayerData = { username: 'newplayer', email: 'newplayer@example.com', is_active: true };
-      const mockResponse: Player = { ...newPlayerData, id: 3, created_at: new Date().toISOString() };
+      const newPlayerData = {
+        username: 'newplayer',
+        email: 'newplayer@example.com',
+        is_active: true,
+      };
+      const mockResponse: Player = {
+        ...newPlayerData,
+        id: 3,
+        created_at: new Date().toISOString(),
+      };
       mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
 
       const player = await economyClient.createPlayer(newPlayerData);
@@ -122,8 +155,24 @@ describe('EconomyClient', () => {
   describe('Item Methods', () => {
     it('should get a list of items', async () => {
       const mockItems: Item[] = [
-        { id: 1, name: 'Sword', description: 'A sharp sword', is_tradeable: true, is_stackable: false, base_value: 100, created_at: new Date().toISOString() },
-        { id: 2, name: 'Gold', description: 'Currency', is_tradeable: true, is_stackable: true, base_value: 1, created_at: new Date().toISOString() },
+        {
+          id: 1,
+          name: 'Sword',
+          description: 'A sharp sword',
+          is_tradeable: true,
+          is_stackable: false,
+          base_value: 100,
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          name: 'Gold',
+          description: 'Currency',
+          is_tradeable: true,
+          is_stackable: true,
+          base_value: 1,
+          created_at: new Date().toISOString(),
+        },
       ];
       mockAxiosInstance.get.mockResolvedValue({ data: mockItems });
 
@@ -134,7 +183,15 @@ describe('EconomyClient', () => {
     });
 
     it('should get an item by ID', async () => {
-      const mockItem: Item = { id: 1, name: 'Sword', description: 'A sharp sword', is_tradeable: true, is_stackable: false, base_value: 100, created_at: new Date().toISOString() };
+      const mockItem: Item = {
+        id: 1,
+        name: 'Sword',
+        description: 'A sharp sword',
+        is_tradeable: true,
+        is_stackable: false,
+        base_value: 100,
+        created_at: new Date().toISOString(),
+      };
       mockAxiosInstance.get.mockResolvedValue({ data: mockItem });
 
       const item = await economyClient.getItem(1);
@@ -160,12 +217,19 @@ describe('EconomyClient', () => {
 
     it("should add an item to a player's inventory", async () => {
       const newItemData = { player_id: 1, item_id: 3, quantity: 5 };
-      const mockResponse: InventoryItem = { ...newItemData, id: 3, acquired_at: new Date().toISOString() };
+      const mockResponse: InventoryItem = {
+        ...newItemData,
+        id: 3,
+        acquired_at: new Date().toISOString(),
+      };
       mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
 
       const inventoryItem = await economyClient.addInventoryItem(1, { item_id: 3, quantity: 5 });
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/players/1/inventory', { item_id: 3, quantity: 5 });
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/players/1/inventory', {
+        item_id: 3,
+        quantity: 5,
+      });
       expect(inventoryItem).toEqual(mockResponse);
     });
   });
@@ -173,13 +237,22 @@ describe('EconomyClient', () => {
   describe('Trade Methods', () => {
     it('should get trades with filters', async () => {
       const mockTrades: Trade[] = [
-        { id: 1, initiator_id: 1, receiver_id: 2, status: 'pending', initiated_at: new Date().toISOString(), items: [{ item_id: 1, quantity: 1, from_player_id: 1, to_player_id: 2 }] },
+        {
+          id: 1,
+          initiator_id: 1,
+          receiver_id: 2,
+          status: 'pending',
+          initiated_at: new Date().toISOString(),
+          items: [{ item_id: 1, quantity: 1, from_player_id: 1, to_player_id: 2 }],
+        },
       ];
       mockAxiosInstance.get.mockResolvedValue({ data: mockTrades });
 
       const trades = await economyClient.getTrades({ status: 'pending' });
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/trades', { params: { status: 'pending' } });
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/trades', {
+        params: { status: 'pending' },
+      });
       expect(trades).toEqual(mockTrades);
     });
   });
@@ -187,13 +260,25 @@ describe('EconomyClient', () => {
   describe('Grand Exchange Methods', () => {
     it('should get Grand Exchange offers', async () => {
       const mockOffers: GrandExchangeOffer[] = [
-        { id: 1, player_id: 1, item_id: 1, offer_type: 'sell', quantity: 1, price_per_item: 100, quantity_remaining: 1, status: 'active', created_at: new Date().toISOString() },
+        {
+          id: 1,
+          player_id: 1,
+          item_id: 1,
+          offer_type: 'sell',
+          quantity: 1,
+          price_per_item: 100,
+          quantity_remaining: 1,
+          status: 'active',
+          created_at: new Date().toISOString(),
+        },
       ];
       mockAxiosInstance.get.mockResolvedValue({ data: mockOffers });
 
       const offers = await economyClient.getGrandExchangeOffers({ offer_type: 'sell' });
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/grand-exchange/offers', { params: { offer_type: 'sell' } });
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/grand-exchange/offers', {
+        params: { offer_type: 'sell' },
+      });
       expect(offers).toEqual(mockOffers);
     });
   });

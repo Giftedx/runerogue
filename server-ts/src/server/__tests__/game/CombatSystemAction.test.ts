@@ -33,7 +33,12 @@ describe('CombatSystem.handlePlayerAction', () => {
     const mockResult: AttackResult = { hit: true, damage: 10, criticalHit: false, effects: [] };
     const performSpy = jest.spyOn(CombatSystem, 'performAttack').mockReturnValue(mockResult as any);
 
-    const action = system.handlePlayerAction(attacker.id, { type: 'attack', targetId: npc.id, combatStyle: CombatStyle.ACCURATE, useSpecial: false });
+    const action = system.handlePlayerAction(attacker.id, {
+      type: 'attack',
+      targetId: npc.id,
+      combatStyle: CombatStyle.ACCURATE,
+      useSpecial: false,
+    });
     expect(action).not.toBeNull();
     expect(action).toHaveProperty('result', mockResult);
     expect(action).toHaveProperty('targetId', npc.id);

@@ -100,7 +100,7 @@ export class EconomyIntegration {
           const newPlayer = await this.client.createPlayer({
             username,
             email: `${username}@example.com`,
-            is_active: true
+            is_active: true,
           });
           this.cache.set(cacheKey, newPlayer);
           return newPlayer;

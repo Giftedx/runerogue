@@ -96,12 +96,15 @@ const moves: Array<{ oldPath: string; newPath: string }> = [
   { oldPath: 'test_mcp_registration.py', newPath: 'tools-python/tests/test_mcp_registration.py' },
   { oldPath: 'test_osrs_parser.py', newPath: 'tools-python/tests/test_osrs_parser.py' },
   { oldPath: 'test_tavily_integration.md', newPath: 'server-ts/docs/test_tavily_integration.md' },
-  { oldPath: 'test_todo_functionality.py', newPath: 'tools-python/tests/test_todo_functionality.py' },
+  {
+    oldPath: 'test_todo_functionality.py',
+    newPath: 'tools-python/tests/test_todo_functionality.py',
+  },
   { oldPath: 'test_tool_execution.py', newPath: 'tools-python/tests/test_tool_execution.py' },
   { oldPath: 'test_tools_endpoint.py', newPath: 'tools-python/tests/test_tools_endpoint.py' },
   { oldPath: 'runescape-rogue-prime.html', newPath: 'archives/runescape-rogue-prime.html' },
   { oldPath: 'tmp_project', newPath: 'archives/tmp_project' },
-  { oldPath: 'tavily_env_template.sh', newPath: 'tools-python/tavily_env_template.sh' }
+  { oldPath: 'tavily_env_template.sh', newPath: 'tools-python/tavily_env_template.sh' },
 ];
 
 // Auto-move root markdown docs except README.md and CONTRIBUTING.md
@@ -138,10 +141,21 @@ for (const file of fs.readdirSync(tsScriptsDir)) {
   }
 }
 
-console.log('Reorganization complete. Please update workspace settings and CI configs accordingly.');
+console.log(
+  'Reorganization complete. Please update workspace settings and CI configs accordingly.'
+);
 
 // Cleanup leftover root files and directories
-const cleanupList = ['node_modules', 'coverage', 'htmlcov', '.pytest_cache', '.venv', 'dist', 'client', 'tmp_project'];
+const cleanupList = [
+  'node_modules',
+  'coverage',
+  'htmlcov',
+  '.pytest_cache',
+  '.venv',
+  'dist',
+  'client',
+  'tmp_project',
+];
 for (const name of cleanupList) {
   const p = path.join(root, name);
   if (fs.existsSync(p)) {

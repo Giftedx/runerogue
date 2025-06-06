@@ -1,6 +1,6 @@
-import { GameState, NPC, Player, InventoryItem, LootDrop } from './EntitySchemas';
-import { ItemManager } from './ItemManager';
 import { v4 as uuidv4 } from 'uuid';
+import { GameState, InventoryItem, LootDrop, NPC, Player } from './EntitySchemas';
+import { ItemManager } from './ItemManager';
 
 interface LootTableEntry {
   itemId: string;
@@ -10,10 +10,14 @@ interface LootTableEntry {
 }
 
 export class LootManager {
-  static dropLootFromNPC(state: GameState, npc: NPC, lootTable: LootTableEntry[]): void {
+  static async dropLootFromNPC(
+    state: GameState,
+    npc: NPC,
+    lootTable: LootTableEntry[]
+  ): Promise<LootDrop | null> {
     if (!lootTable || lootTable.length === 0) {
       console.log(`${npc.name} has no loot to drop.`);
-      return;
+      return null;
     }
     const lootDrop = new LootDrop();
     lootDrop.id = uuidv4();
@@ -22,32 +26,60 @@ export class LootManager {
 
     // Roll for each entry
     const itemManager = ItemManager.getInstance();
-    lootTable.forEach(entry => {
+    for (const entry of lootTable) {
       if (Math.random() < entry.probability) {
-        const itemDef = itemManager.getItemDefinition(entry.itemId);
+        const itemDef = await itemManager.getItemDefinition(entry.itemId);
         if (itemDef) {
-          const qty = entry.minQuantity && entry.maxQuantity ?
-            Math.floor(Math.random() * (entry.maxQuantity - entry.minQuantity + 1)) + entry.minQuantity : 1;
-          const item = new InventoryItem(itemDef, qty);
+          const qty =
+            entry.minQuantity && entry.maxQuantity
+              ? Math.floor(Math.random() * (entry.maxQuantity - entry.minQuantity + 1)) +
+                entry.minQuantity
+              : 1;
+
+          // Create a new InventoryItem with proper schema metadata
+          const item = new InventoryItem();
+          item.itemId = itemDef.itemId;
+          item.quantity = qty;
+          item.name = itemDef.name;
+          item.description = itemDef.description;
+          item.attack = itemDef.attack;
+          item.defense = itemDef.defense;
+          item.isStackable = itemDef.isStackable;
+
           lootDrop.items.push(item);
         }
       }
-    });
+    }
     if (lootDrop.items.length > 0) {
       state.lootDrops.set(lootDrop.id, lootDrop);
-      console.log(`Dropped loot (${lootDrop.items.length} items) at (${lootDrop.x}, ${lootDrop.y})`);
+      console.log(
+        `Dropped loot (${lootDrop.items.length} items) at (${lootDrop.x}, ${lootDrop.y})`
+      );
+      return lootDrop;
     }
+    return null;
   }
 
-  static dropLootFromPlayer(state: GameState, player: Player): LootDrop | null {
+  static async dropLootFromPlayer(state: GameState, player: Player): Promise<LootDrop | null> {
     if (!player.inventory || player.inventory.length === 0) return null;
     const lootDrop = new LootDrop();
     lootDrop.id = uuidv4();
     lootDrop.x = player.x;
     lootDrop.y = player.y;
-    player.inventory.forEach(item => {
-      lootDrop.items.push(item);
-    });
+
+    // Create new InventoryItem instances with proper schema metadata
+    for (const item of player.inventory) {
+      const newItem = new InventoryItem();
+      newItem.itemId = item.itemId;
+      newItem.quantity = item.quantity;
+      newItem.name = item.name;
+      newItem.description = item.description;
+      newItem.attack = item.attack;
+      newItem.defense = item.defense;
+      newItem.isStackable = item.isStackable;
+      lootDrop.items.push(newItem);
+    }
+
     if (lootDrop.items.length > 0) {
       state.lootDrops.set(lootDrop.id, lootDrop);
       player.inventory.length = 0; // Remove all items from player
@@ -60,17 +92,33 @@ export class LootManager {
   static collectLoot(state: GameState, player: Player, lootId: string): boolean {
     const lootDrop = state.lootDrops.get(lootId);
     if (!lootDrop) return false;
+
+    // Create new InventoryItem instances with proper schema metadata
     lootDrop.items.forEach(item => {
-      player.inventory.push(item);
+      const newItem = new InventoryItem();
+      newItem.itemId = item.itemId;
+      newItem.quantity = item.quantity;
+      newItem.name = item.name;
+      newItem.description = item.description;
+      newItem.attack = item.attack;
+      newItem.defense = item.defense;
+      newItem.isStackable = item.isStackable;
+      player.inventory.push(newItem);
     });
+
     state.lootDrops.delete(lootId);
     console.log(`Player ${player.id} collected loot ${lootId}`);
     return true;
   }
 
-  static dropSpecificItem(state: GameState, player: Player, itemId: string, quantity: number): LootDrop | null {
+  static async dropSpecificItem(
+    state: GameState,
+    player: Player,
+    itemId: string,
+    quantity: number
+  ): Promise<LootDrop | null> {
     const itemManager = ItemManager.getInstance();
-    const itemDef = itemManager.getItemDefinition(itemId);
+    const itemDef = await itemManager.getItemDefinition(itemId);
     if (!itemDef) {
       console.warn(`Attempted to drop unknown item: ${itemId}`);
       return null;
@@ -105,11 +153,22 @@ export class LootManager {
     lootDrop.x = player.x;
     lootDrop.y = player.y;
 
-    const droppedItem = new InventoryItem(itemDef, removedQuantity);
+    // Create a new InventoryItem with proper schema metadata
+    const droppedItem = new InventoryItem();
+    droppedItem.itemId = itemDef.itemId;
+    droppedItem.quantity = removedQuantity;
+    droppedItem.name = itemDef.name;
+    droppedItem.description = itemDef.description;
+    droppedItem.attack = itemDef.attack;
+    droppedItem.defense = itemDef.defense;
+    droppedItem.isStackable = itemDef.isStackable;
+
     lootDrop.items.push(droppedItem);
 
     state.lootDrops.set(lootDrop.id, lootDrop);
-    console.log(`Player ${player.id} dropped ${removedQuantity}x ${itemDef.name} at (${lootDrop.x}, ${lootDrop.y})`);
+    console.log(
+      `Player ${player.id} dropped ${removedQuantity}x ${itemDef.name} at (${lootDrop.x}, ${lootDrop.y})`
+    );
     return lootDrop;
   }
 }
