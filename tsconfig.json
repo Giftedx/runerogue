@@ -1,59 +1,46 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "ES2020",
     "module": "commonjs",
-    "lib": ["es2018", "DOM", "esnext"],
+    "lib": ["ES2020", "DOM"],
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "jsx": "react-jsx",
-    "sourceMap": true,
-    "baseUrl": ".",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "paths": {
-      "@shared/*": ["src/shared/*"],
-      "@server/*": ["src/server/*"],
-      "@client/*": ["src/client/*"],
-      "@/*": ["src/*"]
-    },
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
-    ],
-    "types": [
-      "node",
-      "express",
-      "ws",
-      "jest"
-    ],
     "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "allowJs": true,
+    "noEmit": false,
     "declaration": true,
-    "noImplicitAny": false,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.d.ts",
-    "jest.config.ts",
-    "jest.setup.ts"
+    "packages/*/src/**/*",
+    "apps/*/src/**/*", 
+    "tools/*/src/**/*",
+    "tests/**/*",
+    "*.d.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
+    "coverage",
     "**/*.test.ts",
     "**/*.spec.ts"
+  ],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/osrs-data" },
+    { "path": "./packages/game-engine" },
+    { "path": "./packages/game-server" },
+    { "path": "./packages/discord-client" }
   ]
-}
+} 

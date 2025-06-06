@@ -14,38 +14,16 @@
       "env": {},
       "tools": ["*"]
     },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
-      "env": {},
-      "tools": ["*"]
-    },
     "osrs": {
       "command": "npx",
       "args": ["-y", "@jayarrowz/mcp-osrs"],
       "env": {},
       "tools": ["*"]
     },
-    "brave-search": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
-      "env": {
-        "BRAVE_API_KEY": "${BRAVE_SEARCH_API_KEY}"
-      },
-      "tools": ["*"]
-    },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
       "env": {},
-      "tools": ["*"]
-    },
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
-      },
       "tools": ["*"]
     }
   }

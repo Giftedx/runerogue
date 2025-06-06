@@ -28,6 +28,10 @@ on:
         default: false
         type: boolean
 
+defaults:
+  run:
+    working-directory: server-ts
+
 env:
   NODE_VERSION: '20.x'  # Using LTS version for stability
   NPM_VERSION: '10.x'

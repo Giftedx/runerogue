@@ -1,0 +1,30 @@
+name: Agent Task Runner
+
+on:
+  issues:
+    types: [assigned]
+
+jobs:
+  run-agent-task:
+    runs-on: self-hosted
+
+    # You can pass secrets as environment variables if the agent needs them
+    # env:
+    #   MY_MCP_API_KEY: ${{ secrets.MY_MCP_API_KEY }} # Replace with your actual secret name
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Execute Agent Task
+        id: agent_execution
+        run: |
+          echo "GitHub Copilot Agent is processing issue #${{ github.event.issue.number }}"
+          echo "Issue Title: ${{ github.event.issue.title }}"
+          echo "Issue Body: ${{ github.event.issue.body }}"
+          
+          # The actual logic for the agent to interpret and execute the task
+          # from the issue body is handled by the GitHub Copilot Agent itself.
+          # This workflow simply provides the environment for it to run.
+          
+          echo "Agent is now analyzing the codebase as per the issue description..."

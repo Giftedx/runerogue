@@ -1,0 +1,42 @@
+
+> runerogue@0.1.0 test
+> cross-env NODE_OPTIONS="" jest src/server/__tests__/game/GameRoom.test.ts
+
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in C:/Users/aggis/GitHub/runerogue/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+  console.info
+    Ô£à .env.test loaded.
+
+      at loadEnvFile (node_modules/@colyseus/tools/build/loadenv.js:46:15)
+
+  console.log
+    Game room created! test-room
+
+      at GameRoom.onCreate (src/server/game/GameRoom.ts:171:13)
+
+  console.log
+    Room zRA7QngOK disposing...
+
+      at GameRoom.onDispose (src/server/game/GameRoom.ts:238:13)
+
+  console.log
+    Game room created! test-room
+
+      at GameRoom.onCreate (src/server/game/GameRoom.ts:171:13)
+
+  console.log
+    Room kUNF_uC52 disposing...
+
+      at GameRoom.onDispose (src/server/game/GameRoom.ts:238:13)
+
+  console.log
+    Game room created! test-room
+
+      at GameRoom.onCreate (src/server/game/GameRoom.ts:171:13)
+
+  console.log
+    Room qrwABXKPr disposing...
+
+      at GameRoom.onDispose (src/server/game/GameRoom.ts:238:13)
+

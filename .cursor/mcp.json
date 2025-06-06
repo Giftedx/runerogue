@@ -1,0 +1,55 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "osrs": {
+      "command": "npx",
+      "args": ["-y", "@osrs/osrs-mcp"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "tavily": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-tavily"],
+      "env": {
+        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY_HERE"
+      }
+    },
+    "mcpso": {
+      "command": "node",
+      "args": ["server.js"],
+      "cwd": "mcp-repos/mcpso"
+    },
+    "open-mcp-client": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/open-mcp-client"
+    },
+    "magic-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/magic-mcp"
+    },
+    "runerogue-game": {
+      "command": "npm",
+      "args": ["run", "dev"],
+      "cwd": "server-ts"
+    },
+    "browser-tools": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "mcp-repos/browser-tools-mcp"
+    }
+  }
+} 

@@ -153,6 +153,54 @@ function generateDocs(params) {
   }
 }
 
+/**
+ * Create a GitHub issue with specified title, body, labels, and assignees
+ */
+function createIssue(params) {
+  const { title, body, labels = 'copilot', assignees = 'github-copilot[bot]' } = params;
+  
+  if (!title || !body) {
+    return {
+      success: false,
+      error: 'Title and body are required'
+    };
+  }
+  
+  try {
+    const scriptPath = path.join(PROJECT_ROOT, 'scripts', 'create_agent_issue.py');
+    
+    // Escape special characters in the parameters
+    const escapedTitle = title.replace(/"/g, '\\"');
+    const escapedBody = body.replace(/"/g, '\\"');
+    const escapedLabels = labels.replace(/"/g, '\\"');
+    const escapedAssignees = assignees.replace(/"/g, '\\"');
+    
+    const command = `python "${scriptPath}" --title "${escapedTitle}" --body "${escapedBody}" --labels "${escapedLabels}" --assignees "${escapedAssignees}" --workflow`;
+    
+    const output = execSync(command, { 
+      cwd: PROJECT_ROOT,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        GITHUB_TOKEN: process.env.GITHUB_TOKEN
+      }
+    });
+    
+    return {
+      success: true,
+      output,
+      command
+    };
+  } catch (error) {
+    return {
+      success: false,
+      output: error.stdout || error.message,
+      error: error.message
+    };
+  }
+}
+
 // MCP Server implementation
 const http = require('http');
 
@@ -178,6 +226,9 @@ const server = http.createServer((req, res) => {
             break;
           case 'runerogue_generate_docs':
             result = generateDocs(args);
+            break;
+          case 'runerogue_create_issue':
+            result = createIssue(args);
             break;
           default:
             result = {

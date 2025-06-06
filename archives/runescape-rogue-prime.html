@@ -1,0 +1,1233 @@
+Cascade error, please try that again.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuneScape Rogue Prime</title>
+    <style>
+        @font-face {
+            font-family: 'RuneScape';
+            src: url('data:font/woff2;base64,') format('woff2');
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a1a1a;
+        }
+        
+        #game-wrapper {
+            position: relative;
+            width: 1024px;
+            height: 768px;
+            background-color: #000;
+            border: 3px solid #3e2415;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .ui-panel {
+            position: absolute;
+            background-color: #382418;
+            border: 2px solid #5a3a2a;
+            padding: 10px;
+            pointer-events: auto;
+        }
+        
+        #stats-panel {
+            top: 10px;
+            right: 10px;
+            width: 200px;
+        }
+        
+        #inventory-panel {
+            bottom: 10px;
+            right: 10px;
+            width: 200px;
+            height: 250px;
+        }
+        
+        #combat-panel {
+            top: 10px;
+            left: 10px;
+            width: 250px;
+            display: none;
+        }
+        
+        #minimap {
+            position: absolute;
+            top: 10px;
+            right: 220px;
+            width: 150px;
+            height: 150px;
+            background-color: #1a1a1a;
+            border: 2px solid #5a3a2a;
+        }
+        
+        .stat-bar {
+            margin: 5px 0;
+            height: 20px;
+            background-color: #1a1a1a;
+            border: 1px solid #5a3a2a;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .hp-fill { background-color: #ff0000; }
+        .prayer-fill { background-color: #00ff00; }
+        .energy-fill { background-color: #ffff00; }
+        .xp-fill { background-color: #00ffff; }
+        
+        .stat-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .inventory-slot {
+            width: 40px;
+            height: 40px;
+            background-color: #1a1a1a;
+            border: 1px solid #5a3a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .inventory-slot:hover {
+            border-color: #8a5a3a;
+        }
+        
+        .item-icon {
+            width: 32px;
+            height: 32px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .item-count {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            font-size: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 1px 3px;
+        }
+        
+        .damage-splat {
+            position: absolute;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 2px 2px 0 #000;
+            animation: damageSplat 1s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes damageSplat {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-30px) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        .skill-popup {
+            position: absolute;
+            background-color: #382418;
+            border: 2px solid #5a3a2a;
+            padding: 5px 10px;
+            font-size: 14px;
+            color: #ffff00;
+            animation: skillPopup 2s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes skillPopup {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+        
+        #main-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #382418;
+            border: 3px solid #5a3a2a;
+            padding: 30px;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        #main-menu h1 {
+            color: #ffff00;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .menu-button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #5a3a2a;
+            border: 2px solid #8a5a3a;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-button:hover {
+            background-color: #8a5a3a;
+            transform: scale(1.05);
+        }
+        
+        #death-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        
+        #death-screen h2 {
+            color: #ff0000;
+            font-size: 48px;
+            text-shadow: 3px 3px 0 #000;
+        }
+        
+        .resource-bar {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 5px;
+            background-color: #1a1a1a;
+            border: 1px solid #5a3a2a;
+        }
+        
+        .resource-fill {
+            height: 100%;
+            background-color: #00ff00;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-wrapper">
+            <canvas id="game-canvas"></canvas>
+            
+            <div id="ui-overlay">
+                <div id="stats-panel" class="ui-panel">
+                    <h3 style="color: #ffff00; margin-bottom: 10px;">Stats</h3>
+                    <div class="stat-bar">
+                        <div class="stat-fill hp-fill" style="width: 100%;"></div>
+                        <div class="stat-text">HP: <span id="hp-text">10/10</span></div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill prayer-fill" style="width: 100%;"></div>
+                        <div class="stat-text">Prayer: <span id="prayer-text">1/1</span></div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill energy-fill" style="width: 100%;"></div>
+                        <div class="stat-text">Energy: <span id="energy-text">100/100</span></div>
+                    </div>
+                    <hr style="margin: 10px 0; border-color: #5a3a2a;">
+                    <div style="font-size: 12px;">
+                        <div>Attack: <span id="attack-level">1</span></div>
+                        <div>Strength: <span id="strength-level">1</span></div>
+                        <div>Defence: <span id="defence-level">1</span></div>
+                        <div>Mining: <span id="mining-level">1</span></div>
+                        <div>Woodcutting: <span id="woodcutting-level">1</span></div>
+                        <div>Fishing: <span id="fishing-level">1</span></div>
+                    </div>
+                </div>
+                
+                <div id="inventory-panel" class="ui-panel">
+                    <h3 style="color: #ffff00; margin-bottom: 10px;">Inventory</h3>
+                    <div class="inventory-grid" id="inventory-grid">
+                        <!-- Inventory slots will be generated here -->
+                    </div>
+                </div>
+                
+                <div id="combat-panel" class="ui-panel">
+                    <h3 style="color: #ff0000; margin-bottom: 10px;">Combat</h3>
+                    <div id="combat-info">
+                        <div>Enemy: <span id="enemy-name">None</span></div>
+                        <div class="stat-bar" style="margin-top: 5px;">
+                            <div class="stat-fill hp-fill" id="enemy-hp-fill" style="width: 100%;"></div>
+                            <div class="stat-text">HP: <span id="enemy-hp-text">0/0</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <canvas id="minimap"></canvas>
+            </div>
+            
+            <div id="main-menu">
+                <h1>RuneScape Rogue Prime</h1>
+                <button class="menu-button" onclick="startGame()">New Game</button>
+                <button class="menu-button" onclick="loadGame()">Load Game</button>
+                <button class="menu-button" onclick="showSettings()">Settings</button>
+            </div>
+            
+            <div id="death-screen">
+                <div style="text-align: center;">
+                    <h2>You Died!</h2>
+                    <p style="color: #fff; font-size: 20px; margin: 20px 0;">Items lost. Skills preserved.</p>
+                    <button class="menu-button" onclick="respawn()">Respawn</button>
+                    <button class="menu-button" onclick="backToMenu()">Main Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Game state
+        const gameState = {
+            player: {
+                x: 400,
+                y: 300,
+                hp: 10,
+                maxHp: 10,
+                prayer: 1,
+                maxPrayer: 1,
+                energy: 100,
+                maxEnergy: 100,
+                skills: {
+                    attack: { level: 1, xp: 0 },
+                    strength: { level: 1, xp: 0 },
+                    defence: { level: 1, xp: 0 },
+                    mining: { level: 1, xp: 0 },
+                    woodcutting: { level: 1, xp: 0 },
+                    fishing: { level: 1, xp: 0 }
+                },
+                inventory: [],
+                equipped: {
+                    weapon: null,
+                    armor: null,
+                    shield: null
+                },
+                combatStyle: 'accurate',
+                isMoving: false,
+                targetX: 400,
+                targetY: 300,
+                inCombat: false,
+                currentTarget: null
+            },
+            world: {
+                currentBiome: 'lumbridge',
+                seed: Math.random() * 1000000,
+                rooms: [],
+                currentRoom: null,
+                entities: [],
+                resources: [],
+                items: []
+            },
+            ui: {
+                selectedInventorySlot: null,
+                damageNumbers: [],
+                skillPopups: []
+            }
+        };
+        
+        // Canvas setup
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        
+        canvas.width = 1024;
+        canvas.height = 768;
+        minimapCanvas.width = 150;
+        minimapCanvas.height = 150;
+        
+        // Biome configurations
+        const biomes = {
+            lumbridge: {
+                name: 'Lumbridge',
+                groundColor: '#2d5016',
+                treeColor: '#1a3310',
+                rockColor: '#5a5a5a',
+                waterColor: '#1a4d8a',
+                monsters: ['goblin', 'cow', 'chicken'],
+                resources: ['tree', 'rock', 'fishing_spot']
+            },
+            varrock: {
+                name: 'Varrock',
+                groundColor: '#8b7355',
+                treeColor: '#2d3d1a',
+                rockColor: '#7a6a5a',
+                waterColor: '#2a5d9a',
+                monsters: ['guard', 'thief', 'rat'],
+                resources: ['oak_tree', 'iron_rock', 'fountain']
+            },
+            wilderness: {
+                name: 'Wilderness',
+                groundColor: '#3a2a1a',
+                treeColor: '#1a1a1a',
+                rockColor: '#4a3a2a',
+                waterColor: '#1a1a3a',
+                monsters: ['skeleton', 'spider', 'demon'],
+                resources: ['dead_tree', 'rune_rock', 'lava']
+            }
+        };
+        
+        // Monster configurations
+        const monsters = {
+            goblin: { name: 'Goblin', hp: 5, maxHp: 5, attack: 1, strength: 1, defence: 1, color: '#4a7c3a', size: 20, aggression: 3 },
+            cow: { name: 'Cow', hp: 8, maxHp: 8, attack: 1, strength: 1, defence: 1, color: '#8b6f47', size: 30, aggression: 0 },
+            chicken: { name: 'Chicken', hp: 3, maxHp: 3, attack: 1, strength: 0, defence: 0, color: '#ffffff', size: 15, aggression: 0 },
+            guard: { name: 'Guard', hp: 20, maxHp: 20, attack: 5, strength: 5, defence: 5, color: '#4a4a7c', size: 25, aggression: 5 },
+            skeleton: { name: 'Skeleton', hp: 15, maxHp: 15, attack: 8, strength: 8, defence: 3, color: '#ffffff', size: 25, aggression: 8 },
+            spider: { name: 'Spider', hp: 10, maxHp: 10, attack: 6, strength: 4, defence: 2, color: '#1a1a1a', size: 20, aggression: 7 }
+        };
+        
+        // Resource configurations
+        const resources = {
+            tree: { name: 'Tree', skill: 'woodcutting', level: 1, xp: 25, color: '#2d5016', respawnTime: 30000 },
+            oak_tree: { name: 'Oak Tree', skill: 'woodcutting', level: 15, xp: 37.5, color: '#3d6016', respawnTime: 45000 },
+            rock: { name: 'Copper Rock', skill: 'mining', level: 1, xp: 17.5, color: '#8b6f47', respawnTime: 20000 },
+            iron_rock: { name: 'Iron Rock', skill: 'mining', level: 15, xp: 35, color: '#5a5a5a', respawnTime: 30000 },
+            fishing_spot: { name: 'Fishing Spot', skill: 'fishing', level: 1, xp: 10, color: '#1a4d8a', respawnTime: 15000 }
+        };
+        
+        // Item configurations
+        const items = {
+            logs: { name: 'Logs', stackable: true, icon: '🪵' },
+            oak_logs: { name: 'Oak Logs', stackable: true, icon: '🪵' },
+            copper_ore: { name: 'Copper Ore', stackable: true, icon: '🪨' },
+            iron_ore: { name: 'Iron Ore', stackable: true, icon: '⛏️' },
+            raw_shrimp: { name: 'Raw Shrimp', stackable: true, icon: '🦐' },
+            bones: { name: 'Bones', stackable: true, icon: '🦴' },
+            bronze_sword: { name: 'Bronze Sword', stackable: false, icon: '⚔️', stats: { attack: 4 } },
+            wooden_shield: { name: 'Wooden Shield', stackable: false, icon: '🛡️', stats: { defence: 2 } }
+        };
+        
+        // Initialize inventory
+        function initializeInventory() {
+            const inventoryGrid = document.getElementById('inventory-grid');
+            inventoryGrid.innerHTML = '';
+            for (let i = 0; i < 28; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                slot.onclick = () => selectInventorySlot(i);
+                inventoryGrid.appendChild(slot);
+            }
+        }
+        
+        // Procedural room generation
+        function generateRoom(seed, biome) {
+            const room = {
+                width: 800,
+                height: 600,
+                x: 112,
+                y: 84,
+                biome: biome,
+                tiles: [],
+                entities: [],
+                resources: [],
+                exits: []
+            };
+            
+            // Generate basic room layout
+            for (let y = 0; y < room.height; y += 20) {
+                for (let x = 0; x < room.width; x += 20) {
+                    room.tiles.push({
+                        x: x + room.x,
+                        y: y + room.y,
+                        type: 'ground',
+                        walkable: true
+                    });
+                }
+            }
+            
+            // Add walls
+            for (let i = 0; i < room.width; i += 20) {
+                room.tiles.push({
+                    x: i + room.x,
+                    y: room.y,
+                    type: 'wall',
+                    walkable: false
+                });
+                room.tiles.push({
+                    x: i + room.x,
+                    y: room.y + room.height - 20,
+                    type: 'wall',
+                    walkable: false
+                });
+            }
+            
+            for (let i = 20; i < room.height - 20; i += 20) {
+                room.tiles.push({
+                    x: room.x,
+                    y: i + room.y,
+                    type: 'wall',
+                    walkable: false
+                });
+                room.tiles.push({
+                    x: room.x + room.width - 20,
+                    y: i + room.y,
+                    type: 'wall',
+                    walkable: false
+                });
+            }
+            
+            // Add exits
+            room.exits.push({
+                x: room.x + room.width / 2,
+                y: room.y,
+                direction: 'north'
+            });
+            room.exits.push({
+                x: room.x + room.width / 2,
+                y: room.y + room.height - 20,
+                direction: 'south'
+            });
+            
+            // Add monsters
+            const monsterCount = 3 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < monsterCount; i++) {
+                const monsterType = biomes[biome].monsters[Math.floor(Math.random() * biomes[biome].monsters.length)];
+                const monster = { ...monsters[monsterType] };
+                monster.x = room.x + 100 + Math.random() * (room.width - 200);
+                monster.y = room.y + 100 + Math.random() * (room.height - 200);
+                monster.type = monsterType;
+                monster.id = `monster_${Date.now()}_${i}`;
+                room.entities.push(monster);
+            }
+            
+            // Add resources
+            const resourceCount = 2 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < resourceCount; i++) {
+                const resourceType = biomes[biome].resources[Math.floor(Math.random() * biomes[biome].resources.length)];
+                const resource = { ...resources[resourceType] };
+                resource.x = room.x + 50 + Math.random() * (room.width - 100);
+                resource.y = room.y + 50 + Math.random() * (room.height - 100);
+                resource.type = resourceType;
+                resource.id = `resource_${Date.now()}_${i}`;
+                resource.depleted = false;
+                room.resources.push(resource);
+            }
+            
+            return room;
+        }
+        
+        // Combat system
+        function calculateHitChance(attacker, defender) {
+            const attackRoll = attacker.attack * 10 + Math.random() * 64;
+            const defenceRoll = defender.defence * 10 + Math.random() * 64;
+            return attackRoll / (attackRoll + defenceRoll);
+        }
+        
+        function calculateDamage(attacker) {
+            const maxHit = Math.floor(attacker.strength * 1.5);
+            return Math.floor(Math.random() * (maxHit + 1));
+        }
+        
+        function performAttack(attacker, defender) {
+            const hitChance = calculateHitChance(attacker, defender);
+            if (Math.random() < hitChance) {
+                const damage = calculateDamage(attacker);
+                defender.hp = Math.max(0, defender.hp - damage);
+                
+                // Create damage splat
+                gameState.ui.damageNumbers.push({
+                    x: defender.x,
+                    y: defender.y - 20,
+                    value: damage,
+                    color: damage === 0 ? '#0000ff' : '#ff0000',
+                    time: Date.now()
+                });
+                
+                return damage;
+            }
+            return 0;
+        }
+        
+        // Skill system
+        function getXpForLevel(level) {
+            let xp = 0;
+            for (let i = 1; i < level; i++) {
+                xp += Math.floor(i + 300 * Math.pow(2, i / 7));
+            }
+            return Math.floor(xp / 4);
+        }
+        
+        function getLevelForXp(xp) {
+            let level = 1;
+            while (getXpForLevel(level + 1) <= xp && level < 99) {
+                level++;
+            }
+            return level;
+        }
+        
+        function gainXp(skill, amount) {
+            const oldLevel = gameState.player.skills[skill].level;
+            gameState.player.skills[skill].xp += amount;
+            const newLevel = getLevelForXp(gameState.player.skills[skill].xp);
+            
+            if (newLevel > oldLevel) {
+                gameState.player.skills[skill].level = newLevel;
+                gameState.ui.skillPopups.push({
+                    x: gameState.player.x,
+                    y: gameState.player.y - 50,
+                    text: `${skill.charAt(0).toUpperCase() + skill.slice(1)} level up! (${newLevel})`,
+                    time: Date.now()
+                });
+                
+                // Update HP/Prayer on combat level ups
+                if (['attack', 'strength', 'defence'].includes(skill)) {
+                    gameState.player.maxHp = 10 + Math.floor((gameState.player.skills.attack.level + 
+                        gameState.player.skills.strength.level + gameState.player.skills.defence.level) / 3);
+                    gameState.player.hp = gameState.player.maxHp;
+                }
+            }
+            
+            // Create XP popup
+            gameState.ui.skillPopups.push({
+                x: gameState.player.x,
+                y: gameState.player.y - 30,
+                text: `+${amount} ${skill} XP`,
+                time: Date.now()
+            });
+            
+            updateStats();
+        }
+        
+        // Resource gathering
+        function gatherResource(resource) {
+            const skill = resource.skill;
+            const playerLevel = gameState.player.skills[skill].level;
+            
+            if (playerLevel < resource.level) {
+                gameState.ui.skillPopups.push({
+                    x: resource.x,
+                    y: resource.y - 30,
+                    text: `Level ${resource.level} ${skill} required`,
+                    color: '#ff0000',
+                    time: Date.now()
+                });
+                return;
+            }
+            
+            // Success chance based on level difference
+            const successChance = Math.min(0.95, 0.5 + (playerLevel - resource.level) * 0.05);
+            
+            if (Math.random() < successChance) {
+                // Give item
+                let itemType = '';
+                switch (resource.type) {
+                    case 'tree': itemType = 'logs'; break;
+                    case 'oak_tree': itemType = 'oak_logs'; break;
+                    case 'rock': itemType = 'copper_ore'; break;
+                    case 'iron_rock': itemType = 'iron_ore'; break;
+                    case 'fishing_spot': itemType = 'raw_shrimp'; break;
+                }
+                
+                addItemToInventory(itemType, 1);
+                gainXp(skill, resource.xp);
+                
+                // Deplete resource
+                resource.depleted = true;
+                setTimeout(() => {
+                    resource.depleted = false;
+                }, resource.respawnTime);
+            }
+        }
+        
+        // Inventory management
+        function addItemToInventory(itemType, quantity) {
+            const item = items[itemType];
+            if (!item) return false;
+            
+            if (item.stackable) {
+                // Try to add to existing stack
+                const existingStack = gameState.player.inventory.find(slot => slot && slot.type === itemType);
+                if (existingStack) {
+                    existingStack.quantity += quantity;
+                    updateInventory();
+                    return true;
+                }
+            }
+            
+            // Find empty slot
+            for (let i = 0; i < 28; i++) {
+                if (!gameState.player.inventory[i]) {
+                    gameState.player.inventory[i] = {
+                        type: itemType,
+                        quantity: quantity
+                    };
+                    updateInventory();
+                    return true;
+                }
+            }
+            
+            return false; // Inventory full
+        }
+        
+        function updateInventory() {
+            const slots = document.querySelectorAll('.inventory-slot');
+            slots.forEach((slot, index) => {
+                slot.innerHTML = '';
+                const item = gameState.player.inventory[index];
+                if (item) {
+                    const itemData = items[item.type];
+                    const icon = document.createElement('div');
+                    icon.className = 'item-icon';
+                    icon.textContent = itemData.icon;
+                    icon.style.fontSize = '28px';
+                    icon.style.lineHeight = '32px';
+                    slot.appendChild(icon);
+                    
+                    if (item.quantity > 1) {
+                        const count = document.createElement('div');
+                        count.className = 'item-count';
+                        count.textContent = item.quantity;
+                        slot.appendChild(count);
+                    }
+                }
+            });
+        }
+        
+        // Update UI
+        function updateStats() {
+            document.getElementById('hp-text').textContent = `${gameState.player.hp}/${gameState.player.maxHp}`;
+            document.getElementById('prayer-text').textContent = `${gameState.player.prayer}/${gameState.player.maxPrayer}`;
+            document.getElementById('energy-text').textContent = `${gameState.player.energy}/${gameState.player.maxEnergy}`;
+            
+            document.querySelector('.hp-fill').style.width = `${(gameState.player.hp / gameState.player.maxHp) * 100}%`;
+            document.querySelector('.prayer-fill').style.width = `${(gameState.player.prayer / gameState.player.maxPrayer) * 100}%`;
+            document.querySelector('.energy-fill').style.width = `${(gameState.player.energy / gameState.player.maxEnergy) * 100}%`;
+            
+            // Update skill levels
+            for (const skill in gameState.player.skills) {
+                const element = document.getElementById(`${skill}-level`);
+                if (element) {
+                    element.textContent = gameState.player.skills[skill].level;
+                }
+            }
+        }
+        
+        function updateCombatPanel() {
+            const panel = document.getElementById('combat-panel');
+            if (gameState.player.inCombat && gameState.player.currentTarget) {
+                panel.style.display = 'block';
+                const target = gameState.player.currentTarget;
+                document.getElementById('enemy-name').textContent = target.name;
+                document.getElementById('enemy-hp-text').textContent = `${target.hp}/${target.maxHp}`;
+                document.getElementById('enemy-hp-fill').style.width = `${(target.hp / target.maxHp) * 100}%`;
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+        
+        // Game loop
+        let lastTime = 0;
+        let combatTimer = 0;
+        
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (gameState.world.currentRoom) {
+                // Draw room
+                const room = gameState.world.currentRoom;
+                const biome = biomes[room.biome];
+                
+                // Draw ground
+                ctx.fillStyle = biome.groundColor;
+                ctx.fillRect(room.x, room.y, room.width, room.height);
+                
+                // Draw walls
+                ctx.fillStyle = '#3a2a1a';
+                room.tiles.forEach(tile => {
+                    if (tile.type === 'wall') {
+                        ctx.fillRect(tile.x, tile.y, 20, 20);
+                    }
+                });
+                
+                // Draw exits
+                ctx.fillStyle = '#ffff00';
+                room.exits.forEach(exit => {
+                    ctx.fillRect(exit.x - 20, exit.y, 40, 20);
+                });
+                
+                // Draw resources
+                room.resources.forEach(resource => {
+                    if (!resource.depleted) {
+                        ctx.fillStyle = resource.color;
+                        ctx.fillRect(resource.x - 15, resource.y - 15, 30, 30);
+                        
+                        // Draw resource progress bar if gathering
+                        if (gameState.player.gatheringResource === resource) {
+                            const progress = (Date.now() - gameState.player.gatherStartTime) / 2000;
+                            ctx.fillStyle = '#1a1a1a';
+                            ctx.fillRect(resource.x - 20, resource.y + 20, 40, 5);
+                            ctx.fillStyle = '#00ff00';
+                            ctx.fillRect(resource.x - 20, resource.y + 20, 40 * Math.min(1, progress), 5);
+                        }
+                    }
+                });
+                
+                // Draw monsters
+                room.entities.forEach(entity => {
+                    if (entity.hp > 0) {
+                        ctx.fillStyle = entity.color;
+                        ctx.beginPath();
+                        ctx.arc(entity.x, entity.y, entity.size / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Draw HP bar
+                        if (entity.hp < entity.maxHp) {
+                            ctx.fillStyle = '#ff0000';
+                            ctx.fillRect(entity.x - 20, entity.y - entity.size / 2 - 10, 40 * (entity.hp / entity.maxHp), 3);
+                            ctx.strokeStyle = '#000';
+                            ctx.strokeRect(entity.x - 20, entity.y - entity.size / 2 - 10, 40, 3);
+                        }
+                        
+                        // Monster AI
+                        if (!entity.target) {
+                            // Check for player proximity
+                            const dist = Math.sqrt(Math.pow(entity.x - gameState.player.x, 2) + 
+                                                 Math.pow(entity.y - gameState.player.y, 2));
+                            if (dist < entity.aggression * 20 && entity.aggression > 0) {
+                                entity.target = gameState.player;
+                            }
+                        } else {
+                            // Move towards target
+                            const dx = entity.target.x - entity.x;
+                            const dy = entity.target.y - entity.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (dist > 30) {
+                                entity.x += (dx / dist) * 2;
+                                entity.y += (dy / dist) * 2;
+                            }
+                        }
+                    }
+                });
+                
+                // Draw dropped items
+                room.items?.forEach(item => {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.fillRect(item.x - 5, item.y - 5, 10, 10);
+                });
+            }
+            
+            // Update player movement
+            if (gameState.player.isMoving) {
+                const dx = gameState.player.targetX - gameState.player.x;
+                const dy = gameState.player.targetY - gameState.player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > 5) {
+                    const speed = 4;
+                    gameState.player.x += (dx / dist) * speed;
+                    gameState.player.y += (dy / dist) * speed;
+                    
+                    // Decrease energy while running
+                    if (gameState.player.energy > 0) {
+                        gameState.player.energy = Math.max(0, gameState.player.energy - 0.1);
+                        updateStats();
+                    }
+                } else {
+                    gameState.player.isMoving = false;
+                }
+            }
+            
+            // Regenerate energy when not moving
+            if (!gameState.player.isMoving && gameState.player.energy < gameState.player.maxEnergy) {
+                gameState.player.energy = Math.min(gameState.player.maxEnergy, gameState.player.energy + 0.05);
+                updateStats();
+            }
+            
+            // Combat handling
+            if (gameState.player.inCombat && gameState.player.currentTarget) {
+                combatTimer += deltaTime;
+                if (combatTimer >= 2400) { // 2.4 second attack speed
+                    combatTimer = 0;
+                    
+                    // Player attacks
+                    const damage = performAttack(gameState.player, gameState.player.currentTarget);
+                    
+                    // Give combat XP
+                    if (damage > 0) {
+                        switch (gameState.player.combatStyle) {
+                            case 'accurate':
+                                gainXp('attack', damage * 4);
+                                break;
+                            case 'aggressive':
+                                gainXp('strength', damage * 4);
+                                break;
+                            case 'defensive':
+                                gainXp('defence', damage * 4);
+                                break;
+                        }
+                    }
+                    
+                    // Check if monster died
+                    if (gameState.player.currentTarget.hp <= 0) {
+                        // Drop items
+                        if (Math.random() < 0.8) {
+                            addItemToInventory('bones', 1);
+                        }
+                        if (Math.random() < 0.1) {
+                            addItemToInventory('bronze_sword', 1);
+                        }
+                        
+                        // Remove monster
+                        const room = gameState.world.currentRoom;
+                        room.entities = room.entities.filter(e => e !== gameState.player.currentTarget);
+                        
+                        gameState.player.inCombat = false;
+                        gameState.player.currentTarget = null;
+                        updateCombatPanel();
+                    } else {
+                        // Monster attacks back
+                        const monsterDamage = performAttack(gameState.player.currentTarget, gameState.player);
+                        if (gameState.player.hp <= 0) {
+                            playerDeath();
+                        }
+                    }
+                }
+            }
+            
+            // Draw player
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(gameState.player.x, gameState.player.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw player name
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Player', gameState.player.x, gameState.player.y - 15);
+            
+            // Draw damage numbers
+            gameState.ui.damageNumbers = gameState.ui.damageNumbers.filter(splat => {
+                const age = Date.now() - splat.time;
+                if (age < 1000) {
+                    ctx.save();
+                    ctx.globalAlpha = 1 - (age / 1000);
+                    ctx.fillStyle = splat.color;
+                    ctx.font = 'bold 18px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(splat.value.toString(), splat.x, splat.y - (age / 20));
+                    ctx.restore();
+                    return true;
+                }
+                return false;
+            });
+            
+            // Draw skill popups
+            gameState.ui.skillPopups = gameState.ui.skillPopups.filter(popup => {
+                const age = Date.now() - popup.time;
+                if (age < 2000) {
+                    ctx.save();
+                    ctx.globalAlpha = 1 - (age / 2000);
+                    ctx.fillStyle = popup.color || '#ffff00';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(popup.text, popup.x, popup.y - (age / 40));
+                    ctx.restore();
+                    return true;
+                }
+                return false;
+            });
+            
+            // Update minimap
+            updateMinimap();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function updateMinimap() {
+            minimapCtx.fillStyle = '#1a1a1a';
+            minimapCtx.fillRect(0, 0, 150, 150);
+            
+            if (gameState.world.currentRoom) {
+                const room = gameState.world.currentRoom;
+                const scale = 0.1;
+                
+                // Draw room
+                minimapCtx.fillStyle = '#3a3a3a';
+                minimapCtx.fillRect(
+                    room.x * scale,
+                    room.y * scale,
+                    room.width * scale,
+                    room.height * scale
+                );
+                
+                // Draw player
+                minimapCtx.fillStyle = '#ffffff';
+                minimapCtx.fillRect(
+                    gameState.player.x * scale - 1,
+                    gameState.player.y * scale - 1,
+                    2,
+                    2
+                );
+                
+                // Draw monsters
+                minimapCtx.fillStyle = '#ff0000';
+                room.entities.forEach(entity => {
+                    if (entity.hp > 0) {
+                        minimapCtx.fillRect(
+                            entity.x * scale - 1,
+                            entity.y * scale - 1,
+                            2,
+                            2
+                        );
+                    }
+                });
+            }
+        }
+        
+        // Input handling
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Scale to canvas coordinates
+            const canvasX = x * (canvas.width / rect.width);
+            const canvasY = y * (canvas.height / rect.height);
+            
+            // Check if clicking on a monster
+            const room = gameState.world.currentRoom;
+            if (room) {
+                let clickedMonster = null;
+                room.entities.forEach(entity => {
+                    const dist = Math.sqrt(Math.pow(entity.x - canvasX, 2) + Math.pow(entity.y - canvasY, 2));
+                    if (dist < entity.size && entity.hp > 0) {
+                        clickedMonster = entity;
+                    }
+                });
+                
+                if (clickedMonster) {
+                    // Start combat
+                    gameState.player.currentTarget = clickedMonster;
+                    gameState.player.inCombat = true;
+                    combatTimer = 0;
+                    updateCombatPanel();
+                    return;
+                }
+                
+                // Check if clicking on a resource
+                let clickedResource = null;
+                room.resources.forEach(resource => {
+                    const dist = Math.sqrt(Math.pow(resource.x - canvasX, 2) + Math.pow(resource.y - canvasY, 2));
+                    if (dist < 20 && !resource.depleted) {
+                        clickedResource = resource;
+                    }
+                });
+                
+                if (clickedResource) {
+                    // Start gathering
+                    gameState.player.gatheringResource = clickedResource;
+                    gameState.player.gatherStartTime = Date.now();
+                    setTimeout(() => {
+                        if (gameState.player.gatheringResource === clickedResource) {
+                            gatherResource(clickedResource);
+                            gameState.player.gatheringResource = null;
+                        }
+                    }, 2000);
+                    return;
+                }
+            }
+            
+            // Otherwise, move player
+            gameState.player.targetX = canvasX;
+            gameState.player.targetY = canvasY;
+            gameState.player.isMoving = true;
+            gameState.player.inCombat = false;
+            gameState.player.currentTarget = null;
+            gameState.player.gatheringResource = null;
+            updateCombatPanel();
+        });
+        
+        // Game initialization
+        function startGame() {
+            document.getElementById('main-menu').style.display = 'none';
+            
+            // Initialize player
+            gameState.player = {
+                x: 400,
+                y: 300,
+                hp: 10,
+                maxHp: 10,
+                prayer: 1,
+                maxPrayer: 1,
+                energy: 100,
+                maxEnergy: 100,
+                skills: {
+                    attack: { level: 1, xp: 0 },
+                    strength: { level: 1, xp: 0 },
+                    defence: { level: 1, xp: 0 },
+                    mining: { level: 1, xp: 0 },
+                    woodcutting: { level: 1, xp: 0 },
+                    fishing: { level: 1, xp: 0 }
+                },
+                inventory: [],
+                equipped: {
+                    weapon: null,
+                    armor: null,
+                    shield: null
+                },
+                combatStyle: 'accurate',
+                isMoving: false,
+                targetX: 400,
+                targetY: 300,
+                inCombat: false,
+                currentTarget: null
+            };
+            
+            // Give starting items
+            addItemToInventory('bronze_sword', 1);
+            addItemToInventory('wooden_shield', 1);
+            
+            // Generate starting room
+            const biomeTypes = Object.keys(biomes);
+            const startBiome = biomeTypes[Math.floor(Math.random() * biomeTypes.length)];
+            gameState.world.currentRoom = generateRoom(gameState.world.seed, startBiome);
+            gameState.world.rooms.push(gameState.world.currentRoom);
+            
+            // Initialize UI
+            initializeInventory();
+            updateStats();
+            updateInventory();
+            
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function playerDeath() {
+            document.getElementById('death-screen').style.display = 'flex';
+            gameState.player.hp = 0;
+            updateStats();
+        }
+        
+        function respawn() {
+            document.getElementById('death-screen').style.display = 'none';
+            
+            // Reset player position and stats
+            gameState.player.x = 400;
+            gameState.player.y = 300;
+            gameState.player.hp = gameState.player.maxHp;
+            gameState.player.energy = gameState.player.maxEnergy;
+            gameState.player.inCombat = false;
+            gameState.player.currentTarget = null;
+            gameState.player.inventory = []; // Lose all items
+            
+            // Generate new room
+            const biomeTypes = Object.keys(biomes);
+            const newBiome = biomeTypes[Math.floor(Math.random() * biomeTypes.length)];
+            gameState.world.currentRoom = generateRoom(Math.random() * 1000000, newBiome);
+            
+            updateStats();
+            updateInventory();
+            updateCombatPanel();
+        }
+        
+        function backToMenu() {
+            location.reload();
+        }
+        
+        function loadGame() {
+            alert('Save/Load functionality coming soon!');
+        }
+        
+        function showSettings() {
+            alert('Settings menu coming soon!');
+        }
+        
+        function selectInventorySlot(index) {
+            gameState.ui.selectedInventorySlot = index;
+            // TODO: Implement item usage/equipment
+        }
+    </script>
+</body>
+</html>

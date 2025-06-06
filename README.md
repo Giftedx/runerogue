@@ -1,6 +1,8 @@
 # RuneRogue
 
-A RuneScape-inspired Discord game with a web-based client, powered by a Python backend that provides multi-fallback web scraping and other services.
+A RuneScape-inspired game project featuring a polyglot architecture with a TypeScript game server, Python FastAPI economy API, Python Flask legacy backend, and a Python FastAPI MCP server. It includes a web-based client and integrates AI-assisted development.
+
+For a comprehensive overview of the system architecture, refer to the [Architecture Document](docs/ARCHITECTURE.md).
 
 ## AI-Assisted Development
 
@@ -38,11 +40,15 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 - **Self-hosted Runner Execution**: Tasks are processed on a self-hosted Windows runner
 - **Custom MCP Tools**: Extended capabilities for RuneRogue-specific tasks
 - **Workflow Automation**: Create and assign tasks programmatically
+- **Defensive Colyseus Schema Patterns**: All schema fields (e.g., inventory, loot, trade items) are now strictly enforced as `ArraySchema` and schema instances, with runtime checks and defensive test setup.
+- **Comprehensive Test Coverage**: All core systems (combat, procedural generation, loot, inventory, trade) have robust unit and integration tests. Test suite is run after every patch.
+- **Agentic Maintenance**: All new features and bug fixes are maintained by GitHub Copilot Agents, with minimal manual intervention.
 
 ### Documentation
 
 - [GitHub Copilot Agents Guide](docs/COPILOT_AGENTS_GUIDE.md) - Comprehensive guide to using Copilot Agents with RuneRogue
 - [GitHub Copilot Agents Integration](docs/GITHUB_COPILOT_AGENTS.md) - Technical details of the integration
+- [AI-Managed Issue Creation](docs/AI_MANAGED_ISSUES.md) - System for AI agents to create and manage issues
 - [Environment Variables](docs/ENVIRONMENT_VARIABLES.md) - Required environment variables for the integration
 
 ### Quick Start
@@ -52,6 +58,13 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 3. Assignment: The issue will be automatically assigned to GitHub Copilot
 4. Execution: The self-hosted runner will process the task
 5. Results: GitHub Copilot will comment on the issue with the results
+
+### Progress Update (June 2025)
+
+- **CombatSystem**: Refactored for OSRS-authentic logic; all tests now pass.
+- **ProceduralGenerator**: Fully tested and robust; all procedural generation tests pass.
+- **GameRoom & Multiplayer**: Persistent Colyseus schema serialization errors remain in trade/loot and player join/movement tests, but all direct schema field assignments are now using `ArraySchema` and schema instances. Defensive runtime checks and forced re-wrapping of arrays/objects as schema types have been added throughout the codebase and tests.
+- **Next Steps**: Continue auditing for any remaining schema field mutations with plain arrays/objects. Patch and re-test until all Colyseus serialization errors are resolved and all GameRoom tests pass. Update documentation to reflect the new defensive patterns and schema usage requirements.
 
 ### Example: Generate Documentation
 
@@ -82,23 +95,13 @@ For detailed information, see the following documentation:
 
 ## Components
 
+### Core Components
 
-### Backend (Python/Flask)
-- **Multi-fallback scraping**: requests → BeautifulSoup → Playwright
-- **Configuration management**: YAML config files with environment variable overrides
-- **Progress tracking**: Built-in `update_status()` function with progress reporting
-- **Dry run support**: Test functionality without making actual requests
-- **Flask web API**: RESTful endpoints for scraping operations
-- **Comprehensive testing**: Unit tests with mocking support
-- **CI/CD Pipeline**: Automated testing, linting, and deployment
-
-### Client (TypeScript/React - `client/meta-ui`)
-- **RuneScape-inspired game client**: Web-based interactive game.
-- **Modern Stack**: Built with TypeScript, React, and Vite.
-
-### Discord Integration (Potentially Deprecated/Future Feature)
-- **Discord Integration**: User authentication via Discord OAuth2
-- **Multiplayer Gameplay**: Real-time multiplayer using Colyseus
+- **TypeScript Game Server**: Manages game state, real-time multiplayer (Colyseus), Discord OAuth2, and integrates with other backend services.
+- **Python FastAPI Economy API**: Handles all game economy operations, including players, items, trades, and Grand Exchange.
+- **Python Flask Legacy Backend**: Provides web scraping, health monitoring, and other legacy functionalities.
+- **Python FastAPI MCP Server**: Facilitates AI agent interactions, tool execution, and research capabilities.
+- **Clients**: Godot Game Client and Web Meta UI (TypeScript/React) for interactive gameplay.
 
 ## Getting Started
 
@@ -108,8 +111,8 @@ For detailed information, see the following documentation:
 - npm or yarn
 - Python 3.9+
 - pip
-- Discord Application (for OAuth2) - *if Discord features are to be used*
-- MongoDB (for persistent storage) - *if Discord/Colyseus features are to be used*
+- Discord Application (for OAuth2) - _if Discord features are to be used_
+- MongoDB (for persistent storage) - _if Discord/Colyseus features are to be used_
 
 ### Installation
 
@@ -123,13 +126,21 @@ For detailed information, see the following documentation:
 2. **Backend Setup (Python):**
 
    ```bash
+   cd tools-python
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
+   cd ..
    ```
 
 3. **Frontend Setup (TypeScript/React):**
 
    ```bash
-   cd client/meta-ui
+   cd server-ts
+   npm install
+   cd ..
+
+   cd server-ts/client
    npm install
    cd ../..
    ```
@@ -208,6 +219,7 @@ from config import config
 - `docs/`: Additional documentation.
 
 ## API Endpoints (Backend Services)
+
 - `GET /` - Application info
 - `GET /config` - Current configuration
 - `GET /health` - Health check

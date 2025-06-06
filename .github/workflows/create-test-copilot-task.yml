@@ -1,0 +1,121 @@
+name: Create Copilot Agent Task
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Issue title'
+        required: true
+        default: '[AGENT TASK] Test Copilot Agent'
+      description:
+        description: 'Task description'
+        required: true
+        default: 'This is a test task for GitHub Copilot Agent'
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create issue with GITHUB_TOKEN
+        id: create-issue
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              // Ensure 'copilot' label exists
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'copilot'
+                });
+                console.log('Copilot label exists.');
+              } catch (error) {
+                console.log('Copilot label does not exist. Creating it...');
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'copilot',
+                  color: '8a2be2', // BlueViolet color
+                  description: 'Tasks for GitHub Copilot Agent'
+                });
+                console.log('Copilot label created.');
+              }
+              
+              // Create the issue
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '${{ github.event.inputs.title }}',
+                body: `## Task Description\n${{ github.event.inputs.description }}\n\n## Created By\nThis issue was created by the create-copilot-task workflow.`,
+                labels: ['copilot']
+              });
+              
+              console.log(`Issue #${issue.data.number} created: ${issue.data.html_url}`);
+              
+              // Try to assign to GitHub Copilot
+              try {
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.data.number,
+                  assignees: ['github-copilot']
+                });
+                console.log(`Issue #${issue.data.number} assigned to GitHub Copilot`);
+              } catch (assignError) {
+                console.log(`Error assigning issue: ${assignError.message}`);
+                
+                // Try alternative format
+                try {
+                  await github.rest.issues.addAssignees({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.data.number,
+                    assignees: ['github-copilot[bot]']
+                  });
+                  console.log(`Issue #${issue.data.number} assigned to GitHub Copilot[bot]`);
+                } catch (assignError2) {
+                  console.log(`Error assigning issue (second attempt): ${assignError2.message}`);
+                  
+                  // One more try with numeric ID format
+                  try {
+                    const copilotBot = await github.rest.apps.getBySlug({
+                      slug: 'github-copilot'
+                    });
+                    
+                    if (copilotBot && copilotBot.data) {
+                      console.log(`Found GitHub Copilot app: ID ${copilotBot.data.id}`);
+                      
+                      await github.rest.issues.addAssignees({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: issue.data.number,
+                        assignees: [`${copilotBot.data.slug}[bot]`]
+                      });
+                      console.log(`Issue #${issue.data.number} assigned to ${copilotBot.data.slug}[bot]`);
+                    } else {
+                      console.log('Could not find GitHub Copilot app details');
+                    }
+                  } catch (assignError3) {
+                    console.log(`Error assigning issue (third attempt): ${assignError3.message}`);
+                    console.log('Please assign to GitHub Copilot manually');
+                  }
+                }
+              }
+              
+              return {
+                issue_number: issue.data.number,
+                issue_url: issue.data.html_url
+              };
+            } catch (error) {
+              console.log(`Error creating issue: ${error.message}`);
+              throw error;
+            }
+      
+      - name: Output Issue Details
+        run: |
+          echo "Issue created: ${{ steps.create-issue.outputs.result }}"

@@ -1,0 +1,87 @@
+name: AI Agent Issue Creator
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Issue title'
+        required: true
+      body:
+        description: 'Issue body (markdown format)'
+        required: true
+      labels:
+        description: 'Comma-separated list of labels'
+        required: false
+        default: 'copilot'
+      assignees:
+        description: 'Comma-separated list of assignees'
+        required: false
+        default: 'github-copilot[bot]'
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Issue
+        id: create-issue
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Process labels
+            const labelsList = context.payload.inputs.labels
+              .split(',')
+              .map(label => label.trim())
+              .filter(label => label.length > 0);
+            
+            // Process assignees
+            const assigneesList = context.payload.inputs.assignees
+              .split(',')
+              .map(assignee => assignee.trim())
+              .filter(assignee => assignee.length > 0);
+            
+            // Ensure all labels exist
+            for (const labelName of labelsList) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+                console.log(`Label '${labelName}' exists.`);
+              } catch (error) {
+                console.log(`Label '${labelName}' does not exist. Creating it...`);
+                // Generate a random color if it's not the 'copilot' label
+                const color = labelName === 'copilot' ? '8a2be2' : Math.floor(Math.random()*16777215).toString(16);
+                
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName,
+                  color: color,
+                  description: labelName === 'copilot' ? 'Tasks for GitHub Copilot Agent' : `Label created by AI agent`
+                });
+                console.log(`Label '${labelName}' created.`);
+              }
+            }
+            
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: context.payload.inputs.title,
+              body: context.payload.inputs.body,
+              labels: labelsList,
+              assignees: assigneesList
+            });
+            
+            console.log(`Issue #${issue.data.number} created: ${issue.data.html_url}`);
+            
+            return {
+              issue_number: issue.data.number,
+              issue_url: issue.data.html_url
+            };
+      
+      - name: Output Issue Details
+        run: |
+          echo "Issue created: ${{ steps.create-issue.outputs.result }}"

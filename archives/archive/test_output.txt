@@ -1,0 +1,436 @@
+
+> runerogue@0.1.0 test
+> cross-env NODE_OPTIONS="" jest --runInBand --verbose
+
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in C:/Users/aggis/GitHub/runerogue/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+FAIL src/server/__tests__/game/GameRoom.test.ts
+  GameRoom
+    ÔêÜ should create a game room (5 ms)
+    Player Management
+      ├ù should allow a player to join (3 ms)
+      ├ù should handle player movement (1 ms)
+    Player Disconnection
+      ├ù should remove player on leave (2 ms)
+      ├ù should handle player reconnection (1 ms)
+    Item Management
+      ÔêÜ should add starter items to a new player (1 ms)
+      ├ù should drop player inventory as loot drops on leave (1 ms)
+      ├ù should create a loot drop with correct properties (2 ms)
+
+  ÔùÅ GameRoom ÔÇ║ Player Management ÔÇ║ should allow a player to join
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "TestPlayer"
+    Received: undefined
+
+      65 |       const player = gameRoom.state.players.get(mockClient.sessionId);
+      66 |       expect(player).toBeDefined();
+    > 67 |       expect(player?.name).toBe('TestPlayer');
+         |                            ^
+      68 |       expect(mockClient.send).toHaveBeenCalledWith(
+      69 |         'welcome',
+      70 |         expect.objectContaining({
+
+      at Object.<anonymous> (src/server/__tests__/game/GameRoom.test.ts:67:28)
+
+  ÔùÅ GameRoom ÔÇ║ Player Management ÔÇ║ should handle player movement
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 100
+    Received: 375
+
+      87 |
+      88 |       const player = gameRoom.state.players.get(mockClient.sessionId);
+    > 89 |       expect(player?.x).toBe(100);
+         |                         ^
+      90 |       expect(player?.y).toBe(200);
+      91 |       expect(player?.animation).toBe('walk');
+      92 |       expect(player?.direction).toBe('right');
+
+      at Object.<anonymous> (src/server/__tests__/game/GameRoom.test.ts:89:25)
+
+  ÔùÅ GameRoom ÔÇ║ Player Disconnection ÔÇ║ should remove player on leave
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      110 |
+      111 |       await gameRoom.onLeave(mockClient as any, true);
+    > 112 |       expect(gameRoom.state.players.has(mockClient.sessionId)).toBe(false);
+          |                                                                ^
+      113 |       expect(mockConsole.log).toHaveBeenCalledWith('Player left:', mockClient.sessionId);
+      114 |     });
+      115 |
+
+      at Object.<anonymous> (src/server/__tests__/game/GameRoom.test.ts:112:64)
+
+  ÔùÅ GameRoom ÔÇ║ Player Disconnection ÔÇ║ should handle player reconnection
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 100
+    Received: 114
+
+      130 |
+      131 |       const player = gameRoom.state.players.get(mockClient.sessionId);
+    > 132 |       expect(player.x).toBe(100);
+          |                        ^
+      133 |       expect(player.y).toBe(200);
+      134 |       expect(player.animation).toBe('walking');
+      135 |       expect(player.direction).toBe('left');
+
+      at Object.<anonymous> (src/server/__tests__/game/GameRoom.test.ts:132:24)
+
+  ÔùÅ GameRoom ÔÇ║ Item Management ÔÇ║ should drop player inventory as loot drops on leave
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      176 |       await gameRoom.onLeave(mockClient as any, false); // Simulate disconnection without reconnection
+      177 |
+    > 178 |       expect(gameRoom.state.lootDrops.size).toBeGreaterThan(initialLootDropsCount);
+          |                                             ^
+      179 |       const droppedLoot = Array.from(gameRoom.state.lootDrops.values());
+      180 |       expect(droppedLoot[0].items.length).toBeGreaterThan(0);
+      181 |       expect(droppedLoot[0].items[0].name).toBe('Starter Sword');
+
+      at Object.<anonymous> (src/server/__tests__/game/GameRoom.test.ts:178:45)
+
+  ÔùÅ GameRoom ÔÇ║ Item Management ÔÇ║ should create a loot drop with correct properties
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: [{"attack": 0, "defense": 0, "description": "Some gold coins", "isStackable": true, "itemId": "loot-item-1", "name": "Loot Gold", "quantity": 10}]
+    Received: serializes to the same string
+
+      206 |       );
+      207 |       expect(newLootDrop).toBeDefined();
+    > 208 |       expect(newLootDrop?.items).toEqual(testItems);
+          |                                  ^
+      209 |       expect(newLootDrop?.createdAt).toBeDefined();
+      210 |       expect(newLootDrop?.lootDropId).toBeDefined();
+      211 |     });
+
+      at Object.<anonymous> (src/server/__tests__/game/GameRoom.test.ts:208:34)
+
+2025-06-03 21:52:48 [[31merror[39m]: [31mEconomy API connection failed: this.client.healthCheck is not a function[39m
+TypeError: this.client.healthCheck is not a function
+    at EconomyIntegration.checkConnection (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:62:40)
+    at new EconomyIntegration (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:53:10)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:274:16)
+    at Runtime._execModule (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:882:12)
+    at Runtime.requireModuleOrMock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:1048:21)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:1:1)
+    at Runtime._execModule (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at async runTestInternal (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:367:16)
+    at async runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:444:34)
+{
+  "service": "runerogue"
+}
+2025-06-03 21:52:48 [[31merror[39m]: [31mEconomy API connection failed: this.client.healthCheck is not a function[39m
+TypeError: this.client.healthCheck is not a function
+    at EconomyIntegration.checkConnection (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:62:40)
+    at EconomyIntegration.isReady (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:83:18)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:32:47)
+    at Promise.then.completed (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:316:40)
+    at async _runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:252:3)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:126:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async run (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:71:3)
+    at async runAndTransformResultsToJestFormat (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at async jestAdapter (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at async runTestInternal (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:367:16)
+    at async runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:444:34)
+{
+  "service": "runerogue"
+}
+2025-06-03 21:52:48 [[31merror[39m]: [31mEconomy API connection failed: this.client.healthCheck is not a function[39m
+TypeError: this.client.healthCheck is not a function
+    at EconomyIntegration.checkConnection (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:62:40)
+    at EconomyIntegration.isReady (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:83:18)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:41:47)
+    at Promise.then.completed (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:316:40)
+    at async _runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:252:3)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:126:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async run (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:71:3)
+    at async runAndTransformResultsToJestFormat (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at async jestAdapter (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at async runTestInternal (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:367:16)
+    at async runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:444:34)
+{
+  "service": "runerogue"
+}
+2025-06-03 21:52:48 [[31merror[39m]: [31mFailed to get/create player profile for testPlayer: this.client.getPlayers is not a function[39m
+TypeError: this.client.getPlayers is not a function
+    at EconomyIntegration.getOrCreatePlayerProfile (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:101:41)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:53:47)
+    at Promise.then.completed (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:316:40)
+    at async _runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:252:3)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:126:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async run (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:71:3)
+    at async runAndTransformResultsToJestFormat (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at async jestAdapter (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at async runTestInternal (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:367:16)
+    at async runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:444:34)
+{
+  "service": "runerogue"
+}
+2025-06-03 21:52:48 [[31merror[39m]: [31mFailed to get inventory for player testPlayer: this.client.getPlayerInventory is not a function[39m
+TypeError: this.client.getPlayerInventory is not a function
+    at EconomyIntegration.getPlayerInventory (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:136:43)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:72:47)
+    at Promise.then.completed (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:316:40)
+    at async _runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:252:3)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:126:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async run (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:71:3)
+    at async runAndTransformResultsToJestFormat (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at async jestAdapter (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at async runTestInternal (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:367:16)
+    at async runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:444:34)
+{
+  "service": "runerogue"
+}
+2025-06-03 21:52:48 [[31merror[39m]: [31mFailed to add item 1 to player 1 inventory: this.client.addInventoryItem is not a function[39m
+TypeError: this.client.addInventoryItem is not a function
+    at EconomyIntegration.addItemToInventory (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:154:40)
+    at Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:84:47)
+    at Promise.then.completed (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:316:40)
+    at async _runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:252:3)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:126:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async _runTestsForDescribeBlock (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:121:9)
+    at async run (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\run.js:71:3)
+    at async runAndTransformResultsToJestFormat (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at async jestAdapter (C:\Users\aggis\GitHub\runerogue\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at async runTestInternal (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:367:16)
+    at async runTest (C:\Users\aggis\GitHub\runerogue\node_modules\jest-runner\build\runTest.js:444:34)
+{
+  "service": "runerogue"
+}
+2025-06-03 21:52:48 [[31merror[39m]: [31mFailed to get current market price for item 1: Cannot read properties of undefined (reading 'base_value')[39m
+TypeError: Cannot read properties of undefined (reading 'base_value')
+    at EconomyIntegration.getCurrentMarketPrice (C:\Users\aggis\GitHub\runerogue\src\server\economy-integration.ts:262:21)
+    at async Object.<anonymous> (C:\Users\aggis\GitHub\runerogue\src\server\__tests__\economy-integration.test.ts:113:22)
+{
+  "service": "runerogue"
+}
+FAIL src/server/__tests__/economy-integration.test.ts
+  Economy Integration
+    isReady
+      ├ù should return true when economy API is healthy (2 ms)
+      ├ù should return false when economy API is not healthy (2 ms)
+    getPlayerProfile
+      ├ù should get player profile and cache it (1 ms)
+    getPlayerInventory
+      ├ù should get player inventory and cache it (1 ms)
+    addItemToPlayerInventory
+      ├ù should add item to player inventory and invalidate cache (1 ms)
+    getMarketPrice
+      ├ù should get current market price for an item
+      ├ù should return default price if no history exists
+
+  ÔùÅ Economy Integration ÔÇ║ isReady ÔÇ║ should return true when economy API is healthy
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      32 |       const result = await economyIntegration.isReady();
+      33 |
+    > 34 |       expect(result).toBe(true);
+         |                      ^
+      35 |       expect(economyClient.getHealth).toHaveBeenCalledTimes(1);
+      36 |     });
+      37 |
+
+      at Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:34:22)
+
+  ÔùÅ Economy Integration ÔÇ║ isReady ÔÇ║ should return false when economy API is not healthy
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      42 |
+      43 |       expect(result).toBe(false);
+    > 44 |       expect(economyClient.getHealth).toHaveBeenCalledTimes(1);
+         |                                       ^
+      45 |     });
+      46 |   });
+      47 |
+
+      at Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:44:39)
+
+  ÔùÅ Economy Integration ÔÇ║ getPlayerProfile ÔÇ║ should get player profile and cache it
+
+    Economy service error: Could not get or create player profile
+
+      118 |     } catch (error) {
+      119 |       logger.error(`Failed to get/create player profile for ${username}:`, error);
+    > 120 |       throw new Error(`Economy service error: Could not get or create player profile`);
+          |             ^
+      121 |     }
+      122 |   }
+      123 |
+
+      at EconomyIntegration.getOrCreatePlayerProfile (src/server/economy-integration.ts:120:13)
+      at Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:53:47)
+
+  ÔùÅ Economy Integration ÔÇ║ getPlayerInventory ÔÇ║ should get player inventory and cache it
+
+    Economy service error: Could not retrieve player inventory
+
+      139 |     } catch (error) {
+      140 |       logger.error(`Failed to get inventory for player ${playerId}:`, error);
+    > 141 |       throw new Error(`Economy service error: Could not retrieve player inventory`);
+          |             ^
+      142 |     }
+      143 |   }
+      144 |
+
+      at EconomyIntegration.getPlayerInventory (src/server/economy-integration.ts:141:13)
+      at Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:72:47)
+
+  ÔùÅ Economy Integration ÔÇ║ addItemToPlayerInventory ÔÇ║ should add item to player inventory and invalidate cache
+
+    Economy service error: Could not add item to inventory
+
+      164 |     } catch (error) {
+      165 |       logger.error(`Failed to add item ${itemId} to player ${playerId} inventory:`, error);
+    > 166 |       throw new Error(`Economy service error: Could not add item to inventory`);
+          |             ^
+      167 |     }
+      168 |   }
+      169 |
+
+      at EconomyIntegration.addItemToInventory (src/server/economy-integration.ts:166:13)
+      at Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:84:47)
+
+  ÔùÅ Economy Integration ÔÇ║ getMarketPrice ÔÇ║ should get current market price for an item
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: 110
+    Received: 90
+
+      104 |       const result = await economyIntegration.getCurrentMarketPrice(1);
+      105 |
+    > 106 |       expect(result).toEqual(110); // Should return the most recent price
+          |                      ^
+      107 |       expect(economyClient.getItemPriceHistory).toHaveBeenCalledWith(1);
+      108 |     });
+      109 |
+
+      at Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:106:22)
+
+  ÔùÅ Economy Integration ÔÇ║ getMarketPrice ÔÇ║ should return default price if no history exists
+
+    Economy service error: Could not retrieve market price
+
+      264 |     } catch (error) {
+      265 |       logger.error(`Failed to get current market price for item ${itemId}:`, error);
+    > 266 |       throw new Error(`Economy service error: Could not retrieve market price`);
+          |             ^
+      267 |     }
+      268 |   }
+      269 | }
+
+      at EconomyIntegration.getCurrentMarketPrice (src/server/economy-integration.ts:266:13)
+      at async Object.<anonymous> (src/server/__tests__/economy-integration.test.ts:113:22)
+
+PASS src/server/__tests__/game/CombatSystem.test.ts
+  CombatSystem
+    calculateHitChance
+      ÔêÜ should return a hit chance between 0 and 1 (2 ms)
+      ÔêÜ should have a higher hit chance with higher attack level (1 ms)
+      ÔêÜ should have a lower hit chance with higher defense level (1 ms)
+      ÔêÜ should consider attack type bonuses
+    calculateDamage
+      ÔêÜ should return a damage value (1 ms)
+      ÔêÜ should have higher damage with higher strength level (1 ms)
+      ÔêÜ should consider weapon strength bonus (1 ms)
+    performAttack
+      ÔêÜ should return an AttackResult object (1 ms)
+      ÔêÜ should reduce defender health on hit (1 ms)
+      ÔêÜ should not reduce defender health on miss
+      ÔêÜ should handle special attacks
+
+PASS src/__tests__/example.test.ts
+  Example Test
+    ÔêÜ should pass a simple test (1 ms)
+    ÔêÜ should handle async code
+
+-------------------------|---------|----------|---------|---------|-------------------------------------------------------------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                       
+-------------------------|---------|----------|---------|---------|-------------------------------------------------------------------------
+All files                |   37.74 |    17.48 |   27.21 |   38.09 |                                                                         
+ src                     |       0 |        0 |     100 |       0 |                                                                         
+  config.ts              |       0 |        0 |     100 |       0 | 10-74                                                                   
+ src/server              |   58.42 |     37.5 |      80 |   58.42 |                                                                         
+  economy-integration.ts |   58.42 |     37.5 |      80 |   58.42 | 63-70,96,103-117,132,137-138,161-163,178,186-246                        
+ src/server/auth         |       0 |        0 |       0 |       0 |                                                                         
+  middleware.ts          |       0 |        0 |       0 |       0 | 2-92                                                                    
+ src/server/game         |   49.59 |       25 |   36.58 |   52.26 |                                                                         
+  CombatSystem.ts        |   55.55 |     40.9 |      56 |   59.03 | 151-188,225,227,288,320,332,348-410,449-465,479-484,498-499,511,513,554 
+  EntitySchemas.ts       |   59.03 |    20.93 |   29.16 |   64.17 | 256-301,366-385,420-457,487-523                                         
+  GameRoom.ts            |   31.77 |     1.88 |   27.27 |   33.33 | 123-127,162-164,212-485                                                 
+ src/server/middleware   |       0 |        0 |       0 |       0 |                                                                         
+  errorHandler.ts        |       0 |        0 |       0 |       0 | 8-31                                                                    
+ src/server/routes       |       0 |        0 |       0 |       0 |                                                                         
+  auth.ts                |       0 |        0 |       0 |       0 | 1-140                                                                   
+  health.ts              |       0 |        0 |       0 |       0 | 1-219                                                                   
+ src/server/utils        |   75.75 |    55.55 |      40 |   74.19 |                                                                         
+  logger.ts              |   75.75 |    55.55 |      40 |   74.19 | 60,107,113-115,121-123                                                  
+ src/services            |       0 |        0 |       0 |       0 |                                                                         
+  economy-client.test.ts |       0 |      100 |       0 |       0 | 8-270                                                                   
+  economy-client.ts      |       0 |        0 |       0 |       0 | 9-296                                                                   
+-------------------------|---------|----------|---------|---------|-------------------------------------------------------------------------
+Jest: "global" coverage threshold for statements (70%) not met: 37.74%
+Jest: "global" coverage threshold for branches (70%) not met: 17.48%
+Jest: "global" coverage threshold for lines (70%) not met: 38.09%
+Jest: "global" coverage threshold for functions (70%) not met: 27.21%
+Test Suites: 2 failed, 2 passed, 4 total
+Tests:       13 failed, 15 passed, 28 total
+Snapshots:   0 total
+Time:        1.229 s, estimated 2 s
+Ran all test suites.
+Jest did not exit one second after the test run has completed.
+
+'This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.

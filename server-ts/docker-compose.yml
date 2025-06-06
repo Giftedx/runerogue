@@ -1,0 +1,111 @@
+
+
+x-common-env: &common-env
+  NODE_ENV: ${NODE_ENV-development}
+  PORT: ${PORT-3000}
+  COLYSEUS_WS_PORT: ${COLYSEUS_WS_PORT-2567}
+  FRONTEND_URL: ${FRONTEND_URL-http://localhost:5173}
+  MONGODB_URI: ${MONGODB_URI-mongodb://mongodb:27017/runerogue}
+  REDIS_URL: ${REDIS_URL-redis:6379}
+  JWT_SECRET: ${JWT_SECRET}
+  DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+  DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+  DISCORD_REDIRECT_URI: ${DISCORD_REDIRECT_URI}
+  SENTRY_DSN: ${SENTRY_DSN-}
+
+services:
+  # Application Service
+  app:
+    build:
+      context: .
+      target: ${TARGET-development}
+    container_name: runerogue-${NODE_ENV:-development}
+    restart: unless-stopped
+    env_file: .env.${NODE_ENV:-development}
+    environment:
+      <<: *common-env
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+      - "${COLYSEUS_WS_PORT:-2567}:${COLYSEUS_WS_PORT:-2567}"
+    depends_on:
+      - mongodb
+      - redis
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    volumes:
+      - ./logs:/app/logs
+
+
+    command: >
+      sh -c "if [ "$$NODE_ENV" = 'development' ]; then 
+        npm run dev; 
+      else 
+        node dist/server/index.js; 
+      fi"
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: runerogue-mongodb-${NODE_ENV:-development}
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: runerogue
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-changeme}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data_${NODE_ENV:-development}:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "'db.runCommand({ ping: 1 })'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Redis for session storage and pub/sub
+  redis:
+    image: redis:7-alpine
+    container_name: runerogue-redis-${NODE_ENV:-development}
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data_${NODE_ENV:-development}:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Monitoring (only in production)
+  monitor:
+    image: louislam/uptime-kuma:latest
+    container_name: runerogue-monitor
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - app
+    profiles: ["production"]
+
+volumes:
+  mongodb_data_development:
+  mongodb_data_staging:
+  mongodb_data_production:
+  redis_data_development:
+  redis_data_staging:
+  redis_data_production:
+  uptime_kuma_data:
+
+networks:
+  default:
+    driver: bridge

@@ -1,0 +1,20 @@
+name: Auto Architecture Map
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Nightly at 2am UTC
+  push:
+    branches: [ main, master ]
+
+jobs:
+  auto-architecture-map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Run auto-architecture-map
+        run: |
+          python3 scripts/auto-architecture-map.py

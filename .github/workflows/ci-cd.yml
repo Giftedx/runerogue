@@ -18,7 +18,7 @@ on:
 
 defaults:
   run:
-    working-directory: .
+    working-directory: server-ts
 
 env:
   DOCKER_BUILDKIT: 1
@@ -111,7 +111,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
-        context: .
+        context: server-ts
+        file: Dockerfile
         push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -155,4 +156,4 @@ jobs:
         script: |
           cd /path/to/runerogue
           git pull origin main
-          ./scripts/deploy.sh --env ${{ github.event.inputs.environment || 'staging' }}
+          tools-python/scripts/deploy.sh --env ${{ github.event.inputs.environment || 'staging' }}
