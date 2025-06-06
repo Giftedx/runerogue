@@ -1,0 +1,37 @@
+version: 2
+updates:
+  # Root package.json and monorepo packages
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "javascript"
+    assignees:
+      - "aggis"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Docker dependencies (when we add Dockerfiles)
+  - package-ecosystem: "docker"
+    directory: "/packages/game-server"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker" 
