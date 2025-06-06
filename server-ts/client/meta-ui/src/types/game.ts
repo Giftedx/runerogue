@@ -91,6 +91,7 @@ export namespace GameTypes {
     readonly maxPrayer: number;
     readonly energy: number;
     readonly maxEnergy: number;
+    readonly gold: number;
     readonly skills: Skills;
     readonly inventory: ReadonlyArray<InventoryItem | null>;
     readonly equipped: Equipment;

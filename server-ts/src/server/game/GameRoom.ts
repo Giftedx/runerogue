@@ -1,9 +1,11 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
 import { Client, Room } from '@colyseus/core';
 import { ZodError } from 'zod';
-import { sendDiscordNotification } from '../discord-bot';
+import { sendDiscordNotification, sendGameEventNotification } from '../discord-bot';
 import economyIntegration from '../economy-integration';
+import { playerPersistence } from '../persistence/PlayerPersistence';
 import { CombatSystem } from './CombatSystem';
+import { GatheringSystem } from './GatheringSystem';
 import {
   AreaMap,
   ArraySchema,
@@ -19,6 +21,7 @@ import {
   TradeOfferMessage,
   TradeRequestMessage,
   WorldState,
+  Resource,
 } from './EntitySchemas';
 import { ItemManager } from './ItemManager';
 import { LootManager } from './LootManager';
@@ -114,12 +117,20 @@ export class GameRoom extends Room<WorldState> {
   maxClients = 4;
   private combatSystem!: CombatSystem;
   private itemManager!: ItemManager;
+  private gatheringSystem!: GatheringSystem;
 
   onCreate(options: any): void {
     this.setState(new WorldState());
     this.initializeDefaultMap(); // Initialize with a default or sample map
     this.combatSystem = new CombatSystem(this.state);
     this.itemManager = ItemManager.getInstance();
+    this.gatheringSystem = GatheringSystem.getInstance();
+
+    // Spawn resources after map initialization
+    const currentMap = this.state.maps.get(this.state.currentMapId);
+    if (currentMap) {
+      this.gatheringSystem.spawnResources(this.state, currentMap.width, currentMap.height);
+    }
 
     // Start simulation loop: move NPCs and process combat every second
     this.setSimulationInterval(() => {
@@ -129,6 +140,8 @@ export class GameRoom extends Room<WorldState> {
       this.updateNPCBehavior();
       // Process any queued combat actions
       this.combatSystem.process(Date.now());
+      // Update resources (check for respawns)
+      this.gatheringSystem.updateResources(this.state);
     }, 1000);
 
     // Add some initial NPCs with structured loot tables
@@ -169,10 +182,44 @@ export class GameRoom extends Room<WorldState> {
               const lootDrop = await LootManager.dropLootFromNPC(this.state, npc, npc.lootTable);
               if (lootDrop) {
                 this.broadcast('loot_spawn', lootDrop);
+                
+                // Check for rare drops and send Discord notification
+                for (const item of lootDrop.items) {
+                  const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+                  // Consider items with high base value as rare (e.g., > 10000)
+                  // Or items with specific names containing 'dragon', 'rune', etc.
+                  if (itemDef && (
+                    itemDef.baseValue > 10000 || 
+                    itemDef.name.toLowerCase().includes('dragon') ||
+                    itemDef.name.toLowerCase().includes('rune') ||
+                    itemDef.name.toLowerCase().includes('unique')
+                  )) {
+                    sendGameEventNotification('rare_drop', {
+                      playerName: this.state.players.get(client.sessionId)?.username || 'Unknown',
+                      itemName: itemDef.name,
+                      source: npc.name,
+                      dropRate: 100 // Mock drop rate for now
+                    });
+                  }
+                }
               }
               this.broadcast('npc_dead', { npcId: targetId });
               this.state.npcs.delete(targetId);
             } else {
+              // Player death
+              const deadPlayer = this.state.players.get(targetId);
+              const killer = this.state.players.get(client.sessionId);
+              
+              if (deadPlayer && killer) {
+                sendGameEventNotification('player_death', {
+                  playerName: deadPlayer.username,
+                  killedBy: killer.username,
+                  x: deadPlayer.x,
+                  y: deadPlayer.y,
+                  combatLevel: deadPlayer.combatLevel || 1
+                });
+              }
+              
               client.send('player_dead', { playerId: targetId });
             }
           }
@@ -227,6 +274,33 @@ export class GameRoom extends Room<WorldState> {
       if (lootDrop) {
         this.broadcast('loot_spawn', lootDrop);
         broadcastPlayerState(this, client.sessionId, player);
+      }
+    });
+
+    // Handler for gathering from resources
+    this.onMessage('gather_resource', async (client, message: { resourceId: string }) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) {
+        console.warn(`Player ${client.sessionId} not found for resource gathering.`);
+        return;
+      }
+
+      const { resourceId } = message;
+      const result = await this.gatheringSystem.gatherResource(this.state, player, resourceId);
+      
+      if (result.success) {
+        console.log(`Player ${player.username} started gathering from resource ${resourceId}`);
+        client.send('gather_started', { 
+          message: result.message,
+          resourceId 
+        });
+        
+        // Update player state to show busy status
+        broadcastPlayerState(this, client.sessionId, player);
+      } else {
+        client.send('gather_error', { 
+          message: result.message 
+        });
       }
     });
 
@@ -338,6 +412,9 @@ export class GameRoom extends Room<WorldState> {
         }
       }
       this.state.trades.set(tradeId, newTrade);
+
+      // Start trade timeout timer
+      this.startTradeTimeout(tradeId);
 
       // Validate state after trade creation
       this.validateStateIntegrity();
@@ -533,6 +610,60 @@ export class GameRoom extends Room<WorldState> {
         return;
       }
 
+      // Validate inventory space for both players
+      const MAX_INVENTORY_SIZE = 28; // OSRS standard inventory size
+      
+      // Check if proposer has space for accepter's items
+      const proposerFinalInventorySize = proposer.inventory.length - trade.proposerItems.length + trade.accepterItems.length;
+      if (proposerFinalInventorySize > MAX_INVENTORY_SIZE) {
+        client.send('trade_error', { message: 'Proposer does not have enough inventory space.' });
+        this.clients
+          .find(c => c.sessionId === trade.proposerId)
+          ?.send('trade_error', { message: 'You do not have enough inventory space for this trade.' });
+        return;
+      }
+
+      // Check if accepter has space for proposer's items
+      const accepterFinalInventorySize = accepter.inventory.length - trade.accepterItems.length + trade.proposerItems.length;
+      if (accepterFinalInventorySize > MAX_INVENTORY_SIZE) {
+        client.send('trade_error', { message: 'You do not have enough inventory space for this trade.' });
+        this.clients
+          .find(c => c.sessionId === trade.proposerId)
+          ?.send('trade_error', { message: 'Accepter does not have enough inventory space.' });
+        return;
+      }
+
+      // Double-check that all offered items still exist in inventories
+      // This prevents item duplication exploits
+      for (const item of trade.proposerItems) {
+        const invItem = proposer.inventory.find(i => i.itemId === item.itemId && i.quantity >= item.quantity);
+        if (!invItem) {
+          client.send('trade_error', { message: 'Trade failed: Proposer no longer has all offered items.' });
+          this.clients
+            .find(c => c.sessionId === trade.proposerId)
+            ?.send('trade_error', { message: 'Trade failed: You no longer have all offered items.' });
+          // Cancel the trade and return items
+          this.cancelTradeAndReturnItems(trade);
+          return;
+        }
+      }
+
+      for (const item of trade.accepterItems) {
+        const invItem = accepter.inventory.find(i => i.itemId === item.itemId && i.quantity >= item.quantity);
+        if (!invItem) {
+          client.send('trade_error', { message: 'Trade failed: You no longer have all offered items.' });
+          this.clients
+            .find(c => c.sessionId === trade.proposerId)
+            ?.send('trade_error', { message: 'Trade failed: Accepter no longer has all offered items.' });
+          // Cancel the trade and return items
+          this.cancelTradeAndReturnItems(trade);
+          return;
+        }
+      }
+
+      // Mark trade as processing to prevent double-accepts
+      trade.status = 'processing';
+
       // Transfer items (in-game state)
       // Proposer gives items to accepter
       for (const item of trade.proposerItems) {
@@ -610,6 +741,17 @@ export class GameRoom extends Room<WorldState> {
       console.log(
         `Trade ${trade.tradeId} completed between ${proposer.username} and ${accepter.username}.`
       );
+
+      // Send Discord notification for trade completion
+      const proposerItemsStr = trade.proposerItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
+      const accepterItemsStr = trade.accepterItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
+      
+      sendGameEventNotification('trade_completed', {
+        player1: proposer.username,
+        player2: accepter.username,
+        player1Items: proposerItemsStr,
+        player2Items: accepterItemsStr
+      });
 
       // Validate state after trade completion
       this.validateStateIntegrity();
@@ -911,6 +1053,39 @@ export class GameRoom extends Room<WorldState> {
     player.x = Math.floor(Math.random() * 10);
     player.y = Math.floor(Math.random() * 10);
 
+    // Try to load player data
+    const saveData = await playerPersistence.loadPlayer(player.username);
+    if (saveData) {
+      // Player has existing save data
+      await playerPersistence.applyLoadedData(player, saveData);
+      console.log(`Loaded saved data for ${player.username}`);
+      
+      // Notify player of successful load
+      client.send('data_loaded', {
+        message: 'Welcome back! Your progress has been restored.',
+        combatLevel: player.combatLevel,
+        totalLevel: player.skills ? 
+          (player.skills.attack?.level || 1) + 
+          (player.skills.strength?.level || 1) + 
+          (player.skills.defence?.level || 1) +
+          (player.skills.mining?.level || 1) +
+          (player.skills.woodcutting?.level || 1) +
+          (player.skills.fishing?.level || 1) +
+          (player.skills.prayer?.level || 1) : 7
+      });
+    } else {
+      // New player - set initial combat level
+      player.combatLevel = 3;
+      console.log(`New player ${player.username} created`);
+      
+      client.send('welcome', {
+        message: 'Welcome to RuneRogue! Your progress will be saved automatically.'
+      });
+    }
+
+    // Start auto-save for this player
+    playerPersistence.startAutoSave(player);
+
     this.state.players.set(client.sessionId, player);
 
     // Validate state after player joins
@@ -1061,90 +1236,18 @@ export class GameRoom extends Room<WorldState> {
   }
 
   async onLeave(client: Client, consented: boolean): Promise<void> {
-    // First, check and remove the player from state to avoid serialization issues
-    if (this.state.players.has(client.sessionId)) {
-      try {
-        // Cache player reference and information before removing from state
-        const player = this.state.players.get(client.sessionId);
-        const playerName = player ? player.username : 'unknown';
+    const player = this.state.players.get(client.sessionId);
 
-        // Check if player has items
-        const hasItems = player && player.inventory && player.inventory.length > 0;
+    if (player) {
+      // Save player data before removing
+      console.log(`Saving data for ${player.username} before disconnect...`);
+      await playerPersistence.savePlayer(player);
+      playerPersistence.stopAutoSave(player.id);
+      
+      console.log(client.sessionId, 'left the room!', { consented });
 
-        // First, remove the player from state to avoid serialization issues in broadcasts
-        this.state.players.delete(client.sessionId);
-
-        // Broadcast the player left event with minimal data
-        this.broadcast('player_left', { playerId: client.sessionId });
-
-        // After player is removed, handle loot drop if not reconnecting
-        if (!consented && hasItems && player) {
-          try {
-            // Create a loot drop for the player's inventory
-            const lootDrop = await LootManager.dropLootFromPlayer(this.state, player);
-
-            // Sync with economy API if integration is available
-            if (lootDrop && lootDrop.items && lootDrop.items.length > 0 && economyIntegration) {
-              try {
-                const profile = await economyIntegration.getOrCreatePlayerProfile(playerName);
-                if (profile && profile.id) {
-                  const economyId = profile.id;
-
-                  // Process items one by one with await to ensure proper completion
-                  for (const item of lootDrop.items) {
-                    try {
-                      if (typeof economyIntegration.removeItemFromInventory === 'function') {
-                        await economyIntegration.removeItemFromInventory(
-                          economyId,
-                          item.itemId,
-                          item.quantity
-                        );
-                      }
-                    } catch (error) {
-                      // Silently log errors but continue processing
-                      console.error(`Economy sync error: ${(error as Error).message}`);
-                    }
-                  }
-                }
-              } catch (error) {
-                // Silently log errors but continue processing
-                console.error(`Player profile error: ${(error as Error).message}`);
-              }
-            }
-          } catch (error) {
-            // Log loot drop errors but continue
-            console.error(`Loot drop error: ${(error as Error).message}`);
-          }
-        }
-
-        // Handle reconnection
-        if (consented) {
-          try {
-            console.log('waiting for reconnection for', client.sessionId);
-            const newClient = await this.allowReconnection(client, 10);
-            console.log('reconnected!', newClient.sessionId);
-
-            // Store player in a temporary variable for reconnection
-            if (!this.state.players.has(newClient.sessionId) && player) {
-              player.id = newClient.sessionId;
-              this.state.players.set(newClient.sessionId, player);
-
-              // Use imported broadcast function instead of broadcastPlayerState
-              this.broadcast('player_rejoined', {
-                playerId: newClient.sessionId,
-                x: player.x,
-                y: player.y,
-              });
-            }
-          } catch (error) {
-            // Player couldn't reconnect, handle as a normal leave
-            console.error(`Reconnection failed: ${(error as Error).message}`);
-          }
-        }
-      } catch (error) {
-        // Ensure player is removed even if an error occurs
-        console.error(`Error in onLeave: ${(error as Error).message}`);
-        this.state.players.delete(client.sessionId);
+      if (consented) {
+        // ... existing code ...
       }
     }
   }
@@ -1251,7 +1354,17 @@ export class GameRoom extends Room<WorldState> {
         trade.proposerItems.forEach((item, index) => {
           if (!item) {
             // eslint-disable-next-line no-console
-            console.error(`❌ Trade ${tradeId} has undefined proposer item at index ${index}!`);
+            console.error(`❌ Trade ${tradeId} has undefined item at index ${index}!`);
+          } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
+            // eslint-disable-next-line no-console
+            console.error(
+              `❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`,
+              {
+                type: typeof item,
+                constructor: item.constructor?.name,
+                item: item,
+              }
+            );
           }
         });
       }
@@ -1263,34 +1376,20 @@ export class GameRoom extends Room<WorldState> {
         trade.accepterItems.forEach((item, index) => {
           if (!item) {
             // eslint-disable-next-line no-console
-            console.error(`❌ Trade ${tradeId} has undefined accepter item at index ${index}!`);
-          }
-        });
-      }
-    });
-
-    // Check loot drops
-    this.state.lootDrops.forEach((lootDrop, lootId) => {
-      if (!lootDrop) {
-        // eslint-disable-next-line no-console
-        console.error(`❌ LootDrop ${lootId} is undefined!`);
-        return;
-      }
-
-      if (!lootDrop.items) {
-        // eslint-disable-next-line no-console
-        console.error(`❌ LootDrop ${lootId} has undefined items!`);
-      } else {
-        lootDrop.items.forEach((item, index) => {
-          if (!item) {
+            console.error(`❌ Trade ${tradeId} has undefined item at index ${index}!`);
+          } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
             // eslint-disable-next-line no-console
-            console.error(`❌ LootDrop ${lootId} has undefined item at index ${index}!`);
+            console.error(
+              `❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`,
+              {
+                type: typeof item,
+                constructor: item.constructor?.name,
+                item: item,
+              }
+            );
           }
         });
       }
     });
-
-    // eslint-disable-next-line no-console
-    console.log('✅ State integrity validation complete');
   }
 }

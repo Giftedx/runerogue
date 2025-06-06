@@ -423,9 +423,16 @@ export class CombatSystem {
         attacker.specialEnergy -= weaponStats.specialAttack.energyCost;
 
         // Calculate special attack accuracy and damage
-        const accuracy =
-          CombatSystem.calculateAccuracy(attacker, defender, attackType, combatStyle) +
-          weaponStats.specialAttack.accuracyBonus;
+        const baseAccuracy = CombatSystem.calculateAccuracy(
+          attacker,
+          defender,
+          attackType,
+          combatStyle
+        );
+        const accuracy = Math.min(
+          1.0,
+          baseAccuracy + weaponStats.specialAttack.accuracyBonus / 100
+        );
         const hit = CombatSystem.rollHit(accuracy);
 
         if (hit) {

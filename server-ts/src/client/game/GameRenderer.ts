@@ -1,6 +1,7 @@
-import { GameState } from './GameState';
-import { SpriteManager } from './SpriteManager';
 import { CONFIG } from '../config';
+import { GameState } from './GameState';
+import { IGameRenderer } from './IGameRenderer';
+import { SpriteManager } from './SpriteManager';
 
 // Interface for damage number display
 interface DamageNumber {
@@ -23,7 +24,7 @@ interface SkillPopup {
   duration: number;
 }
 
-export class GameRenderer {
+export class GameRenderer implements IGameRenderer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private spriteManager: SpriteManager;
