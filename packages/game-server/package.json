@@ -17,18 +17,18 @@
     "docker:run": "docker run -p 2567:2567 runerogue-server"
   },
   "dependencies": {
-    "colyseus": "^0.15.17",
-    "express": "^4.18.2",
+    "colyseus": "^0.16.4",
+    "express": "^5.1.0",
     "cors": "^2.8.5",
-    "helmet": "^7.0.0",
+    "helmet": "^8.1.0",
     "compression": "^1.7.4",
     "winston": "^3.10.0",
-    "@colyseus/schema": "^1.0.44",
-    "@colyseus/monitor": "^0.15.12",
+    "@colyseus/schema": "^3.0.39",
+    "@colyseus/monitor": "^0.16.7",
     "pg": "^8.11.3",
-    "redis": "^4.6.7",
+    "redis": "^5.5.6",
     "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
