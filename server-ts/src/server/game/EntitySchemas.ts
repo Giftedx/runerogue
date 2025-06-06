@@ -277,6 +277,10 @@ export class Player extends Schema {
   @type('number')
   public prayerBonus: number = 0;
 
+  // Combat level (calculated from skills)
+  @type('number')
+  public combatLevel: number = 3;
+
   private actionCooldowns: Map<string, number> = new Map();
 
   constructor() {

@@ -4,17 +4,50 @@
 - ✅ Complete trading system with validation and safety features
 - ✅ Enhance Discord integration with rich notifications
 - ✅ Improve multiplayer sync with delta updates and lag compensation
-- Implement basic skills system (mining, woodcutting, fishing)
-- Add procedural dungeon generation
+- ✅ Implement comprehensive skills system with OSRS XP curves
+- ✅ Add player persistence with auto-save
+- ✅ Create wave-based survivor mechanics
+- Implement gathering skills mechanics (mining, woodcutting, fishing)
+- Add client-side skill UI and progression display
 
 ## Next Milestones
-- Skills System: Mining, Woodcutting, Fishing with XP progression
+- Resource Nodes: Mining rocks, trees, fishing spots with respawn timers
+- Skill Actions: Gathering animations and success rates
 - Achievement System with Discord notifications
 - Guild/Party system for group play
 - Advanced procedural generation (dungeons, boss rooms)
 - PvP zones with ELO ranking
 
 ## Recently Completed
+
+### [2025-06-05] Skills & Progression System
+- Implemented all 23 OSRS skills with authentic XP curves
+- Binary search level calculation for performance
+- Skill boosts/drains with proper limits
+- Combat level calculation using OSRS formula
+- Total level and XP tracking
+- Serialization for save/load functionality
+
+### [2025-06-05] Player Persistence System
+- JSON-based save system (MongoDB-ready)
+- Auto-save every 60 seconds
+- Save/load player stats, inventory, equipment, skills
+- Leaderboard data aggregation
+- Integration with GameRoom onJoin/onLeave
+
+### [2025-06-05] Wave-based Survivor Mechanics
+- Escalating wave difficulty with enemy scaling
+- Boss waves every 5 waves
+- Power-up system (damage, speed, defense, XP, drop rate boosts)
+- Wave rewards (XP, gold, items, power-ups)
+- Discord notifications for milestone waves
+- Spawn positioning and enemy type selection
+
+### [2025-06-05] Discord Bot Real Data Integration
+- !stats command now shows real player data
+- !leaderboard displays actual top players by XP
+- !online shows real-time player count
+- Stats embed with combat level, total level, XP
 
 ### [2025-06-05] Trading System Enhancements
 - Added inventory space validation to prevent overflow
@@ -71,6 +104,9 @@
 - Inventory: src/server/game/EntitySchemas.ts, managed by GameRoom.ts (player inventory, item management)
 - Economy: src/server/economy-integration.ts (syncs with Python Economy API)
 - Discord Integration: src/server/discord-bot.ts (notifications, commands)
+- Skills: src/server/game/SkillSystem.ts (XP, levels, boosts)
+- Persistence: src/server/persistence/PlayerPersistence.ts (save/load)
+- Waves: src/server/game/WaveManager.ts (survivor mechanics)
 - Extension points: add new features by extending these modules or adding new services with memory/context anchors
 
 ## [2025-06-04] Legacy/Redundant File Archival

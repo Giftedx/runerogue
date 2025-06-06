@@ -146,28 +146,82 @@ discordClient.on(Events.MessageCreate, async msg => {
   switch (command) {
     case '!stats':
       const playerName = args[1] || 'unknown';
-      // TODO: Integrate with game server for real stats
-      msg.reply(`Stats for ${playerName}: Level 42, 100 HP, 1,337 gold. (Mock data)`);
+      // Get real stats from persistence
+      try {
+        const { playerPersistence } = await import('./persistence/PlayerPersistence.js');
+        const playerData = await playerPersistence.loadPlayer(playerName);
+        
+        if (playerData) {
+          const totalLevel = Object.values(playerData.skills).reduce((sum: number, skill: any) => sum + skill.level, 0);
+          const totalXP = Object.values(playerData.skills).reduce((sum: number, skill: any) => sum + skill.experience, 0);
+          
+          const statsEmbed = new EmbedBuilder()
+            .setTitle(`📊 ${playerData.username}'s Stats`)
+            .setColor('#00FF00' as ColorResolvable)
+            .addFields(
+              { name: 'Combat Level', value: `${playerData.combatLevel}`, inline: true },
+              { name: 'Total Level', value: `${totalLevel}`, inline: true },
+              { name: 'Total XP', value: `${totalXP.toLocaleString()}`, inline: true },
+              { name: 'Health', value: `${playerData.health}/${playerData.maxHealth}`, inline: true },
+              { name: 'Last Seen', value: new Date(playerData.lastSeen).toLocaleString(), inline: false }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'RuneRogue Stats' });
+          
+          msg.reply({ embeds: [statsEmbed] });
+        } else {
+          msg.reply(`No player found with name: ${playerName}`);
+        }
+      } catch (error) {
+        msg.reply(`Error loading stats for ${playerName}`);
+      }
       break;
       
     case '!online':
-      // TODO: Get real player count from game server
-      msg.reply('Currently 12 players online across 3 game rooms.');
+      // Get real player count from game state
+      try {
+        const gameRooms = (globalThis as any).gameRooms || [];
+        let totalPlayers = 0;
+        gameRooms.forEach(room => {
+          totalPlayers += room.state?.players?.size || 0;
+        });
+        
+        msg.reply(`Currently ${totalPlayers} players online across ${gameRooms.length} game rooms.`);
+      } catch (error) {
+        msg.reply('Unable to fetch online player count.');
+      }
       break;
       
     case '!leaderboard':
-      // TODO: Fetch from game server
-      const leaderboardEmbed = new EmbedBuilder()
-        .setTitle('🏆 RuneRogue Leaderboard')
-        .setColor('#FFD700' as ColorResolvable)
-        .addFields(
-          { name: '1. PlayerOne', value: 'Level 99 | 50M XP', inline: false },
-          { name: '2. PlayerTwo', value: 'Level 87 | 35M XP', inline: false },
-          { name: '3. PlayerThree', value: 'Level 75 | 20M XP', inline: false }
-        )
-        .setTimestamp()
-        .setFooter({ text: 'Top players by total XP' });
-      msg.reply({ embeds: [leaderboardEmbed] });
+      // Fetch real leaderboard from persistence
+      try {
+        const { playerPersistence } = await import('./persistence/PlayerPersistence.js');
+        const allStats = await playerPersistence.getAllPlayerStats();
+        
+        const top10 = allStats.slice(0, 10);
+        
+        const leaderboardEmbed = new EmbedBuilder()
+          .setTitle('🏆 RuneRogue Leaderboard')
+          .setColor('#FFD700' as ColorResolvable)
+          .setTimestamp()
+          .setFooter({ text: 'Top players by total XP' });
+        
+        top10.forEach((player, index) => {
+          leaderboardEmbed.addFields({
+            name: `${index + 1}. ${player.username}`,
+            value: `Level ${player.combatLevel} | ${player.totalLevel} Total | ${player.totalXP.toLocaleString()} XP`,
+            inline: false
+          });
+        });
+        
+        if (top10.length === 0) {
+          leaderboardEmbed.setDescription('No players yet!');
+        }
+        
+        msg.reply({ embeds: [leaderboardEmbed] });
+      } catch (error) {
+        msg.reply('Error fetching leaderboard data.');
+      }
       break;
       
     case '!help':

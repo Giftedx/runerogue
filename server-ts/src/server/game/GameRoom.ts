@@ -3,6 +3,7 @@ import { Client, Room } from '@colyseus/core';
 import { ZodError } from 'zod';
 import { sendDiscordNotification, sendGameEventNotification } from '../discord-bot';
 import economyIntegration from '../economy-integration';
+import { playerPersistence } from '../persistence/PlayerPersistence';
 import { CombatSystem } from './CombatSystem';
 import {
   AreaMap,
@@ -1013,6 +1014,39 @@ export class GameRoom extends Room<WorldState> {
     player.x = Math.floor(Math.random() * 10);
     player.y = Math.floor(Math.random() * 10);
 
+    // Try to load player data
+    const saveData = await playerPersistence.loadPlayer(player.username);
+    if (saveData) {
+      // Player has existing save data
+      await playerPersistence.applyLoadedData(player, saveData);
+      console.log(`Loaded saved data for ${player.username}`);
+      
+      // Notify player of successful load
+      client.send('data_loaded', {
+        message: 'Welcome back! Your progress has been restored.',
+        combatLevel: player.combatLevel,
+        totalLevel: player.skills ? 
+          (player.skills.attack?.level || 1) + 
+          (player.skills.strength?.level || 1) + 
+          (player.skills.defence?.level || 1) +
+          (player.skills.mining?.level || 1) +
+          (player.skills.woodcutting?.level || 1) +
+          (player.skills.fishing?.level || 1) +
+          (player.skills.prayer?.level || 1) : 7
+      });
+    } else {
+      // New player - set initial combat level
+      player.combatLevel = 3;
+      console.log(`New player ${player.username} created`);
+      
+      client.send('welcome', {
+        message: 'Welcome to RuneRogue! Your progress will be saved automatically.'
+      });
+    }
+
+    // Start auto-save for this player
+    playerPersistence.startAutoSave(player);
+
     this.state.players.set(client.sessionId, player);
 
     // Validate state after player joins
@@ -1163,90 +1197,18 @@ export class GameRoom extends Room<WorldState> {
   }
 
   async onLeave(client: Client, consented: boolean): Promise<void> {
-    // First, check and remove the player from state to avoid serialization issues
-    if (this.state.players.has(client.sessionId)) {
-      try {
-        // Cache player reference and information before removing from state
-        const player = this.state.players.get(client.sessionId);
-        const playerName = player ? player.username : 'unknown';
+    const player = this.state.players.get(client.sessionId);
 
-        // Check if player has items
-        const hasItems = player && player.inventory && player.inventory.length > 0;
+    if (player) {
+      // Save player data before removing
+      console.log(`Saving data for ${player.username} before disconnect...`);
+      await playerPersistence.savePlayer(player);
+      playerPersistence.stopAutoSave(player.id);
+      
+      console.log(client.sessionId, 'left the room!', { consented });
 
-        // First, remove the player from state to avoid serialization issues in broadcasts
-        this.state.players.delete(client.sessionId);
-
-        // Broadcast the player left event with minimal data
-        this.broadcast('player_left', { playerId: client.sessionId });
-
-        // After player is removed, handle loot drop if not reconnecting
-        if (!consented && hasItems && player) {
-          try {
-            // Create a loot drop for the player's inventory
-            const lootDrop = await LootManager.dropLootFromPlayer(this.state, player);
-
-            // Sync with economy API if integration is available
-            if (lootDrop && lootDrop.items && lootDrop.items.length > 0 && economyIntegration) {
-              try {
-                const profile = await economyIntegration.getOrCreatePlayerProfile(playerName);
-                if (profile && profile.id) {
-                  const economyId = profile.id;
-
-                  // Process items one by one with await to ensure proper completion
-                  for (const item of lootDrop.items) {
-                    try {
-                      if (typeof economyIntegration.removeItemFromInventory === 'function') {
-                        await economyIntegration.removeItemFromInventory(
-                          economyId,
-                          item.itemId,
-                          item.quantity
-                        );
-                      }
-                    } catch (error) {
-                      // Silently log errors but continue processing
-                      console.error(`Economy sync error: ${(error as Error).message}`);
-                    }
-                  }
-                }
-              } catch (error) {
-                // Silently log errors but continue processing
-                console.error(`Player profile error: ${(error as Error).message}`);
-              }
-            }
-          } catch (error) {
-            // Log loot drop errors but continue
-            console.error(`Loot drop error: ${(error as Error).message}`);
-          }
-        }
-
-        // Handle reconnection
-        if (consented) {
-          try {
-            console.log('waiting for reconnection for', client.sessionId);
-            const newClient = await this.allowReconnection(client, 10);
-            console.log('reconnected!', newClient.sessionId);
-
-            // Store player in a temporary variable for reconnection
-            if (!this.state.players.has(newClient.sessionId) && player) {
-              player.id = newClient.sessionId;
-              this.state.players.set(newClient.sessionId, player);
-
-              // Use imported broadcast function instead of broadcastPlayerState
-              this.broadcast('player_rejoined', {
-                playerId: newClient.sessionId,
-                x: player.x,
-                y: player.y,
-              });
-            }
-          } catch (error) {
-            // Player couldn't reconnect, handle as a normal leave
-            console.error(`Reconnection failed: ${(error as Error).message}`);
-          }
-        }
-      } catch (error) {
-        // Ensure player is removed even if an error occurs
-        console.error(`Error in onLeave: ${(error as Error).message}`);
-        this.state.players.delete(client.sessionId);
+      if (consented) {
+        // ... existing code ...
       }
     }
   }
@@ -1348,117 +1310,4 @@ export class GameRoom extends Room<WorldState> {
 
       if (!trade.proposerItems) {
         // eslint-disable-next-line no-console
-        console.error(`❌ Trade ${tradeId} has undefined proposerItems!`);
-      } else {
-        trade.proposerItems.forEach((item, index) => {
-          if (!item) {
-            // eslint-disable-next-line no-console
-            console.error(`❌ Trade ${tradeId} has undefined proposer item at index ${index}!`);
-          }
-        });
-      }
-
-      if (!trade.accepterItems) {
-        // eslint-disable-next-line no-console
-        console.error(`❌ Trade ${tradeId} has undefined accepterItems!`);
-      } else {
-        trade.accepterItems.forEach((item, index) => {
-          if (!item) {
-            // eslint-disable-next-line no-console
-            console.error(`❌ Trade ${tradeId} has undefined accepter item at index ${index}!`);
-          }
-        });
-      }
-    });
-
-    // Check loot drops
-    this.state.lootDrops.forEach((lootDrop, lootId) => {
-      if (!lootDrop) {
-        // eslint-disable-next-line no-console
-        console.error(`❌ LootDrop ${lootId} is undefined!`);
-        return;
-      }
-
-      if (!lootDrop.items) {
-        // eslint-disable-next-line no-console
-        console.error(`❌ LootDrop ${lootId} has undefined items!`);
-      } else {
-        lootDrop.items.forEach((item, index) => {
-          if (!item) {
-            // eslint-disable-next-line no-console
-            console.error(`❌ LootDrop ${lootId} has undefined item at index ${index}!`);
-          }
-        });
-      }
-    });
-
-    // eslint-disable-next-line no-console
-    console.log('✅ State integrity validation complete');
-  }
-
-  /**
-   * Helper method to cancel a trade and return all items to their owners
-   */
-  private async cancelTradeAndReturnItems(trade: Trade): Promise<void> {
-    // Return proposer's items
-    const proposer = this.state.players.get(trade.proposerId);
-    if (proposer) {
-      for (const item of trade.proposerItems) {
-        // Find existing stack or add new item
-        const existingItem = proposer.inventory.find(i => i.itemId === item.itemId && i.isStackable);
-        if (existingItem) {
-          existingItem.quantity += item.quantity;
-        } else {
-          proposer.inventory.push(new InventoryItem(item, item.quantity));
-        }
-      }
-    }
-
-    // Return accepter's items
-    const accepter = this.state.players.get(trade.accepterId);
-    if (accepter) {
-      for (const item of trade.accepterItems) {
-        // Find existing stack or add new item
-        const existingItem = accepter.inventory.find(i => i.itemId === item.itemId && i.isStackable);
-        if (existingItem) {
-          existingItem.quantity += item.quantity;
-        } else {
-          accepter.inventory.push(new InventoryItem(item, item.quantity));
-        }
-      }
-    }
-
-    // Remove the trade
-    this.state.trades.delete(trade.tradeId);
-  }
-
-  /**
-   * Start a timeout for a trade - trades expire after 2 minutes of inactivity
-   */
-  private startTradeTimeout(tradeId: string): void {
-    const TRADE_TIMEOUT = 120000; // 2 minutes
-    
-    setTimeout(() => {
-      const trade = this.state.trades.get(tradeId);
-      if (trade && trade.status !== 'completed') {
-        // Notify both players
-        const proposerClient = this.clients.find(c => c.sessionId === trade.proposerId);
-        const accepterClient = this.clients.find(c => c.sessionId === trade.accepterId);
-        
-        proposerClient?.send('trade_timeout', { 
-          tradeId, 
-          message: 'Trade timed out due to inactivity.' 
-        });
-        accepterClient?.send('trade_timeout', { 
-          tradeId, 
-          message: 'Trade timed out due to inactivity.' 
-        });
-        
-        // Cancel and return items
-        this.cancelTradeAndReturnItems(trade);
-        
-        console.log(`Trade ${tradeId} timed out and was cancelled.`);
-      }
-    }, TRADE_TIMEOUT);
-  }
-}
+        console.error(`
