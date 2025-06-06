@@ -15,6 +15,7 @@ const initialGameState: GameTypes.GameState = {
     maxPrayer: 60,
     energy: 100,
     maxEnergy: 100,
+    gold: 0,
     skills: {
       attack: { level: 1, xp: 0 },
       strength: { level: 1, xp: 0 },
@@ -277,7 +278,7 @@ const GamePage: React.FC = () => {
     const panelX = ctx.canvas.width - 210;
     const panelY = 10;
     const panelWidth = 200;
-    const panelHeight = 150;
+    const panelHeight = 170;
 
     // Panel background
     ctx.fillStyle = 'rgba(56, 36, 24, 0.9)';
@@ -321,6 +322,15 @@ const GamePage: React.FC = () => {
     drawStatBar(panelX + 40, panelY + 35, 'HP', player.hp, player.maxHp, '#ff0000');
     drawStatBar(panelX + 40, panelY + 55, 'Prayer', player.prayer, player.maxPrayer, '#00ff00');
     drawStatBar(panelX + 40, panelY + 75, 'Energy', player.energy, player.maxEnergy, '#ffff00');
+
+    // Draw gold count
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Gold:', panelX + 10, panelY + 100);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'right';
+    ctx.fillText(player.gold.toLocaleString(), panelX + panelWidth - 10, panelY + 100);
   };
 
   const drawInventoryPanel = (ctx: CanvasRenderingContext2D, state: GameTypes.GameState) => {
