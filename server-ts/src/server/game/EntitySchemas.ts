@@ -238,6 +238,9 @@ export class Player extends Schema {
   @type('number')
   public inventorySize: number = 28;
 
+  @type('number')
+  public gold: number = 0;
+
   @type(Equipment)
   public equipment: Equipment = new Equipment();
 
@@ -612,6 +615,9 @@ export class GameState extends Schema {
 
   @type({ map: Trade })
   trades = new MapSchema<Trade>();
+
+  @type({ map: Resource })
+  resources = new MapSchema<Resource>();
 
   // Add other common game state properties here if needed
 }

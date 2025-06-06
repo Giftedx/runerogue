@@ -5,6 +5,7 @@ import { sendDiscordNotification, sendGameEventNotification } from '../discord-b
 import economyIntegration from '../economy-integration';
 import { playerPersistence } from '../persistence/PlayerPersistence';
 import { CombatSystem } from './CombatSystem';
+import { GatheringSystem } from './GatheringSystem';
 import {
   AreaMap,
   ArraySchema,
@@ -20,6 +21,7 @@ import {
   TradeOfferMessage,
   TradeRequestMessage,
   WorldState,
+  Resource,
 } from './EntitySchemas';
 import { ItemManager } from './ItemManager';
 import { LootManager } from './LootManager';
@@ -115,12 +117,20 @@ export class GameRoom extends Room<WorldState> {
   maxClients = 4;
   private combatSystem!: CombatSystem;
   private itemManager!: ItemManager;
+  private gatheringSystem!: GatheringSystem;
 
   onCreate(options: any): void {
     this.setState(new WorldState());
     this.initializeDefaultMap(); // Initialize with a default or sample map
     this.combatSystem = new CombatSystem(this.state);
     this.itemManager = ItemManager.getInstance();
+    this.gatheringSystem = GatheringSystem.getInstance();
+
+    // Spawn resources after map initialization
+    const currentMap = this.state.maps.get(this.state.currentMapId);
+    if (currentMap) {
+      this.gatheringSystem.spawnResources(this.state, currentMap.width, currentMap.height);
+    }
 
     // Start simulation loop: move NPCs and process combat every second
     this.setSimulationInterval(() => {
@@ -130,6 +140,8 @@ export class GameRoom extends Room<WorldState> {
       this.updateNPCBehavior();
       // Process any queued combat actions
       this.combatSystem.process(Date.now());
+      // Update resources (check for respawns)
+      this.gatheringSystem.updateResources(this.state);
     }, 1000);
 
     // Add some initial NPCs with structured loot tables
@@ -262,6 +274,33 @@ export class GameRoom extends Room<WorldState> {
       if (lootDrop) {
         this.broadcast('loot_spawn', lootDrop);
         broadcastPlayerState(this, client.sessionId, player);
+      }
+    });
+
+    // Handler for gathering from resources
+    this.onMessage('gather_resource', async (client, message: { resourceId: string }) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) {
+        console.warn(`Player ${client.sessionId} not found for resource gathering.`);
+        return;
+      }
+
+      const { resourceId } = message;
+      const result = await this.gatheringSystem.gatherResource(this.state, player, resourceId);
+      
+      if (result.success) {
+        console.log(`Player ${player.username} started gathering from resource ${resourceId}`);
+        client.send('gather_started', { 
+          message: result.message,
+          resourceId 
+        });
+        
+        // Update player state to show busy status
+        broadcastPlayerState(this, client.sessionId, player);
+      } else {
+        client.send('gather_error', { 
+          message: result.message 
+        });
       }
     });
 
@@ -1310,4 +1349,47 @@ export class GameRoom extends Room<WorldState> {
 
       if (!trade.proposerItems) {
         // eslint-disable-next-line no-console
-        console.error(`
+        console.error(`❌ Trade ${tradeId} has undefined proposerItems!`);
+      } else {
+        trade.proposerItems.forEach((item, index) => {
+          if (!item) {
+            // eslint-disable-next-line no-console
+            console.error(`❌ Trade ${tradeId} has undefined item at index ${index}!`);
+          } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
+            // eslint-disable-next-line no-console
+            console.error(
+              `❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`,
+              {
+                type: typeof item,
+                constructor: item.constructor?.name,
+                item: item,
+              }
+            );
+          }
+        });
+      }
+
+      if (!trade.accepterItems) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ Trade ${tradeId} has undefined accepterItems!`);
+      } else {
+        trade.accepterItems.forEach((item, index) => {
+          if (!item) {
+            // eslint-disable-next-line no-console
+            console.error(`❌ Trade ${tradeId} has undefined item at index ${index}!`);
+          } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
+            // eslint-disable-next-line no-console
+            console.error(
+              `❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`,
+              {
+                type: typeof item,
+                constructor: item.constructor?.name,
+                item: item,
+              }
+            );
+          }
+        });
+      }
+    });
+  }
+}

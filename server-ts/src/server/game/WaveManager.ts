@@ -3,9 +3,10 @@
  * Implements escalating waves of enemies, power-ups, and survivor gameplay
  */
 
-import { GameState, NPC, Player } from './EntitySchemas';
+import { GameState, NPC, Player, InventoryItem } from './EntitySchemas';
 import { ProceduralGenerator, BiomeType, MonsterSpawnConfig } from './ProceduralGenerator';
 import { sendGameEventNotification } from '../discord-bot';
+import { ItemManager } from './ItemManager';
 
 export interface WaveConfig {
   waveNumber: number;
@@ -56,6 +57,7 @@ export class WaveManager {
   private activePowerUps: Map<string, ActivePowerUp[]> = new Map();
   private biomeType: BiomeType;
   private proceduralGen: ProceduralGenerator;
+  private itemManager: ItemManager;
   
   // Wave configuration constants
   private readonly BASE_ENEMY_COUNT = 5;
@@ -64,10 +66,11 @@ export class WaveManager {
   private readonly BOSS_WAVE_INTERVAL = 5;
   private readonly WAVE_PREP_TIME = 10000; // 10 seconds between waves
 
-  constructor(state: GameState, biomeType: BiomeType = BiomeType.VARROCK) {
+  constructor(state: GameState, itemManager: ItemManager, biomeType: BiomeType = BiomeType.VARROCK) {
     this.state = state;
     this.biomeType = biomeType;
     this.proceduralGen = new ProceduralGenerator();
+    this.itemManager = itemManager;
   }
 
   /**
@@ -363,7 +366,7 @@ export class WaveManager {
   /**
    * Complete the current wave
    */
-  private completeWave(): void {
+  private async completeWave(): Promise<void> {
     this.waveInProgress = false;
     const waveTime = Date.now() - this.waveStartTime;
 
@@ -371,9 +374,9 @@ export class WaveManager {
     const config = this.generateWaveConfig(this.currentWave);
     
     // Award rewards to all players
-    this.state.players.forEach(player => {
-      this.awardWaveRewards(player, config.rewards);
-    });
+    for (const player of this.state.players.values()) {
+      await this.awardWaveRewards(player, config.rewards);
+    }
 
     // Broadcast wave completion
     this.broadcastWaveComplete(waveTime);
@@ -389,27 +392,37 @@ export class WaveManager {
   /**
    * Award wave rewards to a player
    */
-  private awardWaveRewards(player: Player, rewards: WaveReward[]): void {
-    rewards.forEach(reward => {
+  private async awardWaveRewards(player: Player, rewards: WaveReward[]): Promise<void> {
+    for (const reward of rewards) {
       if (Math.random() <= reward.chance) {
         switch (reward.type) {
           case 'xp':
             this.awardXP(player, reward.value as number);
             break;
           case 'gold':
-            // TODO: Add gold to player inventory
-            console.log(`Awarding ${reward.quantity} gold to ${player.username}`);
+            // Add gold to player
+            player.gold += reward.quantity;
+            console.log(`Awarding ${reward.quantity} gold to ${player.username} (total: ${player.gold})`);
             break;
           case 'item':
-            // TODO: Add item to player inventory
-            console.log(`Awarding ${reward.value} to ${player.username}`);
+            // Add item to player inventory
+            const itemDef = await this.itemManager.getItemDefinition(reward.value as string);
+            if (itemDef && player.inventory.length < player.inventorySize) {
+              const inventoryItem = new InventoryItem(itemDef, reward.quantity);
+              player.inventory.push(inventoryItem);
+              console.log(`Awarding ${reward.quantity}x ${itemDef.name} to ${player.username}`);
+            } else if (!itemDef) {
+              console.error(`Item definition not found for reward: ${reward.value}`);
+            } else {
+              console.warn(`${player.username}'s inventory is full, cannot award ${reward.value}`);
+            }
             break;
           case 'powerup':
             this.activatePowerUp(player.id, reward.value as string);
             break;
         }
       }
-    });
+    }
   }
 
   /**
@@ -419,8 +432,38 @@ export class WaveManager {
     // Split XP between attack, strength, and defense
     const xpPerSkill = Math.floor(amount / 3);
     
-    // TODO: Integrate with skill system when available
-    console.log(`Awarding ${amount} XP to ${player.username}`);
+    if (player.skills) {
+      // Award XP to each combat skill
+      player.skills.attack.xp += xpPerSkill;
+      player.skills.strength.xp += xpPerSkill;
+      player.skills.defence.xp += xpPerSkill;
+      
+      // Update skill levels based on new XP
+      player.skills.attack.level = this.getLevelFromXP(player.skills.attack.xp);
+      player.skills.strength.level = this.getLevelFromXP(player.skills.strength.xp);
+      player.skills.defence.level = this.getLevelFromXP(player.skills.defence.xp);
+      
+      // Update combat level
+      player.combatLevel = player.getCombatLevel();
+      
+      console.log(`Awarded ${amount} XP to ${player.username} (${xpPerSkill} per skill)`);
+    }
+  }
+
+  /**
+   * Calculate level from XP using simplified OSRS formula
+   * This is a simplified version - for full implementation use SkillSystem
+   */
+  private getLevelFromXP(xp: number): number {
+    // Simplified XP table for levels 1-99
+    const xpTable = [0, 83, 174, 276, 388, 512, 650, 801, 969, 1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 4470, 5018, 5624, 6291, 7028, 7842, 8740, 9730, 10824, 12031, 13363, 14833, 16456, 18247, 20224, 22406, 24815, 27473, 30408, 33648, 37224, 41171, 45529, 50339, 55649, 61512, 67983, 75127, 83014, 91721, 101333, 111945, 123660, 136594, 150872, 166636, 184040, 203254, 224466, 247886, 273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032, 668051, 737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808, 1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295, 5346332, 5902831, 6517253, 7195629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431];
+    
+    for (let level = 1; level < xpTable.length; level++) {
+      if (xp < xpTable[level]) {
+        return level;
+      }
+    }
+    return 99; // Max level
   }
 
   /**

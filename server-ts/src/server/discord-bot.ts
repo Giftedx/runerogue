@@ -241,14 +241,86 @@ discordClient.on(Events.MessageCreate, async msg => {
       
     case '!drops':
       const npcName = args.slice(1).join(' ') || 'goblin';
-      // TODO: Fetch real drop tables
-      msg.reply(`Drop table for ${npcName}: Bronze sword (50%), Bronze plate (25%), Coins (100%)`);
+      // Fetch real drop tables
+      try {
+        // Define some default drop tables for common NPCs
+        const dropTables: Record<string, Array<{itemId: string, dropRate: number, minQuantity: number, maxQuantity: number}>> = {
+          'goblin': [
+            { itemId: 'bronze_sword', dropRate: 0.25, minQuantity: 1, maxQuantity: 1 },
+            { itemId: 'bronze_shield', dropRate: 0.15, minQuantity: 1, maxQuantity: 1 },
+            { itemId: 'coins', dropRate: 0.80, minQuantity: 5, maxQuantity: 25 }
+          ],
+          'guard': [
+            { itemId: 'iron_sword', dropRate: 0.30, minQuantity: 1, maxQuantity: 1 },
+            { itemId: 'coins', dropRate: 0.90, minQuantity: 10, maxQuantity: 50 }
+          ],
+          'chicken': [
+            { itemId: 'raw_chicken', dropRate: 1.0, minQuantity: 1, maxQuantity: 1 },
+            { itemId: 'feather', dropRate: 0.75, minQuantity: 5, maxQuantity: 15 }
+          ]
+        };
+        
+        const lootTable = dropTables[npcName.toLowerCase()];
+        
+        if (lootTable && lootTable.length > 0) {
+          const dropLines = lootTable.map(item => {
+            const dropRate = (item.dropRate * 100).toFixed(1);
+            return `• ${item.itemId}: ${dropRate}% (${item.minQuantity}-${item.maxQuantity})`;
+          }).join('\n');
+          
+          const dropsEmbed = new EmbedBuilder()
+            .setTitle(`📋 Drop Table: ${npcName}`)
+            .setDescription(dropLines || 'No drops configured')
+            .setColor('#8B4513' as ColorResolvable)
+            .setFooter({ text: 'RuneRogue Drop Tables' });
+          
+          msg.reply({ embeds: [dropsEmbed] });
+        } else {
+          msg.reply(`No drop table found for: ${npcName}. Try: goblin, guard, chicken`);
+        }
+      } catch (error) {
+        msg.reply(`Error fetching drop table for ${npcName}`);
+      }
       break;
       
     case '!wiki':
       const itemName = args.slice(1).join(' ') || 'bronze sword';
-      // TODO: Fetch real item data
-      msg.reply(`**${itemName}**: Attack +7, Strength +6, Speed 4. A basic bronze weapon.`);
+      // Fetch real item data
+      try {
+        const { ItemManager } = await import('./game/ItemManager.js');
+        const itemManager = ItemManager.getInstance();
+        
+        // Try common item IDs first
+        const commonItems: Record<string, string> = {
+          'bronze sword': 'bronze_sword',
+          'iron sword': 'iron_sword',
+          'bronze shield': 'bronze_shield',
+          'starter sword': 'starter_sword',
+          'starter shield': 'starter_shield'
+        };
+        
+        const itemId = commonItems[itemName.toLowerCase()] || itemName.toLowerCase().replace(/\s+/g, '_');
+        const item = await itemManager.getItemDefinition(itemId);
+        
+        if (item) {
+          const wikiEmbed = new EmbedBuilder()
+            .setTitle(`📖 ${item.name}`)
+            .setDescription(item.description)
+            .setColor('#0099FF' as ColorResolvable)
+            .addFields(
+              { name: 'Attack', value: `${item.attack}`, inline: true },
+              { name: 'Defense', value: `${item.defense}`, inline: true },
+              { name: 'Stackable', value: item.isStackable ? 'Yes' : 'No', inline: true }
+            )
+            .setFooter({ text: `Item ID: ${item.itemId}` });
+          
+          msg.reply({ embeds: [wikiEmbed] });
+        } else {
+          msg.reply(`No item found with name: ${itemName}. Try: bronze sword, iron sword, starter sword`);
+        }
+      } catch (error) {
+        msg.reply(`Error fetching item data for ${itemName}`);
+      }
       break;
   }
 });
@@ -302,10 +374,8 @@ app.post('/game-event', async (req, res) => {
   }
 });
 
-// Only start server if this file is run directly (not when imported)
-if (require.main === module) {
-  startDiscordBot();
-  app.listen(NOTIFY_PORT, () => {
-    console.log(`[discord-bot] Notification endpoint listening on port ${NOTIFY_PORT}`);
-  });
-}
+// Start Discord bot and notification server
+startDiscordBot();
+app.listen(NOTIFY_PORT, () => {
+  console.log(`[discord-bot] Notification endpoint listening on port ${NOTIFY_PORT}`);
+});

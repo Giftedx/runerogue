@@ -15,6 +15,7 @@ export interface PlayerSaveData {
   position: { x: number; y: number };
   health: number;
   maxHealth: number;
+  gold: number;
   combatLevel: number;
   skills: Record<string, { level: number; experience: number; boost: number }>;
   inventory: Array<{
@@ -78,6 +79,7 @@ export class PlayerPersistence {
         position: { x: player.x, y: player.y },
         health: player.health,
         maxHealth: player.maxHealth,
+        gold: player.gold,
         combatLevel: player.combatLevel,
         skills: this.serializeSkills(player),
         inventory: this.serializeInventory(player),
@@ -129,6 +131,7 @@ export class PlayerPersistence {
     player.y = saveData.position.y;
     player.health = saveData.health;
     player.maxHealth = saveData.maxHealth;
+    player.gold = saveData.gold || 0; // Default to 0 for old saves
     player.combatLevel = saveData.combatLevel;
     player.prayerPoints = saveData.prayerPoints;
     player.specialEnergy = saveData.specialEnergy;
