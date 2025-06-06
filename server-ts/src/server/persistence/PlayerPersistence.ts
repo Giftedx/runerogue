@@ -167,41 +167,14 @@ export class PlayerPersistence {
 
     // Save old skill system data
     if (player.skills) {
-      skills.attack = { 
-        level: player.skills.attack?.level || 1, 
-        experience: player.skills.attack?.xp || 0,
-        boost: 0 
-      };
-      skills.strength = { 
-        level: player.skills.strength?.level || 1, 
-        experience: player.skills.strength?.xp || 0,
-        boost: 0 
-      };
-      skills.defence = { 
-        level: player.skills.defence?.level || 1, 
-        experience: player.skills.defence?.xp || 0,
-        boost: 0 
-      };
-      skills.mining = { 
-        level: player.skills.mining?.level || 1, 
-        experience: player.skills.mining?.xp || 0,
-        boost: 0 
-      };
-      skills.woodcutting = { 
-        level: player.skills.woodcutting?.level || 1, 
-        experience: player.skills.woodcutting?.xp || 0,
-        boost: 0 
-      };
-      skills.fishing = { 
-        level: player.skills.fishing?.level || 1, 
-        experience: player.skills.fishing?.xp || 0,
-        boost: 0 
-      };
-      skills.prayer = { 
-        level: player.skills.prayer?.level || 1, 
-        experience: player.skills.prayer?.xp || 0,
-        boost: 0 
-      };
+      for (const skillType of Object.keys(skillSystem)) {
+        const skill = player.skills[skillType];
+        skills[skillType] = {
+          level: skill?.level || 1,
+          experience: skill?.xp || 0,
+          boost: skill?.boost || 0
+        };
+      }
     }
 
     return skills;
