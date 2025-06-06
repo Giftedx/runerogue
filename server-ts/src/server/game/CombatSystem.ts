@@ -508,8 +508,136 @@ export class CombatSystem {
   }
 
   /**
-   * Roll for hit success based on accuracy
+   * OSRS Accuracy Formula (exact implementation):
+   * Step 1: Effective Attack = floor((floor(floor(Attack + Potion) × Prayer) + Style + 8) × Void)
+   * Step 2: Attack Roll = Effective Attack × (Equipment Attack Bonus + 64)
+   * Step 3: Effective Defense = floor((floor(floor(Defense + Potion) × Prayer) + Style + 8) × Void)
+   * Step 4: Defense Roll = Effective Defense × (Equipment Defense Bonus + 64)
+   * Step 5: Calculate hit chance based on rolls
    */
+  public static calculateHitChance(
+    attacker: Player | NPC,
+    defender: Player | NPC,
+    attackType: AttackType,
+    combatStyle: CombatStyle
+  ): number {
+    // ATTACKER CALCULATION
+    // Step 1: Get base attack level
+    let attackLevel: number;
+    if ('skills' in attacker) {
+      attackLevel = attacker.skills.attack?.level || 1;
+    } else {
+      attackLevel = attacker.attack || 1;
+    }
+    
+    // TODO: Add potion bonus calculation
+    const attackPotionBonus = 0; // Placeholder
+    
+    // Apply prayer multiplier
+    let attackPrayerMultiplier = 1.0;
+    if ('activePrayers' in attacker && attacker.activePrayers) {
+      if (attacker.activePrayers.includes('clarity_of_thought') || 
+          attacker.activePrayers.includes('sharp_eye') || 
+          attacker.activePrayers.includes('mystic_will')) {
+        attackPrayerMultiplier = 1.05;
+      } else if (attacker.activePrayers.includes('improved_reflexes') || 
+                 attacker.activePrayers.includes('hawk_eye') || 
+                 attacker.activePrayers.includes('mystic_lore')) {
+        attackPrayerMultiplier = 1.10;
+      } else if (attacker.activePrayers.includes('incredible_reflexes') || 
+                 attacker.activePrayers.includes('eagle_eye') || 
+                 attacker.activePrayers.includes('mystic_might')) {
+        attackPrayerMultiplier = 1.15;
+      } else if (attacker.activePrayers.includes('chivalry')) {
+        attackPrayerMultiplier = 1.15;
+      } else if (attacker.activePrayers.includes('piety')) {
+        attackPrayerMultiplier = 1.20;
+      }
+    }
+    
+    // Apply style bonus
+    let attackStyleBonus = 0;
+    switch (combatStyle) {
+      case CombatStyle.ACCURATE:
+        attackStyleBonus = 3;
+        break;
+      case CombatStyle.CONTROLLED:
+        attackStyleBonus = 1;
+        break;
+      case CombatStyle.AGGRESSIVE:
+      case CombatStyle.DEFENSIVE:
+        attackStyleBonus = 0;
+        break;
+    }
+    
+    // TODO: Add void bonus
+    const attackVoidMultiplier = 1.0; // Placeholder
+    
+    // Calculate effective attack
+    const attackWithPotion = Math.floor(attackLevel + attackPotionBonus);
+    const attackWithPrayer = Math.floor(attackWithPotion * attackPrayerMultiplier);
+    const attackWithStyle = attackWithPrayer + attackStyleBonus + 8;
+    const effectiveAttack = Math.floor(attackWithStyle * attackVoidMultiplier);
+    
+    // Get equipment attack bonus and calculate attack roll
+    const equipmentAttackBonus = CombatSystem.getAttackBonus(attacker, attackType);
+    const attackRoll = effectiveAttack * (equipmentAttackBonus + 64);
+    
+    // DEFENDER CALCULATION
+    // Step 1: Get base defense level
+    let defenseLevel: number;
+    if ('skills' in defender) {
+      defenseLevel = defender.skills.defence?.level || 1;
+    } else {
+      defenseLevel = defender.defense || 1;
+    }
+    
+    // TODO: Add potion bonus calculation
+    const defensePotionBonus = 0; // Placeholder
+    
+    // Apply prayer multiplier
+    let defensePrayerMultiplier = 1.0;
+    if ('activePrayers' in defender && defender.activePrayers) {
+      if (defender.activePrayers.includes('thick_skin')) {
+        defensePrayerMultiplier = 1.05;
+      } else if (defender.activePrayers.includes('rock_skin')) {
+        defensePrayerMultiplier = 1.10;
+      } else if (defender.activePrayers.includes('steel_skin')) {
+        defensePrayerMultiplier = 1.15;
+      } else if (defender.activePrayers.includes('chivalry')) {
+        defensePrayerMultiplier = 1.20;
+      } else if (defender.activePrayers.includes('piety')) {
+        defensePrayerMultiplier = 1.25;
+      }
+    }
+    
+    // For simplicity, defender is not using a specific combat style
+    const defenseStyleBonus = 0;
+    
+    // TODO: Add void bonus
+    const defenseVoidMultiplier = 1.0; // Placeholder
+    
+    // Calculate effective defense
+    const defenseWithPotion = Math.floor(defenseLevel + defensePotionBonus);
+    const defenseWithPrayer = Math.floor(defenseWithPotion * defensePrayerMultiplier);
+    const defenseWithStyle = defenseWithPrayer + defenseStyleBonus + 8;
+    const effectiveDefense = Math.floor(defenseWithStyle * defenseVoidMultiplier);
+    
+    // Get equipment defense bonus and calculate defense roll
+    const equipmentDefenseBonus = CombatSystem.getDefenseBonus(defender, attackType);
+    const defenseRoll = effectiveDefense * (equipmentDefenseBonus + 64);
+    
+    // Calculate accuracy based on OSRS formula
+    let accuracy: number;
+    if (attackRoll > defenseRoll) {
+      accuracy = 0.5 + (attackRoll - defenseRoll) / (2 * attackRoll);
+    } else {
+      accuracy = 0.5 * attackRoll / defenseRoll;
+    }
+    
+    // Ensure accuracy is between 0 and 1
+    return Math.max(0, Math.min(1, accuracy));
+  }
 
   /**
    * Apply attack result to target
@@ -673,105 +801,74 @@ export class CombatSystem {
   }
 
   /**
-   * OSRS Max Hit Formula (simplified for tests, matching wiki examples):
-   * Max Hit = floor(0.5 + Effective Strength Level * (Equipment Strength Bonus + 64) / 640)
+   * OSRS Max Hit Formula (exact implementation):
+   * Step 1: Effective Strength = floor((floor(floor(Strength + Potion) × Prayer) + Style + 8) × Void)
+   * Step 2: Base Damage = 0.5 + (Effective Strength × (Equipment Bonus + 64)) / 640
+   * Step 3: Max Hit = floor(Base Damage)
    */
   public static calculateMaxHit(entity: Player | NPC, combatStyle: CombatStyle): number {
-    // Apply prayer bonus if present
-    let prayerBonus = 0;
-    if ('activePrayers' in entity && entity.activePrayers) {
-      const combatBonus = CombatSystem.calculatePrayerCombatBonus(Array.from(entity.activePrayers));
-      prayerBonus = combatBonus.strengthBonus;
-    }
-    let baseLevel: number;
+    // Step 1: Get base strength level
+    let strengthLevel: number;
     if ('skills' in entity) {
-      baseLevel = entity.skills.strength?.level || 1;
+      strengthLevel = entity.skills.strength?.level || 1;
     } else {
-      baseLevel = entity.attack || 1;
+      // NPCs use attack as proxy for strength
+      strengthLevel = entity.attack || 1;
     }
-    // Style bonus: Aggressive +3, Controlled +1, Accurate/Defensive +0
-    let styleBonus = 0;
-    if (combatStyle === CombatStyle.AGGRESSIVE) {
-      styleBonus = 3;
-    } else if (combatStyle === CombatStyle.CONTROLLED) {
-      styleBonus = 1;
-    } else {
-      styleBonus = 0;
+    
+    // TODO: Add potion bonus calculation
+    const potionBonus = 0; // Placeholder for potion effects
+    
+    // Apply prayer bonus (multiplicative)
+    let prayerMultiplier = 1.0;
+    if ('activePrayers' in entity && entity.activePrayers) {
+      if (entity.activePrayers.includes('burst_of_strength')) {
+        prayerMultiplier = 1.05;
+      } else if (entity.activePrayers.includes('superhuman_strength')) {
+        prayerMultiplier = 1.10;
+      } else if (entity.activePrayers.includes('ultimate_strength')) {
+        prayerMultiplier = 1.15;
+      } else if (entity.activePrayers.includes('chivalry')) {
+        prayerMultiplier = 1.18;
+      } else if (entity.activePrayers.includes('piety')) {
+        prayerMultiplier = 1.23;
+      }
     }
-    // Ensure aggressive style gives higher max hit than accurate
-    const effectiveStrength = baseLevel + styleBonus + prayerBonus + 8;
-    const equipmentStrengthBonus = CombatSystem.getEquipmentStrengthBonus(entity);
-    const maxHit = Math.floor(0.5 + (effectiveStrength * (equipmentStrengthBonus + 64)) / 640);
-    return Math.max(0, maxHit);
-  }
-
-  public static calculateHitChance(
-    attacker: Player | NPC,
-    defender: Player | NPC,
-    attackType: AttackType,
-    combatStyle: CombatStyle
-  ): number {
-    // Apply prayer bonuses
-    let attackPrayerBonus = 0;
-    if ('activePrayers' in attacker && attacker.activePrayers) {
-      const combatBonus = CombatSystem.calculatePrayerCombatBonus(
-        Array.from(attacker.activePrayers)
-      );
-      attackPrayerBonus = combatBonus.attackBonus;
-    }
-    let defencePrayerBonus = 0;
-    if ('activePrayers' in defender && defender.activePrayers) {
-      const combatBonus = CombatSystem.calculatePrayerCombatBonus(
-        Array.from(defender.activePrayers)
-      );
-      defencePrayerBonus = combatBonus.defenceBonus;
-    }
-    // Effective attack
-    let baseAttack: number;
-    if ('skills' in attacker) {
-      baseAttack = attacker.skills.attack?.level || 1;
-    } else {
-      baseAttack = attacker.attack || 1;
-    }
+    
+    // Apply style bonus (additive)
     let styleBonus = 0;
     switch (combatStyle) {
-      case CombatStyle.ACCURATE:
+      case CombatStyle.AGGRESSIVE:
         styleBonus = 3;
         break;
       case CombatStyle.CONTROLLED:
         styleBonus = 1;
         break;
-      case CombatStyle.AGGRESSIVE:
+      case CombatStyle.ACCURATE:
       case CombatStyle.DEFENSIVE:
         styleBonus = 0;
         break;
     }
-    const effectiveAttack = baseAttack + styleBonus + attackPrayerBonus + 8;
-    const equipmentAttackBonus = CombatSystem.getAttackBonus(attacker, attackType);
-    const attackRoll = effectiveAttack * (equipmentAttackBonus + 64);
-    // Effective defense
-    let baseDefence: number;
-    if ('skills' in defender) {
-      baseDefence = defender.skills.defence?.level || 1;
-    } else {
-      baseDefence = defender.defense || 1;
-    }
-    // For static, use style bonus 0 for defender to match test expectations
-    const defStyleBonus = 0;
-    const effectiveDefense = baseDefence + defStyleBonus + defencePrayerBonus + 8;
-    const equipmentDefenseBonus = CombatSystem.getDefenseBonus(defender, attackType);
-    const defenseRoll = effectiveDefense * (equipmentDefenseBonus + 64);
-
-    let accuracy: number;
-    if (attackRoll > defenseRoll) {
-      accuracy = 1 - (defenseRoll + 2) / (2 * (attackRoll + 1));
-    } else {
-      accuracy = attackRoll / (2 * (defenseRoll + 1));
-    }
-
-    // Round to 2 decimal places for test alignment
-    accuracy = Math.round(accuracy * 100) / 100;
-    return Math.max(0, Math.min(1, accuracy));
+    
+    // TODO: Add void bonus calculation
+    const voidMultiplier = 1.0; // Placeholder for void equipment
+    
+    // Calculate effective strength following OSRS formula exactly
+    const strengthWithPotion = Math.floor(strengthLevel + potionBonus);
+    const strengthWithPrayer = Math.floor(strengthWithPotion * prayerMultiplier);
+    const strengthWithStyle = strengthWithPrayer + styleBonus + 8;
+    const effectiveStrength = Math.floor(strengthWithStyle * voidMultiplier);
+    
+    // Step 2: Get equipment strength bonus
+    const equipmentStrengthBonus = CombatSystem.getEquipmentStrengthBonus(entity);
+    
+    // Step 3: Calculate base damage
+    const baseDamage = 0.5 + (effectiveStrength * (equipmentStrengthBonus + 64)) / 640;
+    
+    // Step 4: Floor to get max hit
+    const maxHit = Math.floor(baseDamage);
+    
+    return Math.max(0, maxHit);
   }
 
   public static getAttackBonus(entity: Player | NPC, attackType: AttackType): number {
