@@ -1,7 +1,17 @@
+// Utility to flush pending promises (for async message delivery)
+const flushPromises = () => new Promise(setImmediate);
 import { Client, Room } from '@colyseus/core';
 import appConfig from '../../app.config';
 import economyIntegration from '../../economy-integration';
-import { GameState, InventoryItem, LootDrop, NPC, Player, Trade } from '../../game/EntitySchemas';
+import {
+  ArraySchema,
+  GameState,
+  InventoryItem,
+  LootDrop,
+  NPC,
+  Player,
+  Trade,
+} from '../../game/EntitySchemas';
 import { ItemManager } from '../../game/ItemManager';
 import { LootManager } from '../../game/LootManager';
 
@@ -22,33 +32,74 @@ const mockSwordOfHeroesDefinition = {
 // Mock LootManager
 jest.mock('../../game/LootManager', () => ({
   LootManager: {
-    dropLootFromNPC: jest.fn().mockResolvedValue({
-      id: 'mock_loot_drop_id',
-      x: 0,
-      y: 0,
-      items: [],
+    dropLootFromNPC: jest.fn().mockImplementation(async () => {
+      const lootDrop = new LootDrop();
+      lootDrop.id = 'mock_loot_drop_id';
+      lootDrop.x = 0;
+      lootDrop.y = 0;
+      lootDrop.timestamp = Date.now();
+      lootDrop.items = new ArraySchema();
+      // Add a schema-compliant InventoryItem
+      const itemDef = {
+        id: 'health_potion_id',
+        itemId: 'health_potion',
+        name: 'Health Potion',
+        description: 'Restores health.',
+        attack: 0,
+        defense: 0,
+        isStackable: false,
+        baseValue: 5,
+        isTradeable: true,
+      };
+      const item = new InventoryItem(itemDef, 1);
+      lootDrop.items.push(item);
+      return lootDrop;
     }),
     dropLootFromPlayer: jest.fn().mockImplementation(async () => {
-      // Create a properly structured mock with schema metadata
       const lootDrop = new LootDrop();
       lootDrop.id = 'mock_player_loot_drop_id';
       lootDrop.x = 0;
       lootDrop.y = 0;
-
-      const item = new InventoryItem();
-      item.itemId = 'health_potion';
-      item.name = 'Health Potion';
-      item.quantity = 1;
+      lootDrop.timestamp = Date.now();
+      lootDrop.items = new ArraySchema();
+      const itemDef = {
+        id: 'health_potion_id',
+        itemId: 'health_potion',
+        name: 'Health Potion',
+        description: 'Restores health.',
+        attack: 0,
+        defense: 0,
+        isStackable: false,
+        baseValue: 5,
+        isTradeable: true,
+      };
+      const item = new InventoryItem(itemDef, 1);
       lootDrop.items.push(item);
-
       return lootDrop;
     }),
     collectLoot: jest.fn().mockReturnValue(true),
-    dropSpecificItem: jest.fn().mockResolvedValue({
-      id: 'mock_specific_loot_drop_id',
-      x: 0,
-      y: 0,
-      items: [],
+    dropSpecificItem: jest.fn().mockImplementation(async () => {
+      const lootDrop = new LootDrop();
+      lootDrop.id = 'mock_specific_loot_drop_id';
+      lootDrop.x = 0;
+      lootDrop.y = 0;
+      lootDrop.timestamp = Date.now();
+      lootDrop.items = new ArraySchema();
+      // Add a schema-compliant InventoryItem
+      const itemDef = {
+        id: 'health_potion_id',
+        itemId: 'health_potion',
+        name: 'Health Potion',
+        description: 'Restores health.',
+        attack: 0,
+        defense: 0,
+        isStackable: false,
+        baseValue: 5,
+        isTradeable: true,
+      };
+      const item = new InventoryItem(itemDef, 1);
+      lootDrop.items.push(item);
+      return lootDrop;
     }),
   },
 }));
@@ -157,15 +208,19 @@ describe('GameRoom', () => {
 
     beforeEach(async () => {
       client = await colyseus.connectTo(room, { name: 'TestPlayer' });
+      // Mock client.send so we can assert calls
+      // @ts-ignore
+      client.send = jest.fn();
     });
 
     it('should allow a player to join', async () => {
+      await flushPromises();
       expect(room.state.players.size).toBe(1);
       expect(room.state.players.has(client.sessionId)).toBe(true);
 
       const player = room.state.players.get(client.sessionId);
       expect(player).toBeDefined();
-      expect(player?.name).toBe('TestPlayer');
+      expect(player?.username).toBe('TestPlayer');
       expect(client.send).toHaveBeenCalledWith('welcome', {
         message: 'Welcome to RuneScape Discord Game!',
         playerId: client.sessionId,
@@ -173,17 +228,24 @@ describe('GameRoom', () => {
     });
 
     it('should update player position on move', async () => {
-      // Send movement message
-      await client.send('move', {
+      // Set initial position to known value for deterministic test
+      const player = room.state.players.get(client.sessionId);
+      if (player) {
+        player.x = 0;
+        player.y = 0;
+      }
+      // Send movement message (should use 'player_movement' per GameRoom.ts)
+      await client.send('player_movement', {
         x: 100,
         y: 200,
         animation: 'walking',
         direction: 'left',
       });
+      await flushPromises();
 
-      const player = room.state.players.get(client.sessionId);
-      expect(player?.x).toBe(100);
-      expect(player?.y).toBe(200);
+      const updatedPlayer = room.state.players.get(client.sessionId);
+      expect(updatedPlayer?.x).toBe(100);
+      expect(updatedPlayer?.y).toBe(200);
     });
   });
 
@@ -203,10 +265,17 @@ describe('GameRoom', () => {
         lootDrop.y = player.y;
 
         // Create new InventoryItem with proper schema metadata
-        const item = new InventoryItem();
-        item.itemId = 'health_potion';
-        item.name = 'Health Potion';
-        item.quantity = 1;
+        const item = new InventoryItem(
+          {
+            itemId: 'health_potion',
+            name: 'Health Potion',
+            description: 'Restores health.',
+            attack: 0,
+            defense: 0,
+            isStackable: false,
+          },
+          1
+        );
         lootDrop.items.push(item);
 
         return lootDrop;
@@ -267,6 +336,9 @@ describe('GameRoom', () => {
     let player2: Player;
 
     beforeEach(async () => {
+      // Log before test setup
+      // eslint-disable-next-line no-console
+      console.log('TEST SETUP: Initializing Trade Management test');
       // Connect two clients and create two players
       client1 = await colyseus.connectTo(room, { name: 'Player1' });
       client2 = await colyseus.connectTo(room, { name: 'Player2' });
@@ -282,12 +354,49 @@ describe('GameRoom', () => {
     });
 
     it('should handle a trade request successfully', async () => {
-      // Simulate Player1 sending a trade request to Player2
+      // Log before sending trade request
+      // eslint-disable-next-line no-console
+      console.log('TEST: About to send trade_request from Player1 to Player2');
+
+      // Validate state integrity right before sending trade request
+      // eslint-disable-next-line no-console
+      console.log('TEST: Validating state integrity before trade request...');
+      (room as any).validateStateIntegrity();
+      // eslint-disable-next-line no-console
+      console.log('TEST: State validation complete, now sending trade request...');
+
       await client1.send('trade_request', { targetPlayerId: player2.id });
+
+      // Log after trade creation
+      // eslint-disable-next-line no-console
+      console.log('TEST: Trade state after trade_request', room.state.trades);
 
       // Expect trade to be created in game state
       expect(room.state.trades.size).toBe(1);
       const trade = Array.from(room.state.trades.values())[0];
+
+      // RUNTIME TYPE ASSERTIONS AND LOGGING
+      // Log the trade object and its fields
+      // eslint-disable-next-line no-console
+      console.log('TRADE DEBUG:', {
+        tradeType: trade?.constructor?.name,
+        proposerItemsType: trade?.proposerItems?.constructor?.name,
+        accepterItemsType: trade?.accepterItems?.constructor?.name,
+        proposerItems: trade?.proposerItems,
+        accepterItems: trade?.accepterItems,
+        proposerItemsFirst: trade?.proposerItems?.[0]?.constructor?.name,
+        accepterItemsFirst: trade?.accepterItems?.[0]?.constructor?.name,
+      });
+      // Assert types
+      expect(trade).toBeInstanceOf(Trade);
+      expect(trade.proposerItems).toBeInstanceOf(ArraySchema);
+      expect(trade.accepterItems).toBeInstanceOf(ArraySchema);
+      if (trade.proposerItems.length > 0) {
+        expect(trade.proposerItems[0]).toBeInstanceOf(InventoryItem);
+      }
+      if (trade.accepterItems.length > 0) {
+        expect(trade.accepterItems[0]).toBeInstanceOf(InventoryItem);
+      }
       expect(trade.proposerId).toBe(player1.id);
       expect(trade.accepterId).toBe(player2.id);
       expect(trade.status).toBe('pending');
@@ -295,12 +404,12 @@ describe('GameRoom', () => {
       // Expect clients to receive appropriate messages
       expect(client1.send).toHaveBeenCalledWith('trade_request_sent', {
         tradeId: trade.tradeId,
-        targetPlayerName: player2.name,
+        targetPlayerName: player2.username,
       });
       expect(client2.send).toHaveBeenCalledWith('trade_request_received', {
         tradeId: trade.tradeId,
         proposerPlayerId: player1.id,
-        proposerPlayerName: player1.name,
+        proposerPlayerName: player1.username,
       });
     });
 
@@ -315,7 +424,31 @@ describe('GameRoom', () => {
     it('should not allow a player to trade if already in a trade', async () => {
       // Simulate an existing trade for player1
       const existingTradeId = `trade_${Date.now()}_${player1.id}_${player2.id}`;
-      room.state.trades.set(existingTradeId, new Trade(existingTradeId, player1.id, player2.id));
+      const trade = new Trade(existingTradeId, player1.id, player2.id);
+      // Ensure all required fields are set for schema compliance
+      trade.status = 'pending';
+      // Defensive: ensure proposerItems and accepterItems are ArraySchema
+      if (!(trade.proposerItems instanceof ArraySchema)) {
+        trade.proposerItems = new ArraySchema();
+      }
+      if (!(trade.accepterItems instanceof ArraySchema)) {
+        trade.accepterItems = new ArraySchema();
+      }
+      // Defensive: ensure all items are InventoryItem
+      const itemDef = {
+        id: 'starter_sword_id',
+        itemId: 'starter_sword',
+        name: 'Starter Sword',
+        description: 'A basic sword for new adventurers.',
+        attack: 5,
+        defense: 0,
+        isStackable: false,
+        baseValue: 10,
+        isTradeable: true,
+      };
+      const proposerItem = new InventoryItem(itemDef, 1);
+      trade.proposerItems.push(proposerItem);
+      room.state.trades.set(existingTradeId, trade);
 
       await client1.send('trade_request', { targetPlayerId: player2.id });
       expect(room.state.trades.size).toBe(1); // Still only the initial trade
@@ -330,7 +463,7 @@ describe('GameRoom', () => {
       const trade = Array.from(room.state.trades.values())[0];
 
       // Add items to player1's inventory for testing
-      const swordDef = ItemManager.getInstance().getItemDefinition('bronze_sword');
+      const swordDef = await ItemManager.getInstance().getItemDefinition('bronze_sword');
       if (swordDef) {
         player1.inventory.push(new InventoryItem(swordDef, 5));
       }
@@ -373,6 +506,11 @@ describe('GameRoom', () => {
       await client1.send('trade_request', { targetPlayerId: player2.id });
       const trade = Array.from(room.state.trades.values())[0];
 
+      // Add only 1 bronze sword to player1's inventory
+      const swordDef = await ItemManager.getInstance().getItemDefinition('bronze_sword');
+      if (swordDef) {
+        player1.inventory.push(new InventoryItem(swordDef, 1));
+      }
       // Simulate Player1 offering more items than they have
       const offeredItems = [{ itemId: 'bronze_sword', quantity: 10 }];
       await client1.send('trade_offer', { tradeId: trade.tradeId, offeredItems });
@@ -393,8 +531,8 @@ describe('GameRoom', () => {
       await client1.send('trade_request', { targetPlayerId: player2.id });
       const trade = Array.from(room.state.trades.values())[0];
 
-      const swordDef = ItemManager.getInstance().getItemDefinition('bronze_sword');
-      const potionDef = ItemManager.getInstance().getItemDefinition('health_potion');
+      const swordDef = await ItemManager.getInstance().getItemDefinition('bronze_sword');
+      const potionDef = await ItemManager.getInstance().getItemDefinition('health_potion');
       if (swordDef && potionDef) {
         player1.inventory.push(new InventoryItem(swordDef, 5));
         player1.inventory.push(new InventoryItem(potionDef, 3));
@@ -422,8 +560,8 @@ describe('GameRoom', () => {
       await client1.send('trade_request', { targetPlayerId: player2.id });
       const trade = Array.from(room.state.trades.values())[0];
 
-      const swordDef = ItemManager.getInstance().getItemDefinition('bronze_sword');
-      const potionDef = ItemManager.getInstance().getItemDefinition('health_potion');
+      const swordDef = await ItemManager.getInstance().getItemDefinition('bronze_sword');
+      const potionDef = await ItemManager.getInstance().getItemDefinition('health_potion');
       if (swordDef && potionDef) {
         player1.inventory.push(new InventoryItem(swordDef, 5));
         player2.inventory.push(new InventoryItem(potionDef, 3));
@@ -488,7 +626,7 @@ describe('GameRoom', () => {
       await client1.send('trade_request', { targetPlayerId: player2.id });
       const trade = Array.from(room.state.trades.values())[0];
 
-      const swordDef = ItemManager.getInstance().getItemDefinition('bronze_sword');
+      const swordDef = await ItemManager.getInstance().getItemDefinition('bronze_sword');
       if (swordDef) {
         player1.inventory.push(new InventoryItem(swordDef, 5));
         await client1.send('trade_offer', {

@@ -1,5 +1,6 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
-import { Schema, ArraySchema, MapSchema, type } from '@colyseus/schema';
+import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema';
+export { ArraySchema };
 
 // Interface for player action messages
 export interface PlayerActionMessage {

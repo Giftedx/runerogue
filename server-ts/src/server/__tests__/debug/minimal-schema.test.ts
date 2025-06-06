@@ -28,7 +28,7 @@ describe('Minimal Schema Test', () => {
     player.name = 'Test Player';
     player.x = 0;
     player.y = 0;
-    
+
     expect(player.id).toBe('test-player');
     expect(player.name).toBe('Test Player');
     expect(player.x).toBe(0);
@@ -38,7 +38,7 @@ describe('Minimal Schema Test', () => {
   test('should create an InventoryItem with basic properties', async () => {
     const itemDef = await mockItemManager.getItemDefinition('test_item');
     const item = new InventoryItem(itemDef, 1);
-    
+
     expect(item.itemId).toBe('test_item');
     expect(item.name).toBe('Test Item');
     expect(item.quantity).toBe(1);
@@ -49,9 +49,9 @@ describe('Minimal Schema Test', () => {
     const player = new Player();
     player.id = 'test-player';
     player.name = 'Test Player';
-    
+
     state.players.set('test-player', player);
-    
+
     expect(state.players.get('test-player')).toBe(player);
     expect(state.players.size).toBe(1);
   });
@@ -60,9 +60,9 @@ describe('Minimal Schema Test', () => {
     const player = new Player();
     const itemDef = await mockItemManager.getItemDefinition('test_item');
     const item = new InventoryItem(itemDef, 1);
-    
+
     player.inventory.push(item);
-    
+
     expect(player.inventory.length).toBe(1);
     expect(player.inventory.at(0)?.itemId).toBe('test_item');
   });

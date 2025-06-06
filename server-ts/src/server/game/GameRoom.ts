@@ -6,6 +6,7 @@ import economyIntegration from '../economy-integration';
 import { CombatSystem } from './CombatSystem';
 import {
   AreaMap,
+  ArraySchema,
   CollectLootMessage,
   DropItemMessage,
   EquipItemMessage,
@@ -148,6 +149,9 @@ export class GameRoom extends Room<WorldState> {
 
     console.log('GameRoom created:', options);
 
+    // Validate initial state integrity
+    this.validateStateIntegrity();
+
     this.onMessage('player_action', async (client, message) => {
       console.log(`Player action from ${client.sessionId}:`, message);
       const actionResult = this.combatSystem.handlePlayerAction(client.sessionId, message);
@@ -228,6 +232,12 @@ export class GameRoom extends Room<WorldState> {
 
     // Trade request handler
     this.onMessage('trade_request', (client, message: TradeRequestMessage) => {
+      // eslint-disable-next-line no-console
+      console.log(`🎯 DEBUG: trade_request from ${client.sessionId} to ${message.targetPlayerId}`, {
+        playersCount: this.state.players.size,
+        tradesCount: this.state.trades.size,
+      });
+
       const player = this.state.players.get(client.sessionId);
       const targetPlayer = this.state.players.get(message.targetPlayerId);
 
@@ -256,21 +266,143 @@ export class GameRoom extends Room<WorldState> {
       }
 
       const tradeId = `trade_${Date.now()}_${player.id}_${targetPlayer.id}`;
+
+      // ========== DEBUG LOGGING START ==========
+      console.log(`🔍 DEBUG: Creating new trade with ID: ${tradeId}`);
+
       const newTrade = new Trade(tradeId, player.id, targetPlayer.id);
+
+      // Log the newly created trade object
+      console.log(`🔍 DEBUG: Created trade object:`, {
+        tradeId: newTrade.tradeId,
+        proposerId: newTrade.proposerId,
+        accepterId: newTrade.accepterId,
+        proposerItemsConstructor: newTrade.proposerItems?.constructor?.name,
+        accepterItemsConstructor: newTrade.accepterItems?.constructor?.name,
+        proposerItemsLength: newTrade.proposerItems?.length,
+        accepterItemsLength: newTrade.accepterItems?.length,
+      });
+
+      // Check if proposerItems and accepterItems have schema metadata
+      console.log(`🔍 DEBUG: Schema metadata check:`, {
+        proposerItemsMetadata: newTrade.proposerItems?.['Symbol(Symbol.metadata)'] !== undefined,
+        accepterItemsMetadata: newTrade.accepterItems?.['Symbol(Symbol.metadata)'] !== undefined,
+        proposerItemsProto: Object.getPrototypeOf(newTrade.proposerItems)?.constructor?.name,
+        accepterItemsProto: Object.getPrototypeOf(newTrade.accepterItems)?.constructor?.name,
+      });
+
+      // Defensive: ensure proposerItems and accepterItems are ArraySchema and all items are InventoryItem
+      if (!(newTrade.proposerItems instanceof ArraySchema)) {
+        console.log(`🔍 DEBUG: proposerItems is not ArraySchema, creating new one`);
+        newTrade.proposerItems = new ArraySchema();
+      }
+      if (!(newTrade.accepterItems instanceof ArraySchema)) {
+        console.log(`🔍 DEBUG: accepterItems is not ArraySchema, creating new one`);
+        newTrade.accepterItems = new ArraySchema();
+      }
+
+      console.log(`🔍 DEBUG: After defensive ArraySchema creation:`, {
+        proposerItemsConstructor: newTrade.proposerItems?.constructor?.name,
+        accepterItemsConstructor: newTrade.accepterItems?.constructor?.name,
+        proposerItemsMetadata: newTrade.proposerItems?.['Symbol(Symbol.metadata)'] !== undefined,
+        accepterItemsMetadata: newTrade.accepterItems?.['Symbol(Symbol.metadata)'] !== undefined,
+      });
+
+      // Defensive: wrap any non-InventoryItem in proposerItems
+      for (let i = 0; i < newTrade.proposerItems.length; i++) {
+        const item: any = newTrade.proposerItems[i];
+        console.log(`🔍 DEBUG: Checking proposerItems[${i}]:`, {
+          itemConstructor: item?.constructor?.name,
+          isInventoryItem: item instanceof InventoryItem,
+          itemId: item?.itemId,
+        });
+        if (
+          !(item instanceof InventoryItem) &&
+          item &&
+          typeof item === 'object' &&
+          'itemId' in item
+        ) {
+          console.log(`🔍 DEBUG: Wrapping non-InventoryItem at proposerItems[${i}]`);
+          newTrade.proposerItems[i] = new InventoryItem(item, (item as any).quantity || 1);
+        }
+      }
+      for (let i = 0; i < newTrade.accepterItems.length; i++) {
+        const item: any = newTrade.accepterItems[i];
+        if (
+          !(item instanceof InventoryItem) &&
+          item &&
+          typeof item === 'object' &&
+          'itemId' in item
+        ) {
+          newTrade.accepterItems[i] = new InventoryItem(item, (item as any).quantity || 1);
+        }
+      }
       this.state.trades.set(tradeId, newTrade);
 
+      // Validate state after trade creation
+      this.validateStateIntegrity();
+
+      // RUNTIME TYPE ASSERTION AND LOGGING
+      // eslint-disable-next-line no-console
+      console.log('TRADE CREATED DEBUG:', {
+        tradeType: newTrade?.constructor?.name,
+        proposerItemsType: newTrade?.proposerItems?.constructor?.name,
+        accepterItemsType: newTrade?.accepterItems?.constructor?.name,
+        proposerItems: newTrade?.proposerItems,
+        accepterItems: newTrade?.accepterItems,
+        proposerItemsFirst: newTrade?.proposerItems?.[0]?.constructor?.name,
+        accepterItemsFirst: newTrade?.accepterItems?.[0]?.constructor?.name,
+      });
+      if (!(newTrade instanceof Trade)) {
+        console.error('Trade is not instance of Trade:', newTrade);
+      }
+      if (!(newTrade.proposerItems instanceof ArraySchema)) {
+        console.error('proposerItems is not ArraySchema:', newTrade.proposerItems);
+      }
+      if (!(newTrade.accepterItems instanceof ArraySchema)) {
+        console.error('accepterItems is not ArraySchema:', newTrade.accepterItems);
+      }
+
+      // RUNTIME TYPE ASSERTIONS before serialization/broadcast
+      function logSchemaType(label, obj) {
+        const stack = new Error().stack;
+        // eslint-disable-next-line no-console
+        console.log(label, {
+          type: obj?.constructor?.name,
+          isArraySchema: obj instanceof ArraySchema,
+          isInventoryItem: obj instanceof InventoryItem,
+          isSchema: obj && obj.constructor && obj.constructor.name.includes('Schema'),
+          hasMetadata: obj && obj.constructor && obj.constructor[Symbol.metadata] !== undefined,
+          prototype: obj && Object.getPrototypeOf(obj)?.constructor?.name,
+          keys: obj && typeof obj === 'object' ? Object.keys(obj) : undefined,
+          stack: stack?.split('\n').slice(1, 4).join('\n'),
+        });
+      }
+      logSchemaType('DEBUG: trade', newTrade);
+      logSchemaType('DEBUG: proposerItems', newTrade.proposerItems);
+      logSchemaType('DEBUG: accepterItems', newTrade.accepterItems);
+      if (newTrade.proposerItems && Array.isArray(newTrade.proposerItems)) {
+        for (const item of newTrade.proposerItems) {
+          logSchemaType('DEBUG: proposerItem', item);
+        }
+      }
+      if (newTrade.accepterItems && Array.isArray(newTrade.accepterItems)) {
+        for (const item of newTrade.accepterItems) {
+          logSchemaType('DEBUG: accepterItem', item);
+        }
+      }
       // Notify both players
-      client.send('trade_request_sent', { tradeId, targetPlayerName: targetPlayer.name });
+      client.send('trade_request_sent', { tradeId, targetPlayerName: targetPlayer.username });
       this.clients
         .find(c => c.sessionId === targetPlayer.id)
         ?.send('trade_request_received', {
           tradeId,
           proposerPlayerId: player.id,
-          proposerPlayerName: player.name,
+          proposerPlayerName: player.username,
         });
 
       console.log(
-        `Trade request sent from ${player.name} to ${targetPlayer.name} (ID: ${tradeId})`
+        `Trade request sent from ${player.username} to ${targetPlayer.username} (ID: ${tradeId})`
       );
     });
 
@@ -291,7 +423,7 @@ export class GameRoom extends Room<WorldState> {
       const playerItems = isProposer ? trade.proposerItems : trade.accepterItems;
 
       // Clear previous offer if any
-      playerItems.clear();
+      playerItems.length = 0;
 
       // Validate and add offered items to the trade
       for (const offeredItem of message.offeredItems) {
@@ -320,15 +452,20 @@ export class GameRoom extends Room<WorldState> {
 
         // ECONOMY API SYNC: Remove items from player's economy inventory
         try {
-          const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.name);
-          if (economyProfile && economyProfile.id) {
+          const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.username);
+          const itemDef = await this.itemManager.getItemDefinition(offeredItem.itemId);
+          if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
             await economyIntegration.removeItemFromInventory(
               economyProfile.id,
-              offeredItem.itemId,
+              itemDef.id,
               offeredItem.quantity
             );
             console.log(
               `Synced removal of ${offeredItem.quantity}x ${offeredItem.itemId} from Economy API for player ${economyProfile.id}`
+            );
+          } else {
+            console.warn(
+              `Missing economy profile or item definition for item ${offeredItem.itemId}`
             );
           }
         } catch (error) {
@@ -357,7 +494,10 @@ export class GameRoom extends Room<WorldState> {
             isProposer: !isProposer,
           });
       }
-      console.log(`Trade offer updated for trade ID ${trade.tradeId} by ${player.name}.`);
+      console.log(`Trade offer updated for trade ID ${trade.tradeId} by ${player.username}.`);
+
+      // Validate state after trade offer update
+      this.validateStateIntegrity();
     });
 
     // Trade accept handler
@@ -399,16 +539,21 @@ export class GameRoom extends Room<WorldState> {
         accepter.inventory.push(item);
         // ECONOMY API SYNC: Add items to accepter's economy inventory
         try {
-          const economyProfile = await economyIntegration.getOrCreatePlayerProfile(accepter.name);
-          if (economyProfile && economyProfile.id) {
+          const economyProfile = await economyIntegration.getOrCreatePlayerProfile(
+            accepter.username
+          );
+          const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+          if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
             await economyIntegration.addItemToInventory(
               economyProfile.id,
-              item.itemId,
+              itemDef.id,
               item.quantity
             );
             console.log(
               `Synced addition of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
             );
+          } else {
+            console.warn(`Missing economy profile or item definition for item ${item.itemId}`);
           }
         } catch (error) {
           console.error(
@@ -423,16 +568,21 @@ export class GameRoom extends Room<WorldState> {
         proposer.inventory.push(item);
         // ECONOMY API SYNC: Add items to proposer's economy inventory
         try {
-          const economyProfile = await economyIntegration.getOrCreatePlayerProfile(proposer.name);
-          if (economyProfile && economyProfile.id) {
+          const economyProfile = await economyIntegration.getOrCreatePlayerProfile(
+            proposer.username
+          );
+          const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+          if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
             await economyIntegration.addItemToInventory(
               economyProfile.id,
-              item.itemId,
+              itemDef.id,
               item.quantity
             );
             console.log(
               `Synced addition of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
             );
+          } else {
+            console.warn(`Missing economy profile or item definition for item ${item.itemId}`);
           }
         } catch (error) {
           console.error(
@@ -458,8 +608,11 @@ export class GameRoom extends Room<WorldState> {
         });
 
       console.log(
-        `Trade ${trade.tradeId} completed between ${proposer.name} and ${accepter.name}.`
+        `Trade ${trade.tradeId} completed between ${proposer.username} and ${accepter.username}.`
       );
+
+      // Validate state after trade completion
+      this.validateStateIntegrity();
     });
 
     // Trade cancel handler
@@ -485,16 +638,21 @@ export class GameRoom extends Room<WorldState> {
           proposer.inventory.push(item);
           // ECONOMY API SYNC: Add items back to proposer's economy inventory
           try {
-            const economyProfile = await economyIntegration.getOrCreatePlayerProfile(proposer.name);
-            if (economyProfile && economyProfile.id) {
+            const economyProfile = await economyIntegration.getOrCreatePlayerProfile(
+              proposer.username
+            );
+            const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+            if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
               await economyIntegration.addItemToInventory(
                 economyProfile.id,
-                item.itemId,
+                itemDef.id,
                 item.quantity
               );
               console.log(
                 `Synced return of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
               );
+            } else {
+              console.warn(`Missing economy profile or item definition for item ${item.itemId}`);
             }
           } catch (error) {
             console.error(
@@ -512,16 +670,21 @@ export class GameRoom extends Room<WorldState> {
           accepter.inventory.push(item);
           // ECONOMY API SYNC: Add items back to accepter's economy inventory
           try {
-            const economyProfile = await economyIntegration.getOrCreatePlayerProfile(accepter.name);
-            if (economyProfile && economyProfile.id) {
+            const economyProfile = await economyIntegration.getOrCreatePlayerProfile(
+              accepter.username
+            );
+            const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+            if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
               await economyIntegration.addItemToInventory(
                 economyProfile.id,
-                item.itemId,
+                itemDef.id,
                 item.quantity
               );
               console.log(
                 `Synced return of ${item.quantity}x ${item.itemId} to Economy API for player ${economyProfile.id}`
               );
+            } else {
+              console.warn(`Missing economy profile or item definition for item ${item.itemId}`);
             }
           } catch (error) {
             console.error(
@@ -553,7 +716,10 @@ export class GameRoom extends Room<WorldState> {
           });
       }
 
-      console.log(`Trade ${trade.tradeId} cancelled by ${player.name}.`);
+      console.log(`Trade ${trade.tradeId} cancelled by ${player.username}.`);
+
+      // Validate state after trade cancellation
+      this.validateStateIntegrity();
     });
 
     // Collect loot handler
@@ -600,30 +766,41 @@ export class GameRoom extends Room<WorldState> {
         // Assume lootDrop still contains the items (if not, store items before collection)
         if (lootDrop && lootDrop.items && lootDrop.items.length > 0) {
           economyIntegration
-            .getOrCreatePlayerProfile(player.name)
+            .getOrCreatePlayerProfile(player.username)
             .then(profile => {
               const economyId = profile.id;
-              lootDrop.items.forEach(item => {
-                economyIntegration
-                  .addItemToInventory(economyId, item.itemId, item.quantity)
-                  .catch(err => {
-                    console.error(
-                      `Failed to sync item ${item.itemId} for player ${economyId}:`,
-                      err
-                    );
-                  });
+              lootDrop.items.forEach(async item => {
+                const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+                if (itemDef && itemDef.id) {
+                  economyIntegration
+                    .addItemToInventory(economyId, itemDef.id, item.quantity)
+                    .catch(err => {
+                      console.error(
+                        `Failed to sync item ${item.itemId} for player ${economyId}:`,
+                        err
+                      );
+                    });
+                } else {
+                  console.warn(`Missing item definition for loot item ${item.itemId}`);
+                }
               });
               // Discord notification
               sendDiscordNotification &&
                 sendDiscordNotification(
-                  `:tada: ${player.name} collected loot: ${lootDrop.items.map(i => i.name).join(', ')}`
+                  `:tada: ${player.username} collected loot: ${lootDrop.items.map(i => i.name).join(', ')}`
                 );
             })
             .catch(err => {
-              console.error(`Failed to resolve economy profile for player ${player.name}:`, err);
+              console.error(
+                `Failed to resolve economy profile for player ${player.username}:`,
+                err
+              );
             });
         }
         broadcastPlayerState(this, client.sessionId, player);
+
+        // Validate state after loot collection
+        this.validateStateIntegrity();
       } else {
         console.warn(`Player ${player.id} failed to collect loot ${lootId}.`);
       }
@@ -726,15 +903,22 @@ export class GameRoom extends Room<WorldState> {
 
     const player = new Player();
     player.id = client.sessionId;
-    player.name = `Player ${client.sessionId.substring(0, 4)}`;
+    // Use options.name if provided, else fallback to default
+    player.username =
+      typeof options?.name === 'string' && options.name.trim().length > 0
+        ? options.name.trim()
+        : `Player ${client.sessionId.substring(0, 4)}`;
     player.x = Math.floor(Math.random() * 10);
     player.y = Math.floor(Math.random() * 10);
 
     this.state.players.set(client.sessionId, player);
 
+    // Validate state after player joins
+    this.validateStateIntegrity();
+
     // Load player inventory from Economy API
     try {
-      const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.name);
+      const economyProfile = await economyIntegration.getOrCreatePlayerProfile(player.username);
       if (economyProfile && economyProfile.id) {
         const economyInventory = await economyIntegration.getPlayerInventory(economyProfile.id);
         if (economyInventory && economyInventory.length > 0) {
@@ -748,17 +932,45 @@ export class GameRoom extends Room<WorldState> {
             }
           }
           console.log(
-            `Player ${player.id} loaded ${player.inventory.length} items from economy inventory.`
+            `Player ${player.username} (${player.id}) loaded ${player.inventory.length} items from economy inventory.`
           );
         } else {
           console.log(
-            `Player ${player.id} has no existing economy inventory. Adding starter items.`
+            `Player ${player.username} (${player.id}) has no existing economy inventory. Adding starter items.`
           );
+
+          // ========== DEBUG LOGGING: STARTER ITEMS ==========
+          console.log(`🔍 DEBUG: Player inventory before adding starter items:`, {
+            inventoryLength: player.inventory.length,
+            inventoryConstructor: player.inventory.constructor.name,
+            inventoryType: typeof player.inventory,
+            inventoryMetadata: player.inventory['Symbol(Symbol.metadata)'] !== undefined,
+          });
+
           // Add starter items if no economy inventory exists
           const starterSwordDef = await this.itemManager.getItemDefinition('starter_sword');
+          console.log(`🔍 DEBUG: starterSwordDef:`, {
+            def: starterSwordDef,
+            defType: typeof starterSwordDef,
+            defConstructor: starterSwordDef?.constructor?.name,
+          });
+
           if (starterSwordDef) {
             const starterSword = new InventoryItem(starterSwordDef, 1);
+            console.log(`🔍 DEBUG: Created starterSword:`, {
+              starterSword,
+              constructor: starterSword.constructor.name,
+              metadata: starterSword['Symbol(Symbol.metadata)'] !== undefined,
+              itemId: starterSword.itemId,
+              quantity: starterSword.quantity,
+            });
+
+            console.log(`🔍 DEBUG: About to push starterSword to inventory...`);
             player.inventory.push(starterSword);
+            console.log(
+              `🔍 DEBUG: Pushed starterSword, inventory length now: ${player.inventory.length}`
+            );
+
             if (economyIntegration) {
               await economyIntegration.addItemToInventory(
                 economyProfile.id,
@@ -769,9 +981,38 @@ export class GameRoom extends Room<WorldState> {
           }
 
           const starterShieldDef = await this.itemManager.getItemDefinition('starter_shield');
+          console.log(`🔍 DEBUG: starterShieldDef:`, {
+            def: starterShieldDef,
+            defType: typeof starterShieldDef,
+            defConstructor: starterShieldDef?.constructor?.name,
+          });
+
           if (starterShieldDef) {
             const starterShield = new InventoryItem(starterShieldDef, 1);
+            console.log(`🔍 DEBUG: Created starterShield:`, {
+              starterShield,
+              constructor: starterShield.constructor.name,
+              metadata: starterShield['Symbol(Symbol.metadata)'] !== undefined,
+              itemId: starterShield.itemId,
+              quantity: starterShield.quantity,
+            });
+
+            console.log(`🔍 DEBUG: About to push starterShield to inventory...`);
             player.inventory.push(starterShield);
+            console.log(
+              `🔍 DEBUG: Pushed starterShield, inventory length now: ${player.inventory.length}`
+            );
+            console.log(`🔍 DEBUG: Final inventory state:`, {
+              inventoryLength: player.inventory.length,
+              inventoryItems: player.inventory.map((item, i) => ({
+                index: i,
+                constructor: item?.constructor?.name,
+                metadata: item?.['Symbol(Symbol.metadata)'] !== undefined,
+                itemId: item?.itemId,
+              })),
+            });
+            // ========== DEBUG LOGGING: STARTER ITEMS END ==========
+
             if (economyIntegration) {
               await economyIntegration.addItemToInventory(
                 economyProfile.id,
@@ -782,12 +1023,14 @@ export class GameRoom extends Room<WorldState> {
           }
         }
       } else {
-        console.error(`Failed to get or create economy profile for player ${player.name}.`);
+        console.error(`Failed to get or create economy profile for player ${player.username}.`);
       }
     } catch (error) {
-      console.error(`Error loading player inventory from economy for ${player.name}:`, error);
+      console.error(`Error loading player inventory from economy for ${player.username}:`, error);
       // Fallback: Add starter items if economy integration fails
-      console.log(`Adding starter items due to economy integration failure.`);
+      console.log(
+        `Adding starter items due to economy integration failure for ${player.username}.`
+      );
       const starterSwordDef = await this.itemManager.getItemDefinition('sword_of_heroes');
       if (starterSwordDef) {
         const starterSword = new InventoryItem(starterSwordDef, 1);
@@ -801,7 +1044,16 @@ export class GameRoom extends Room<WorldState> {
       }
     }
 
+    // Validate state after player inventory setup
+    this.validateStateIntegrity();
+
     broadcastPlayerState(this, client.sessionId, player);
+
+    // Send welcome message to the client
+    client.send('welcome', {
+      message: 'Welcome to RuneScape Discord Game!',
+      playerId: client.sessionId,
+    });
 
     // Send existing loot drops to new client
     const existingLoot = Array.from(this.state.lootDrops.values());
@@ -943,5 +1195,102 @@ export class GameRoom extends Room<WorldState> {
     console.log(
       `NPC ${npc.name} attacked Player ${player.id} for ${damage} damage. Player health is now ${player.health}.`
     );
+  }
+
+  /**
+   * Validates the integrity of the game state by checking for undefined values in schema objects
+   */
+  private validateStateIntegrity(): void {
+    // eslint-disable-next-line no-console
+    console.log('🔍 Validating state integrity...');
+
+    // Check players
+    this.state.players.forEach((player, sessionId) => {
+      if (!player) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ Player ${sessionId} is undefined!`);
+        return;
+      }
+
+      // Check player inventory
+      if (!player.inventory) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ Player ${sessionId} has undefined inventory!`);
+      } else {
+        player.inventory.forEach((item, index) => {
+          if (!item) {
+            // eslint-disable-next-line no-console
+            console.error(`❌ Player ${sessionId} has undefined item at index ${index}!`);
+          } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
+            // eslint-disable-next-line no-console
+            console.error(
+              `❌ Player ${sessionId} has non-InventoryItem object at index ${index}:`,
+              {
+                type: typeof item,
+                constructor: item.constructor?.name,
+                item: item,
+              }
+            );
+          }
+        });
+      }
+    });
+
+    // Check trades
+    this.state.trades.forEach((trade, tradeId) => {
+      if (!trade) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ Trade ${tradeId} is undefined!`);
+        return;
+      }
+
+      if (!trade.proposerItems) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ Trade ${tradeId} has undefined proposerItems!`);
+      } else {
+        trade.proposerItems.forEach((item, index) => {
+          if (!item) {
+            // eslint-disable-next-line no-console
+            console.error(`❌ Trade ${tradeId} has undefined proposer item at index ${index}!`);
+          }
+        });
+      }
+
+      if (!trade.accepterItems) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ Trade ${tradeId} has undefined accepterItems!`);
+      } else {
+        trade.accepterItems.forEach((item, index) => {
+          if (!item) {
+            // eslint-disable-next-line no-console
+            console.error(`❌ Trade ${tradeId} has undefined accepter item at index ${index}!`);
+          }
+        });
+      }
+    });
+
+    // Check loot drops
+    this.state.lootDrops.forEach((lootDrop, lootId) => {
+      if (!lootDrop) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ LootDrop ${lootId} is undefined!`);
+        return;
+      }
+
+      if (!lootDrop.items) {
+        // eslint-disable-next-line no-console
+        console.error(`❌ LootDrop ${lootId} has undefined items!`);
+      } else {
+        lootDrop.items.forEach((item, index) => {
+          if (!item) {
+            // eslint-disable-next-line no-console
+            console.error(`❌ LootDrop ${lootId} has undefined item at index ${index}!`);
+          }
+        });
+      }
+    });
+
+    // eslint-disable-next-line no-console
+    console.log('✅ State integrity validation complete');
   }
 }

@@ -1,5 +1,7 @@
-import { CombatSystem, AttackResult, CombatStyle } from '../../game/CombatSystem';
-import { GameState, Player, NPC } from '../../game/EntitySchemas';
+import { AttackResult, CombatStyle, CombatSystem } from '../../game/CombatSystem';
+import { GameState, NPC, Player } from '../../game/EntitySchemas';
+import { ItemManager } from '../../game/ItemManager';
+import { PrayerSystem } from '../../game/PrayerSystem';
 
 describe('CombatSystem.handlePlayerAction', () => {
   let state: GameState;
@@ -9,18 +11,21 @@ describe('CombatSystem.handlePlayerAction', () => {
 
   beforeEach(() => {
     state = new GameState();
-    system = new CombatSystem(state);
 
     attacker = new Player();
     attacker.id = 'attacker1';
     state.players.set(attacker.id, attacker);
+
+    const itemManager = ItemManager.getInstance();
+    const prayerSystem = new PrayerSystem(attacker);
+    system = new CombatSystem(state, itemManager, prayerSystem);
 
     npc = new NPC('npc1', 'TestNPC', 0, 0, 'npc', []);
     state.npcs.set(npc.id, npc);
   });
 
   it('should return null for non-attack actions', () => {
-    const result = system.handlePlayerAction(attacker.id, { type: 'move', x: 5, y: 5 });
+    const result = system.handlePlayerAction(attacker.id, { type: 'move' });
     expect(result).toBeNull();
   });
 

@@ -1,5 +1,5 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for project goals and persistent AI context.
-import { InventoryItem, LootDrop, Player } from '../game/EntitySchemas';
+import { ArraySchema, InventoryItem, LootDrop, Player } from '../game/EntitySchemas';
 import { GameRoom } from '../game/GameRoom';
 import { LootManager } from '../game/LootManager';
 
@@ -27,7 +27,8 @@ describe('Loot/Inventory Sync Integration', () => {
     player = new Player();
     player.id = 'test-player';
     player.name = 'Test Player';
-    player.inventory = [];
+    // Always use ArraySchema for Colyseus schema fields
+    player.inventory = new ArraySchema();
     gameRoom['state'] = { players: new Map([[player.id, player]]), lootDrops: new Map() } as any;
 
     // Clear mocks

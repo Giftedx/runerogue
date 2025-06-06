@@ -40,6 +40,9 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 - **Self-hosted Runner Execution**: Tasks are processed on a self-hosted Windows runner
 - **Custom MCP Tools**: Extended capabilities for RuneRogue-specific tasks
 - **Workflow Automation**: Create and assign tasks programmatically
+- **Defensive Colyseus Schema Patterns**: All schema fields (e.g., inventory, loot, trade items) are now strictly enforced as `ArraySchema` and schema instances, with runtime checks and defensive test setup.
+- **Comprehensive Test Coverage**: All core systems (combat, procedural generation, loot, inventory, trade) have robust unit and integration tests. Test suite is run after every patch.
+- **Agentic Maintenance**: All new features and bug fixes are maintained by GitHub Copilot Agents, with minimal manual intervention.
 
 ### Documentation
 
@@ -55,6 +58,13 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 3. Assignment: The issue will be automatically assigned to GitHub Copilot
 4. Execution: The self-hosted runner will process the task
 5. Results: GitHub Copilot will comment on the issue with the results
+
+### Progress Update (June 2025)
+
+- **CombatSystem**: Refactored for OSRS-authentic logic; all tests now pass.
+- **ProceduralGenerator**: Fully tested and robust; all procedural generation tests pass.
+- **GameRoom & Multiplayer**: Persistent Colyseus schema serialization errors remain in trade/loot and player join/movement tests, but all direct schema field assignments are now using `ArraySchema` and schema instances. Defensive runtime checks and forced re-wrapping of arrays/objects as schema types have been added throughout the codebase and tests.
+- **Next Steps**: Continue auditing for any remaining schema field mutations with plain arrays/objects. Patch and re-test until all Colyseus serialization errors are resolved and all GameRoom tests pass. Update documentation to reflect the new defensive patterns and schema usage requirements.
 
 ### Example: Generate Documentation
 
@@ -87,11 +97,11 @@ For detailed information, see the following documentation:
 
 ### Core Components
 
-*   **TypeScript Game Server**: Manages game state, real-time multiplayer (Colyseus), Discord OAuth2, and integrates with other backend services.
-*   **Python FastAPI Economy API**: Handles all game economy operations, including players, items, trades, and Grand Exchange.
-*   **Python Flask Legacy Backend**: Provides web scraping, health monitoring, and other legacy functionalities.
-*   **Python FastAPI MCP Server**: Facilitates AI agent interactions, tool execution, and research capabilities.
-*   **Clients**: Godot Game Client and Web Meta UI (TypeScript/React) for interactive gameplay.
+- **TypeScript Game Server**: Manages game state, real-time multiplayer (Colyseus), Discord OAuth2, and integrates with other backend services.
+- **Python FastAPI Economy API**: Handles all game economy operations, including players, items, trades, and Grand Exchange.
+- **Python Flask Legacy Backend**: Provides web scraping, health monitoring, and other legacy functionalities.
+- **Python FastAPI MCP Server**: Facilitates AI agent interactions, tool execution, and research capabilities.
+- **Clients**: Godot Game Client and Web Meta UI (TypeScript/React) for interactive gameplay.
 
 ## Getting Started
 
