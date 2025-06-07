@@ -1,5 +1,6 @@
 # RuneRogue
 
+<<<<<<< HEAD
 A RuneScape-inspired game project featuring a polyglot architecture with a TypeScript game server, Python FastAPI economy API, Python Flask legacy backend, and a Python FastAPI MCP server. It includes a web-based client and integrates AI-assisted development.
 
 For a comprehensive overview of the system architecture, refer to the [Architecture Document](docs/ARCHITECTURE.md).
@@ -67,6 +68,31 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 - **Next Steps**: Continue auditing for any remaining schema field mutations with plain arrays/objects. Patch and re-test until all Colyseus serialization errors are resolved and all GameRoom tests pass. Update documentation to reflect the new defensive patterns and schema usage requirements.
 
 ### Example: Generate Documentation
+=======
+A full-stack web scraping application with comprehensive multi-fallback patterns and browser-based game client.
+
+## Components
+
+### Backend (Python/Flask)
+- **Multi-fallback scraping**: requests → BeautifulSoup → Playwright
+- **Configuration management**: YAML config files with environment variable overrides
+- **Progress tracking**: Built-in `update_status()` function with progress reporting
+- **Dry run support**: Test functionality without making actual requests
+- **Flask web API**: RESTful endpoints for scraping operations
+- **Comprehensive testing**: Unit tests with mocking support
+- **CI/CD Pipeline**: Automated testing, linting, and deployment
+
+### Client (Godot Engine 4.x)
+- **Browser-ready**: HTML5/WebGL export for web deployment
+- **Pixel-perfect rendering**: Optimized for crisp 2D graphics
+- **Scene management**: Main menu, game scenes, and HUD system
+- **Asset pipeline**: Git LFS integration for sprites, audio, fonts
+- **CI integration**: Automated builds and exports
+
+## Installation
+>>>>>>> origin/copilot/fix-7
+
+### Backend Setup
 
 ```bash
 # Using the workflow dispatch feature
@@ -77,6 +103,7 @@ git pull
 node scripts/test_mcp_tools.js generate_docs --module_path=agents/osrs_agent_system.py --output_format=markdown
 ```
 
+<<<<<<< HEAD
 ## Usage
 
 ### Usage Instructions
@@ -194,13 +221,44 @@ npm run dev
 ```
 
 ### Quick Start (Backend API Example)
+=======
+### Client Setup
+
+1. Install Godot Engine 4.3+ from [godotengine.org](https://godotengine.org/download)
+2. Install Git LFS for asset management:
+   ```bash
+   git lfs install
+   git lfs pull  # Download assets
+   ```
+3. Open `client/godot/` directory in Godot Engine
+
+## Quick Start
+>>>>>>> origin/copilot/fix-7
+
+### Backend API
 
 ```python
 from scraper import WebScraper
 from config import config
 ```
 
+<<<<<<< HEAD
 ## Project Structure
+=======
+### Client Development
+
+1. Open the Godot project: `client/godot/`
+2. Press F5 to run the project
+3. For web builds:
+   ```bash
+   cd client/godot
+   godot --headless --export-release "Web" builds/web/index.html
+   ```
+
+See [client/godot/README.md](client/godot/README.md) for detailed client documentation.
+
+## Configuration
+>>>>>>> origin/copilot/fix-7
 
 - `app.py`: Main Flask application entry point.
 - `config.py`: Application configuration.
@@ -220,10 +278,16 @@ from config import config
 
 ## API Endpoints (Backend Services)
 
+### Backend Services
 - `GET /` - Application info
 - `GET /config` - Current configuration
 - `GET /health` - Health check
 - `POST /scrape` - Scrape URL with fallback patterns
+
+### Client Integration
+- Client builds are served via CI/CD artifacts
+- Web client deployable to static hosting
+- Backend API provides data services for client
 
 ## Testing
 

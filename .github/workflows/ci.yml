@@ -265,6 +265,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, integration-test, security-scan, docker-build, godot-build]
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> origin/copilot/fix-7
+=======
 >>>>>>> origin/copilot/fix-7
 =======
 >>>>>>> origin/copilot/fix-7
@@ -283,7 +286,11 @@ jobs:
     runs-on: ubuntu-latest
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     needs: [test, test-auth-service, test-meta-ui, integration-test, security-scan, docker-build, godot-build]
+=======
+    needs: [test, integration-test, security-scan, godot-build]
+>>>>>>> origin/copilot/fix-7
 =======
     needs: [test, integration-test, security-scan, godot-build]
 >>>>>>> origin/copilot/fix-7
@@ -308,7 +315,11 @@ jobs:
         
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.test-auth-service.result }}" == "success" && "${{ needs.test-meta-ui.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
+=======
+        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
+>>>>>>> origin/copilot/fix-7
 =======
         if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
 >>>>>>> origin/copilot/fix-7
