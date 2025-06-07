@@ -1,55 +1,75 @@
 {
   "mcpServers": {
     "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
-      }
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ]
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     },
     "osrs": {
-      "command": "npx",
-      "args": ["-y", "@osrs/osrs-mcp"]
+      "command": "node",
+      "args": [
+        "dist/mcp-server.js"
+      ],
+      "cwd": "server-ts"
     },
     "memory": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
     },
     "tavily": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-tavily"],
+      "args": [
+        "-y",
+        "@mcptools/mcp-tavily"
+      ],
       "env": {
-        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY_HERE"
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
       }
     },
     "mcpso": {
       "command": "node",
-      "args": ["server.js"],
+      "args": [
+        "server.js"
+      ],
       "cwd": "mcp-repos/mcpso"
     },
     "open-mcp-client": {
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": [
+        "dist/index.js"
+      ],
       "cwd": "mcp-repos/open-mcp-client"
     },
     "magic-mcp": {
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": [
+        "dist/index.js"
+      ],
       "cwd": "mcp-repos/magic-mcp"
     },
     "runerogue-game": {
-      "command": "npm",
-      "args": ["run", "dev"],
+      "command": "node",
+      "args": [
+        "dist/mcp-server.js"
+      ],
       "cwd": "server-ts"
     },
     "browser-tools": {
-      "command": "node",
-      "args": ["dist/index.js"],
-      "cwd": "mcp-repos/browser-tools-mcp"
+      "command": "npx",
+      "args": [
+        "@agentdeskai/browser-tools-mcp@latest"
+      ]
     }
   }
-} 
+}

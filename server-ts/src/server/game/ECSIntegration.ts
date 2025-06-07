@@ -260,13 +260,44 @@ export class ECSIntegration {
   public getColyseusId(entityId: number): string | undefined {
     return this.reverseEntityMap.get(entityId);
   }
-
   /**
    * Process ECS systems
    */
-  public update(_deltaTime: number): void {
-    // For now, we don't have specific systems to update
-    // This will be expanded when we add ECS systems
+  public update(deltaTime: number): void {
+    // Store deltaTime in world for systems to access
+    (this.ecsWorld as any).deltaTime = deltaTime;
+
+    // Run all ECS systems in order
+    try {
+      // Core gameplay systems
+      this.runSystem('AutoCombatSystem');
+      this.runSystem('WaveSpawningSystem');
+      this.runSystem('MovementSystem');
+      this.runSystem('CombatSystem');
+      this.runSystem('PrayerSystem');
+      this.runSystem('SkillSystem');
+    } catch (error) {
+      console.error('Error running ECS systems:', error);
+    }
+  }
+
+  /**
+   * Run a specific ECS system
+   */
+  private runSystem(systemName: string): void {
+    try {
+      // Import and run the system dynamically
+      const systems = require('../ecs/systems');
+      const system = systems[systemName];
+
+      if (system && typeof system === 'function') {
+        system(this.ecsWorld);
+      } else {
+        console.warn(`ECS System '${systemName}' not found or not a function`);
+      }
+    } catch (error) {
+      console.error(`Error running system ${systemName}:`, error);
+    }
   }
 
   /**

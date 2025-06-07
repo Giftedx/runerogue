@@ -3,10 +3,10 @@
  * Implements escalating waves of enemies, power-ups, and survivor gameplay
  */
 
-import { GameState, NPC, Player, InventoryItem } from './EntitySchemas';
-import { ProceduralGenerator, BiomeType, MonsterSpawnConfig } from './ProceduralGenerator';
 import { sendGameEventNotification } from '../discord-bot';
+import { GameState, InventoryItem, NPC, Player } from './EntitySchemas';
 import { ItemManager } from './ItemManager';
+import { BiomeType, MonsterSpawnConfig, ProceduralGenerator } from './ProceduralGenerator';
 
 export interface WaveConfig {
   waveNumber: number;
@@ -58,7 +58,7 @@ export class WaveManager {
   private biomeType: BiomeType;
   private proceduralGen: ProceduralGenerator;
   private itemManager: ItemManager;
-  
+
   // Wave configuration constants
   private readonly BASE_ENEMY_COUNT = 5;
   private readonly ENEMY_COUNT_GROWTH = 1.5;
@@ -66,7 +66,11 @@ export class WaveManager {
   private readonly BOSS_WAVE_INTERVAL = 5;
   private readonly WAVE_PREP_TIME = 10000; // 10 seconds between waves
 
-  constructor(state: GameState, itemManager: ItemManager, biomeType: BiomeType = BiomeType.VARROCK) {
+  constructor(
+    state: GameState,
+    itemManager: ItemManager,
+    biomeType: BiomeType = BiomeType.VARROCK
+  ) {
     this.state = state;
     this.biomeType = biomeType;
     this.proceduralGen = new ProceduralGenerator();
@@ -97,7 +101,7 @@ export class WaveManager {
       sendGameEventNotification('boss_spawn', {
         bossName: waveConfig.bossWave ? 'Wave Boss' : `Wave ${this.currentWave}`,
         location: this.biomeType,
-        combatLevel: Math.floor(50 + this.currentWave * 2)
+        combatLevel: Math.floor(50 + this.currentWave * 2),
       });
     }
 
@@ -128,14 +132,14 @@ export class WaveManager {
         type: 'xp',
         value: 100 * waveNumber,
         quantity: 1,
-        chance: 1.0 // Always give XP
+        chance: 1.0, // Always give XP
       },
       {
         type: 'gold',
         value: 50 * waveNumber,
         quantity: Math.floor(Math.random() * 20) + 10,
-        chance: 0.8
-      }
+        chance: 0.8,
+      },
     ];
 
     // Add rare rewards for higher waves
@@ -144,7 +148,7 @@ export class WaveManager {
         type: 'item',
         value: this.selectRareItem(waveNumber),
         quantity: 1,
-        chance: 0.1 + (waveNumber * 0.01) // Increasing chance with waves
+        chance: 0.1 + waveNumber * 0.01, // Increasing chance with waves
       });
     }
 
@@ -154,7 +158,7 @@ export class WaveManager {
         type: 'powerup',
         value: this.selectPowerUp(waveNumber),
         quantity: 1,
-        chance: 0.5
+        chance: 0.5,
       });
     }
 
@@ -165,7 +169,7 @@ export class WaveManager {
       spawnDelay: isBossWave ? 0 : 1000, // 1 second between spawns
       difficulty,
       bossWave: isBossWave,
-      rewards
+      rewards,
     };
   }
 
@@ -179,27 +183,27 @@ export class WaveManager {
   ): MonsterSpawnConfig[] {
     if (isBossWave) {
       // Create a boss version of the strongest enemy
-      const strongestEnemy = available.reduce((prev, curr) => 
+      const strongestEnemy = available.reduce((prev, curr) =>
         curr.level > prev.level ? curr : prev
       );
 
-      return [{
-        ...strongestEnemy,
-        npcId: `boss_${strongestEnemy.npcId}`,
-        level: strongestEnemy.level + waveNumber * 2,
-        spawnWeight: 100,
-        minGroupSize: 1,
-        maxGroupSize: 1
-      }];
+      return [
+        {
+          ...strongestEnemy,
+          npcId: `boss_${strongestEnemy.npcId}`,
+          level: strongestEnemy.level + waveNumber * 2,
+          spawnWeight: 100,
+          minGroupSize: 1,
+          maxGroupSize: 1,
+        },
+      ];
     }
 
     // Regular wave - mix of enemies
     const minLevel = Math.max(1, waveNumber * 5);
     const maxLevel = minLevel + 20;
 
-    return available.filter(enemy => 
-      enemy.level >= minLevel && enemy.level <= maxLevel
-    );
+    return available.filter(enemy => enemy.level >= minLevel && enemy.level <= maxLevel);
   }
 
   /**
@@ -213,13 +217,10 @@ export class WaveManager {
       'mithril_platebody',
       'adamant_platebody',
       'rune_platebody',
-      'dragon_platebody'
+      'dragon_platebody',
     ];
 
-    const index = Math.min(
-      Math.floor(waveNumber / 10),
-      rareItems.length - 1
-    );
+    const index = Math.min(Math.floor(waveNumber / 10), rareItems.length - 1);
 
     return rareItems[index];
   }
@@ -233,7 +234,7 @@ export class WaveManager {
       'speed_boost',
       'defense_boost',
       'xp_multiplier',
-      'drop_rate_boost'
+      'drop_rate_boost',
     ];
 
     return powerUps[Math.floor(Math.random() * powerUps.length)];
@@ -244,7 +245,7 @@ export class WaveManager {
    */
   private async spawnWaveEnemies(config: WaveConfig): Promise<void> {
     const spawnPositions = this.generateSpawnPositions(config.enemyCount);
-    
+
     for (let i = 0; i < config.enemyCount; i++) {
       // Select enemy type
       const enemyType = this.selectRandomEnemyType(config.enemyTypes);
@@ -288,15 +289,16 @@ export class WaveManager {
   /**
    * Generate spawn positions around the map edges
    */
-  private generateSpawnPositions(count: number): Array<{x: number, y: number}> {
-    const positions: Array<{x: number, y: number}> = [];
+  private generateSpawnPositions(count: number): Array<{ x: number; y: number }> {
+    const positions: Array<{ x: number; y: number }> = [];
     const mapWidth = 100; // Assuming default map size
     const mapHeight = 100;
 
     for (let i = 0; i < count; i++) {
       // Spawn from edges
       const edge = Math.floor(Math.random() * 4);
-      let x = 0, y = 0;
+      let x = 0,
+        y = 0;
 
       switch (edge) {
         case 0: // Top
@@ -372,7 +374,7 @@ export class WaveManager {
 
     // Calculate wave rewards
     const config = this.generateWaveConfig(this.currentWave);
-    
+
     // Award rewards to all players
     for (const player of this.state.players.values()) {
       await this.awardWaveRewards(player, config.rewards);
@@ -402,7 +404,9 @@ export class WaveManager {
           case 'gold':
             // Add gold to player
             player.gold += reward.quantity;
-            console.log(`Awarding ${reward.quantity} gold to ${player.username} (total: ${player.gold})`);
+            console.log(
+              `Awarding ${reward.quantity} gold to ${player.username} (total: ${player.gold})`
+            );
             break;
           case 'item':
             // Add item to player inventory
@@ -431,21 +435,21 @@ export class WaveManager {
   private awardXP(player: Player, amount: number): void {
     // Split XP between attack, strength, and defense
     const xpPerSkill = Math.floor(amount / 3);
-    
+
     if (player.skills) {
       // Award XP to each combat skill
       player.skills.attack.xp += xpPerSkill;
       player.skills.strength.xp += xpPerSkill;
       player.skills.defence.xp += xpPerSkill;
-      
+
       // Update skill levels based on new XP
       player.skills.attack.level = this.getLevelFromXP(player.skills.attack.xp);
       player.skills.strength.level = this.getLevelFromXP(player.skills.strength.xp);
       player.skills.defence.level = this.getLevelFromXP(player.skills.defence.xp);
-      
+
       // Update combat level
       player.combatLevel = player.getCombatLevel();
-      
+
       console.log(`Awarded ${amount} XP to ${player.username} (${xpPerSkill} per skill)`);
     }
   }
@@ -456,8 +460,17 @@ export class WaveManager {
    */
   private getLevelFromXP(xp: number): number {
     // Simplified XP table for levels 1-99
-    const xpTable = [0, 83, 174, 276, 388, 512, 650, 801, 969, 1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 4470, 5018, 5624, 6291, 7028, 7842, 8740, 9730, 10824, 12031, 13363, 14833, 16456, 18247, 20224, 22406, 24815, 27473, 30408, 33648, 37224, 41171, 45529, 50339, 55649, 61512, 67983, 75127, 83014, 91721, 101333, 111945, 123660, 136594, 150872, 166636, 184040, 203254, 224466, 247886, 273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032, 668051, 737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808, 1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295, 5346332, 5902831, 6517253, 7195629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431];
-    
+    const xpTable = [
+      0, 83, 174, 276, 388, 512, 650, 801, 969, 1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115,
+      3523, 3973, 4470, 5018, 5624, 6291, 7028, 7842, 8740, 9730, 10824, 12031, 13363, 14833, 16456,
+      18247, 20224, 22406, 24815, 27473, 30408, 33648, 37224, 41171, 45529, 50339, 55649, 61512,
+      67983, 75127, 83014, 91721, 101333, 111945, 123660, 136594, 150872, 166636, 184040, 203254,
+      224466, 247886, 273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032,
+      668051, 737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808,
+      1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295,
+      5346332, 5902831, 6517253, 7195629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431,
+    ];
+
     for (let level = 1; level < xpTable.length; level++) {
       if (xp < xpTable[level]) {
         return level;
@@ -476,7 +489,7 @@ export class WaveManager {
     const activePowerUp: ActivePowerUp = {
       powerUp,
       expiresAt: Date.now() + powerUp.duration,
-      playerId
+      playerId,
     };
 
     // Add to active power-ups
@@ -503,36 +516,36 @@ export class WaveManager {
         name: 'Damage Boost',
         description: '+50% damage for 30 seconds',
         duration: 30000,
-        effects: [{ type: 'damage', multiplier: 1.5 }]
+        effects: [{ type: 'damage', multiplier: 1.5 }],
       },
       speed_boost: {
         id: 'speed_boost',
         name: 'Speed Boost',
         description: '+30% movement speed for 30 seconds',
         duration: 30000,
-        effects: [{ type: 'speed', multiplier: 1.3 }]
+        effects: [{ type: 'speed', multiplier: 1.3 }],
       },
       defense_boost: {
         id: 'defense_boost',
         name: 'Defense Boost',
         description: '+50% defense for 30 seconds',
         duration: 30000,
-        effects: [{ type: 'defense', multiplier: 1.5 }]
+        effects: [{ type: 'defense', multiplier: 1.5 }],
       },
       xp_multiplier: {
         id: 'xp_multiplier',
         name: 'XP Multiplier',
         description: '2x XP for 60 seconds',
         duration: 60000,
-        effects: [{ type: 'xp_boost', multiplier: 2.0 }]
+        effects: [{ type: 'xp_boost', multiplier: 2.0 }],
       },
       drop_rate_boost: {
         id: 'drop_rate_boost',
         name: 'Lucky Charm',
         description: '+100% drop rate for 45 seconds',
         duration: 45000,
-        effects: [{ type: 'drop_rate', multiplier: 2.0 }]
-      }
+        effects: [{ type: 'drop_rate', multiplier: 2.0 }],
+      },
     };
 
     return powerUps[id] || null;
@@ -581,7 +594,7 @@ export class WaveManager {
       wave: this.currentWave,
       enemyCount: config.enemyCount,
       isBossWave: config.bossWave,
-      prepTime: 0
+      prepTime: 0,
     };
 
     // TODO: Broadcast to all connected clients
@@ -596,7 +609,7 @@ export class WaveManager {
       type: 'wave_complete',
       wave: this.currentWave,
       duration: Math.floor(duration / 1000), // Convert to seconds
-      nextWaveIn: this.WAVE_PREP_TIME / 1000
+      nextWaveIn: this.WAVE_PREP_TIME / 1000,
     };
 
     // TODO: Broadcast to all connected clients
@@ -619,14 +632,15 @@ export class WaveManager {
     enemiesRemaining: number;
     nextWaveIn: number;
   } {
-    const nextWaveIn = this.waveInProgress ? 0 : 
-      Math.max(0, this.WAVE_PREP_TIME - (Date.now() - this.waveStartTime));
+    const nextWaveIn = this.waveInProgress
+      ? 0
+      : Math.max(0, this.WAVE_PREP_TIME - (Date.now() - this.waveStartTime));
 
     return {
       currentWave: this.currentWave,
       waveInProgress: this.waveInProgress,
       enemiesRemaining: this.enemiesRemaining,
-      nextWaveIn
+      nextWaveIn,
     };
   }
 
@@ -638,5 +652,44 @@ export class WaveManager {
     this.waveInProgress = false;
     this.enemiesRemaining = 0;
     this.activePowerUps.clear();
+  }
+
+  /**
+   * Update the wave system - call this every game tick
+   */
+  public update(): void {
+    const currentTime = Date.now();
+
+    // Check if it's time to start the next wave
+    if (!this.waveInProgress && this.enemiesRemaining === 0) {
+      // Auto-start next wave after prep time
+      if (currentTime >= this.waveStartTime + this.WAVE_PREP_TIME) {
+        this.startNextWave();
+      }
+    }
+
+    // Update active power-ups
+    this.updateActivePowerUps(currentTime);
+  }
+
+  /**
+   * Update active power-ups and remove expired ones
+   */
+  private updateActivePowerUps(currentTime: number): void {
+    this.activePowerUps.forEach((powerUps, playerId) => {
+      const activePowerUps = powerUps.filter(activePowerUp => {
+        return activePowerUp.expiresAt > currentTime;
+      });
+
+      if (activePowerUps.length !== powerUps.length) {
+        this.activePowerUps.set(playerId, activePowerUps);
+
+        // Notify player of expired power-ups
+        const player = this.state.players.get(playerId);
+        if (player) {
+          // Could send a message about expired power-ups here
+        }
+      }
+    });
   }
 }

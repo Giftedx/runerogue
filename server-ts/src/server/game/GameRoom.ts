@@ -5,7 +5,7 @@ import { sendDiscordNotification, sendGameEventNotification } from '../discord-b
 import economyIntegration from '../economy-integration';
 import { playerPersistence } from '../persistence/PlayerPersistence';
 import { CombatSystem } from './CombatSystem';
-import { GatheringSystem } from './GatheringSystem';
+import { ECSIntegration } from './ECSIntegration';
 import {
   AreaMap,
   ArraySchema,
@@ -21,12 +21,12 @@ import {
   TradeOfferMessage,
   TradeRequestMessage,
   WorldState,
-  Resource,
 } from './EntitySchemas';
+import { GatheringSystem } from './GatheringSystem';
 import { ItemManager } from './ItemManager';
 import { LootManager } from './LootManager';
 import { MapBlueprintSchema, type MapBlueprint } from './MapBlueprintSchema';
-import { broadcastPlayerState } from './multiplayerSync';
+import { WaveManager } from './WaveManager';
 
 export class GameRoom extends Room<WorldState> {
   // Method to load, validate, and add a map blueprint
@@ -113,18 +113,32 @@ export class GameRoom extends Room<WorldState> {
     console.log('Attempting to load an invalid map blueprint (expect errors):');
     this.loadAndValidateMapBlueprint(invalidBlueprintData, false);
   }
-
   maxClients = 4;
   private combatSystem!: CombatSystem;
   private itemManager!: ItemManager;
   private gatheringSystem!: GatheringSystem;
-
+  private ecsIntegration!: ECSIntegration;
+  private waveManager!: WaveManager;
+  private lootPickupRadius = 50; // Distance in pixels for loot pickup validation
+  private lastUpdateTime: number = 0;
   onCreate(options: any): void {
-    this.setState(new WorldState());
+    this.state = new WorldState();
     this.initializeDefaultMap(); // Initialize with a default or sample map
-    this.combatSystem = new CombatSystem(this.state);
+
+    // Initialize ECS integration
+    this.ecsIntegration = new ECSIntegration();
+
+    // Initialize systems
     this.itemManager = ItemManager.getInstance();
     this.gatheringSystem = GatheringSystem.getInstance();
+    this.combatSystem = new CombatSystem(
+      this.state as any,
+      this.itemManager,
+      new (require('./PrayerSystem').PrayerSystem)()
+    );
+
+    // Initialize wave manager for survivor mechanics
+    this.waveManager = new WaveManager(this.state as any, this.itemManager);
 
     // Spawn resources after map initialization
     const currentMap = this.state.maps.get(this.state.currentMapId);
@@ -132,25 +146,37 @@ export class GameRoom extends Room<WorldState> {
       this.gatheringSystem.spawnResources(this.state, currentMap.width, currentMap.height);
     }
 
-    // Start simulation loop: move NPCs and process combat every second
+    // Main game loop: ECS systems + Colyseus sync (60 FPS)
     this.setSimulationInterval(() => {
-      // Update NPC positions randomly
-      this.updateNPCs();
-      // Determine NPC behaviors and attacks
-      this.updateNPCBehavior();
-      // Process any queued combat actions
-      this.combatSystem.process(Date.now());
-      // Update resources (check for respawns)
-      this.gatheringSystem.updateResources(this.state);
-    }, 1000);
+      const currentTime = Date.now();
+      const deltaTime = currentTime - this.lastUpdateTime || 16; // Default to 16ms (60 FPS)
 
-    // Add some initial NPCs with structured loot tables
+      // Sync Colyseus state to ECS
+      this.ecsIntegration.syncWorldToECS(this.state);
+
+      // Update ECS systems
+      this.ecsIntegration.update(deltaTime);
+      // Update wave manager (survivor mechanics)
+      this.waveManager.update();
+
+      // Sync ECS state back to Colyseus
+      this.ecsIntegration.syncWorldFromECS(this.state);
+
+      // Update legacy systems that haven't been converted to ECS yet
+      this.updateNPCs();
+      this.updateNPCBehavior();
+      this.gatheringSystem.updateResources(this.state);
+
+      this.lastUpdateTime = currentTime;
+    }, 1000 / 60); // 60 FPS for smooth gameplay
+
+    // Legacy NPCs for testing (will be removed when wave system takes over)
     const goblin1 = new NPC('goblin_1', 'Goblin', 5, 5, 'goblin', [
-      { itemId: 'bronze_sword', probability: 0.5, quantity: 1 },
-      { itemId: 'bronze_plate', probability: 0.25, quantity: 1 },
+      { itemId: 'bronze_sword', probability: 0.5 },
+      { itemId: 'bronze_plate', probability: 0.25 },
     ]);
     const orc1 = new NPC('orc_1', 'Orc', 15, 15, 'orc', [
-      { itemId: 'iron_sword', probability: 0.7, quantity: 1 },
+      { itemId: 'iron_sword', probability: 0.7 },
     ]);
     this.state.npcs.set(goblin1.id, goblin1);
     this.state.npcs.set(orc1.id, orc1);
@@ -174,7 +200,7 @@ export class GameRoom extends Room<WorldState> {
         const targetEntity = this.state.npcs.get(targetId) || this.state.players.get(targetId);
         if (targetEntity) {
           targetEntity.health = Math.max(0, targetEntity.health - result.damage);
-          broadcastPlayerState(this, targetId, targetEntity);
+          this.broadcast('entity_update', { entityId: targetId, health: targetEntity.health });
           // Handle death
           if (targetEntity.health === 0) {
             if (this.state.npcs.has(targetId)) {
@@ -182,23 +208,24 @@ export class GameRoom extends Room<WorldState> {
               const lootDrop = await LootManager.dropLootFromNPC(this.state, npc, npc.lootTable);
               if (lootDrop) {
                 this.broadcast('loot_spawn', lootDrop);
-                
+
                 // Check for rare drops and send Discord notification
                 for (const item of lootDrop.items) {
                   const itemDef = await this.itemManager.getItemDefinition(item.itemId);
                   // Consider items with high base value as rare (e.g., > 10000)
                   // Or items with specific names containing 'dragon', 'rune', etc.
-                  if (itemDef && (
-                    itemDef.baseValue > 10000 || 
-                    itemDef.name.toLowerCase().includes('dragon') ||
-                    itemDef.name.toLowerCase().includes('rune') ||
-                    itemDef.name.toLowerCase().includes('unique')
-                  )) {
+                  if (
+                    itemDef &&
+                    (itemDef.baseValue > 10000 ||
+                      itemDef.name.toLowerCase().includes('dragon') ||
+                      itemDef.name.toLowerCase().includes('rune') ||
+                      itemDef.name.toLowerCase().includes('unique'))
+                  ) {
                     sendGameEventNotification('rare_drop', {
                       playerName: this.state.players.get(client.sessionId)?.username || 'Unknown',
                       itemName: itemDef.name,
                       source: npc.name,
-                      dropRate: 100 // Mock drop rate for now
+                      dropRate: 100, // Mock drop rate for now
                     });
                   }
                 }
@@ -209,17 +236,17 @@ export class GameRoom extends Room<WorldState> {
               // Player death
               const deadPlayer = this.state.players.get(targetId);
               const killer = this.state.players.get(client.sessionId);
-              
+
               if (deadPlayer && killer) {
                 sendGameEventNotification('player_death', {
                   playerName: deadPlayer.username,
                   killedBy: killer.username,
                   x: deadPlayer.x,
                   y: deadPlayer.y,
-                  combatLevel: deadPlayer.combatLevel || 1
+                  combatLevel: deadPlayer.combatLevel || 1,
                 });
               }
-              
+
               client.send('player_dead', { playerId: targetId });
             }
           }
@@ -228,12 +255,16 @@ export class GameRoom extends Room<WorldState> {
         const targetClient = this.clients.find(c => c.sessionId === targetId);
         if (targetClient) {
           targetClient.send('attack_result', { attackerId: client.sessionId, targetId, result });
-        }
-        // Broadcast updated health or other state to both
+        } // Broadcast updated health or other state to both
         const attackerState = this.state.players.get(client.sessionId);
-        if (attackerState) broadcastPlayerState(this, client.sessionId, attackerState);
+        if (attackerState)
+          this.broadcast('updatePlayerState', {
+            playerId: client.sessionId,
+            playerState: attackerState,
+          });
         const defenderState = this.state.players.get(targetId);
-        if (defenderState) broadcastPlayerState(this, targetId, defenderState);
+        if (defenderState)
+          this.broadcast('updatePlayerState', { playerId: targetId, playerState: defenderState });
       }
     });
 
@@ -243,7 +274,7 @@ export class GameRoom extends Room<WorldState> {
         player.x = message.x;
         player.y = message.y;
         console.log(`Player ${client.sessionId} moved to (${player.x}, ${player.y})`);
-        broadcastPlayerState(this, client.sessionId, player);
+        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
       }
     });
 
@@ -255,7 +286,7 @@ export class GameRoom extends Room<WorldState> {
       if (!invItem) return client.send('equip_error', { message: 'Inventory slot empty.' });
       player.inventory.splice(message.itemIndex, 1);
       player.equipment[message.slot] = invItem.itemId;
-      broadcastPlayerState(this, client.sessionId, player);
+      this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
     });
 
     // Drop item handler
@@ -273,7 +304,7 @@ export class GameRoom extends Room<WorldState> {
       );
       if (lootDrop) {
         this.broadcast('loot_spawn', lootDrop);
-        broadcastPlayerState(this, client.sessionId, player);
+        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
       }
     });
 
@@ -287,19 +318,18 @@ export class GameRoom extends Room<WorldState> {
 
       const { resourceId } = message;
       const result = await this.gatheringSystem.gatherResource(this.state, player, resourceId);
-      
+
       if (result.success) {
         console.log(`Player ${player.username} started gathering from resource ${resourceId}`);
-        client.send('gather_started', { 
+        client.send('gather_started', {
           message: result.message,
-          resourceId 
+          resourceId,
         });
-        
         // Update player state to show busy status
-        broadcastPlayerState(this, client.sessionId, player);
+        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
       } else {
-        client.send('gather_error', { 
-          message: result.message 
+        client.send('gather_error', {
+          message: result.message,
         });
       }
     });
@@ -620,21 +650,27 @@ export class GameRoom extends Room<WorldState> {
 
       // Validate inventory space for both players
       const MAX_INVENTORY_SIZE = 28; // OSRS standard inventory size
-      
+
       // Check if proposer has space for accepter's items
-      const proposerFinalInventorySize = proposer.inventory.length - trade.proposerItems.length + trade.accepterItems.length;
+      const proposerFinalInventorySize =
+        proposer.inventory.length - trade.proposerItems.length + trade.accepterItems.length;
       if (proposerFinalInventorySize > MAX_INVENTORY_SIZE) {
         client.send('trade_error', { message: 'Proposer does not have enough inventory space.' });
         this.clients
           .find(c => c.sessionId === trade.proposerId)
-          ?.send('trade_error', { message: 'You do not have enough inventory space for this trade.' });
+          ?.send('trade_error', {
+            message: 'You do not have enough inventory space for this trade.',
+          });
         return;
       }
 
       // Check if accepter has space for proposer's items
-      const accepterFinalInventorySize = accepter.inventory.length - trade.accepterItems.length + trade.proposerItems.length;
+      const accepterFinalInventorySize =
+        accepter.inventory.length - trade.accepterItems.length + trade.proposerItems.length;
       if (accepterFinalInventorySize > MAX_INVENTORY_SIZE) {
-        client.send('trade_error', { message: 'You do not have enough inventory space for this trade.' });
+        client.send('trade_error', {
+          message: 'You do not have enough inventory space for this trade.',
+        });
         this.clients
           .find(c => c.sessionId === trade.proposerId)
           ?.send('trade_error', { message: 'Accepter does not have enough inventory space.' });
@@ -644,12 +680,18 @@ export class GameRoom extends Room<WorldState> {
       // Double-check that all offered items still exist in inventories
       // This prevents item duplication exploits
       for (const item of trade.proposerItems) {
-        const invItem = proposer.inventory.find(i => i.itemId === item.itemId && i.quantity >= item.quantity);
+        const invItem = proposer.inventory.find(
+          i => i.itemId === item.itemId && i.quantity >= item.quantity
+        );
         if (!invItem) {
-          client.send('trade_error', { message: 'Trade failed: Proposer no longer has all offered items.' });
+          client.send('trade_error', {
+            message: 'Trade failed: Proposer no longer has all offered items.',
+          });
           this.clients
             .find(c => c.sessionId === trade.proposerId)
-            ?.send('trade_error', { message: 'Trade failed: You no longer have all offered items.' });
+            ?.send('trade_error', {
+              message: 'Trade failed: You no longer have all offered items.',
+            });
           // Cancel the trade and return items
           this.cancelTradeAndReturnItems(trade);
           return;
@@ -657,12 +699,18 @@ export class GameRoom extends Room<WorldState> {
       }
 
       for (const item of trade.accepterItems) {
-        const invItem = accepter.inventory.find(i => i.itemId === item.itemId && i.quantity >= item.quantity);
+        const invItem = accepter.inventory.find(
+          i => i.itemId === item.itemId && i.quantity >= item.quantity
+        );
         if (!invItem) {
-          client.send('trade_error', { message: 'Trade failed: You no longer have all offered items.' });
+          client.send('trade_error', {
+            message: 'Trade failed: You no longer have all offered items.',
+          });
           this.clients
             .find(c => c.sessionId === trade.proposerId)
-            ?.send('trade_error', { message: 'Trade failed: Accepter no longer has all offered items.' });
+            ?.send('trade_error', {
+              message: 'Trade failed: Accepter no longer has all offered items.',
+            });
           // Cancel the trade and return items
           this.cancelTradeAndReturnItems(trade);
           return;
@@ -751,14 +799,16 @@ export class GameRoom extends Room<WorldState> {
       );
 
       // Send Discord notification for trade completion
-      const proposerItemsStr = trade.proposerItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
-      const accepterItemsStr = trade.accepterItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
-      
+      const proposerItemsStr =
+        trade.proposerItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
+      const accepterItemsStr =
+        trade.accepterItems.map(i => `${i.quantity}x ${i.name}`).join(', ') || 'Nothing';
+
       sendGameEventNotification('trade_completed', {
         player1: proposer.username,
         player2: accepter.username,
         player1Items: proposerItemsStr,
-        player2Items: accepterItemsStr
+        player2Items: accepterItemsStr,
       });
 
       // Validate state after trade completion
@@ -870,89 +920,97 @@ export class GameRoom extends Room<WorldState> {
 
       // Validate state after trade cancellation
       this.validateStateIntegrity();
-    });
-
-    // Collect loot handler
-    this.onMessage('collect_loot', (client, message: CollectLootMessage) => {
+    }); // Enhanced loot collection handler with distance validation and economy sync
+    this.onMessage('collect_loot', async (client, message: CollectLootMessage) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) {
         client.send('collect_loot_error', { message: 'Player not found.' });
         return;
       }
+
+      const lootDrop = this.state.lootDrops.get(message.lootId);
+      if (!lootDrop) {
+        client.send('collect_loot_error', { message: 'Loot not found or already collected.' });
+        return;
+      }
+
+      // Distance validation
+      const distance = Math.sqrt(
+        Math.pow(player.x - lootDrop.x, 2) + Math.pow(player.y - lootDrop.y, 2)
+      );
+      if (distance > this.lootPickupRadius) {
+        console.log(
+          `Player ${player.username} is too far from loot ${message.lootId} (distance: ${distance})`
+        );
+        client.send('collect_loot_error', { message: 'Too far from loot.' });
+        return;
+      }
+      // Store items before collection for economy sync (critical fix)
+      const itemsToSync: Array<{
+        itemId: string;
+        quantity: number;
+        name: string;
+        description: string;
+        attack: number;
+        defense: number;
+        isStackable: boolean;
+      }> = [];
+      if (lootDrop.items && lootDrop.items.length > 0) {
+        for (const item of lootDrop.items) {
+          itemsToSync.push({
+            itemId: item.itemId,
+            quantity: item.quantity,
+            name: item.name,
+            description: item.description,
+            attack: item.attack,
+            defense: item.defense,
+            isStackable: item.isStackable,
+          });
+        }
+      }
+
       const success = LootManager.collectLoot(this.state, player, message.lootId);
       if (success) {
         client.send('collect_loot_result', { lootId: message.lootId, inventory: player.inventory });
-        broadcastPlayerState(this, client.sessionId, player);
-        sendDiscordNotification(`Player ${player.username} collected loot ${message.lootId}`);
-      } else {
-        client.send('collect_loot_error', { message: 'Loot not found or already collected.' });
-      }
-    });
+        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
 
-    // Loot collection handler
-    this.onMessage('collect_loot', (client, message) => {
-      const player = this.state.players.get(client.sessionId);
-      if (!player) {
-        console.warn(`Player ${client.sessionId} not found for loot collection.`);
-        return;
-      }
-      const lootId = message.lootId;
-      const lootDrop = this.state.lootDrops.get(lootId);
-      if (!lootDrop) {
-        console.warn(`Loot drop ${lootId} not found.`);
-        return;
-      }
-      // Optional: Validate player is near the loot drop
-      const dx = Math.abs(player.x - lootDrop.x);
-      const dy = Math.abs(player.y - lootDrop.y);
-      if (dx > 2 || dy > 2) {
-        console.warn(`Player ${player.id} is too far from loot drop ${lootId}.`);
-        return;
-      }
-      const result = LootManager.collectLoot(this.state, player, lootId);
-      if (result) {
-        console.log(`Player ${player.id} collected loot ${lootId}.`);
-        // ECONOMY API SYNC: Add collected items to player's economy inventory
-        // Assume lootDrop still contains the items (if not, store items before collection)
-        if (lootDrop && lootDrop.items && lootDrop.items.length > 0) {
-          economyIntegration
-            .getOrCreatePlayerProfile(player.username)
-            .then(profile => {
+        // Economy API sync for collected items
+        if (itemsToSync.length > 0 && economyIntegration) {
+          try {
+            const profile = await economyIntegration.getOrCreatePlayerProfile(player.username);
+            if (profile) {
               const economyId = profile.id;
-              lootDrop.items.forEach(async item => {
-                const itemDef = await this.itemManager.getItemDefinition(item.itemId);
-                if (itemDef && itemDef.id) {
-                  economyIntegration
-                    .addItemToInventory(economyId, itemDef.id, item.quantity)
-                    .catch(err => {
-                      console.error(
-                        `Failed to sync item ${item.itemId} for player ${economyId}:`,
-                        err
-                      );
-                    });
-                } else {
-                  console.warn(`Missing item definition for loot item ${item.itemId}`);
+              for (const item of itemsToSync) {
+                try {
+                  const itemDef = await this.itemManager.getItemDefinition(item.itemId);
+                  if (itemDef && itemDef.id) {
+                    await economyIntegration.addItemToInventory(
+                      economyId,
+                      itemDef.id,
+                      item.quantity
+                    );
+                  } else {
+                    console.warn(`Missing item definition for loot item ${item.itemId}`);
+                  }
+                } catch (err) {
+                  console.error(`Failed to sync item ${item.itemId} for player ${economyId}:`, err);
                 }
-              });
-              // Discord notification
-              sendDiscordNotification &&
-                sendDiscordNotification(
-                  `:tada: ${player.username} collected loot: ${lootDrop.items.map(i => i.name).join(', ')}`
-                );
-            })
-            .catch(err => {
-              console.error(
-                `Failed to resolve economy profile for player ${player.username}:`,
-                err
-              );
-            });
+              }
+            }
+          } catch (err) {
+            console.error(`Failed to resolve economy profile for player ${player.username}:`, err);
+          }
         }
-        broadcastPlayerState(this, client.sessionId, player);
+
+        // Discord notification
+        sendDiscordNotification(
+          `✨ ${player.username} collected loot: ${itemsToSync.map(i => i.name).join(', ')}`
+        );
 
         // Validate state after loot collection
         this.validateStateIntegrity();
       } else {
-        console.warn(`Player ${player.id} failed to collect loot ${lootId}.`);
+        client.send('collect_loot_error', { message: 'Failed to collect loot.' });
       }
     });
 
@@ -1001,7 +1059,7 @@ export class GameRoom extends Room<WorldState> {
         } catch (error) {
           console.error(`Failed to sync item usage for ${itemId} for player ${player.id}:`, error);
         }
-        broadcastPlayerState(this, client.sessionId, player);
+        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
       } else {
         console.warn(
           `Player ${player.id} attempted to use ${itemId} but does not have it or enough quantity.`
@@ -1035,7 +1093,7 @@ export class GameRoom extends Room<WorldState> {
         } catch (error) {
           console.error(`Failed to sync item drop for ${itemId} for player ${player.id}:`, error);
         }
-        broadcastPlayerState(this, client.sessionId, player);
+        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
       } else {
         console.warn(`Player ${player.id} failed to drop ${quantity}x ${itemId}.`);
       }
@@ -1067,27 +1125,28 @@ export class GameRoom extends Room<WorldState> {
       // Player has existing save data
       await playerPersistence.applyLoadedData(player, saveData);
       console.log(`Loaded saved data for ${player.username}`);
-      
+
       // Notify player of successful load
       client.send('data_loaded', {
         message: 'Welcome back! Your progress has been restored.',
         combatLevel: player.combatLevel,
-        totalLevel: player.skills ? 
-          (player.skills.attack?.level || 1) + 
-          (player.skills.strength?.level || 1) + 
-          (player.skills.defence?.level || 1) +
-          (player.skills.mining?.level || 1) +
-          (player.skills.woodcutting?.level || 1) +
-          (player.skills.fishing?.level || 1) +
-          (player.skills.prayer?.level || 1) : 7
+        totalLevel: player.skills
+          ? (player.skills.attack?.level || 1) +
+            (player.skills.strength?.level || 1) +
+            (player.skills.defence?.level || 1) +
+            (player.skills.mining?.level || 1) +
+            (player.skills.woodcutting?.level || 1) +
+            (player.skills.fishing?.level || 1) +
+            (player.skills.prayer?.level || 1)
+          : 7,
       });
     } else {
       // New player - set initial combat level
       player.combatLevel = 3;
       console.log(`New player ${player.username} created`);
-      
+
       client.send('welcome', {
-        message: 'Welcome to RuneRogue! Your progress will be saved automatically.'
+        message: 'Welcome to RuneRogue! Your progress will be saved automatically.',
       });
     }
 
@@ -1225,12 +1284,10 @@ export class GameRoom extends Room<WorldState> {
         const starterPotion = new InventoryItem(starterPotionDef, 3);
         player.inventory.push(starterPotion);
       }
-    }
-
-    // Validate state after player inventory setup
+    } // Validate state after player inventory setup
     this.validateStateIntegrity();
 
-    broadcastPlayerState(this, client.sessionId, player);
+    this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
 
     // Send welcome message to the client
     client.send('welcome', {
@@ -1251,7 +1308,7 @@ export class GameRoom extends Room<WorldState> {
       console.log(`Saving data for ${player.username} before disconnect...`);
       await playerPersistence.savePlayer(player);
       playerPersistence.stopAutoSave(player.id);
-      
+
       console.log(client.sessionId, 'left the room!', { consented });
 
       if (consented) {
@@ -1306,6 +1363,29 @@ export class GameRoom extends Room<WorldState> {
     console.log(
       `NPC ${npc.name} attacked Player ${player.id} for ${damage} damage. Player health is now ${player.health}.`
     );
+  }
+
+  /**
+   * Spawn initial enemies for immediate gameplay
+   */
+  private spawnInitialEnemies(): void {
+    // Spawn a few goblins for immediate gameplay
+    for (let i = 0; i < 3; i++) {
+      const goblin = new NPC(`goblin_initial_${i}`, 'Goblin', 5 + i * 3, 5 + i * 2, 'goblin', []);
+      goblin.health = 15;
+      goblin.maxHealth = 15;
+      goblin.combatLevel = 1;
+      this.state.npcs.set(goblin.id, goblin);
+    }
+    console.log('Initial enemies spawned for immediate gameplay');
+  }
+
+  /**
+   * Update wave manager and handle survivor mechanics
+   */
+  private updateWaveManager(): void {
+    // The wave manager has its own update method
+    // This could be expanded to handle additional survivor mechanics
   }
 
   /**
@@ -1365,14 +1445,11 @@ export class GameRoom extends Room<WorldState> {
             console.error(`❌ Trade ${tradeId} has undefined item at index ${index}!`);
           } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
             // eslint-disable-next-line no-console
-            console.error(
-              `❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`,
-              {
-                type: typeof item,
-                constructor: item.constructor?.name,
-                item: item,
-              }
-            );
+            console.error(`❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`, {
+              type: typeof item,
+              constructor: item.constructor?.name,
+              item: item,
+            });
           }
         });
       }
@@ -1387,14 +1464,11 @@ export class GameRoom extends Room<WorldState> {
             console.error(`❌ Trade ${tradeId} has undefined item at index ${index}!`);
           } else if (typeof item !== 'object' || item.constructor.name !== 'InventoryItem') {
             // eslint-disable-next-line no-console
-            console.error(
-              `❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`,
-              {
-                type: typeof item,
-                constructor: item.constructor?.name,
-                item: item,
-              }
-            );
+            console.error(`❌ Trade ${tradeId} has non-InventoryItem object at index ${index}:`, {
+              type: typeof item,
+              constructor: item.constructor?.name,
+              item: item,
+            });
           }
         });
       }
