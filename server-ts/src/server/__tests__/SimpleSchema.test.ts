@@ -19,12 +19,12 @@ describe('Simple Schema Debug', () => {
       expect(player.health).toBe(100);
     }).not.toThrow();
   });
-  
+
   it('should be able to modify properties', () => {
     const player = new SimplePlayer();
     player.name = 'changed';
     player.health = 50;
-    
+
     expect(player.name).toBe('changed');
     expect(player.health).toBe(50);
   });

@@ -1,9 +1,9 @@
 /**
  * RuneRogue Game Room - Clean Colyseus Room Implementation
- * 
+ *
  * This is a simplified, working game room that focuses on core multiplayer functionality:
  * - Player join/leave
- * - Movement synchronization 
+ * - Movement synchronization
  * - Basic combat mechanics
  * - Enemy spawning and waves
  */
@@ -35,7 +35,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    */
   async onCreate(options: any) {
     console.log('🎮 Creating RuneRogue game room...');
-    
+
     this.setState(new GameRoomState());
     this.setupMessageHandlers();
     this.startGameLoop();
@@ -53,12 +53,14 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
 
     const username = options.username || `Player${Math.floor(Math.random() * 1000)}`;
     const player = this.state.addPlayer(client.sessionId, username);
-    
+
     // Set random starting position
     player.position.x = Math.random() * 800 + 100;
     player.position.y = Math.random() * 600 + 100;
 
-    console.log(`✅ Player ${username} (${client.sessionId}) joined at (${player.position.x}, ${player.position.y})`);
+    console.log(
+      `✅ Player ${username} (${client.sessionId}) joined at (${player.position.x}, ${player.position.y})`
+    );
   }
 
   /**
@@ -66,9 +68,9 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    */
   async onLeave(client: Client, consented: boolean) {
     console.log(`👋 Player ${client.sessionId} leaving (consented: ${consented})`);
-    
+
     this.state.removePlayer(client.sessionId);
-    
+
     // If no players left, end the game
     if (this.state.players.size === 0) {
       console.log('🛑 No players remaining, ending game...');
@@ -81,7 +83,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    */
   onDispose() {
     console.log('🧹 Disposing RuneRogue game room...');
-    
+
     if (this.gameLoopInterval) {
       clearInterval(this.gameLoopInterval);
     }
@@ -156,7 +158,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
         const speed = 5; // pixels per tick at 20 TPS
         const moveX = (dx / distance) * speed;
         const moveY = (dy / distance) * speed;
-        
+
         player.position.x += moveX;
         player.position.y += moveY;
       }
@@ -174,7 +176,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
       const nearestPlayer = this.findNearestPlayer(enemy);
       if (nearestPlayer) {
         const distance = this.getDistance(enemy.position, nearestPlayer.position);
-        
+
         if (distance < 50) {
           // In attack range
           this.handleEnemyAttack(enemy, nearestPlayer);
@@ -197,11 +199,11 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
       // Calculate damage using simplified OSRS formula
       const maxHit = this.calculateMaxHit(attacker);
       const damage = Math.floor(Math.random() * (maxHit + 1));
-      
+
       const died = enemy.takeDamage(damage);
-      
+
       console.log(`⚔️ ${attacker.username} attacks ${enemy.name} for ${damage} damage`);
-      
+
       if (died) {
         console.log(`💀 ${enemy.name} has been defeated!`);
         this.state.removeEnemy(targetId);
@@ -215,11 +217,11 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
   private handleEnemyAttack(enemy: Enemy, target: Player): void {
     const maxHit = enemy.stats.strength; // Simple calculation
     const damage = Math.floor(Math.random() * (maxHit + 1));
-    
+
     const died = target.takeDamage(damage);
-    
+
     console.log(`🗡️ ${enemy.name} attacks ${target.username} for ${damage} damage`);
-    
+
     if (died) {
       console.log(`💀 ${target.username} has been defeated!`);
       // In a real game, handle respawn logic here
@@ -233,9 +235,9 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
     const strength = player.stats.strength;
     const strengthBonus = player.bonuses.strengthBonus;
     const effectiveStrength = strength + strengthBonus;
-    
+
     // Simplified OSRS formula
-    return Math.floor(0.5 + effectiveStrength * (64 + strengthBonus) / 640);
+    return Math.floor(0.5 + (effectiveStrength * (64 + strengthBonus)) / 640);
   }
 
   /**
@@ -244,7 +246,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
   private startWaveSpawning(): void {
     // Spawn initial enemies
     this.spawnWave();
-    
+
     this.waveSpawnInterval = setInterval(() => {
       if (this.state.wave.enemiesRemaining === 0) {
         this.spawnWave();
@@ -262,17 +264,17 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
     wave.waveStartTime = Date.now();
 
     const enemyCount = Math.min(10, 2 + wave.currentWave);
-    
+
     console.log(`🌊 Spawning wave ${wave.currentWave} with ${enemyCount} enemies`);
 
     for (let i = 0; i < enemyCount; i++) {
       const enemyId = `enemy_${wave.currentWave}_${i}`;
       const enemy = new Enemy(enemyId, `Goblin ${i + 1}`, wave.currentWave);
-      
+
       // Random spawn position
       enemy.position.x = Math.random() * 1000;
       enemy.position.y = Math.random() * 800;
-      
+
       this.state.addEnemy(enemy);
     }
   }
@@ -296,7 +298,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
 
     this.state.players.forEach(player => {
       if (!player.isAlive) return;
-      
+
       const distance = this.getDistance(enemy.position, player.position);
       if (distance < minDistance) {
         minDistance = distance;

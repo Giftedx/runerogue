@@ -221,7 +221,7 @@ describe('Clean Game Schemas', () => {
       // Basic schema operations should work
       expect(gameState).toBeInstanceOf(GameRoomState);
       expect(player).toBeInstanceOf(Player);
-      
+
       // Can add to maps
       gameState.players.set('test', player);
       expect(gameState.players.has('test')).toBe(true);

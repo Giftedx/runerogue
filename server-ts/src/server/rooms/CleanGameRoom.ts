@@ -4,14 +4,14 @@
  */
 
 import { Room, Client } from '@colyseus/core';
-import { 
-  GameRoomState, 
-  Player, 
+import {
+  GameRoomState,
+  Player,
   Enemy,
   createPlayer,
   createEnemy,
   createGameRoomState,
-  validatePlayer 
+  validatePlayer,
 } from '../schemas/CoreSchemas';
 
 export interface JoinOptions {
@@ -31,13 +31,13 @@ export class CleanGameRoom extends Room<GameRoomState> {
 
   onCreate(options: any) {
     console.log('CleanGameRoom created with options:', options);
-    
+
     // Initialize game state using the working CoreSchemas
     this.setState(createGameRoomState());
-    
+
     // Set up game loop
-    this.setSimulationInterval((deltaTime) => this.update(deltaTime));
-    
+    this.setSimulationInterval(deltaTime => this.update(deltaTime));
+
     // Handle player input
     this.onMessage('input', (client, message: PlayerInput) => {
       this.handlePlayerInput(client, message);
@@ -46,14 +46,14 @@ export class CleanGameRoom extends Room<GameRoomState> {
 
   onJoin(client: Client, options: JoinOptions) {
     console.log(`Player ${client.sessionId} joining with username: ${options.username}`);
-    
+
     const username = options.username || `Player_${client.sessionId.slice(0, 6)}`;
     const player = createPlayer(client.sessionId, username);
-    
+
     // Set spawn position
     player.position.x = Math.floor(Math.random() * 10);
     player.position.y = Math.floor(Math.random() * 10);
-    
+
     // Validate before adding
     if (validatePlayer(player)) {
       this.state.players.set(client.sessionId, player);
@@ -83,13 +83,13 @@ export class CleanGameRoom extends Room<GameRoomState> {
           this.movePlayer(player, input.x, input.y);
         }
         break;
-      
+
       case 'attack':
         if (input.targetId) {
           this.handleAttack(player, input.targetId);
         }
         break;
-        
+
       case 'interact':
         this.handleInteraction(player, input.targetId);
         break;
@@ -101,11 +101,11 @@ export class CleanGameRoom extends Room<GameRoomState> {
     if (newX < 0 || newX > 100 || newY < 0 || newY > 100) {
       return; // Out of bounds
     }
-    
+
     // Simple movement - in a real game you'd validate pathfinding
     player.position.x = newX;
     player.position.y = newY;
-    
+
     console.log(`Player ${player.username} moved to (${newX}, ${newY})`);
   }
 
@@ -127,7 +127,7 @@ export class CleanGameRoom extends Room<GameRoomState> {
       const damage = Math.floor(Math.random() * 15) + 5;
       targetEnemy.health = Math.max(0, targetEnemy.health - damage);
       console.log(`${attacker.username} attacked ${targetEnemy.name} for ${damage} damage`);
-      
+
       // Remove enemy if dead
       if (targetEnemy.health <= 0) {
         this.state.enemies.delete(targetId);
@@ -145,14 +145,14 @@ export class CleanGameRoom extends Room<GameRoomState> {
     // Update game tick
     this.state.tick++;
     this.state.timestamp = Date.now();
-    
+
     // Spawn enemies occasionally
     if (this.state.tick % 300 === 0 && this.state.enemies.size < 10) {
       this.spawnRandomEnemy();
     }
-    
+
     // Update enemy AI (simple example)
-    this.state.enemies.forEach((enemy) => {
+    this.state.enemies.forEach(enemy => {
       this.updateEnemyAI(enemy);
     });
   }
@@ -161,28 +161,31 @@ export class CleanGameRoom extends Room<GameRoomState> {
     const enemyTypes = [
       { name: 'Goblin', level: 5, health: 30 },
       { name: 'Orc', level: 10, health: 50 },
-      { name: 'Skeleton', level: 8, health: 40 }
+      { name: 'Skeleton', level: 8, health: 40 },
     ];
-    
+
     const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
     const enemyId = `enemy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const enemy = createEnemy(enemyId, enemyType.name, enemyType.level);
     enemy.health = enemyType.health;
     enemy.maxHealth = enemyType.health;
     enemy.position.x = Math.floor(Math.random() * 100);
     enemy.position.y = Math.floor(Math.random() * 100);
-    
+
     this.state.enemies.set(enemyId, enemy);
-    console.log(`Spawned ${enemy.name} (lvl ${enemy.level}) at (${enemy.position.x}, ${enemy.position.y})`);
+    console.log(
+      `Spawned ${enemy.name} (lvl ${enemy.level}) at (${enemy.position.x}, ${enemy.position.y})`
+    );
   }
 
   private updateEnemyAI(enemy: Enemy) {
     // Simple random movement for now
-    if (Math.random() < 0.01) { // 1% chance per tick to move
+    if (Math.random() < 0.01) {
+      // 1% chance per tick to move
       enemy.position.x += Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
       enemy.position.y += Math.floor(Math.random() * 3) - 1;
-      
+
       // Keep in bounds
       enemy.position.x = Math.max(0, Math.min(100, enemy.position.x));
       enemy.position.y = Math.max(0, Math.min(100, enemy.position.y));

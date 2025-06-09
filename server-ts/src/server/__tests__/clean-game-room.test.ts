@@ -33,7 +33,7 @@ describe('CleanGameRoom Integration Tests', () => {
     // Player should be added to the game state
     await new Promise(resolve => setTimeout(resolve, 100)); // Give time for state sync
     expect(room.state.players.size).toBe(1);
-    
+
     const player = room.state.players.get(room.sessionId);
     expect(player).toBeDefined();
     expect(player?.username).toBe('TestPlayer');
@@ -75,10 +75,10 @@ describe('CleanGameRoom Integration Tests', () => {
     const initialY = player?.position.y;
 
     // Send movement command
-    room.send('input', { 
-      type: 'move', 
-      x: 50, 
-      y: 50 
+    room.send('input', {
+      type: 'move',
+      x: 50,
+      y: 50,
     });
 
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -100,7 +100,7 @@ describe('CleanGameRoom Integration Tests', () => {
     expect(room.state.players.size).toBe(1);
 
     await room.leave();
-    
+
     // Note: We can't easily test the state after leaving since we don't have access
     // to the room state anymore, but the onLeave handler should remove the player
   });
