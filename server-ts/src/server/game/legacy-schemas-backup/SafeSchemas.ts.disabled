@@ -1,0 +1,323 @@
+/**
+ * Safe Schema Definitions for RuneRogue
+ * 
+ * This module provides safely-registered Colyseus schemas that prevent
+ * duplicate registration errors during Jest test runs.
+ */
+
+import { Schema, type, ArraySchema, MapSchema } from '@colyseus/schema';
+import { createSafeSchemaClass, safeType, isSchemaRegistered } from '../utils/schema-registry';
+
+// Types and interfaces
+export interface PlayerActionMessage {
+  type: string;
+  targetId?: string;
+  abilityId?: string;
+}
+
+export interface EquipItemMessage {
+  itemIndex: number;
+  slot: 'weapon' | 'armor' | 'shield';
+}
+
+export interface DropItemMessage {
+  itemIndex: number;
+  quantity?: number;
+}
+
+export interface CollectLootMessage {
+  lootId: string;
+}
+
+export interface LootDropMessage {
+  itemType: string;
+  quantity: number;
+  position: { x: number; y: number };
+}
+
+export interface TradeRequestMessage {
+  targetPlayerId: string;
+}
+
+export interface TradeOfferMessage {
+  offeredItems: { itemId: string; quantity: number }[];
+}
+
+export interface TradeAcceptMessage {
+  tradeId: string;
+}
+
+export interface TradeCancelMessage {
+  tradeId: string;
+}
+
+/**
+ * Safe Skill Schema
+ */
+export const Skill = createSafeSchemaClass('Skill', Schema, () => {
+  class SkillImpl extends Schema {
+    @type('number')
+    public level: number = 1;
+
+    @type('number')
+    public xp: number = 0;
+
+    constructor(level: number = 1, xp: number = 0) {
+      super();
+      this.level = level;
+      this.xp = xp;
+    }
+  }
+  return SkillImpl;
+});
+
+/**
+ * Safe Skills Collection Schema
+ */
+export const Skills = createSafeSchemaClass('Skills', Schema, () => {
+  class SkillsImpl extends Schema {
+    @type(Skill)
+    public attackSkill: InstanceType<typeof Skill>;
+
+    @type(Skill)
+    public strength: InstanceType<typeof Skill>;
+
+    @type(Skill)
+    public defence: InstanceType<typeof Skill>;
+
+    @type(Skill)
+    public mining: InstanceType<typeof Skill>;
+
+    @type(Skill)
+    public woodcutting: InstanceType<typeof Skill>;
+
+    @type(Skill)
+    public fishing: InstanceType<typeof Skill>;
+
+    @type(Skill)
+    public prayer: InstanceType<typeof Skill>;
+
+    constructor() {
+      super();
+      this.attackSkill = new Skill();
+      this.strength = new Skill();
+      this.defence = new Skill();
+      this.mining = new Skill();
+      this.woodcutting = new Skill();
+      this.fishing = new Skill();
+      this.prayer = new Skill();
+    }
+  }
+  return SkillsImpl;
+});
+
+/**
+ * Safe InventoryItem Schema
+ */
+export const InventoryItem = createSafeSchemaClass('InventoryItem', Schema, () => {
+  class InventoryItemImpl extends Schema {
+    @type('string')
+    public itemId: string = '';
+
+    @type('number')
+    public quantity: number = 1;
+
+    @type('string')
+    public name: string = '';
+
+    @type('number')
+    public attack: number = 0;
+
+    @type('number')
+    public strength: number = 0;
+
+    @type('number')
+    public defence: number = 0;
+
+    @type('number')
+    public ranged: number = 0;
+
+    @type('number')
+    public magic: number = 0;
+
+    @type('number')
+    public prayer: number = 0;
+
+    @type('number')
+    public value: number = 0;
+
+    @type('boolean')
+    public stackable: boolean = false;
+
+    @type('boolean')
+    public tradeable: boolean = true;
+
+    @type('string')
+    public description: string = '';
+
+    constructor(itemId: string = '', quantity: number = 1) {
+      super();
+      this.itemId = itemId;
+      this.quantity = quantity;
+    }
+  }
+  return InventoryItemImpl;
+});
+
+/**
+ * Safe Inventory Schema
+ */
+export const Inventory = createSafeSchemaClass('Inventory', Schema, () => {
+  class InventoryImpl extends Schema {
+    @type([InventoryItem])
+    public items = new ArraySchema<InstanceType<typeof InventoryItem>>();
+
+    @type('number')
+    public maxSlots: number = 28;
+
+    constructor() {
+      super();
+    }
+
+    addItem(item: InstanceType<typeof InventoryItem>): boolean {
+      if (this.items.length >= this.maxSlots) {
+        return false;
+      }
+      this.items.push(item);
+      return true;
+    }
+
+    removeItem(index: number): InstanceType<typeof InventoryItem> | null {
+      if (index < 0 || index >= this.items.length) {
+        return null;
+      }
+      const item = this.items[index];
+      this.items.splice(index, 1);
+      return item;
+    }
+
+    findItem(itemId: string): InstanceType<typeof InventoryItem> | null {
+      return this.items.find(item => item.itemId === itemId) || null;
+    }
+  }
+  return InventoryImpl;
+});
+
+/**
+ * Safe Player Schema
+ */
+export const Player = createSafeSchemaClass('Player', Schema, () => {
+  class PlayerImpl extends Schema {
+    @type('string')
+    public id: string = '';
+
+    @type('string')
+    public username: string = '';
+
+    @type('number')
+    public x: number = 0;
+
+    @type('number')
+    public y: number = 0;
+
+    @type('number')
+    public z: number = 0;
+
+    @type('number')
+    public health: number = 100;
+
+    @type('number')
+    public maxHealth: number = 100;
+
+    @type('number')
+    public combatLevel: number = 3;
+
+    @type(Skills)
+    public skills: InstanceType<typeof Skills>;
+
+    @type(Inventory)
+    public inventory: InstanceType<typeof Inventory>;
+
+    @type('boolean')
+    public isOnline: boolean = true;
+
+    @type('number')
+    public lastSeen: number = 0;
+
+    constructor(id: string = '', username: string = '') {
+      super();
+      this.id = id;
+      this.username = username;
+      this.skills = new Skills();
+      this.inventory = new Inventory();
+      this.lastSeen = Date.now();
+    }
+  }
+  return PlayerImpl;
+});
+
+/**
+ * Safe GameState Schema
+ */
+export const GameState = createSafeSchemaClass('GameState', Schema, () => {
+  class GameStateImpl extends Schema {
+    @type({ map: Player })
+    public players = new MapSchema<InstanceType<typeof Player>>();
+
+    @type({ map: 'string' })
+    public npcs = new MapSchema<string>();
+
+    @type({ map: 'string' })
+    public loot = new MapSchema<string>();
+
+    @type('number')
+    public timestamp: number = 0;
+
+    @type('number')
+    public tickRate: number = 60;
+
+    constructor() {
+      super();
+      this.timestamp = Date.now();
+    }
+
+    addPlayer(player: InstanceType<typeof Player>): void {
+      this.players.set(player.id, player);
+    }
+
+    removePlayer(playerId: string): void {
+      this.players.delete(playerId);
+    }
+
+    getPlayer(playerId: string): InstanceType<typeof Player> | undefined {
+      return this.players.get(playerId);
+    }
+
+    updateTimestamp(): void {
+      this.timestamp = Date.now();
+    }
+  }
+  return GameStateImpl;
+});
+
+/**
+ * Schema Factory Functions for Safe Instance Creation
+ */
+export const SchemaFactories = {
+  createSkill: (level: number = 1, xp: number = 0) => new Skill(level, xp),
+  createSkills: () => new Skills(),
+  createInventoryItem: (itemId: string = '', quantity: number = 1) => new InventoryItem(itemId, quantity),
+  createInventory: () => new Inventory(),
+  createPlayer: (id: string = '', username: string = '') => new Player(id, username),
+  createGameState: () => new GameState(),
+};
+
+/**
+ * Type exports for TypeScript
+ */
+export type SkillType = InstanceType<typeof Skill>;
+export type SkillsType = InstanceType<typeof Skills>;
+export type InventoryItemType = InstanceType<typeof InventoryItem>;
+export type InventoryType = InstanceType<typeof Inventory>;
+export type PlayerType = InstanceType<typeof Player>;
+export type GameStateType = InstanceType<typeof GameState>;

@@ -34,70 +34,77 @@ export interface ResourceDefinition {
 export class GatheringSystem {
   private static instance: GatheringSystem;
   private itemManager: ItemManager;
-  
+
   // Resource definitions
   private resourceDefinitions: Map<string, ResourceDefinition> = new Map([
-    ['tree', {
-      type: 'tree',
-      name: 'Tree',
-      requiredSkill: 1,
-      skillType: 'woodcutting',
-      respawnTime: 60000, // 1 minute
-      successChance: 0.8,
-      xpReward: 25,
-      loot: [
-        { itemId: 'logs', minQuantity: 1, maxQuantity: 1, weight: 100 }
-      ]
-    }],
-    ['oak_tree', {
-      type: 'oak_tree',
-      name: 'Oak Tree',
-      requiredSkill: 15,
-      skillType: 'woodcutting',
-      respawnTime: 90000, // 1.5 minutes
-      successChance: 0.6,
-      xpReward: 37.5,
-      loot: [
-        { itemId: 'oak_logs', minQuantity: 1, maxQuantity: 1, weight: 100 }
-      ]
-    }],
-    ['copper_rock', {
-      type: 'copper_rock',
-      name: 'Copper Rock',
-      requiredSkill: 1,
-      skillType: 'mining',
-      respawnTime: 45000, // 45 seconds
-      successChance: 0.85,
-      xpReward: 17.5,
-      loot: [
-        { itemId: 'copper_ore', minQuantity: 1, maxQuantity: 1, weight: 100 }
-      ]
-    }],
-    ['iron_rock', {
-      type: 'iron_rock',
-      name: 'Iron Rock',
-      requiredSkill: 15,
-      skillType: 'mining',
-      respawnTime: 60000, // 1 minute
-      successChance: 0.65,
-      xpReward: 35,
-      loot: [
-        { itemId: 'iron_ore', minQuantity: 1, maxQuantity: 1, weight: 100 }
-      ]
-    }],
-    ['fishing_spot', {
-      type: 'fishing_spot',
-      name: 'Fishing Spot',
-      requiredSkill: 1,
-      skillType: 'fishing',
-      respawnTime: 0, // Fishing spots don't deplete
-      successChance: 0.7,
-      xpReward: 40,
-      loot: [
-        { itemId: 'raw_shrimps', minQuantity: 1, maxQuantity: 1, weight: 70 },
-        { itemId: 'raw_anchovies', minQuantity: 1, maxQuantity: 1, weight: 30 }
-      ]
-    }]
+    [
+      'tree',
+      {
+        type: 'tree',
+        name: 'Tree',
+        requiredSkill: 1,
+        skillType: 'woodcutting',
+        respawnTime: 60000, // 1 minute
+        successChance: 0.8,
+        xpReward: 25,
+        loot: [{ itemId: 'logs', minQuantity: 1, maxQuantity: 1, weight: 100 }],
+      },
+    ],
+    [
+      'oak_tree',
+      {
+        type: 'oak_tree',
+        name: 'Oak Tree',
+        requiredSkill: 15,
+        skillType: 'woodcutting',
+        respawnTime: 90000, // 1.5 minutes
+        successChance: 0.6,
+        xpReward: 37.5,
+        loot: [{ itemId: 'oak_logs', minQuantity: 1, maxQuantity: 1, weight: 100 }],
+      },
+    ],
+    [
+      'copper_rock',
+      {
+        type: 'copper_rock',
+        name: 'Copper Rock',
+        requiredSkill: 1,
+        skillType: 'mining',
+        respawnTime: 45000, // 45 seconds
+        successChance: 0.85,
+        xpReward: 17.5,
+        loot: [{ itemId: 'copper_ore', minQuantity: 1, maxQuantity: 1, weight: 100 }],
+      },
+    ],
+    [
+      'iron_rock',
+      {
+        type: 'iron_rock',
+        name: 'Iron Rock',
+        requiredSkill: 15,
+        skillType: 'mining',
+        respawnTime: 60000, // 1 minute
+        successChance: 0.65,
+        xpReward: 35,
+        loot: [{ itemId: 'iron_ore', minQuantity: 1, maxQuantity: 1, weight: 100 }],
+      },
+    ],
+    [
+      'fishing_spot',
+      {
+        type: 'fishing_spot',
+        name: 'Fishing Spot',
+        requiredSkill: 1,
+        skillType: 'fishing',
+        respawnTime: 0, // Fishing spots don't deplete
+        successChance: 0.7,
+        xpReward: 40,
+        loot: [
+          { itemId: 'raw_shrimps', minQuantity: 1, maxQuantity: 1, weight: 70 },
+          { itemId: 'raw_anchovies', minQuantity: 1, maxQuantity: 1, weight: 30 },
+        ],
+      },
+    ],
   ]);
 
   private constructor() {
@@ -123,7 +130,7 @@ export class GatheringSystem {
     if (!resource) {
       return {
         success: false,
-        message: 'Resource not found'
+        message: 'Resource not found',
       };
     }
 
@@ -131,7 +138,7 @@ export class GatheringSystem {
     if (resource.depleted) {
       return {
         success: false,
-        message: 'This resource is depleted'
+        message: 'This resource is depleted',
       };
     }
 
@@ -140,7 +147,7 @@ export class GatheringSystem {
     if (distance > 2) {
       return {
         success: false,
-        message: 'You are too far from the resource'
+        message: 'You are too far from the resource',
       };
     }
 
@@ -148,7 +155,7 @@ export class GatheringSystem {
     if (player.isBusy) {
       return {
         success: false,
-        message: 'You are already busy'
+        message: 'You are already busy',
       };
     }
 
@@ -157,7 +164,7 @@ export class GatheringSystem {
     if (!definition) {
       return {
         success: false,
-        message: 'Unknown resource type'
+        message: 'Unknown resource type',
       };
     }
 
@@ -166,7 +173,7 @@ export class GatheringSystem {
     if (playerSkillLevel < definition.requiredSkill) {
       return {
         success: false,
-        message: `You need level ${definition.requiredSkill} ${definition.skillType} to gather this resource`
+        message: `You need level ${definition.requiredSkill} ${definition.skillType} to gather this resource`,
       };
     }
 
@@ -176,7 +183,7 @@ export class GatheringSystem {
       const toolName = this.getRequiredToolName(definition.skillType);
       return {
         success: false,
-        message: `You need a ${toolName} to gather this resource`
+        message: `You need a ${toolName} to gather this resource`,
       };
     }
 
@@ -184,7 +191,7 @@ export class GatheringSystem {
     if (player.inventory.length >= player.inventorySize) {
       return {
         success: false,
-        message: 'Your inventory is full'
+        message: 'Your inventory is full',
       };
     }
 
@@ -194,7 +201,7 @@ export class GatheringSystem {
 
     // Calculate success chance based on skill level
     const successChance = this.calculateSuccessChance(playerSkillLevel, definition);
-    
+
     // Simulate gathering after delay
     setTimeout(async () => {
       if (Math.random() < successChance) {
@@ -204,9 +211,10 @@ export class GatheringSystem {
           // Add item to inventory
           const itemDef = await this.itemManager.getItemDefinition(loot.itemId);
           if (itemDef) {
-            const quantity = loot.minQuantity + 
+            const quantity =
+              loot.minQuantity +
               Math.floor(Math.random() * (loot.maxQuantity - loot.minQuantity + 1));
-            
+
             const inventoryItem = new InventoryItem(itemDef, quantity);
             player.inventory.push(inventoryItem);
 
@@ -220,11 +228,12 @@ export class GatheringSystem {
             }
 
             // Send success notification
-            if (definition.xpReward > 50) { // Notify for valuable resources
+            if (definition.xpReward > 50) {
+              // Notify for valuable resources
               sendGameEventNotification('achievement', {
                 playerName: player.username,
                 achievementName: `Gathered ${itemDef.name}`,
-                points: Math.floor(xpGained)
+                points: Math.floor(xpGained),
               });
             }
           }
@@ -234,7 +243,7 @@ export class GatheringSystem {
 
     return {
       success: true,
-      message: `You begin ${definition.skillType}...`
+      message: `You begin ${definition.skillType}...`,
     };
   }
 
@@ -260,9 +269,9 @@ export class GatheringSystem {
   private hasRequiredTool(player: Player, skillType: string): boolean {
     // For now, check if player has any tool of the right type
     const toolPatterns: Record<string, RegExp> = {
-      'mining': /pickaxe|pick/i,
-      'woodcutting': /axe|hatchet/i,
-      'fishing': /rod|net|harpoon/i
+      mining: /pickaxe|pick/i,
+      woodcutting: /axe|hatchet/i,
+      fishing: /rod|net|harpoon/i,
     };
 
     const pattern = toolPatterns[skillType];
@@ -276,10 +285,14 @@ export class GatheringSystem {
    */
   private getRequiredToolName(skillType: string): string {
     switch (skillType) {
-      case 'mining': return 'pickaxe';
-      case 'woodcutting': return 'axe';
-      case 'fishing': return 'fishing rod';
-      default: return 'tool';
+      case 'mining':
+        return 'pickaxe';
+      case 'woodcutting':
+        return 'axe';
+      case 'fishing':
+        return 'fishing rod';
+      default:
+        return 'tool';
     }
   }
 
@@ -349,8 +362,17 @@ export class GatheringSystem {
    * Calculate level from XP (same as WaveManager)
    */
   private getLevelFromXP(xp: number): number {
-    const xpTable = [0, 83, 174, 276, 388, 512, 650, 801, 969, 1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 4470, 5018, 5624, 6291, 7028, 7842, 8740, 9730, 10824, 12031, 13363, 14833, 16456, 18247, 20224, 22406, 24815, 27473, 30408, 33648, 37224, 41171, 45529, 50339, 55649, 61512, 67983, 75127, 83014, 91721, 101333, 111945, 123660, 136594, 150872, 166636, 184040, 203254, 224466, 247886, 273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032, 668051, 737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808, 1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295, 5346332, 5902831, 6517253, 7195629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431];
-    
+    const xpTable = [
+      0, 83, 174, 276, 388, 512, 650, 801, 969, 1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115,
+      3523, 3973, 4470, 5018, 5624, 6291, 7028, 7842, 8740, 9730, 10824, 12031, 13363, 14833, 16456,
+      18247, 20224, 22406, 24815, 27473, 30408, 33648, 37224, 41171, 45529, 50339, 55649, 61512,
+      67983, 75127, 83014, 91721, 101333, 111945, 123660, 136594, 150872, 166636, 184040, 203254,
+      224466, 247886, 273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032,
+      668051, 737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808,
+      1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295,
+      5346332, 5902831, 6517253, 7195629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431,
+    ];
+
     for (let level = 1; level < xpTable.length; level++) {
       if (xp < xpTable[level]) {
         return level;
@@ -369,7 +391,7 @@ export class GatheringSystem {
       { type: 'oak_tree', count: 8, minLevel: 15 },
       { type: 'copper_rock', count: 10, minLevel: 1 },
       { type: 'iron_rock', count: 6, minLevel: 15 },
-      { type: 'fishing_spot', count: 5, minLevel: 1 }
+      { type: 'fishing_spot', count: 5, minLevel: 1 },
     ];
 
     for (const config of spawnConfigs) {
@@ -377,7 +399,7 @@ export class GatheringSystem {
         // Random position with some margin from edges
         const x = 5 + Math.floor(Math.random() * (mapWidth - 10));
         const y = 5 + Math.floor(Math.random() * (mapHeight - 10));
-        
+
         const resource = new Resource(config.type, x, y);
         state.resources.set(resource.id, resource);
       }

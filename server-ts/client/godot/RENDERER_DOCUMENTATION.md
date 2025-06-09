@@ -16,12 +16,14 @@ The RuneRogue client renderer is built using Godot Engine 4.3+ and provides a co
 ### Core Components
 
 1. **Main Scene Controller** (`scripts/main.gd`)
+
    - Manages scene transitions
    - Handles global input
    - Controls camera and viewport scaling
    - Manages the render pipeline
 
 2. **Game Renderer** (`scripts/game_renderer.gd`)
+
    - Procedural world generation
    - Tile rendering system
    - Fog of war implementation
@@ -93,6 +95,7 @@ The renderer generates a 100x100 tile world using noise-based terrain generation
 ### Running the Project
 
 1. **In Godot Editor**:
+
    ```bash
    # Open Godot
    # Import the project from server-ts/client/godot/
@@ -100,6 +103,7 @@ The renderer generates a 100x100 tile world using noise-based terrain generation
    ```
 
 2. **Command Line Build**:
+
    ```bash
    cd server-ts/client/godot
    ./build.sh
@@ -116,6 +120,7 @@ The renderer generates a 100x100 tile world using noise-based terrain generation
 ### Adding New Tile Types
 
 1. Add enum value in `game_renderer.gd`:
+
    ```gdscript
    enum TileType {
        # ... existing types
@@ -124,6 +129,7 @@ The renderer generates a 100x100 tile world using noise-based terrain generation
    ```
 
 2. Add color in `tile_colors` dictionary:
+
    ```gdscript
    tile_colors[TileType.NEW_TILE] = Color(r, g, b)
    ```
@@ -133,6 +139,7 @@ The renderer generates a 100x100 tile world using noise-based terrain generation
 ### Creating Visual Effects
 
 Use the particle effect system:
+
 ```gdscript
 game_renderer.create_particle_effect(position, "effect_type")
 ```
@@ -187,12 +194,15 @@ The renderer is optimized for web deployment:
 ## API Reference
 
 ### Main Scene Signals
+
 - `change_scene(scene_path: String)` - Transition to new scene
 
 ### Game Renderer Signals
+
 - `tile_clicked(position: Vector2i)` - Emitted when tile is clicked
 
 ### HUD Methods
+
 - `update_health(current: int, max: int)` - Update health display
 - `add_chat_message(message: String, color: Color)` - Add chat message
 - `show_damage_number(damage: int, position: Vector2)` - Show floating damage

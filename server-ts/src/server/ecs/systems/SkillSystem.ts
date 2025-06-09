@@ -169,26 +169,26 @@ const previousLevels = new Map<number, Record<SkillType, number>>();
  */
 export const SkillSystem = defineSystem((world: IWorld) => {
   const players = playerQuery(world);
-  
+
   for (let i = 0; i < players.length; i++) {
     const playerId = players[i];
-    
+
     // Get or initialize previous levels
     let prevLevels = previousLevels.get(playerId);
     if (!prevLevels) {
       prevLevels = {} as Record<SkillType, number>;
       previousLevels.set(playerId, prevLevels);
     }
-    
+
     // Check each skill for level changes
     for (const skillType of Object.values(SkillType)) {
       const xpProp = SKILL_XP_MAP[skillType];
       const currentXP = SkillExperience[xpProp][playerId] || 0;
       const newLevel = getLevelForXP(currentXP);
-      
+
       // Update skill level
       Skills[skillType][playerId] = newLevel;
-      
+
       // Check for level up
       const previousLevel = prevLevels[skillType] || 1;
       if (newLevel > previousLevel) {
@@ -197,7 +197,7 @@ export const SkillSystem = defineSystem((world: IWorld) => {
       }
     }
   }
-  
+
   return world;
 });
 
@@ -231,7 +231,7 @@ export function getXPToNextLevel(currentXP: number): number {
   if (currentLevel >= 99) {
     return 0;
   }
-  
+
   const nextLevelXP = getXPForLevel(currentLevel + 1);
   return nextLevelXP - currentXP;
 }
@@ -243,7 +243,7 @@ export function addSkillXP(world: IWorld, playerId: number, skill: SkillType, xp
   const xpProp = SKILL_XP_MAP[skill];
   const currentXP = SkillExperience[xpProp][playerId] || 0;
   const maxXP = 200000000; // 200M XP cap in OSRS
-  
+
   SkillExperience[xpProp][playerId] = Math.min(currentXP + xp, maxXP);
 }
 
@@ -252,11 +252,11 @@ export function addSkillXP(world: IWorld, playerId: number, skill: SkillType, xp
  */
 export function getTotalLevel(world: IWorld, playerId: number): number {
   let total = 0;
-  
+
   for (const skill of Object.values(SkillType)) {
     total += Skills[skill][playerId] || 1;
   }
-  
+
   return total;
 }
 
@@ -265,12 +265,12 @@ export function getTotalLevel(world: IWorld, playerId: number): number {
  */
 export function getTotalXP(world: IWorld, playerId: number): number {
   let total = 0;
-  
+
   for (const skill of Object.values(SkillType)) {
     const xpProp = SKILL_XP_MAP[skill];
     total += SkillExperience[xpProp][playerId] || 0;
   }
-  
+
   return total;
 }
 
@@ -285,22 +285,22 @@ export function getCombatLevel(world: IWorld, playerId: number): number {
   const prayer = Skills.prayer[playerId] || 1;
   const ranged = Skills.ranged[playerId] || 1;
   const magic = Skills.magic[playerId] || 1;
-  
+
   // OSRS combat level formula
   const base = 0.25 * (defence + hitpoints + Math.floor(prayer / 2));
-  
+
   // Melee combat
   const melee = 0.325 * (attack + strength);
-  
+
   // Ranged combat
   const range = 0.325 * Math.floor(ranged * 1.5);
-  
+
   // Magic combat
   const mage = 0.325 * Math.floor(magic * 1.5);
-  
+
   // Take the highest of the three combat styles
   const combatClass = Math.max(melee, range, mage);
-  
+
   return Math.floor(base + combatClass);
 }
 
@@ -318,13 +318,13 @@ function handleLevelUp(
   // TODO: Show fireworks animation
   // TODO: Send congratulations message
   // TODO: Unlock new content based on level
-  
+
   // Special handling for certain milestones
   if (newLevel === 99) {
     // Max level achieved!
     // TODO: Special celebration
   }
-  
+
   // Restore HP on HP level up
   if (skill === SkillType.HITPOINTS) {
     // Health component uses current/max structure
@@ -346,6 +346,6 @@ export function hasSkillRequirement(
       return false;
     }
   }
-  
+
   return true;
 }

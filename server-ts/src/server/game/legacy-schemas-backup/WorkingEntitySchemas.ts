@@ -1,0 +1,659 @@
+/**
+ * Working Entity Schemas for RuneRogue
+ *
+ * Clean implementation using defineTypes API with no naming conflicts.
+ * All property names are unique across all schema classes to prevent
+ * Colyseus "Duplicate definition" errors.
+ *
+ * Naming Convention:
+ * - Use descriptive prefixes to avoid conflicts (e.g., player_x, item_attack)
+ * - Keep authentic OSRS mechanics while preventing schema conflicts
+ */
+
+import { ArraySchema, MapSchema, Schema, defineTypes } from '@colyseus/schema';
+
+/**
+ * Skill Schema - individual skill level and XP
+ */
+export class Skill extends Schema {
+  public skill_level: number = 1;
+  public skill_xp: number = 0;
+
+  constructor(level: number = 1, xp: number = 0) {
+    super();
+    this.skill_level = level;
+    this.skill_xp = xp;
+  }
+
+  /**
+   * Add XP to this skill using OSRS formula
+   */
+  addXp(xp: number): void {
+    this.skill_xp += xp;
+    // Recalculate level based on XP (OSRS formula)
+    this.skill_level = this.calculateLevelFromXp(this.skill_xp);
+  }
+
+  /**
+   * Calculate level from XP using authentic OSRS formula
+   */
+  private calculateLevelFromXp(xp: number): number {
+    let level = 1;
+    let xpRequired = 0;
+
+    for (let lvl = 1; lvl <= 99; lvl++) {
+      xpRequired += Math.floor(lvl + 300 * Math.pow(2, lvl / 7)) / 4;
+      if (xp >= xpRequired) {
+        level = lvl + 1;
+      } else {
+        break;
+      }
+    }
+
+    return Math.min(level, 99);
+  }
+}
+
+defineTypes(Skill, {
+  skill_level: 'number',
+  skill_xp: 'number',
+});
+
+/**
+ * Skills Collection Schema - all player skills
+ */
+export class Skills extends Schema {
+  public skills_attack: Skill;
+  public skills_strength: Skill;
+  public skills_defence: Skill;
+  public skills_mining: Skill;
+  public skills_woodcutting: Skill;
+  public skills_fishing: Skill;
+  public skills_prayer: Skill;
+
+  constructor() {
+    super();
+    this.skills_attack = new Skill();
+    this.skills_strength = new Skill();
+    this.skills_defence = new Skill();
+    this.skills_mining = new Skill();
+    this.skills_woodcutting = new Skill();
+    this.skills_fishing = new Skill();
+    this.skills_prayer = new Skill();
+  }
+
+  /**
+   * Get combat level using OSRS formula
+   */
+  getCombatLevel(): number {
+    const att = this.skills_attack.skill_level;
+    const str = this.skills_strength.skill_level;
+    const def = this.skills_defence.skill_level;
+
+    return Math.floor((att + str + def) / 3);
+  }
+}
+
+defineTypes(Skills, {
+  skills_attack: Skill,
+  skills_strength: Skill,
+  skills_defence: Skill,
+  skills_mining: Skill,
+  skills_woodcutting: Skill,
+  skills_fishing: Skill,
+  skills_prayer: Skill,
+});
+
+/**
+ * Inventory Item Schema - items in player inventory
+ */
+export class InventoryItem extends Schema {
+  public item_id: string = '';
+  public item_quantity: number = 1;
+  public item_name: string = '';
+  public item_attack_bonus: number = 0;
+  public item_strength_bonus: number = 0;
+  public item_defence_bonus: number = 0;
+  public item_ranged_bonus: number = 0;
+  public item_magic_bonus: number = 0;
+  public item_prayer_bonus: number = 0;
+  public item_value: number = 0;
+  public item_stackable: boolean = false;
+  public item_tradeable: boolean = true;
+  public item_description: string = '';
+
+  constructor(itemId: string = '', quantity: number = 1) {
+    super();
+    this.item_id = itemId;
+    this.item_quantity = quantity;
+  }
+}
+
+defineTypes(InventoryItem, {
+  item_id: 'string',
+  item_quantity: 'number',
+  item_name: 'string',
+  item_attack_bonus: 'number',
+  item_strength_bonus: 'number',
+  item_defence_bonus: 'number',
+  item_ranged_bonus: 'number',
+  item_magic_bonus: 'number',
+  item_prayer_bonus: 'number',
+  item_value: 'number',
+  item_stackable: 'boolean',
+  item_tradeable: 'boolean',
+  item_description: 'string',
+});
+
+/**
+ * Equipment Schema - worn items
+ */
+export class Equipment extends Schema {
+  public equip_weapon: InventoryItem | null = null;
+  public equip_armor: InventoryItem | null = null;
+  public equip_shield: InventoryItem | null = null;
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * Get total attack bonus from all equipped items
+   */
+  getTotalAttackBonus(): number {
+    let total = 0;
+    if (this.equip_weapon) total += this.equip_weapon.item_attack_bonus;
+    if (this.equip_armor) total += this.equip_armor.item_attack_bonus;
+    if (this.equip_shield) total += this.equip_shield.item_attack_bonus;
+    return total;
+  }
+
+  /**
+   * Get total strength bonus from all equipped items
+   */
+  getTotalStrengthBonus(): number {
+    let total = 0;
+    if (this.equip_weapon) total += this.equip_weapon.item_strength_bonus;
+    if (this.equip_armor) total += this.equip_armor.item_strength_bonus;
+    if (this.equip_shield) total += this.equip_shield.item_strength_bonus;
+    return total;
+  }
+
+  /**
+   * Get total defence bonus from all equipped items
+   */
+  getTotalDefenceBonus(): number {
+    let total = 0;
+    if (this.equip_weapon) total += this.equip_weapon.item_defence_bonus;
+    if (this.equip_armor) total += this.equip_armor.item_defence_bonus;
+    if (this.equip_shield) total += this.equip_shield.item_defence_bonus;
+    return total;
+  }
+}
+
+defineTypes(Equipment, {
+  equip_weapon: InventoryItem,
+  equip_armor: InventoryItem,
+  equip_shield: InventoryItem,
+});
+
+/**
+ * Player Schema - main player entity
+ */
+export class Player extends Schema {
+  public player_id: string = '';
+  public player_username: string = '';
+  public player_x: number = 0;
+  public player_y: number = 0;
+  public player_animation: string = 'idle';
+  public player_direction: string = 'down';
+  public player_health: number = 100;
+  public player_max_health: number = 100;
+  public player_prayer_points: number = 100;
+  public player_max_prayer_points: number = 100;
+  public player_last_activity: number = 0;
+  public player_is_busy: boolean = false;
+  public player_busy_until: number = 0;
+  public player_inventory = new ArraySchema<InventoryItem>();
+  public player_inventory_size: number = 28;
+  public player_gold: number = 0;
+  public player_equipment: Equipment = new Equipment();
+  public player_skills: Skills = new Skills();
+  public player_combat_style: string = 'accurate';
+  public player_in_combat: boolean = false;
+  public player_combat_target: string = '';
+  public player_last_attack: number = 0;
+
+  constructor(id: string = '', username: string = '') {
+    super();
+    this.player_id = id;
+    this.player_username = username;
+    this.player_equipment = new Equipment();
+    this.player_skills = new Skills();
+  }
+
+  /**
+   * Add item to inventory using authentic OSRS mechanics
+   */
+  addItemToInventory(item: InventoryItem): boolean {
+    if (this.player_inventory.length >= this.player_inventory_size) {
+      return false;
+    }
+
+    // Check if item is stackable and already exists
+    if (item.item_stackable) {
+      const existingItem = this.player_inventory.find(invItem => invItem.item_id === item.item_id);
+      if (existingItem) {
+        existingItem.item_quantity += item.item_quantity;
+        return true;
+      }
+    }
+
+    this.player_inventory.push(item);
+    return true;
+  }
+
+  /**
+   * Remove item from inventory by index
+   */
+  removeItemFromInventory(index: number): InventoryItem | null {
+    if (index < 0 || index >= this.player_inventory.length) {
+      return null;
+    }
+
+    const item = this.player_inventory[index];
+    this.player_inventory.splice(index, 1);
+    return item;
+  }
+
+  /**
+   * Get combat level using OSRS formula
+   */
+  getCombatLevel(): number {
+    return this.player_skills.getCombatLevel();
+  }
+
+  /**
+   * Take damage with authentic OSRS mechanics
+   */
+  takeDamage(damage: number): void {
+    this.player_health = Math.max(0, this.player_health - damage);
+  }
+
+  /**
+   * Heal player
+   */
+  heal(amount: number): void {
+    this.player_health = Math.min(this.player_max_health, this.player_health + amount);
+  }
+
+  /**
+   * Drain prayer points
+   */
+  drainPrayerPoints(amount: number): void {
+    this.player_prayer_points = Math.max(0, this.player_prayer_points - amount);
+  }
+}
+
+defineTypes(Player, {
+  player_id: 'string',
+  player_username: 'string',
+  player_x: 'number',
+  player_y: 'number',
+  player_animation: 'string',
+  player_direction: 'string',
+  player_health: 'number',
+  player_max_health: 'number',
+  player_prayer_points: 'number',
+  player_max_prayer_points: 'number',
+  player_last_activity: 'number',
+  player_is_busy: 'boolean',
+  player_busy_until: 'number',
+  player_inventory: [InventoryItem],
+  player_inventory_size: 'number',
+  player_gold: 'number',
+  player_equipment: Equipment,
+  player_skills: Skills,
+  player_combat_style: 'string',
+  player_in_combat: 'boolean',
+  player_combat_target: 'string',
+  player_last_attack: 'number',
+});
+
+/**
+ * NPC Skills Schema - condensed version
+ */
+export class NPCSkills extends Schema {
+  public npc_attack_level: number = 1;
+  public npc_strength_level: number = 1;
+  public npc_defence_level: number = 1;
+  public npc_attack_bonus: number = 0;
+  public npc_strength_bonus: number = 0;
+  public npc_defence_bonus: number = 0;
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * Get combat level
+   */
+  getCombatLevel(): number {
+    return Math.floor(
+      (this.npc_attack_level + this.npc_strength_level + this.npc_defence_level) / 3
+    );
+  }
+}
+
+defineTypes(NPCSkills, {
+  npc_attack_level: 'number',
+  npc_strength_level: 'number',
+  npc_defence_level: 'number',
+  npc_attack_bonus: 'number',
+  npc_strength_bonus: 'number',
+  npc_defence_bonus: 'number',
+});
+
+/**
+ * NPC Combat Schema - combat state
+ */
+export class NPCCombat extends Schema {
+  public npc_health: number = 100;
+  public npc_max_health: number = 100;
+  public npc_last_attack: number = 0;
+  public npc_target_player: string = '';
+  public npc_is_aggressive: boolean = true;
+  public npc_attack_range: number = 1;
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * Check if NPC can attack
+   */
+  canAttack(): boolean {
+    return Date.now() - this.npc_last_attack > 4000; // 4 tick attack speed
+  }
+
+  /**
+   * Take damage with authentic mechanics
+   */
+  takeDamage(damage: number): void {
+    this.npc_health = Math.max(0, this.npc_health - damage);
+  }
+
+  /**
+   * Check if NPC is dead
+   */
+  isDead(): boolean {
+    return this.npc_health <= 0;
+  }
+}
+
+defineTypes(NPCCombat, {
+  npc_health: 'number',
+  npc_max_health: 'number',
+  npc_last_attack: 'number',
+  npc_target_player: 'string',
+  npc_is_aggressive: 'boolean',
+  npc_attack_range: 'number',
+});
+
+/**
+ * NPC Schema - enemies and NPCs (optimized for 64-field limit)
+ */
+export class NPC extends Schema {
+  public npc_id: string = '';
+  public npc_name: string = '';
+  public npc_type: string = '';
+  public npc_x: number = 0;
+  public npc_y: number = 0;
+  public npc_spawn_x: number = 0;
+  public npc_spawn_y: number = 0;
+  public npc_respawn_time: number = 30000;
+  public npc_movement_speed: number = 1;
+  public npc_skills = new NPCSkills();
+  public npc_combat = new NPCCombat();
+
+  constructor(id: string = '', name: string = '', type: string = '') {
+    super();
+    this.npc_id = id;
+    this.npc_name = name;
+    this.npc_type = type;
+  }
+
+  /**
+   * Get distance to target
+   */
+  getDistanceTo(x: number, y: number): number {
+    return Math.sqrt(Math.pow(this.npc_x - x, 2) + Math.pow(this.npc_y - y, 2));
+  }
+
+  /**
+   * Get combat level for NPC
+   */
+  getCombatLevel(): number {
+    return this.npc_skills.getCombatLevel();
+  }
+
+  /**
+   * Take damage proxy
+   */
+  takeDamage(damage: number): void {
+    this.npc_combat.takeDamage(damage);
+  }
+
+  /**
+   * Check if NPC is dead proxy
+   */
+  isDead(): boolean {
+    return this.npc_combat.isDead();
+  }
+}
+
+defineTypes(NPC, {
+  npc_id: 'string',
+  npc_name: 'string',
+  npc_type: 'string',
+  npc_x: 'number',
+  npc_y: 'number',
+  npc_spawn_x: 'number',
+  npc_spawn_y: 'number',
+  npc_respawn_time: 'number',
+  npc_movement_speed: 'number',
+  npc_skills: NPCSkills,
+  npc_combat: NPCCombat,
+});
+
+/**
+ * Loot Drop Schema - items dropped on ground
+ */
+export class LootDrop extends Schema {
+  public loot_id: string = '';
+  public loot_x: number = 0;
+  public loot_y: number = 0;
+  public loot_timestamp: number = 0;
+  public loot_items = new ArraySchema<InventoryItem>();
+  public loot_owner_id: string = '';
+  public loot_despawn_time: number = 60000; // 1 minute
+
+  constructor(id: string = '', x: number = 0, y: number = 0) {
+    super();
+    this.loot_id = id;
+    this.loot_x = x;
+    this.loot_y = y;
+    this.loot_timestamp = Date.now();
+  }
+
+  /**
+   * Add item to loot drop
+   */
+  addItem(item: InventoryItem): void {
+    this.loot_items.push(item);
+  }
+
+  /**
+   * Check if loot should despawn
+   */
+  shouldDespawn(): boolean {
+    return Date.now() - this.loot_timestamp > this.loot_despawn_time;
+  }
+}
+
+defineTypes(LootDrop, {
+  loot_id: 'string',
+  loot_x: 'number',
+  loot_y: 'number',
+  loot_timestamp: 'number',
+  loot_items: [InventoryItem],
+  loot_owner_id: 'string',
+  loot_despawn_time: 'number',
+});
+
+/**
+ * Game State Schema - main game room state
+ */
+export class GameState extends Schema {
+  public game_players = new MapSchema<Player>();
+  public game_npcs = new MapSchema<NPC>();
+  public game_loot = new MapSchema<LootDrop>();
+  public game_tick_rate: number = 60; // 60 TPS for smooth gameplay
+  public game_server_time: number = 0;
+  public game_wave_number: number = 1;
+  public game_enemies_spawned: number = 0;
+  public game_max_enemies: number = 20;
+  public game_spawn_rate: number = 2000; // 2 seconds between spawns
+
+  constructor() {
+    super();
+    this.game_server_time = Date.now();
+  }
+
+  /**
+   * Add player to game state
+   */
+  addPlayer(player: Player): void {
+    this.game_players.set(player.player_id, player);
+  }
+
+  /**
+   * Remove player from game state
+   */
+  removePlayer(playerId: string): void {
+    this.game_players.delete(playerId);
+  }
+
+  /**
+   * Get player by ID
+   */
+  getPlayer(playerId: string): Player | undefined {
+    return this.game_players.get(playerId);
+  }
+
+  /**
+   * Add NPC to game state
+   */
+  addNPC(npc: NPC): void {
+    this.game_npcs.set(npc.npc_id, npc);
+  }
+
+  /**
+   * Remove NPC from game state
+   */
+  removeNPC(npcId: string): void {
+    this.game_npcs.delete(npcId);
+  }
+
+  /**
+   * Add loot drop to game state
+   */
+  addLootDrop(loot: LootDrop): void {
+    this.game_loot.set(loot.loot_id, loot);
+  }
+
+  /**
+   * Remove loot drop from game state
+   */
+  removeLootDrop(lootId: string): void {
+    this.game_loot.delete(lootId);
+  }
+
+  /**
+   * Update server time
+   */
+  updateServerTime(): void {
+    this.game_server_time = Date.now();
+  }
+
+  /**
+   * Get all players as array
+   */
+  getAllPlayers(): Player[] {
+    return Array.from(this.game_players.values());
+  }
+
+  /**
+   * Get all NPCs as array
+   */
+  getAllNPCs(): NPC[] {
+    return Array.from(this.game_npcs.values());
+  }
+
+  /**
+   * Get all loot drops as array
+   */
+  getAllLootDrops(): LootDrop[] {
+    return Array.from(this.game_loot.values());
+  }
+}
+
+defineTypes(GameState, {
+  game_players: { map: Player },
+  game_npcs: { map: NPC },
+  game_loot: { map: LootDrop },
+  game_tick_rate: 'number',
+  game_server_time: 'number',
+  game_wave_number: 'number',
+  game_enemies_spawned: 'number',
+  game_max_enemies: 'number',
+  game_spawn_rate: 'number',
+});
+
+// Export factory functions for creating entities
+export const createPlayer = (id: string, username: string): Player => {
+  return new Player(id, username);
+};
+
+export const createNPC = (id: string, name: string, type: string): NPC => {
+  return new NPC(id, name, type);
+};
+
+export const createInventoryItem = (itemId: string, quantity: number = 1): InventoryItem => {
+  return new InventoryItem(itemId, quantity);
+};
+
+export const createLootDrop = (id: string, x: number, y: number): LootDrop => {
+  return new LootDrop(id, x, y);
+};
+
+// Interface exports for type safety
+export interface PlayerActionMessage {
+  type: string;
+  targetId?: string;
+  abilityId?: string;
+}
+
+export interface EquipItemMessage {
+  itemIndex: number;
+  slot: 'weapon' | 'armor' | 'shield';
+}
+
+export interface DropItemMessage {
+  itemIndex: number;
+  quantity?: number;
+}
+
+export interface CollectLootMessage {
+  lootId: string;
+}

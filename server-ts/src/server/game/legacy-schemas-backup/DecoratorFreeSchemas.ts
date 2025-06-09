@@ -1,0 +1,311 @@
+/**
+ * Decorator-Free Schemas for RuneRogue
+ *
+ * This module provides Colyseus schemas without using @type decorators
+ * to completely avoid duplicate registration issues during Jest test runs.
+ */
+
+import { ArraySchema, MapSchema, Schema } from '@colyseus/schema';
+
+/**
+ * Base class for all our schemas with programmatic type definition
+ */
+abstract class SafeSchemaBase extends Schema {
+  protected static _typeDefined = false;
+
+  constructor() {
+    super();
+    // Ensure types are defined when instance is created
+    const constructor = this.constructor as typeof SafeSchemaBase;
+    if (!constructor._typeDefined) {
+      constructor.defineTypes();
+      constructor._typeDefined = true;
+    }
+  }
+
+  protected static defineTypes(): void {
+    // Override in subclasses
+  }
+}
+
+/**
+ * Skill Schema without decorators
+ */
+export class Skill extends SafeSchemaBase {
+  public level: number = 1;
+  public xp: number = 0;
+
+  constructor(level: number = 1, xp: number = 0) {
+    super();
+    this.level = level;
+    this.xp = xp;
+  }
+
+  protected static defineTypes(): void {
+    this._defineTypes({
+      level: 'number',
+      xp: 'number',
+    });
+  }
+}
+
+/**
+ * Skills Collection Schema without decorators
+ */
+export class Skills extends SafeSchemaBase {
+  public attackSkill: Skill;
+  public strength: Skill;
+  public defence: Skill;
+  public mining: Skill;
+  public woodcutting: Skill;
+  public fishing: Skill;
+  public prayer: Skill;
+
+  constructor() {
+    super();
+    this.attackSkill = new Skill();
+    this.strength = new Skill();
+    this.defence = new Skill();
+    this.mining = new Skill();
+    this.woodcutting = new Skill();
+    this.fishing = new Skill();
+    this.prayer = new Skill();
+  }
+
+  protected static defineTypes(): void {
+    this._defineTypes({
+      attackSkill: Skill,
+      strength: Skill,
+      defence: Skill,
+      mining: Skill,
+      woodcutting: Skill,
+      fishing: Skill,
+      prayer: Skill,
+    });
+  }
+}
+
+/**
+ * InventoryItem Schema without decorators
+ */
+export class InventoryItem extends SafeSchemaBase {
+  public itemId: string = '';
+  public quantity: number = 1;
+  public name: string = '';
+  public attack: number = 0;
+  public strength: number = 0;
+  public defence: number = 0;
+  public ranged: number = 0;
+  public magic: number = 0;
+  public prayer: number = 0;
+  public value: number = 0;
+  public stackable: boolean = false;
+  public tradeable: boolean = true;
+  public description: string = '';
+
+  constructor(itemId: string = '', quantity: number = 1) {
+    super();
+    this.itemId = itemId;
+    this.quantity = quantity;
+  }
+
+  protected static defineTypes(): void {
+    this._defineTypes({
+      itemId: 'string',
+      quantity: 'number',
+      name: 'string',
+      attack: 'number',
+      strength: 'number',
+      defence: 'number',
+      ranged: 'number',
+      magic: 'number',
+      prayer: 'number',
+      value: 'number',
+      stackable: 'boolean',
+      tradeable: 'boolean',
+      description: 'string',
+    });
+  }
+}
+
+/**
+ * Inventory Schema without decorators
+ */
+export class Inventory extends SafeSchemaBase {
+  public items = new ArraySchema<InventoryItem>();
+  public maxSlots: number = 28;
+
+  constructor() {
+    super();
+  }
+
+  protected static defineTypes(): void {
+    this._defineTypes({
+      items: [InventoryItem],
+      maxSlots: 'number',
+    });
+  }
+
+  addItem(item: InventoryItem): boolean {
+    if (this.items.length >= this.maxSlots) {
+      return false;
+    }
+    this.items.push(item);
+    return true;
+  }
+
+  removeItem(index: number): InventoryItem | null {
+    if (index < 0 || index >= this.items.length) {
+      return null;
+    }
+    const item = this.items[index];
+    this.items.splice(index, 1);
+    return item;
+  }
+
+  findItem(itemId: string): InventoryItem | null {
+    return this.items.find(item => item.itemId === itemId) || null;
+  }
+}
+
+/**
+ * Player Schema without decorators
+ */
+export class Player extends SafeSchemaBase {
+  public id: string = '';
+  public username: string = '';
+  public x: number = 0;
+  public y: number = 0;
+  public z: number = 0;
+  public health: number = 100;
+  public maxHealth: number = 100;
+  public combatLevel: number = 3;
+  public skills: Skills;
+  public inventory: Inventory;
+  public isOnline: boolean = true;
+  public lastSeen: number = 0;
+
+  constructor(id: string = '', username: string = '') {
+    super();
+    this.id = id;
+    this.username = username;
+    this.skills = new Skills();
+    this.inventory = new Inventory();
+    this.lastSeen = Date.now();
+  }
+
+  protected static defineTypes(): void {
+    this._defineTypes({
+      id: 'string',
+      username: 'string',
+      x: 'number',
+      y: 'number',
+      z: 'number',
+      health: 'number',
+      maxHealth: 'number',
+      combatLevel: 'number',
+      skills: Skills,
+      inventory: Inventory,
+      isOnline: 'boolean',
+      lastSeen: 'number',
+    });
+  }
+}
+
+/**
+ * GameState Schema without decorators
+ */
+export class GameState extends SafeSchemaBase {
+  public players = new MapSchema<Player>();
+  public npcs = new MapSchema<string>();
+  public loot = new MapSchema<string>();
+  public timestamp: number = 0;
+  public tickRate: number = 60;
+
+  constructor() {
+    super();
+    this.timestamp = Date.now();
+  }
+
+  protected static defineTypes(): void {
+    this._defineTypes({
+      players: { map: Player },
+      npcs: { map: 'string' },
+      loot: { map: 'string' },
+      timestamp: 'number',
+      tickRate: 'number',
+    });
+  }
+
+  addPlayer(player: Player): void {
+    this.players.set(player.id, player);
+  }
+
+  removePlayer(playerId: string): void {
+    this.players.delete(playerId);
+  }
+
+  getPlayer(playerId: string): Player | undefined {
+    return this.players.get(playerId);
+  }
+
+  updateTimestamp(): void {
+    this.timestamp = Date.now();
+  }
+}
+
+/**
+ * Schema Factory Functions
+ */
+export const SchemaFactories = {
+  createSkill: (level: number = 1, xp: number = 0) => new Skill(level, xp),
+  createSkills: () => new Skills(),
+  createInventoryItem: (itemId: string = '', quantity: number = 1) =>
+    new InventoryItem(itemId, quantity),
+  createInventory: () => new Inventory(),
+  createPlayer: (id: string = '', username: string = '') => new Player(id, username),
+  createGameState: () => new GameState(),
+};
+
+// Export types and interfaces
+export interface PlayerActionMessage {
+  type: string;
+  targetId?: string;
+  abilityId?: string;
+}
+
+export interface EquipItemMessage {
+  itemIndex: number;
+  slot: 'weapon' | 'armor' | 'shield';
+}
+
+export interface DropItemMessage {
+  itemIndex: number;
+  quantity?: number;
+}
+
+export interface CollectLootMessage {
+  lootId: string;
+}
+
+export interface LootDropMessage {
+  itemType: string;
+  quantity: number;
+  position: { x: number; y: number };
+}
+
+export interface TradeRequestMessage {
+  targetPlayerId: string;
+}
+
+export interface TradeOfferMessage {
+  offeredItems: { itemId: string; quantity: number }[];
+}
+
+export interface TradeAcceptMessage {
+  tradeId: string;
+}
+
+export interface TradeCancelMessage {
+  tradeId: string;
+}

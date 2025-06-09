@@ -142,7 +142,7 @@ export const Inventory = defineComponent({
   slot25: Types.eid,
   slot26: Types.eid,
   slot27: Types.eid,
-  
+
   // Quantities for each slot
   qty0: Types.ui16,
   qty1: Types.ui16,
@@ -178,17 +178,17 @@ export const Inventory = defineComponent({
  * Item Component - Represents an item
  */
 export const Item = defineComponent({
-  itemId: Types.ui16,      // OSRS item ID
-  quantity: Types.ui16,    // Stack size
-  noted: Types.ui8,        // 0 = normal, 1 = noted
-  charges: Types.ui16,     // For degradable items
+  itemId: Types.ui16, // OSRS item ID
+  quantity: Types.ui16, // Stack size
+  noted: Types.ui8, // 0 = normal, 1 = noted
+  charges: Types.ui16, // For degradable items
 });
 
 /**
  * NPC Data Component
  */
 export const NPCData = defineComponent({
-  npcId: Types.ui16,       // OSRS NPC ID
+  npcId: Types.ui16, // OSRS NPC ID
   combatLevel: Types.ui8,
   aggroRange: Types.ui8,
   attackRange: Types.ui8,
@@ -211,23 +211,23 @@ export const Movement = defineComponent({
  * Active Prayers Component - Using bitflags for efficiency
  */
 export const ActivePrayers = defineComponent({
-  prayers: Types.ui32,  // Each bit represents a prayer
+  prayers: Types.ui32, // Each bit represents a prayer
 });
 
 /**
  * Network Entity Component - For multiplayer sync
  */
 export const NetworkEntity = defineComponent({
-  sessionHash: Types.ui32,  // Hashed session ID
-  lastUpdate: Types.f64,    // Timestamp
+  sessionHash: Types.ui32, // Hashed session ID
+  lastUpdate: Types.f64, // Timestamp
 });
 
 /**
  * Loot Drop Component - For items on the ground
  */
 export const LootDrop = defineComponent({
-  ownerId: Types.eid,      // Player who can pick it up
-  despawnTime: Types.f64,  // When it despawns
+  ownerId: Types.eid, // Player who can pick it up
+  despawnTime: Types.f64, // When it despawns
   x: Types.f32,
   y: Types.f32,
 });
@@ -236,10 +236,10 @@ export const LootDrop = defineComponent({
  * Resource Component - For gathering nodes
  */
 export const Resource = defineComponent({
-  resourceType: Types.ui8,   // 0=tree, 1=rock, 2=fishing spot, etc
-  resourceId: Types.ui16,    // Specific resource ID
+  resourceType: Types.ui8, // 0=tree, 1=rock, 2=fishing spot, etc
+  resourceId: Types.ui16, // Specific resource ID
   remainingYield: Types.ui8, // How many gathers left
-  respawnTime: Types.f32,   // Time to respawn after depletion
+  respawnTime: Types.f32, // Time to respawn after depletion
 });
 
 // ============================================
@@ -266,30 +266,30 @@ export enum PrayerFlag {
   CLARITY_OF_THOUGHT = 1 << 2,
   SHARP_EYE = 1 << 3,
   MYSTIC_WILL = 1 << 4,
-  
+
   // Level 4+ prayers
   ROCK_SKIN = 1 << 5,
   SUPERHUMAN_STRENGTH = 1 << 6,
   IMPROVED_REFLEXES = 1 << 7,
-  
+
   // Protection prayers
   PROTECT_FROM_MAGIC = 1 << 8,
   PROTECT_FROM_MISSILES = 1 << 9,
   PROTECT_FROM_MELEE = 1 << 10,
-  
+
   // Higher level prayers
   EAGLE_EYE = 1 << 11,
   MYSTIC_MIGHT = 1 << 12,
   STEEL_SKIN = 1 << 13,
   ULTIMATE_STRENGTH = 1 << 14,
   INCREDIBLE_REFLEXES = 1 << 15,
-  
+
   // Advanced prayers
   PIETY = 1 << 16,
   CHIVALRY = 1 << 17,
   RIGOUR = 1 << 18,
   AUGURY = 1 << 19,
-  
+
   // Additional prayers can be added up to bit 31
 }
 

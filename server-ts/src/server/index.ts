@@ -1,388 +1,104 @@
+/**
+ * RuneRogue Server - Main Entry Point
+ * Clean server implementation with working Colyseus schemas
+ */
+
 import 'dotenv/config';
-
-// CRITICAL: Import comprehensive metadata fix FIRST (before any schema imports)
-
-// Import comprehensive metadata and schema fixes FIRST
-import './utils/comprehensive-metadata-fix';
-import { applyComprehensiveSchemaFixes } from './utils/comprehensive-schema-fix';
-
-// CRITICAL: Import ArraySchema registry fix FIRST to eliminate warnings
-import './utils/arrayschema-registry-fix';
-// Apply comprehensive schema fixes (encode polyfills, array/map registration)
-applyComprehensiveSchemaFixes();
-
-// CRITICAL: Import metadata fix FIRST
-import './utils/metadata-schema-fix';
-
-// Import early metadata initialization FIRST
-import './utils/early-metadata-init';
-
-// Import encoder patch to fix ArraySchema warnings
-import './utils/encoder-patch';
-
 import { Server as ColyseusServer } from '@colyseus/core';
-import { monitor } from '@colyseus/monitor';
-import { RedisPresence } from '@colyseus/redis-presence';
-import cors from 'cors';
+import { WebSocketTransport } from '@colyseus/ws-transport';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
+import cors from 'cors';
 import { createServer } from 'http';
-import { createConnection } from 'typeorm';
-import appConfig from './app.config';
-import { authRouter } from './routes/auth';
-// import healthRouter from './routes/health';
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
-import { errorHandler } from './auth/middleware';
-import economyIntegration from './economy-integration';
-import { GameRoom } from './game/GameRoom';
-import logger from './logger';
+import { CleanGameRoom } from './rooms/CleanGameRoom';
 
-// Load environment variables
+// Configuration
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const isProduction = NODE_ENV === 'production';
 
-// Initialize Express
-export const app = express();
-export let gameServer: ColyseusServer;
-export const server = createServer(app);
+console.log('🚀 Starting RuneRogue Server...');
+console.log(`📍 Environment: ${NODE_ENV}`);
+console.log(`🔌 Port: ${PORT}`);
 
-// Initialize Economy Integration
-let economyReady = false;
-(async () => {
-  try {
-    if (economyIntegration) {
-      economyReady = await economyIntegration.isReady();
-    }
-    logger.info(`Economy integration status: ${economyReady ? 'Ready' : 'Not Ready'}`);
-  } catch (error) {
-    logger.error('Failed to initialize economy integration:', error);
-  }
-})();
+// Create Express app
+const app = express();
 
-// Security Middleware
-app.use(
-  helmet({
-    contentSecurityPolicy: isProduction ? undefined : false,
-    crossOriginEmbedderPolicy: isProduction,
-  })
-);
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later',
+// Create HTTP server
+const server = createServer(app);
+
+// Create WebSocket transport
+const transport = new WebSocketTransport({
+  server,
 });
 
-// Apply rate limiting to all routes
-app.use(limiter);
+// Create Colyseus server
+const gameServer = new ColyseusServer({
+  transport,
+});
 
-// CORS configuration
-const corsOptions = {
-  origin: process.env.FRONTEND_URL?.split(',') || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
+// Register game room
+gameServer.define('runerogue', CleanGameRoom);
 
-app.use(cors(corsOptions));
+// Health check endpoint
+app.get('/health', (_req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'RuneRogue Game Server',
+    version: '0.1.0',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: NODE_ENV,
+  });
+});
 
-// Request logging
-if (isProduction) {
-  const morgan = require('morgan');
-  app.use(
-    morgan('combined', { stream: { write: (message: string) => logger.http(message.trim()) } })
-  );
-}
-
-// Body parsing
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// Enhanced health check endpoint (no auth required)
-app.get('/health', async (_req, res) => {
+// API endpoint for room info
+app.get('/api/rooms', async (_req, res) => {
   try {
-    const health = await checkHealth();
-    const status = health.database && health.redis ? 'healthy' : 'degraded';
-
-    // Check economy integration health
-    let economyStatus = 'unknown';
-    try {
-      if (economyIntegration && (await economyIntegration.isReady())) {
-        economyStatus = 'healthy';
-      } else {
-        economyStatus = 'unhealthy';
-      }
-    } catch (error) {
-      economyStatus = 'error';
-    }
-
-    res.status(status === 'healthy' ? 200 : 503).json({
-      status,
-      timestamp: new Date().toISOString(),
-      environment: NODE_ENV,
-      version: process.env.npm_package_version || '0.1.0',
-      services: {
-        database: health.database ? 'connected' : 'disconnected',
-        redis: health.redis ? 'connected' : 'disconnected',
-        economy: economyStatus,
-      },
+    // Simple room count - presence API may not be available in all Colyseus versions
+    res.json({
+      rooms: 0, // Will be updated when rooms are created
+      activeRooms: [],
+      message: 'Room listing will be implemented when rooms are active',
     });
   } catch (error) {
-    logger.error('Health check error:', error);
-    res.status(500).json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      message: 'Error checking service health',
-    });
+    console.error('Error fetching rooms:', error);
+    res.status(500).json({ error: 'Failed to fetch room information' });
   }
 });
 
-// Load Swagger YAML file
-const swaggerDocument = YAML.load('./src/server/docs/swagger.yaml');
-
-// Serve Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-// Other API routes
-app.use('/auth', authRouter);
-
-// Colyseus monitor (protected in production)
-app.use(
-  '/colyseus',
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (isProduction) {
-      const auth = { login: 'admin', password: process.env.ADMIN_PASSWORD || 'admin' };
-      const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
-      const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
-
-      if (login === auth.login && password === auth.password) {
-        return next();
-      }
-
-      res.set('WWW-Authenticate', 'Basic');
-      res.status(401).send('Authentication required.');
-      return;
-    }
-    return next();
-  },
-  monitor()
-);
-
-// Error handling middleware
-app.use(errorHandler);
-
-// 404 handler
-app.use((_req, res) => {
-  res.status(404).json({ message: 'Not Found' });
+// Error handling
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Express error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
-// Health check function for database and Redis
-const checkHealth = async (): Promise<{ database: boolean; redis: boolean }> => {
-  const health = { database: false, redis: false };
+// Start server
+server.listen(PORT, () => {
+  console.log('✅ RuneRogue Server started successfully!');
+  console.log(`🌐 Server: http://localhost:${PORT}`);
+  console.log(`🎮 WebSocket: ws://localhost:${PORT}`);
+  console.log(`📊 Health: http://localhost:${PORT}/health`);
+  console.log(`📋 Rooms: http://localhost:${PORT}/api/rooms`);
+});
 
-  try {
-    // Check database connection
-    // This would typically use a lightweight query to test the connection
-    // For now, we'll just assume it's connected if we got this far
-    health.database = true;
-  } catch (error) {
-    logger.error('Database health check failed:', error);
-  }
-  try {
-    // Check Redis connection
-    try {
-      // Simplified check - just verify gameServer exists
-      if (gameServer) {
-        health.redis = true;
-      }
-    } catch (e) {
-      health.redis = false;
-    }
-  } catch (error) {
-    logger.error('Redis health check failed:', error);
-  }
-
-  return health;
-};
-
-export const startApplication = async () => {
-  // Create transport first
-  // Note: Transport is attached via gameServer.attach() in Colyseus v0.16.x
-  // Create presence system
-  const presence =
-    NODE_ENV !== 'test'
-      ? new RedisPresence({
-          host: process.env.REDIS_HOST,
-          port: parseInt(process.env.REDIS_PORT || '6379', 10),
-          // Add password if provided
-          password: process.env.REDIS_PASSWORD,
-          // Add TLS support for production
-          tls: isProduction ? { rejectUnauthorized: false } : undefined,
-          // Add connection timeout
-          connect_timeout: 30000, // Add retry strategy
-        })
-      : undefined;
-
-  gameServer = new ColyseusServer({
-    // No transport in constructor for v0.16.x
-    presence: presence,
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('🛑 Shutting down server...');
+  server.close(() => {
+    console.log('✅ Server shut down successfully');
+    process.exit(0);
   });
+});
 
-  // Attach transport after creating server
-  gameServer.attach({ server });
-  // Define Colyseus rooms
-  appConfig(gameServer);
-
-  // Register room handlers
-  gameServer.define('game', GameRoom);
-
-  const MAX_RETRIES = 5;
-  const RETRY_DELAY = 5000; // 5 seconds
-
-  const connectToDatabase = async (retryCount = 0): Promise<boolean> => {
-    try {
-      logger.info(
-        `Attempting to connect to database (Attempt ${retryCount + 1}/${MAX_RETRIES})...`
-      );
-      await createConnection({
-        type: 'sqlite',
-        database: isProduction ? 'database.sqlite' : 'database.test.sqlite',
-        synchronize: true,
-        logging: !isProduction ? ['query', 'error'] : ['error'],
-        entities: [__dirname + '/game/EntitySchemas.ts'],
-      });
-      logger.info('Database connection established successfully.');
-      return true;
-    } catch (error) {
-      logger.error('Database connection failed:', error);
-      if (retryCount < MAX_RETRIES - 1) {
-        logger.warn(`Retrying database connection in ${RETRY_DELAY / 1000} seconds...`);
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-        return connectToDatabase(retryCount + 1);
-      } else {
-        logger.error('Maximum database connection retries reached. Could not connect to database.');
-        return false;
-      }
-    }
-  };
-
-  // Handle process termination with enhanced error handling
-  const shutdown = async (signal: string) => {
-    logger.info(`Received ${signal}. Initiating graceful shutdown...`);
-    const shutdownStages = {
-      colyseusShutdown: false,
-      httpServerClosed: false,
-      dbDisconnected: false,
-    };
-
-    try {
-      // Colyseus game server will be handled by the HTTP server shutdown
-      if (gameServer) {
-        logger.info('Colyseus game server will shutdown with HTTP server.');
-        shutdownStages.colyseusShutdown = true;
-      }
-
-      // Close HTTP server
-      if (server) {
-        logger.info('Closing HTTP server...');
-        await new Promise<void>((resolve, reject) => {
-          server.close(err => {
-            if (err) {
-              logger.error('Error closing HTTP server:', err);
-              return reject(err);
-            }
-            shutdownStages.httpServerClosed = true;
-            logger.info('HTTP server closed.');
-            resolve();
-          });
-        });
-      }
-
-      // Disconnect from database
-      const connection = await createConnection(); // Get current connection
-      if (connection && connection.isConnected) {
-        logger.info('Disconnecting from database...');
-        await connection.close();
-        shutdownStages.dbDisconnected = true;
-        logger.info('Database disconnected.');
-      }
-
-      logger.info('Graceful shutdown complete.');
-      if (shutdownStages.httpServerClosed) {
-        logger.info('Graceful shutdown completed successfully');
-        process.exit(0);
-      } else {
-        logger.warn('Partial shutdown completed with some issues');
-        process.exit(1);
-      }
-    } catch (error) {
-      logger.error('Critical error during shutdown:', error);
-      process.exit(1);
-    }
-  };
-
-  const dbConnected = await connectToDatabase();
-
-  server.listen(PORT, () => {
-    logger.info(`Server is running in ${NODE_ENV} mode on port ${PORT}`);
-    if (isProduction) {
-      logger.info(
-        `Colyseus monitor available at https://<your-domain>/colyseus (protected by authentication)`
-      );
-    } else {
-      logger.info(`Colyseus monitor available at http://localhost:${PORT}/colyseus`);
-    }
-
-    if (!dbConnected && isProduction) {
-      logger.warn(
-        'Server started without database connection. Some functionality will be limited.'
-      );
-    }
+process.on('SIGTERM', () => {
+  console.log('🛑 Received SIGTERM, shutting down...');
+  server.close(() => {
+    console.log('✅ Server shut down successfully');
+    process.exit(0);
   });
-
-  // Set up periodic health checks in production
-  if (isProduction) {
-    setInterval(async () => {
-      const health = await checkHealth();
-      if (!health.database || !health.redis) {
-        logger.warn(`Health check failed: Database: ${health.database}, Redis: ${health.redis}`);
-        // Here you could implement alerting or auto-recovery logic
-      }
-    }, 60000);
-  }
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
-};
-
-if (require.main === module) {
-  startApplication();
-}
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason: unknown) => {
-  logger.error('Unhandled Rejection:', reason);
-  if (isProduction) {
-    // In production, log the error and continue running
-    // Consider sending an alert to your monitoring system
-  } else {
-    // In development, crash the process to surface the error
-    process.exit(1);
-  }
 });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error: Error) => {
-  logger.error('Uncaught Exception:', error);
-  if (isProduction) {
-    // In production, log the error and continue running
-    // Consider sending an alert to your monitoring system
-  } else {
-    // In development, crash the process to surface the error
-    process.exit(1);
-  }
-});
+export { app, gameServer, server };

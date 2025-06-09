@@ -18,28 +18,28 @@ const PRAYER_DRAIN_RATES: { [key in PrayerFlag]?: number } = {
   [PrayerFlag.PROTECT_FROM_MELEE]: 2,
   [PrayerFlag.PROTECT_FROM_MISSILES]: 2,
   [PrayerFlag.PROTECT_FROM_MAGIC]: 2,
-  
+
   // Offensive prayers
   [PrayerFlag.BURST_OF_STRENGTH]: 1,
   [PrayerFlag.SUPERHUMAN_STRENGTH]: 2,
   [PrayerFlag.ULTIMATE_STRENGTH]: 4,
-  
+
   // Attack prayers
   [PrayerFlag.CLARITY_OF_THOUGHT]: 1,
   [PrayerFlag.IMPROVED_REFLEXES]: 2,
   [PrayerFlag.INCREDIBLE_REFLEXES]: 4,
-  
+
   // Defence prayers
   [PrayerFlag.THICK_SKIN]: 1,
   [PrayerFlag.ROCK_SKIN]: 2,
   [PrayerFlag.STEEL_SKIN]: 4,
-  
+
   // Other prayers
   [PrayerFlag.SHARP_EYE]: 1,
   [PrayerFlag.EAGLE_EYE]: 3,
   [PrayerFlag.MYSTIC_WILL]: 1,
   [PrayerFlag.MYSTIC_MIGHT]: 3,
-  
+
   // Advanced prayers
   [PrayerFlag.CHIVALRY]: 6,
   [PrayerFlag.PIETY]: 8,
@@ -77,17 +77,17 @@ const PRAYER_CONFLICTS: { [key in PrayerFlag]?: PrayerFlag[] } = {
   [PrayerFlag.CLARITY_OF_THOUGHT]: [PrayerFlag.IMPROVED_REFLEXES, PrayerFlag.INCREDIBLE_REFLEXES],
   [PrayerFlag.IMPROVED_REFLEXES]: [PrayerFlag.CLARITY_OF_THOUGHT, PrayerFlag.INCREDIBLE_REFLEXES],
   [PrayerFlag.INCREDIBLE_REFLEXES]: [PrayerFlag.CLARITY_OF_THOUGHT, PrayerFlag.IMPROVED_REFLEXES],
-  
+
   // Strength prayers conflict with each other
   [PrayerFlag.BURST_OF_STRENGTH]: [PrayerFlag.SUPERHUMAN_STRENGTH, PrayerFlag.ULTIMATE_STRENGTH],
   [PrayerFlag.SUPERHUMAN_STRENGTH]: [PrayerFlag.BURST_OF_STRENGTH, PrayerFlag.ULTIMATE_STRENGTH],
   [PrayerFlag.ULTIMATE_STRENGTH]: [PrayerFlag.BURST_OF_STRENGTH, PrayerFlag.SUPERHUMAN_STRENGTH],
-  
+
   // Defence prayers conflict with each other
   [PrayerFlag.THICK_SKIN]: [PrayerFlag.ROCK_SKIN, PrayerFlag.STEEL_SKIN],
   [PrayerFlag.ROCK_SKIN]: [PrayerFlag.THICK_SKIN, PrayerFlag.STEEL_SKIN],
   [PrayerFlag.STEEL_SKIN]: [PrayerFlag.THICK_SKIN, PrayerFlag.ROCK_SKIN],
-  
+
   // Protection prayers conflict with each other
   [PrayerFlag.PROTECT_FROM_MELEE]: [
     PrayerFlag.PROTECT_FROM_MISSILES,
@@ -101,7 +101,7 @@ const PRAYER_CONFLICTS: { [key in PrayerFlag]?: PrayerFlag[] } = {
     PrayerFlag.PROTECT_FROM_MELEE,
     PrayerFlag.PROTECT_FROM_MISSILES,
   ],
-  
+
   // Advanced prayers conflict with basic ones
   [PrayerFlag.CHIVALRY]: [
     PrayerFlag.CLARITY_OF_THOUGHT,
@@ -138,16 +138,16 @@ const lastDrainTime = new Map<number, number>();
 export const PrayerSystem = defineSystem((world: IWorld) => {
   const currentTime = Date.now();
   const players = activePrayersQuery(world);
-  
+
   for (let i = 0; i < players.length; i++) {
     const playerId = players[i];
     const prayers = ActivePrayers.prayers[playerId];
-    
+
     // Skip if no prayers are active
     if (prayers === 0) {
       continue;
     }
-    
+
     // Calculate prayer drain
     const prayerLevel = Skills.prayer[playerId];
     if (prayerLevel <= 0) {
@@ -155,7 +155,7 @@ export const PrayerSystem = defineSystem((world: IWorld) => {
       ActivePrayers.prayers[playerId] = 0;
       continue;
     }
-    
+
     // Calculate total drain rate
     let totalDrainRate = 0;
     for (const [flag, drainRate] of Object.entries(PRAYER_DRAIN_RATES)) {
@@ -164,30 +164,30 @@ export const PrayerSystem = defineSystem((world: IWorld) => {
         totalDrainRate += drainRate;
       }
     }
-    
+
     // Apply prayer bonus (items/equipment can reduce drain rate)
     // TODO: Get from equipment bonuses
     const prayerBonus = 0;
-    const drainReduction = 1 + (prayerBonus * 2 / 60);
+    const drainReduction = 1 + (prayerBonus * 2) / 60;
     const effectiveDrainRate = totalDrainRate / drainReduction;
-    
+
     // Drain prayer points
     const lastDrain = lastDrainTime.get(playerId) || currentTime;
     const timeSinceLastDrain = (currentTime - lastDrain) / 1000; // Convert to seconds
     const pointsToDrain = (effectiveDrainRate / 60) * timeSinceLastDrain;
-    
+
     if (pointsToDrain >= 1) {
       const newPrayerLevel = Math.max(0, prayerLevel - Math.floor(pointsToDrain));
       Skills.prayer[playerId] = newPrayerLevel;
       lastDrainTime.set(playerId, currentTime);
-      
+
       // If out of prayer points, deactivate all prayers
       if (newPrayerLevel === 0) {
         ActivePrayers.prayers[playerId] = 0;
       }
     }
   }
-  
+
   return world;
 });
 
@@ -198,18 +198,18 @@ export function activatePlayerPrayer(world: IWorld, playerId: number, prayer: Pr
   // Check if player has the required prayer level
   const prayerLevel = Skills.prayer[playerId];
   const requiredLevel = PRAYER_REQUIREMENTS[prayer] || 1;
-  
+
   if (prayerLevel < requiredLevel) {
     return false;
   }
-  
+
   // Check if player has prayer points
   if (prayerLevel <= 0) {
     return false;
   }
-  
+
   let currentPrayers = ActivePrayers.prayers[playerId] || 0;
-  
+
   // Deactivate conflicting prayers
   const conflicts = PRAYER_CONFLICTS[prayer];
   if (conflicts) {
@@ -217,7 +217,7 @@ export function activatePlayerPrayer(world: IWorld, playerId: number, prayer: Pr
       currentPrayers = deactivatePrayer(currentPrayers, conflictingPrayer);
     }
   }
-  
+
   // Activate the prayer
   ActivePrayers.prayers[playerId] = activatePrayer(currentPrayers, prayer);
   return true;
@@ -244,13 +244,13 @@ export function deactivateAllPrayers(world: IWorld, playerId: number): void {
 export function getActivePrayers(world: IWorld, playerId: number): PrayerFlag[] {
   const prayers = ActivePrayers.prayers[playerId] || 0;
   const activePrayers: PrayerFlag[] = [];
-  
+
   for (const flag of Object.values(PrayerFlag)) {
     if (typeof flag === 'number' && isPrayerActive(prayers, flag)) {
       activePrayers.push(flag);
     }
   }
-  
+
   return activePrayers;
 }
 
@@ -260,6 +260,6 @@ export function getActivePrayers(world: IWorld, playerId: number): PrayerFlag[] 
 export function canActivatePrayer(world: IWorld, playerId: number, prayer: PrayerFlag): boolean {
   const prayerLevel = Skills.prayer[playerId];
   const requiredLevel = PRAYER_REQUIREMENTS[prayer] || 1;
-  
+
   return prayerLevel >= requiredLevel && prayerLevel > 0;
 }

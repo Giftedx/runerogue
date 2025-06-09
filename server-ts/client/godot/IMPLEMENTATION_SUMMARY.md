@@ -3,11 +3,13 @@
 ## What Was Implemented
 
 ### ✅ Core Rendering System
+
 - **Main Scene Management**: Complete scene controller with transitions
 - **Camera System**: Responsive camera with automatic zoom adjustment
 - **Viewport Configuration**: Web-optimized settings with pixel-perfect rendering
 
 ### ✅ Game World Renderer
+
 - **Procedural Generation**: Noise-based terrain with multiple tile types
 - **Room Generation**: Random dungeon rooms with walls and doors
 - **Tile Rendering**: Color-based tile visualization (ready for sprites)
@@ -15,6 +17,7 @@
 - **Click Interaction**: Mouse input for tile selection
 
 ### ✅ User Interface
+
 - **Main Menu**: Animated menu with play, options, and quit buttons
 - **HUD System**: Complete overlay with:
   - Health bar with color coding
@@ -25,17 +28,20 @@
 - **Visual Feedback**: Button animations, health pulsing, damage flash
 
 ### ✅ Visual Effects
+
 - **Particle System**: CPU particles for damage and magic effects
 - **Lighting System**: 2D lighting with player light source
 - **Shader Support**: Fog of war shader prepared
 - **Animations**: Menu transitions and UI animations
 
 ### ✅ Player Controls
+
 - **Movement**: Arrow keys/WASD with smooth movement
 - **Camera Following**: Smooth camera follow with position smoothing
 - **Debug Controls**: F3 for stats, Page Up/Down for world/lighting
 
 ### ✅ Project Structure
+
 - **Organized Scripts**: Separated by functionality
 - **Asset Directories**: Ready for sprites, audio, fonts
 - **Build System**: Web export configuration and build script
@@ -44,6 +50,7 @@
 ## Current State
 
 The renderer is now functional with:
+
 1. A working main menu that transitions to the game
 2. Procedurally generated world with different terrain types
 3. Player character that can move around the world

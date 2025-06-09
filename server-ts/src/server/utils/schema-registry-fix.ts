@@ -1,12 +1,30 @@
 /**
- * Schema Registry Fix for Colyseus v0.16.x + @colyseus/schema v3.x
+ * Comprehensive Colyseus Schema Registry Fix
  *
- * This file addresses ArraySchema registration issues in newer Colyseus versions.
- * The problem occurs when @colyseus/schema v3.x tries to serialize ArraySchema
- * instances but they're not properly registered in the TypeRegistry.
+ * This module fixes three critical issues:
+ * 1. Duplicate schema property registration across Jest test runs
+ * 2. Symbol.metadata polyfill for older Node.js versions
+ * 3. Proper Encoder instantiation with schema instances
  */
 
 import { ArraySchema, Context, MapSchema } from '@colyseus/schema';
+import 'reflect-metadata';
+
+// Ensure Symbol.metadata exists globally
+if (!Symbol.metadata) {
+  (Symbol as any).metadata = Symbol('Symbol.metadata');
+  console.log('✅ Symbol.metadata polyfilled');
+}
+
+// Global registry to track schema registration
+const SCHEMA_REGISTRY_KEY = '__RUNEROGUE_SCHEMA_REGISTRY__';
+declare global {
+  var __RUNEROGUE_SCHEMA_REGISTRY__: Set<string>;
+}
+
+if (!globalThis[SCHEMA_REGISTRY_KEY]) {
+  globalThis[SCHEMA_REGISTRY_KEY] = new Set<string>();
+}
 
 /**
  * Initialize and register core schema types in TypeRegistry

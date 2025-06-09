@@ -74,7 +74,7 @@ export class Skill extends Schema {
  */
 export class Skills extends Schema {
   @type(Skill)
-  public attack: Skill;
+  public attackSkill: Skill;
 
   @type(Skill)
   public strength: Skill;
@@ -93,10 +93,9 @@ export class Skills extends Schema {
 
   @type(Skill)
   public prayer: Skill;
-
   constructor() {
     super();
-    this.attack = new Skill();
+    this.attackSkill = new Skill();
     this.strength = new Skill();
     this.defence = new Skill();
     this.mining = new Skill();
@@ -118,19 +117,16 @@ export class InventoryItem extends Schema {
 
   @type('number')
   public quantity: number = 1;
-
   // Properties loaded from ItemDefinition
   @type('string')
-  public name: string = '';
+  public itemName: string = '';
 
   @type('string')
   public description: string = '';
-
   @type('number')
-  public attack: number = 0;
-
+  public attackBonus: number = 0;
   @type('number')
-  public defense: number = 0;
+  public defenseBonus: number = 0;
 
   @type('boolean')
   public isStackable: boolean = false;
@@ -139,10 +135,10 @@ export class InventoryItem extends Schema {
     super();
     if (itemDefinition) {
       this.itemId = itemDefinition.itemId;
-      this.name = itemDefinition.name;
+      this.itemName = itemDefinition.name;
       this.description = itemDefinition.description;
-      this.attack = itemDefinition.attack;
-      this.defense = itemDefinition.defense;
+      this.attackBonus = itemDefinition.attack;
+      this.defenseBonus = itemDefinition.defense;
       this.isStackable = itemDefinition.isStackable;
     }
     this.quantity = quantity;
@@ -175,7 +171,7 @@ export class Equipment extends Schema {
  */
 export class LootDrop extends Schema {
   @type('string')
-  public id: string = '';
+  public lootDropId: string = '';
 
   @type('number')
   public x: number = 0;
@@ -200,7 +196,7 @@ export class LootDrop extends Schema {
  */
 export class Player extends Schema {
   @type('string')
-  public id: string = '';
+  public playerId: string = '';
 
   @type('string')
   public username: string = '';
@@ -312,7 +308,7 @@ export class Player extends Schema {
   // Get combat stats for damage calculation
   getCombatStats(): { attack: number; defense: number; strength: number } {
     return {
-      attack: this.skills.attack.level,
+      attack: this.skills.attackSkill.level,
       defense: this.skills.defence.level,
       strength: this.skills.strength.level,
     };
@@ -337,7 +333,7 @@ export class Player extends Schema {
       0.25 *
       (this.skills.defence.level +
         this.skills.strength.level +
-        Math.floor(this.skills.attack.level * 1.3));
+        Math.floor(this.skills.attackSkill.level * 1.3));
     return Math.floor(base);
   }
 
@@ -362,7 +358,7 @@ export class Player extends Schema {
 }
 export class Resource extends Schema {
   @type('string')
-  public id: string = '';
+  public resourceId: string = '';
 
   @type('string')
   public type: string = '';
@@ -387,10 +383,9 @@ export class Resource extends Schema {
 
   @type('string')
   public skillType: string = 'woodcutting';
-
   constructor(type: string, x: number, y: number) {
     super();
-    this.id = `resource-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    this.resourceId = `resource-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     this.type = type;
     this.x = x;
     this.y = y;
@@ -432,10 +427,10 @@ export class Resource extends Schema {
 
 export class AreaMap extends Schema {
   @type('string')
-  public id: string = '';
+  public mapId: string = '';
 
   @type('string')
-  public name: string = '';
+  public mapName: string = '';
 
   @type('number')
   public width: number = 100;
@@ -449,11 +444,10 @@ export class AreaMap extends Schema {
   // Note: 2D array collision map is not serialized via Colyseus
   // It's managed locally on the server
   public collisionMap: boolean[][] = [];
-
   constructor(name: string, width: number, height: number) {
     super();
-    this.id = `map-${Date.now()}`;
-    this.name = name;
+    this.mapId = `map-${Date.now()}`;
+    this.mapName = name;
     this.width = width;
     this.height = height;
 
@@ -491,10 +485,10 @@ export class AreaMap extends Schema {
 
 export class NPC extends Schema {
   @type('string')
-  public id: string = '';
+  public npcId: string = '';
 
   @type('string')
-  public name: string = '';
+  public npcName: string = '';
 
   @type('string')
   public type: string = '';
@@ -510,12 +504,10 @@ export class NPC extends Schema {
 
   @type('number')
   public maxHealth: number = 100;
-
   @type('number')
-  public attack: number = 10;
-
+  public attackPower: number = 10;
   @type('number')
-  public defense: number = 10;
+  public defensePower: number = 10;
 
   @type('number')
   public aggroRange: number = 5;
@@ -532,7 +524,6 @@ export class NPC extends Schema {
   // Active combat effects
   @type(['string'])
   public activeEffects = new ArraySchema<string>();
-
   constructor(
     id: string,
     name: string,
@@ -542,8 +533,8 @@ export class NPC extends Schema {
     lootTable: LootTableEntry[] = []
   ) {
     super();
-    this.id = id;
-    this.name = name;
+    this.npcId = id;
+    this.npcName = name;
     this.x = x;
     this.y = y;
     this.type = type;
@@ -555,8 +546,8 @@ export class NPC extends Schema {
       case 'goblin':
         this.maxHealth = 50;
         this.health = 50;
-        this.attack = 5;
-        this.defense = 3;
+        this.attackPower = 5;
+        this.defensePower = 3;
         this.aggroRange = 3;
         this.attackRange = 1;
         this.attackSpeed = 1500;
@@ -564,8 +555,8 @@ export class NPC extends Schema {
       case 'orc':
         this.maxHealth = 120;
         this.health = 120;
-        this.attack = 15;
-        this.defense = 10;
+        this.attackPower = 15;
+        this.defensePower = 10;
         this.aggroRange = 4;
         this.attackRange = 1;
         this.attackSpeed = 2000;

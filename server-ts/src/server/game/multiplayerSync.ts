@@ -56,9 +56,9 @@ export function broadcastPlayerState(server: Server, playerId: string, playerSta
   const deltaUpdate = {
     playerId,
     changes: getDeltaChanges(playerId, playerState),
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-  
+
   server.broadcast('updatePlayerState', deltaUpdate);
   console.log(`Broadcasted delta update for player ${playerId}.`);
 }
@@ -71,7 +71,7 @@ function getDeltaChanges(playerId: string, newState: any): any {
     x: newState.x,
     y: newState.y,
     health: newState.health,
-    lastAction: newState.lastAction
+    lastAction: newState.lastAction,
   };
 }
 
@@ -81,7 +81,7 @@ export function syncAllPlayerStates(server: Server, allPlayerStates: Record<stri
     timestamp: Date.now(),
     players: new Map(),
     npcs: new Map(),
-    loot: new Map()
+    loot: new Map(),
   };
 
   // Convert to optimized state format
@@ -92,7 +92,7 @@ export function syncAllPlayerStates(server: Server, allPlayerStates: Record<stri
       health: state.health,
       maxHealth: state.maxHealth,
       equipment: state.equipment,
-      combatLevel: state.combatLevel
+      combatLevel: state.combatLevel,
     });
   }
 
@@ -106,7 +106,7 @@ export function syncAllPlayerStates(server: Server, allPlayerStates: Record<stri
   server.broadcast('syncSnapshot', {
     snapshot,
     serverTime: Date.now(),
-    tickRate: 60
+    tickRate: 60,
   });
 }
 
@@ -118,7 +118,7 @@ export function reconcilePlayerInput(
   predictedState: any
 ): any {
   const inputs = playerInputBuffer.get(playerId) || [];
-  
+
   // Find the corresponding server state at client timestamp
   const serverSnapshot = findSnapshotAtTime(clientTimestamp);
   if (!serverSnapshot) {
@@ -132,9 +132,7 @@ export function reconcilePlayerInput(
   }
 
   // Replay inputs to get authoritative state
-  const relevantInputs = inputs.filter(
-    input => input.sequenceNumber > inputSequence
-  );
+  const relevantInputs = inputs.filter(input => input.sequenceNumber > inputSequence);
 
   for (const input of relevantInputs) {
     reconciledState = applyInput(reconciledState, input);
@@ -178,10 +176,7 @@ function applyInput(state: PlayerState, input: InputCommand): PlayerState {
 }
 
 // Store player input for reconciliation
-export function recordPlayerInput(
-  playerId: string,
-  input: InputCommand
-): void {
+export function recordPlayerInput(playerId: string, input: InputCommand): void {
   if (!playerInputBuffer.has(playerId)) {
     playerInputBuffer.set(playerId, []);
   }
@@ -196,16 +191,12 @@ export function recordPlayerInput(
 }
 
 // Broadcast high-priority updates immediately
-export function broadcastCriticalUpdate(
-  server: Server,
-  updateType: string,
-  data: any
-): void {
+export function broadcastCriticalUpdate(server: Server, updateType: string, data: any): void {
   server.broadcast('criticalUpdate', {
     type: updateType,
     data,
     timestamp: Date.now(),
-    priority: 'high'
+    priority: 'high',
   });
 }
 
