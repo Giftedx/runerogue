@@ -60,7 +60,7 @@ describe('SurvivorWaveSystem', () => {
       magic: { level: 1, experience: 0 },
     };
 
-    mockRoom.state.players.set(testPlayer.id, testPlayer);
+    mockRoom.state.players[testPlayer.id] = testPlayer;
   });
 
   afterEach(() => {
@@ -342,7 +342,7 @@ describe('SurvivorWaveSystem', () => {
       const enemy1 = new NPC();
       enemy1.id = 'test-enemy-1';
       enemy1.name = 'Test Goblin';
-      mockRoom.state.npcs.set(enemy1.id, enemy1);
+      mockRoom.state.npcs[enemy1.id] = enemy1;
       (waveSystem as any).activeEnemies.add(enemy1.id);
 
       const initialEnemyCount = waveSystem.getWaveStatus().activeEnemies;
@@ -485,7 +485,7 @@ describe('SurvivorWaveSystem', () => {
       const deadPlayer = new Player();
       deadPlayer.id = 'dead-player';
       deadPlayer.health = 0;
-      mockRoom.state.players.set(deadPlayer.id, deadPlayer);
+      mockRoom.state.players[deadPlayer.id] = deadPlayer;
 
       const rewards = [{ type: 'experience' as const, value: 100, skillType: 'combat' }];
 
@@ -496,16 +496,15 @@ describe('SurvivorWaveSystem', () => {
       expect(awardRewardsSpy).not.toHaveBeenCalledWith(deadPlayer, expect.anything());
     });
   });
-
   describe('Special Events', () => {
     test('should apply prayer drain event', () => {
-      testPlayer.currentPrayerPoints = 50;
+      testPlayer.prayerPoints = 50;
 
       const parameters = { drainRate: 2.0, duration: 30000 };
       (waveSystem as any).applyPrayerDrainEvent(parameters);
 
       // Should drain 50% of prayer points
-      expect(testPlayer.currentPrayerPoints).toBe(25);
+      expect(testPlayer.prayerPoints).toBe(25);
 
       const lastBroadcast = mockRoom.getLastBroadcast();
       expect(lastBroadcast.type).toBe('special_event');
@@ -513,13 +512,13 @@ describe('SurvivorWaveSystem', () => {
     });
 
     test('should apply health boost event', () => {
-      testPlayer.hitpoints = 60;
-      testPlayer.maxHitpoints = 100;
+      testPlayer.health = 60;
+      testPlayer.maxHealth = 100;
 
       const parameters = { amount: 20 };
       (waveSystem as any).applyHealthBoostEvent(parameters);
 
-      expect(testPlayer.hitpoints).toBe(80);
+      expect(testPlayer.health).toBe(80);
 
       const lastBroadcast = mockRoom.getLastBroadcast();
       expect(lastBroadcast.type).toBe('special_event');
@@ -568,8 +567,8 @@ describe('SurvivorWaveSystem', () => {
       // Add some test enemies
       (waveSystem as any).activeEnemies.add('enemy-1');
       (waveSystem as any).activeEnemies.add('enemy-2');
-      mockRoom.state.npcs.set('enemy-1', new NPC());
-      mockRoom.state.npcs.set('enemy-2', new NPC());
+      mockRoom.state.npcs['enemy-1'] = new NPC('enemy-1', 'Test Enemy 1', 0, 0, 'goblin');
+      mockRoom.state.npcs['enemy-2'] = new NPC('enemy-2', 'Test Enemy 2', 0, 0, 'goblin');
 
       waveSystem.endSurvivalMode('admin_stop');
 

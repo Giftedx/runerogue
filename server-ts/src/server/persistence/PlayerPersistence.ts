@@ -3,10 +3,13 @@
  * Handles saving and loading player data between sessions
  */
 
-import { Player, InventoryItem } from '../game/EntitySchemas';
-import { skillSystem, SkillType } from '../game/SkillSystem';
 import * as fs from 'fs';
 import * as path from 'path';
+import { InventoryItem, Player } from '../game/EntitySchemas';
+import { skillSystem, SkillType } from '../game/SkillSystem';
+import { getTestSafeLogger } from '../utils/test-safe-logger';
+
+const logger = getTestSafeLogger();
 
 export interface PlayerSaveData {
   id: string;
@@ -63,7 +66,7 @@ export class PlayerPersistence {
     try {
       await fs.promises.mkdir(this.saveDirectory, { recursive: true });
     } catch (error) {
-      console.error('Failed to create save directory:', error);
+      logger.error('Failed to create save directory:', error);
     }
   }
 
@@ -86,21 +89,20 @@ export class PlayerPersistence {
         equipment: {
           weapon: player.equipment.weapon,
           armor: player.equipment.armor,
-          shield: player.equipment.shield
+          shield: player.equipment.shield,
         },
         prayerPoints: player.prayerPoints,
         specialEnergy: player.specialEnergy,
-        totalPlayTime: Date.now() - player.lastActivity
+        totalPlayTime: Date.now() - player.lastActivity,
       };
 
       // Save to file (in production, save to MongoDB)
       const savePath = path.join(this.saveDirectory, `${player.username.toLowerCase()}.json`);
       await fs.promises.writeFile(savePath, JSON.stringify(saveData, null, 2));
-      
-      console.log(`Saved player data for ${player.username}`);
+      logger.info(`Saved player data for ${player.username}`);
       return true;
     } catch (error) {
-      console.error(`Failed to save player ${player.username}:`, error);
+      logger.error(`Failed to save player ${player.username}:`, error);
       return false;
     }
   }
@@ -113,12 +115,12 @@ export class PlayerPersistence {
       const savePath = path.join(this.saveDirectory, `${username.toLowerCase()}.json`);
       const data = await fs.promises.readFile(savePath, 'utf-8');
       const saveData = JSON.parse(data) as PlayerSaveData;
-      
-      console.log(`Loaded player data for ${username}`);
+
+      logger.info(`Loaded player data for ${username}`);
       return saveData;
     } catch (error) {
       // Player save doesn't exist or is corrupted
-      console.log(`No save data found for ${username}`);
+      logger.info(`No save data found for ${username}`);
       return null;
     }
   }
@@ -139,10 +141,8 @@ export class PlayerPersistence {
     // Restore equipment
     player.equipment.weapon = saveData.equipment.weapon || '';
     player.equipment.armor = saveData.equipment.armor || '';
-    player.equipment.shield = saveData.equipment.shield || '';
-
-    // Restore inventory
-    player.inventory.clear();
+    player.equipment.shield = saveData.equipment.shield || ''; // Restore inventory - clear using splice since ArraySchema doesn't have .clear() in v0.14.x
+    player.inventory.splice(0);
     for (const item of saveData.inventory) {
       const invItem = new InventoryItem();
       invItem.itemId = item.itemId;
@@ -172,7 +172,7 @@ export class PlayerPersistence {
         skills[skillType] = {
           level: skill?.level || 1,
           experience: skill?.xp || 0,
-          boost: skill?.boost || 0
+          boost: skill?.boost || 0,
         };
       }
     }
@@ -185,7 +185,7 @@ export class PlayerPersistence {
    */
   private serializeInventory(player: Player): Array<any> {
     const inventory: Array<any> = [];
-    
+
     player.inventory.forEach(item => {
       inventory.push({
         itemId: item.itemId,
@@ -194,7 +194,7 @@ export class PlayerPersistence {
         description: item.description,
         attack: item.attack,
         defense: item.defense,
-        isStackable: item.isStackable
+        isStackable: item.isStackable,
       });
     });
 
@@ -208,7 +208,7 @@ export class PlayerPersistence {
     // Map old skill data to new skill system
     Object.entries(skillData).forEach(([skillName, data]) => {
       const skillType = skillName as SkillType;
-      
+
       // Update the old skill system for compatibility
       if (player.skills && player.skills[skillName]) {
         player.skills[skillName].level = data.level || 1;
@@ -253,12 +253,14 @@ export class PlayerPersistence {
   /**
    * Get player stats for leaderboard
    */
-  public async getAllPlayerStats(): Promise<Array<{
-    username: string;
-    combatLevel: number;
-    totalLevel: number;
-    totalXP: number;
-  }>> {
+  public async getAllPlayerStats(): Promise<
+    Array<{
+      username: string;
+      combatLevel: number;
+      totalLevel: number;
+      totalXP: number;
+    }>
+  > {
     try {
       const files = await fs.promises.readdir(this.saveDirectory);
       const stats: Array<{
@@ -273,10 +275,10 @@ export class PlayerPersistence {
           try {
             const data = await fs.promises.readFile(path.join(this.saveDirectory, file), 'utf-8');
             const saveData = JSON.parse(data) as PlayerSaveData;
-            
+
             let totalLevel = 0;
             let totalXP = 0;
-            
+
             Object.values(saveData.skills).forEach(skill => {
               totalLevel += skill.level;
               totalXP += skill.experience;
@@ -286,7 +288,7 @@ export class PlayerPersistence {
               username: saveData.username,
               combatLevel: saveData.combatLevel,
               totalLevel,
-              totalXP
+              totalXP,
             });
           } catch (error) {
             // Skip corrupted files
@@ -298,7 +300,7 @@ export class PlayerPersistence {
       // Sort by total XP descending
       return stats.sort((a, b) => b.totalXP - a.totalXP);
     } catch (error) {
-      console.error('Failed to get player stats:', error);
+      logger.error('Failed to get player stats:', error);
       return [];
     }
   }

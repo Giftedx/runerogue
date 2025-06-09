@@ -2,14 +2,25 @@
 // Discord Bot Integration for RuneRogue
 // This service connects a Discord bot for notifications and commands.
 
-import { Client, GatewayIntentBits, TextChannel, Events, EmbedBuilder, ColorResolvable } from 'discord.js';
+import {
+  Client,
+  ColorResolvable,
+  EmbedBuilder,
+  Events,
+  GatewayIntentBits,
+  TextChannel,
+} from 'discord.js';
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID; // Target channel for notifications
 const DISCORD_NOTIFICATION_CHANNEL_ID = process.env.DISCORD_NOTIFICATION_CHANNEL_ID;
 
 export const discordClient = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
 });
 
 export async function startDiscordBot() {
@@ -41,15 +52,13 @@ export async function sendGameEventNotification(eventType: string, data: any): P
     console.error('No Discord channel configured for notifications');
     return;
   }
-  
+
   try {
     const channel = await discordClient.channels.fetch(channelId);
     if (!channel || !channel.isTextBased()) return;
-    
-    const embed = new EmbedBuilder()
-      .setTimestamp()
-      .setFooter({ text: 'RuneRogue' });
-    
+
+    const embed = new EmbedBuilder().setTimestamp().setFooter({ text: 'RuneRogue' });
+
     switch (eventType) {
       case 'player_death':
         embed
@@ -61,7 +70,7 @@ export async function sendGameEventNotification(eventType: string, data: any): P
             { name: 'Combat Level', value: `${data.combatLevel}`, inline: true }
           );
         break;
-        
+
       case 'rare_drop':
         embed
           .setTitle('🎉 Rare Drop!')
@@ -73,7 +82,7 @@ export async function sendGameEventNotification(eventType: string, data: any): P
             { name: 'Rarity', value: `1/${data.dropRate}`, inline: true }
           );
         break;
-        
+
       case 'trade_completed':
         embed
           .setTitle('🤝 Trade Completed')
@@ -84,7 +93,7 @@ export async function sendGameEventNotification(eventType: string, data: any): P
             { name: `${data.player2} gave`, value: data.player2Items || 'Nothing', inline: true }
           );
         break;
-        
+
       case 'boss_spawn':
         embed
           .setTitle('⚔️ Boss Spawned!')
@@ -95,7 +104,7 @@ export async function sendGameEventNotification(eventType: string, data: any): P
             { name: 'Combat Level', value: `${data.combatLevel}`, inline: true }
           );
         break;
-        
+
       case 'achievement':
         embed
           .setTitle('🏆 Achievement Unlocked!')
@@ -106,14 +115,14 @@ export async function sendGameEventNotification(eventType: string, data: any): P
             { name: 'Points', value: `${data.points}`, inline: true }
           );
         break;
-        
+
       default:
         embed
           .setTitle('📢 Game Event')
           .setDescription(data.message || 'Something happened in RuneRogue!')
           .setColor('#95A5A6' as ColorResolvable);
     }
-    
+
     (channel as TextChannel).send({ embeds: [embed] });
   } catch (error) {
     console.error('Error sending Discord game event notification:', error);
@@ -139,10 +148,10 @@ export function notifyEvent(message: string): void {
 // Enhanced command handler with more game commands
 discordClient.on(Events.MessageCreate, async msg => {
   if (msg.author.bot) return;
-  
+
   const args = msg.content.split(' ');
   const command = args[0].toLowerCase();
-  
+
   switch (command) {
     case '!stats':
       const playerName = args[1] || 'unknown';
@@ -150,11 +159,17 @@ discordClient.on(Events.MessageCreate, async msg => {
       try {
         const { playerPersistence } = await import('./persistence/PlayerPersistence.js');
         const playerData = await playerPersistence.loadPlayer(playerName);
-        
+
         if (playerData) {
-          const totalLevel = Object.values(playerData.skills).reduce((sum: number, skill: any) => sum + skill.level, 0);
-          const totalXP = Object.values(playerData.skills).reduce((sum: number, skill: any) => sum + skill.experience, 0);
-          
+          const totalLevel = Object.values(playerData.skills).reduce(
+            (sum: number, skill: any) => sum + skill.level,
+            0
+          );
+          const totalXP = Object.values(playerData.skills).reduce(
+            (sum: number, skill: any) => sum + skill.experience,
+            0
+          );
+
           const statsEmbed = new EmbedBuilder()
             .setTitle(`📊 ${playerData.username}'s Stats`)
             .setColor('#00FF00' as ColorResolvable)
@@ -162,12 +177,20 @@ discordClient.on(Events.MessageCreate, async msg => {
               { name: 'Combat Level', value: `${playerData.combatLevel}`, inline: true },
               { name: 'Total Level', value: `${totalLevel}`, inline: true },
               { name: 'Total XP', value: `${totalXP.toLocaleString()}`, inline: true },
-              { name: 'Health', value: `${playerData.health}/${playerData.maxHealth}`, inline: true },
-              { name: 'Last Seen', value: new Date(playerData.lastSeen).toLocaleString(), inline: false }
+              {
+                name: 'Health',
+                value: `${playerData.health}/${playerData.maxHealth}`,
+                inline: true,
+              },
+              {
+                name: 'Last Seen',
+                value: new Date(playerData.lastSeen).toLocaleString(),
+                inline: false,
+              }
             )
             .setTimestamp()
             .setFooter({ text: 'RuneRogue Stats' });
-          
+
           msg.reply({ embeds: [statsEmbed] });
         } else {
           msg.reply(`No player found with name: ${playerName}`);
@@ -176,7 +199,7 @@ discordClient.on(Events.MessageCreate, async msg => {
         msg.reply(`Error loading stats for ${playerName}`);
       }
       break;
-      
+
     case '!online':
       // Get real player count from game state
       try {
@@ -185,45 +208,47 @@ discordClient.on(Events.MessageCreate, async msg => {
         gameRooms.forEach(room => {
           totalPlayers += room.state?.players?.size || 0;
         });
-        
-        msg.reply(`Currently ${totalPlayers} players online across ${gameRooms.length} game rooms.`);
+
+        msg.reply(
+          `Currently ${totalPlayers} players online across ${gameRooms.length} game rooms.`
+        );
       } catch (error) {
         msg.reply('Unable to fetch online player count.');
       }
       break;
-      
+
     case '!leaderboard':
       // Fetch real leaderboard from persistence
       try {
         const { playerPersistence } = await import('./persistence/PlayerPersistence.js');
         const allStats = await playerPersistence.getAllPlayerStats();
-        
+
         const top10 = allStats.slice(0, 10);
-        
+
         const leaderboardEmbed = new EmbedBuilder()
           .setTitle('🏆 RuneRogue Leaderboard')
           .setColor('#FFD700' as ColorResolvable)
           .setTimestamp()
           .setFooter({ text: 'Top players by total XP' });
-        
+
         top10.forEach((player, index) => {
           leaderboardEmbed.addFields({
             name: `${index + 1}. ${player.username}`,
             value: `Level ${player.combatLevel} | ${player.totalLevel} Total | ${player.totalXP.toLocaleString()} XP`,
-            inline: false
+            inline: false,
           });
         });
-        
+
         if (top10.length === 0) {
           leaderboardEmbed.setDescription('No players yet!');
         }
-        
+
         msg.reply({ embeds: [leaderboardEmbed] });
       } catch (error) {
         msg.reply('Error fetching leaderboard data.');
       }
       break;
-      
+
     case '!help':
       const helpEmbed = new EmbedBuilder()
         .setTitle('RuneRogue Bot Commands')
@@ -238,42 +263,47 @@ discordClient.on(Events.MessageCreate, async msg => {
         .setFooter({ text: 'RuneRogue Discord Bot' });
       msg.reply({ embeds: [helpEmbed] });
       break;
-      
+
     case '!drops':
       const npcName = args.slice(1).join(' ') || 'goblin';
       // Fetch real drop tables
       try {
         // Define some default drop tables for common NPCs
-        const dropTables: Record<string, Array<{itemId: string, dropRate: number, minQuantity: number, maxQuantity: number}>> = {
-          'goblin': [
+        const dropTables: Record<
+          string,
+          Array<{ itemId: string; dropRate: number; minQuantity: number; maxQuantity: number }>
+        > = {
+          goblin: [
             { itemId: 'bronze_sword', dropRate: 0.25, minQuantity: 1, maxQuantity: 1 },
             { itemId: 'bronze_shield', dropRate: 0.15, minQuantity: 1, maxQuantity: 1 },
-            { itemId: 'coins', dropRate: 0.80, minQuantity: 5, maxQuantity: 25 }
+            { itemId: 'coins', dropRate: 0.8, minQuantity: 5, maxQuantity: 25 },
           ],
-          'guard': [
-            { itemId: 'iron_sword', dropRate: 0.30, minQuantity: 1, maxQuantity: 1 },
-            { itemId: 'coins', dropRate: 0.90, minQuantity: 10, maxQuantity: 50 }
+          guard: [
+            { itemId: 'iron_sword', dropRate: 0.3, minQuantity: 1, maxQuantity: 1 },
+            { itemId: 'coins', dropRate: 0.9, minQuantity: 10, maxQuantity: 50 },
           ],
-          'chicken': [
+          chicken: [
             { itemId: 'raw_chicken', dropRate: 1.0, minQuantity: 1, maxQuantity: 1 },
-            { itemId: 'feather', dropRate: 0.75, minQuantity: 5, maxQuantity: 15 }
-          ]
+            { itemId: 'feather', dropRate: 0.75, minQuantity: 5, maxQuantity: 15 },
+          ],
         };
-        
+
         const lootTable = dropTables[npcName.toLowerCase()];
-        
+
         if (lootTable && lootTable.length > 0) {
-          const dropLines = lootTable.map(item => {
-            const dropRate = (item.dropRate * 100).toFixed(1);
-            return `• ${item.itemId}: ${dropRate}% (${item.minQuantity}-${item.maxQuantity})`;
-          }).join('\n');
-          
+          const dropLines = lootTable
+            .map(item => {
+              const dropRate = (item.dropRate * 100).toFixed(1);
+              return `• ${item.itemId}: ${dropRate}% (${item.minQuantity}-${item.maxQuantity})`;
+            })
+            .join('\n');
+
           const dropsEmbed = new EmbedBuilder()
             .setTitle(`📋 Drop Table: ${npcName}`)
             .setDescription(dropLines || 'No drops configured')
             .setColor('#8B4513' as ColorResolvable)
             .setFooter({ text: 'RuneRogue Drop Tables' });
-          
+
           msg.reply({ embeds: [dropsEmbed] });
         } else {
           msg.reply(`No drop table found for: ${npcName}. Try: goblin, guard, chicken`);
@@ -282,26 +312,27 @@ discordClient.on(Events.MessageCreate, async msg => {
         msg.reply(`Error fetching drop table for ${npcName}`);
       }
       break;
-      
+
     case '!wiki':
       const itemName = args.slice(1).join(' ') || 'bronze sword';
       // Fetch real item data
       try {
         const { ItemManager } = await import('./game/ItemManager.js');
         const itemManager = ItemManager.getInstance();
-        
+
         // Try common item IDs first
         const commonItems: Record<string, string> = {
           'bronze sword': 'bronze_sword',
           'iron sword': 'iron_sword',
           'bronze shield': 'bronze_shield',
           'starter sword': 'starter_sword',
-          'starter shield': 'starter_shield'
+          'starter shield': 'starter_shield',
         };
-        
-        const itemId = commonItems[itemName.toLowerCase()] || itemName.toLowerCase().replace(/\s+/g, '_');
+
+        const itemId =
+          commonItems[itemName.toLowerCase()] || itemName.toLowerCase().replace(/\s+/g, '_');
         const item = await itemManager.getItemDefinition(itemId);
-        
+
         if (item) {
           const wikiEmbed = new EmbedBuilder()
             .setTitle(`📖 ${item.name}`)
@@ -313,10 +344,12 @@ discordClient.on(Events.MessageCreate, async msg => {
               { name: 'Stackable', value: item.isStackable ? 'Yes' : 'No', inline: true }
             )
             .setFooter({ text: `Item ID: ${item.itemId}` });
-          
+
           msg.reply({ embeds: [wikiEmbed] });
         } else {
-          msg.reply(`No item found with name: ${itemName}. Try: bronze sword, iron sword, starter sword`);
+          msg.reply(
+            `No item found with name: ${itemName}. Try: bronze sword, iron sword, starter sword`
+          );
         }
       } catch (error) {
         msg.reply(`Error fetching item data for ${itemName}`);
@@ -359,23 +392,27 @@ app.post('/game-event', async (req, res) => {
     res.status(403).json({ error: 'Forbidden' });
     return;
   }
-  
+
   const { eventType, data } = req.body;
   if (!eventType || !data) {
     res.status(400).json({ error: 'Missing eventType or data' });
     return;
   }
-  
+
   try {
     await sendGameEventNotification(eventType, data);
     res.json({ status: 'ok' });
   } catch (e) {
-    res.status(500).json({ error: 'Failed to send game event notification', details: (e as Error).message });
+    res
+      .status(500)
+      .json({ error: 'Failed to send game event notification', details: (e as Error).message });
   }
 });
 
-// Start Discord bot and notification server
-startDiscordBot();
-app.listen(NOTIFY_PORT, () => {
-  console.log(`[discord-bot] Notification endpoint listening on port ${NOTIFY_PORT}`);
-});
+// Start Discord bot and notification server only if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  startDiscordBot();
+  app.listen(NOTIFY_PORT, () => {
+    console.log(`[discord-bot] Notification endpoint listening on port ${NOTIFY_PORT}`);
+  });
+}

@@ -8,20 +8,19 @@ describe('CombatSystem.handlePlayerAction', () => {
   let system: CombatSystem;
   let attacker: Player;
   let npc: NPC;
-
   beforeEach(() => {
     state = new GameState();
 
     attacker = new Player();
     attacker.id = 'attacker1';
-    state.players.set(attacker.id, attacker);
+    state.players[attacker.id] = attacker;
 
     const itemManager = ItemManager.getInstance();
     const prayerSystem = new PrayerSystem(attacker);
     system = new CombatSystem(state, itemManager, prayerSystem);
 
     npc = new NPC('npc1', 'TestNPC', 0, 0, 'npc', []);
-    state.npcs.set(npc.id, npc);
+    state.npcs[npc.id] = npc;
   });
 
   it('should return null for non-attack actions', () => {

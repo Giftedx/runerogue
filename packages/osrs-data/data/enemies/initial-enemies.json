@@ -1,0 +1,256 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-06-08T00:00:00Z",
+    "source": "OSRS Wiki",
+    "generatedBy": "agent/osrs-data (The Lorekeeper)",
+    "description": "Initial 5 enemies for RuneRogue Phase 0 implementation"
+  },
+  "enemies": {
+    "goblin": {
+      "id": "goblin",
+      "name": "Goblin",
+      "description": "A small, green humanoid creature. Weak but aggressive to new adventurers.",
+      "combatLevel": 2,
+      "hitpoints": 5,
+      "maxHit": 1,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "attackType": "melee",
+      "stats": {
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 5,
+        "prayer": 1
+      },
+      "bonuses": {
+        "attackBonus": 0,
+        "strengthBonus": 0,
+        "defenceBonus": 0
+      },
+      "loot": [
+        {
+          "item": "bones",
+          "chance": 1.0,
+          "quantity": 1
+        },
+        {
+          "item": "bronze_spear",
+          "chance": 0.001,
+          "quantity": 1
+        }
+      ],
+      "experience": {
+        "attack": 5,
+        "strength": 5,
+        "defence": 5,
+        "hitpoints": 5
+      },
+      "spawns": {
+        "locations": ["lumbridge", "al_kharid", "goblin_village"],
+        "frequency": "common"
+      }
+    },
+    "cow": {
+      "id": "cow",
+      "name": "Cow",
+      "description": "A docile farm animal. Not aggressive unless provoked.",
+      "combatLevel": 2,
+      "hitpoints": 8,
+      "maxHit": 1,
+      "attackSpeed": 4,
+      "aggressive": false,
+      "attackType": "melee",
+      "stats": {
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 8,
+        "prayer": 1
+      },
+      "bonuses": {
+        "attackBonus": 0,
+        "strengthBonus": 0,
+        "defenceBonus": 0
+      },
+      "loot": [
+        {
+          "item": "bones",
+          "chance": 1.0,
+          "quantity": 1
+        },
+        {
+          "item": "cowhide",
+          "chance": 1.0,
+          "quantity": 1
+        },
+        {
+          "item": "raw_beef",
+          "chance": 1.0,
+          "quantity": 1
+        }
+      ],
+      "experience": {
+        "attack": 5.3,
+        "strength": 5.3,
+        "defence": 5.3,
+        "hitpoints": 5.3
+      },
+      "spawns": {
+        "locations": ["lumbridge", "falador", "catherby"],
+        "frequency": "common"
+      }
+    },
+    "chicken": {
+      "id": "chicken",
+      "name": "Chicken",
+      "description": "A small farm bird. Completely harmless and popular with new adventurers.",
+      "combatLevel": 1,
+      "hitpoints": 3,
+      "maxHit": 0,
+      "attackSpeed": 4,
+      "aggressive": false,
+      "attackType": "melee",
+      "stats": {
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 3,
+        "prayer": 1
+      },
+      "bonuses": {
+        "attackBonus": 0,
+        "strengthBonus": 0,
+        "defenceBonus": 0
+      },
+      "loot": [
+        {
+          "item": "bones",
+          "chance": 1.0,
+          "quantity": 1
+        },
+        {
+          "item": "feather",
+          "chance": 1.0,
+          "quantity": 5
+        },
+        {
+          "item": "raw_chicken",
+          "chance": 1.0,
+          "quantity": 1
+        }
+      ],
+      "experience": {
+        "attack": 4.5,
+        "strength": 4.5,
+        "defence": 4.5,
+        "hitpoints": 4.5
+      },
+      "spawns": {
+        "locations": ["lumbridge", "falador", "entrana"],
+        "frequency": "very_common"
+      }
+    },
+    "giant_rat": {
+      "id": "giant_rat",
+      "name": "Giant Rat",
+      "description": "A large, diseased rodent. Found in sewers and dungeons.",
+      "combatLevel": 1,
+      "hitpoints": 5,
+      "maxHit": 1,
+      "attackSpeed": 4,
+      "aggressive": false,
+      "attackType": "melee",
+      "stats": {
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 5,
+        "prayer": 1
+      },
+      "bonuses": {
+        "attackBonus": 0,
+        "strengthBonus": 0,
+        "defenceBonus": 0
+      },
+      "loot": [
+        {
+          "item": "bones",
+          "chance": 1.0,
+          "quantity": 1
+        },
+        {
+          "item": "raw_rat_meat",
+          "chance": 1.0,
+          "quantity": 1
+        }
+      ],
+      "experience": {
+        "attack": 5,
+        "strength": 5,
+        "defence": 5,
+        "hitpoints": 5
+      },
+      "spawns": {
+        "locations": ["lumbridge_swamp", "varrock_sewers", "edgeville_dungeon"],
+        "frequency": "common"
+      }
+    },
+    "zombie": {
+      "id": "zombie",
+      "name": "Zombie",
+      "description": "An undead human shambling around graveyards and dark places.",
+      "combatLevel": 13,
+      "hitpoints": 22,
+      "maxHit": 2,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "attackType": "melee",
+      "stats": {
+        "attack": 15,
+        "strength": 15,
+        "defence": 15,
+        "hitpoints": 22,
+        "prayer": 1
+      },
+      "bonuses": {
+        "attackBonus": 5,
+        "strengthBonus": 5,
+        "defenceBonus": 5
+      },
+      "loot": [
+        {
+          "item": "bones",
+          "chance": 1.0,
+          "quantity": 1
+        },
+        {
+          "item": "bronze_med_helm",
+          "chance": 0.02,
+          "quantity": 1
+        },
+        {
+          "item": "bronze_sword",
+          "chance": 0.02,
+          "quantity": 1
+        },
+        {
+          "item": "bronze_axe",
+          "chance": 0.02,
+          "quantity": 1
+        }
+      ],
+      "experience": {
+        "attack": 37.5,
+        "strength": 37.5,
+        "defence": 37.5,
+        "hitpoints": 37.5
+      },
+      "spawns": {
+        "locations": ["draynor_manor", "lumbridge_graveyard", "wizards_tower"],
+        "frequency": "uncommon"
+      }
+    }
+  }
+}

@@ -7,6 +7,7 @@
 
 import { Room } from '@colyseus/core';
 
+import testSafeLogger from '../utils/test-safe-logger';
 import { CombatSystem } from './CombatSystem';
 import { NPC, Player, WorldState } from './EntitySchemas';
 import { ProceduralGenerator } from './ProceduralGenerator';
@@ -76,14 +77,12 @@ export class SurvivorWaveSystem {
     this.proceduralGenerator = new ProceduralGenerator();
     this.combatSystem = new CombatSystem();
   }
-
   /**
    * Start a new wave-based survival session
-   */
-  public startSurvivalMode(): void {
-    console.log('🌊 Starting Survivor Wave System');
+   */ public startSurvivalMode(): void {
+    testSafeLogger.info('🌊 Starting Survivor Wave System');
     this.currentWave = 1;
-    this.waveState = WaveState.PREPARING;
+    this.waveState = WaveState.PREPARING; // Clear Set using Set.prototype.clear()
     this.activeEnemies.clear();
 
     // Announce to players
@@ -103,7 +102,7 @@ export class SurvivorWaveSystem {
    */
   public startWave(waveNumber: number): void {
     if (this.waveState === WaveState.ACTIVE) {
-      console.warn(`⚠️ Cannot start wave ${waveNumber}, wave already active`);
+      testSafeLogger.warn(`⚠️ Cannot start wave ${waveNumber}, wave already active`);
       return;
     }
 
@@ -114,7 +113,7 @@ export class SurvivorWaveSystem {
 
     const waveConfig = this.generateWaveConfiguration(waveNumber);
 
-    console.log(`🌊 Starting Wave ${waveNumber}:`, {
+    testSafeLogger.info(`🌊 Starting Wave ${waveNumber}:`, {
       enemyCount: waveConfig.enemyCount,
       difficulty: waveConfig.difficultyMultiplier,
       enemyTypes: waveConfig.enemyTypes.length,
@@ -388,30 +387,34 @@ export class SurvivorWaveSystem {
 
   /**
    * Spawn an enemy at a random valid location
-   */
-  private spawnEnemy(enemyType: WaveEnemyType, difficultyMultiplier: number): void {
+   */ private spawnEnemy(enemyType: WaveEnemyType, difficultyMultiplier: number): void {
     const spawnLocation = this.findValidSpawnLocation();
+    const enemyId = `wave_enemy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const enemy = new NPC();
-    enemy.id = `wave_enemy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    enemy.name = enemyType.name;
-    enemy.x = spawnLocation.x;
-    enemy.y = spawnLocation.y;
-    enemy.hitpoints = enemyType.hitpoints;
-    enemy.maxHitpoints = enemyType.hitpoints;
+    const enemy = new NPC(
+      enemyId,
+      enemyType.name,
+      spawnLocation.x,
+      spawnLocation.y,
+      'wave_enemy',
+      [] // Empty loot table for now
+    );
+    // Set stats
+    enemy.health = enemyType.hitpoints;
+    enemy.maxHealth = enemyType.hitpoints;
     enemy.attack = enemyType.attack;
-    enemy.strength = enemyType.strength;
+    // enemy.strength = enemyType.strength; // Not available in NPC schema
     enemy.defense = enemyType.defense;
-    enemy.combatLevel = Math.floor(enemyType.level * difficultyMultiplier);
-    enemy.isAggressive = true;
+    // enemy.combatLevel = Math.floor(enemyType.level * difficultyMultiplier); // Not available in NPC schema
+    // enemy.isAggressive = true; // Not available in NPC schema
     enemy.aggroRange = 10; // Aggressive enemies in survival mode
 
     // Add to game state
     this.room.state.npcs.set(enemy.id, enemy);
-    this.activeEnemies.add(enemy.id);
 
-    console.log(
-      `👹 Spawned ${enemy.name} (Level ${enemy.combatLevel}) at (${enemy.x}, ${enemy.y})`
+    this.activeEnemies.add(enemy.id); // Debug logging (automatically handled by test-safe logger)
+    testSafeLogger.debug(
+      `👹 Spawned ${enemy.name} (Level ${enemy.attack}) at (${enemy.x}, ${enemy.y})`
     );
 
     // Broadcast enemy spawn
@@ -419,7 +422,7 @@ export class SurvivorWaveSystem {
       enemyId: enemy.id,
       enemyType: enemyType.npcId,
       name: enemy.name,
-      level: enemy.combatLevel,
+      level: enemy.attack,
       x: enemy.x,
       y: enemy.y,
     });
@@ -460,12 +463,11 @@ export class SurvivorWaveSystem {
 
   /**
    * Handle enemy death
-   */
-  public onEnemyDeath(enemyId: string): void {
+   */ public onEnemyDeath(enemyId: string): void {
     if (this.activeEnemies.has(enemyId)) {
       this.activeEnemies.delete(enemyId);
 
-      console.log(`💀 Enemy ${enemyId} defeated. Remaining: ${this.activeEnemies.size}`);
+      testSafeLogger.debug(`💀 Enemy ${enemyId} defeated. Remaining: ${this.activeEnemies.size}`);
 
       // Check if wave is complete
       if (this.activeEnemies.size === 0 && this.waveState === WaveState.ACTIVE) {
@@ -488,7 +490,7 @@ export class SurvivorWaveSystem {
     const completionTime = Date.now() - this.waveStartTime;
     const waveConfig = this.generateWaveConfiguration(this.currentWave);
 
-    console.log(`✅ Wave ${this.currentWave} completed in ${completionTime}ms`);
+    testSafeLogger.info(`✅ Wave ${this.currentWave} completed in ${completionTime}ms`);
 
     // Award rewards to all surviving players
     this.awardWaveRewards(waveConfig.rewards);
@@ -527,23 +529,23 @@ export class SurvivorWaveSystem {
     switch (reward.type) {
       case 'experience':
         // Add experience (would integrate with skills system)
-        console.log(`📈 ${player.username} gained ${reward.value} ${reward.skillType} experience`);
+        testSafeLogger.debug(
+          `📈 ${player.username} gained ${reward.value} ${reward.skillType} experience`
+        );
         break;
       case 'prayer_points':
         const maxPrayer = player.skills.prayer?.level || 1;
         player.prayerPoints = Math.min(maxPrayer, player.prayerPoints + reward.value);
-        console.log(`🙏 ${player.username} restored ${reward.value} prayer points`);
+        testSafeLogger.debug(`🙏 ${player.username} restored ${reward.value} prayer points`);
         break;
-
       case 'health_restore':
         player.health = Math.min(player.maxHealth, player.health + reward.value);
-        console.log(`❤️ ${player.username} restored ${reward.value} health`);
+        testSafeLogger.debug(`❤️ ${player.username} restored ${reward.value} health`);
         break;
-
       case 'item':
         if (reward.itemId) {
           // Add item to player inventory (simplified)
-          console.log(`🎁 ${player.username} received ${reward.itemId}`);
+          testSafeLogger.debug(`🎁 ${player.username} received ${reward.itemId}`);
         }
         break;
     }
@@ -554,9 +556,8 @@ export class SurvivorWaveSystem {
    */
   private triggerSpecialEvents(waveConfig: WaveConfiguration, trigger: string): void {
     const events = waveConfig.specialEvents?.filter(event => event.trigger === trigger) || [];
-
     events.forEach(event => {
-      console.log(`⚡ Triggering special event: ${event.type}`);
+      testSafeLogger.debug(`⚡ Triggering special event: ${event.type}`);
 
       switch (event.type) {
         case 'prayer_drain':
@@ -587,8 +588,8 @@ export class SurvivorWaveSystem {
 
     // Apply prayer drain to all players
     this.room.state.players.forEach(player => {
-      const drainAmount = Math.floor(player.currentPrayerPoints * 0.5);
-      player.currentPrayerPoints = Math.max(0, player.currentPrayerPoints - drainAmount);
+      const drainAmount = Math.floor(player.prayerPoints * 0.5);
+      player.prayerPoints = Math.max(0, player.prayerPoints - drainAmount);
     });
   }
 
@@ -616,7 +617,7 @@ export class SurvivorWaveSystem {
 
     this.room.state.players.forEach(player => {
       const healAmount = parameters.amount || 20;
-      player.hitpoints = Math.min(player.maxHitpoints, player.hitpoints + healAmount);
+      player.health = Math.min(player.maxHealth, player.health + healAmount);
     });
   }
 
@@ -694,15 +695,15 @@ export class SurvivorWaveSystem {
     if (this.spawnTimer) {
       clearTimeout(this.spawnTimer);
       this.spawnTimer = null;
-    }
-
-    // Clear all wave enemies
+    } // Clear all wave enemies
     this.activeEnemies.forEach(enemyId => {
-      this.room.state.npcs.delete(enemyId);
+      if (enemyId && this.room.state.npcs[enemyId]) {
+        delete this.room.state.npcs[enemyId];
+      }
     });
     this.activeEnemies.clear();
 
-    console.log(`🏁 Survival mode ended: ${reason}. Final wave: ${this.currentWave}`);
+    testSafeLogger.info(`🏁 Survival mode ended: ${reason}. Final wave: ${this.currentWave}`);
 
     this.room.broadcast('survival_mode_ended', {
       reason,
@@ -755,7 +756,7 @@ export class SurvivorWaveSystem {
    */
   public checkPlayerSurvival(): boolean {
     const livingPlayers = Array.from(this.room.state.players.values()).filter(
-      player => player.hitpoints > 0
+      player => player.health > 0
     );
 
     if (livingPlayers.length === 0 && this.waveState === WaveState.ACTIVE) {

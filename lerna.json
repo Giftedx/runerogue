@@ -21,6 +21,5 @@
     "apps/*",
     "tools/*"
   ],
-  "useWorkspaces": true,
   "stream": true
 } 

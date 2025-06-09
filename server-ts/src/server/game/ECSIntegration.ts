@@ -133,11 +133,9 @@ export class ECSIntegration {
 
     // Sync prayer
     player.prayerPoints = Prayer.currentPoints[entityId];
-    player.maxPrayerPoints = Prayer.maximumPoints[entityId];
-
-    // Convert bitfield back to active prayers array
+    player.maxPrayerPoints = Prayer.maximumPoints[entityId]; // Convert bitfield back to active prayers array
     const activePrayersBitfield = Prayer.activePrayers[entityId];
-    player.activePrayers.clear();
+    player.activePrayers.splice(0); // Clear using splice instead of clear()
     for (let i = 0; i < 32; i++) {
       if (activePrayersBitfield & (1 << i)) {
         player.activePrayers.push((i + 1).toString());

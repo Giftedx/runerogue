@@ -1,5 +1,4 @@
-import { Player, InventoryItem, GameState } from '../../game/EntitySchemas';
-import { ItemManager } from '../../game/ItemManager';
+import { GameState, InventoryItem, Player } from '../../game/EntitySchemas';
 
 // Mock ItemManager to return basic definitions
 const mockItemManager = {
@@ -49,10 +48,9 @@ describe('Minimal Schema Test', () => {
     const player = new Player();
     player.id = 'test-player';
     player.name = 'Test Player';
+    state.players['test-player'] = player;
 
-    state.players.set('test-player', player);
-
-    expect(state.players.get('test-player')).toBe(player);
+    expect(state.players['test-player']).toBe(player);
     expect(state.players.size).toBe(1);
   });
 

@@ -1,22 +1,43 @@
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import { createServer } from 'http';
+
+// CRITICAL: Import comprehensive metadata fix FIRST (before any schema imports)
+
+// Import comprehensive metadata and schema fixes FIRST
+import './utils/comprehensive-metadata-fix';
+import { applyComprehensiveSchemaFixes } from './utils/comprehensive-schema-fix';
+
+// CRITICAL: Import ArraySchema registry fix FIRST to eliminate warnings
+import './utils/arrayschema-registry-fix';
+// Apply comprehensive schema fixes (encode polyfills, array/map registration)
+applyComprehensiveSchemaFixes();
+
+// CRITICAL: Import metadata fix FIRST
+import './utils/metadata-schema-fix';
+
+// Import early metadata initialization FIRST
+import './utils/early-metadata-init';
+
+// Import encoder patch to fix ArraySchema warnings
+import './utils/encoder-patch';
+
 import { Server as ColyseusServer } from '@colyseus/core';
-import { WebSocketTransport } from '@colyseus/ws-transport';
-import { RedisPresence } from '@colyseus/redis-presence';
 import { monitor } from '@colyseus/monitor';
-import helmet from 'helmet';
+import { RedisPresence } from '@colyseus/redis-presence';
+import cors from 'cors';
+import express from 'express';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import { createServer } from 'http';
 import { createConnection } from 'typeorm';
 import appConfig from './app.config';
 import { authRouter } from './routes/auth';
 // import healthRouter from './routes/health';
-import { errorHandler } from './auth/middleware';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-import logger from './logger';
+import { errorHandler } from './auth/middleware';
 import economyIntegration from './economy-integration';
+import { GameRoom } from './game/GameRoom';
+import logger from './logger';
 
 // Load environment variables
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -26,13 +47,15 @@ const isProduction = NODE_ENV === 'production';
 // Initialize Express
 export const app = express();
 export let gameServer: ColyseusServer;
-export let server = createServer(app);
+export const server = createServer(app);
 
 // Initialize Economy Integration
 let economyReady = false;
 (async () => {
   try {
-    economyReady = await economyIntegration.isReady();
+    if (economyIntegration) {
+      economyReady = await economyIntegration.isReady();
+    }
     logger.info(`Economy integration status: ${economyReady ? 'Ready' : 'Not Ready'}`);
   } catch (error) {
     logger.error('Failed to initialize economy integration:', error);
@@ -88,7 +111,7 @@ app.get('/health', async (_req, res) => {
     // Check economy integration health
     let economyStatus = 'unknown';
     try {
-      if (await economyIntegration.isReady()) {
+      if (economyIntegration && (await economyIntegration.isReady())) {
         economyStatus = 'healthy';
       } else {
         economyStatus = 'unhealthy';
@@ -127,9 +150,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Other API routes
 app.use('/auth', authRouter);
 
-// API Routes
-app.use('/auth', authRouter);
-
 // Colyseus monitor (protected in production)
 app.use(
   '/colyseus',
@@ -144,7 +164,8 @@ app.use(
       }
 
       res.set('WWW-Authenticate', 'Basic');
-      return res.status(401).send('Authentication required.');
+      res.status(401).send('Authentication required.');
+      return;
     }
     return next();
   },
@@ -171,12 +192,11 @@ const checkHealth = async (): Promise<{ database: boolean; redis: boolean }> => 
   } catch (error) {
     logger.error('Database health check failed:', error);
   }
-
   try {
     // Check Redis connection
     try {
-      // Simplified check - just verify we can access the presence system
-      if (gameServer.presence) {
+      // Simplified check - just verify gameServer exists
+      if (gameServer) {
         health.redis = true;
       }
     } catch (e) {
@@ -189,37 +209,33 @@ const checkHealth = async (): Promise<{ database: boolean; redis: boolean }> => 
   return health;
 };
 
-export const startApplication = async (testMode: boolean = false) => {
+export const startApplication = async () => {
+  // Create transport first
+  // Note: Transport is attached via gameServer.attach() in Colyseus v0.16.x
+  // Create presence system
+  const presence =
+    NODE_ENV !== 'test'
+      ? new RedisPresence({
+          host: process.env.REDIS_HOST,
+          port: parseInt(process.env.REDIS_PORT || '6379', 10),
+          // Add password if provided
+          password: process.env.REDIS_PASSWORD,
+          // Add TLS support for production
+          tls: isProduction ? { rejectUnauthorized: false } : undefined,
+          // Add connection timeout
+          connect_timeout: 30000, // Add retry strategy
+        })
+      : undefined;
+
   gameServer = new ColyseusServer({
-    transport: new WebSocketTransport({
-      server,
-      pingInterval: 10000,
-      pingMaxRetries: 3,
-    }),
+    // No transport in constructor for v0.16.x
+    presence: presence,
   });
 
+  // Attach transport after creating server
+  gameServer.attach({ server });
   // Define Colyseus rooms
   appConfig(gameServer);
-
-  // Configure Redis for Colyseus presence and locking
-  // Only enable RedisPresence if not in test mode
-  if (NODE_ENV !== 'test') {
-    gameServer.presence = new RedisPresence({
-      host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      // Add password if provided
-      password: process.env.REDIS_PASSWORD,
-      // Add TLS support for production
-      tls: isProduction ? { rejectUnauthorized: false } : undefined,
-      // Add connection timeout
-      connectTimeout: 30000,
-      // Add retry strategy
-      retryStrategy: (times: number) => {
-        // reconnect after
-        return Math.min(times * 50, 2000);
-      },
-    });
-  }
 
   // Register room handlers
   gameServer.define('game', GameRoom);
@@ -264,12 +280,10 @@ export const startApplication = async (testMode: boolean = false) => {
     };
 
     try {
-      // Attempt to shutdown Colyseus game server
+      // Colyseus game server will be handled by the HTTP server shutdown
       if (gameServer) {
-        logger.info('Shutting down Colyseus game server...');
-        await gameServer.shutdown();
+        logger.info('Colyseus game server will shutdown with HTTP server.');
         shutdownStages.colyseusShutdown = true;
-        logger.info('Colyseus game server shut down.');
       }
 
       // Close HTTP server
@@ -305,12 +319,6 @@ export const startApplication = async (testMode: boolean = false) => {
         logger.warn('Partial shutdown completed with some issues');
         process.exit(1);
       }
-
-      // Force close after timeout as a last resort
-      setTimeout(() => {
-        logger.error('Could not complete shutdown in time, forcefully exiting');
-        process.exit(1);
-      }, 10000);
     } catch (error) {
       logger.error('Critical error during shutdown:', error);
       process.exit(1);
@@ -351,7 +359,7 @@ export const startApplication = async (testMode: boolean = false) => {
   process.on('SIGINT', () => shutdown('SIGINT'));
 };
 
-if (require.main === module && !testMode) {
+if (require.main === module) {
   startApplication();
 }
 

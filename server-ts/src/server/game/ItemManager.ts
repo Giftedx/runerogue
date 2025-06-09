@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { performance } from 'perf_hooks';
 
-import economyIntegration from '../economy-integration';
-import NodeCache from 'node-cache';
 import logger from '@/logger';
+import NodeCache from 'node-cache';
+import economyIntegration from '../economy-integration';
 
 // Cache configuration
 const CACHE_TTL_SECONDS = {
@@ -147,17 +147,30 @@ export class ItemManager {
     if (localItem) {
       this.cache.set(cacheKey, localItem, CACHE_TTL_SECONDS.ITEM_DEFINITION);
       return localItem;
-    }
-
-    // Try to fetch from economy service if not found
+    } // Try to fetch from economy service if not found
     try {
-      if (await economyIntegration.isReady()) {
+      if (economyIntegration && (await economyIntegration.isReady())) {
         // Fetch single item by ID
-        const item = await economyIntegration.getItem(itemId);
-        if (item) {
-          this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
-          this.itemDefinitions.set(itemId, item);
-          return item;
+        const numericItemId = parseInt(itemId, 10);
+        if (!isNaN(numericItemId)) {
+          const item = await economyIntegration.getItem(numericItemId);
+          if (item) {
+            // Convert Item to ItemDefinition
+            const itemDefinition: ItemDefinition = {
+              id: item.id.toString(),
+              itemId: item.id.toString(),
+              name: item.name,
+              description: item.description || '',
+              baseValue: item.base_value || 0,
+              attack: 0, // Default values for missing properties
+              defense: 0,
+              isStackable: false,
+              isTradeable: true,
+            };
+            this.cache.set(cacheKey, itemDefinition, CACHE_TTL_SECONDS.ITEM_DEFINITION);
+            this.itemDefinitions.set(itemId, itemDefinition);
+            return itemDefinition;
+          }
         }
       }
     } catch (error) {
@@ -180,18 +193,31 @@ export class ItemManager {
       } else {
         missingIds.push(id);
       }
-    }
-
-    // Fetch missing items individually if economy service is available
-    if (missingIds.length > 0 && (await economyIntegration.isReady())) {
+    } // Fetch missing items individually if economy service is available
+    if (missingIds.length > 0 && economyIntegration && (await economyIntegration.isReady())) {
       for (const id of missingIds) {
         try {
-          const item = await economyIntegration.getItem(id);
-          if (item) {
-            const cacheKey = `item:${id}`;
-            this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
-            this.itemDefinitions.set(id, item);
-            result.set(id, item);
+          const numericId = parseInt(id, 10);
+          if (!isNaN(numericId)) {
+            const item = await economyIntegration.getItem(numericId);
+            if (item) {
+              // Convert Item to ItemDefinition
+              const itemDefinition: ItemDefinition = {
+                id: item.id.toString(),
+                itemId: item.id.toString(),
+                name: item.name,
+                description: item.description || '',
+                baseValue: item.base_value || 0,
+                attack: 0, // Default values for missing properties
+                defense: 0,
+                isStackable: false,
+                isTradeable: true,
+              };
+              const cacheKey = `item:${id}`;
+              this.cache.set(cacheKey, itemDefinition, CACHE_TTL_SECONDS.ITEM_DEFINITION);
+              this.itemDefinitions.set(id, itemDefinition);
+              result.set(id, itemDefinition);
+            }
           }
         } catch (error) {
           logger.error(`Failed to fetch item ${id} from economy service:`, error);

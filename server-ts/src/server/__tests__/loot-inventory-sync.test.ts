@@ -1,5 +1,6 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for project goals and persistent AI context.
-import { ArraySchema, InventoryItem, LootDrop, Player } from '../game/EntitySchemas';
+import { ArraySchema } from '@colyseus/schema';
+import { InventoryItem, LootDrop, Player } from '../game/EntitySchemas';
 import { GameRoom } from '../game/GameRoom';
 import { LootManager } from '../game/LootManager';
 

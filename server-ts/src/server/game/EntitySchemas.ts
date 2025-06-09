@@ -1,6 +1,6 @@
 // AI MEMORY ANCHOR: See docs/ROADMAP.md and docs/MEMORIES.md for current project goals and persistent AI context.
+
 import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema';
-export { ArraySchema };
 
 // Interface for player action messages
 export interface PlayerActionMessage {
@@ -106,8 +106,8 @@ export class Skills extends Schema {
   }
 }
 
-import { ItemDefinition } from './ItemManager';
-import { LootTableEntry } from './LootManager';
+import type { ItemDefinition } from './ItemManager';
+import type { LootTableEntry } from './LootManager';
 
 /**
  * Inventory item class
@@ -619,11 +619,10 @@ export class Trade extends Schema {
     }
     this.accepterItems.push(item);
   }
-
   // Helper method to clear items safely
   public clearProposerItems(): void {
     if (this.proposerItems instanceof ArraySchema) {
-      this.proposerItems.clear();
+      this.proposerItems.splice(0); // Use splice instead of clear()
     } else {
       this.proposerItems = new ArraySchema<InventoryItem>();
     }
@@ -631,7 +630,7 @@ export class Trade extends Schema {
 
   public clearAccepterItems(): void {
     if (this.accepterItems instanceof ArraySchema) {
-      this.accepterItems.clear();
+      this.accepterItems.splice(0); // Use splice instead of clear()
     } else {
       this.accepterItems = new ArraySchema<InventoryItem>();
     }
@@ -642,8 +641,7 @@ export class GameState extends Schema {
   @type({ map: Player })
   players = new MapSchema<Player>();
 
-  @type({ map: LootDrop })
-  lootDrops = new MapSchema<LootDrop>();
+  @type({ map: LootDrop }) lootDrops = new MapSchema<LootDrop>();
 
   @type({ map: NPC })
   npcs = new MapSchema<NPC>();

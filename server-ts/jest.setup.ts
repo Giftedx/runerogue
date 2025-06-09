@@ -1,8 +1,9 @@
-import 'reflect-metadata'; // Must be imported first
+// CRITICAL: Import comprehensive metadata fix FIRST - most robust approach
+import './src/server/utils/comprehensive-metadata-fix';
 
 // Global test setup
 import dotenv from 'dotenv';
-import { TextEncoder, TextDecoder } from 'util';
+import { TextDecoder, TextEncoder } from 'util';
 
 // Load environment variables from .env.test
 dotenv.config({ path: '.env.test' });

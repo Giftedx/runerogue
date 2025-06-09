@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 // Environment variables type
@@ -69,13 +69,14 @@ export const errorHandler = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   // Log the error for debugging
   console.error(`[${new Date().toISOString()}] Error:`, err);
 
   // Handle specific error types
   if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'Invalid token' });
+    return;
   }
 
   // Default to 500 if no status code is set

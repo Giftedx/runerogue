@@ -258,12 +258,11 @@ export class PrayerSystem {
       this.processPrayerDrain();
     }, this.DRAIN_TICK_MS);
   }
-
   /**
    * Process prayer point drain for active prayers
    */
   private processPrayerDrain(): void {
-    if (this.player.activePrayers.length === 0) {
+    if (!this.player || !this.player.activePrayers || this.player.activePrayers.length === 0) {
       return;
     }
 
@@ -341,9 +340,9 @@ export class PrayerSystem {
 
   /**
    * Deactivate all prayers
-   */
-  public deactivateAllPrayers(): void {
-    this.player.activePrayers.clear();
+   */ public deactivateAllPrayers(): void {
+    // Clear the array using splice(0) since .clear() doesn't exist in Colyseus v0.14.x
+    this.player.activePrayers.splice(0);
   }
 
   /**

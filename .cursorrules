@@ -1,0 +1,207 @@
+# RuneRogue Development Rules
+
+You are an expert TypeScript developer working on RuneRogue, an OSRS-inspired multiplayer roguelike game built as a Discord activity. Follow these guidelines strictly.
+
+## Project Context
+
+**RuneRogue** combines Old School RuneScape mechanics with Vampire Survivors gameplay patterns in a real-time multiplayer environment. The game must maintain OSRS authenticity while delivering smooth 60fps multiplayer experience.
+
+**Current Status**: Phase 1 - Building playable multiplayer prototype where 2-4 players can join a room, move around, and engage in auto-combat with spawned enemies using authentic OSRS mechanics.
+
+## Technology Stack
+
+- **Frontend**: TypeScript + Phaser 3 + React + Vite
+- **Backend**: Node.js + TypeScript + Colyseus + Express  
+- **Architecture**: bitECS entity-component system
+- **Database**: PostgreSQL + Prisma ORM
+- **Build System**: Turborepo monorepo with pnpm
+- **Testing**: Jest with comprehensive coverage
+
+## Code Standards
+
+### 1. Production-Ready Code
+- Always provide complete, error-handled implementations
+- Include comprehensive try-catch blocks for async operations
+- Add meaningful error messages and logging
+- Handle edge cases explicitly
+- Validate all inputs server-side
+
+### 2. TypeScript Best Practices
+- Use strict type checking with no `any` types
+- Define proper interfaces and types for all data structures
+- Use generics where appropriate
+- Implement proper return types for all functions
+- Add comprehensive JSDoc documentation
+
+### 3. OSRS Authenticity
+- ALL game mechanics must exactly match OSRS Wiki specifications
+- Use exact combat formulas from OSRS (already implemented in `packages/osrs-data/`)
+- Follow OSRS stat progression, XP tables, and skill mechanics
+- Implement authentic prayer effects and drain rates
+- Match OSRS item statistics exactly
+
+### 4. Performance Requirements
+- Optimize for 60fps gameplay with 4+ players
+- Use object pools for frequently created objects
+- Implement efficient ECS queries and systems
+- Profile and optimize hot code paths
+- Target <16ms frame time for game systems
+
+### 5. Multiplayer Architecture
+- Server-authoritative design - validate all client inputs
+- Use Colyseus for real-time state synchronization
+- Implement client-side prediction for responsiveness
+- Handle network latency and reconnection gracefully
+- Prevent cheating through server validation
+
+## File Structure
+
+```
+packages/
+├── osrs-data/          # OSRS formulas and data (COMPLETE)
+├── game-server/        # Colyseus multiplayer server
+└── shared/             # Shared types and utilities
+server-ts/              # Main game implementation
+├── src/server/ecs/     # bitECS components and systems
+├── src/server/game/    # Core game logic  
+└── src/client/         # Client rendering layer
+client/                 # React UI components
+```
+
+## Implementation Guidelines
+
+### When implementing combat systems:
+1. Reference OSRS Wiki for exact formulas
+2. Use existing OSRS data API from `packages/osrs-data/`
+3. Validate calculations against known OSRS values
+4. Include comprehensive unit tests
+5. Document all formula sources
+
+### When implementing multiplayer features:
+1. Design server-authoritative from start
+2. Validate all client inputs on server
+3. Use Colyseus schemas for state synchronization
+4. Implement smooth interpolation for movement
+5. Handle disconnections and reconnections
+
+### When writing tests:
+1. Test against OSRS Wiki data for authenticity
+2. Include performance tests for multiplayer scenarios
+3. Test error conditions and edge cases
+4. Maintain >90% code coverage for game logic
+5. Use descriptive test names and comments
+
+## Error Handling Patterns
+
+```typescript
+// Use Result pattern for error handling
+type Result<T, E = Error> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+// Always handle async operations properly
+async function safeOperation(): Promise<Result<Data>> {
+  try {
+    const result = await riskyOperation();
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error('Operation failed', { error });
+    return { 
+      success: false, 
+      error: error instanceof Error ? error : new Error('Unknown error') 
+    };
+  }
+}
+```
+
+## Testing Requirements
+
+- Write unit tests for all business logic
+- Test OSRS calculations against Wiki data  
+- Include integration tests for multiplayer scenarios
+- Performance tests must verify 60fps with 4 players
+- All tests must pass before commits
+
+## Documentation Requirements
+
+- Add JSDoc comments for all public APIs
+- Include usage examples in complex functions
+- Document OSRS formula sources with Wiki links
+- Explain multiplayer synchronization patterns
+- Keep README files current
+
+## Common Patterns
+
+### ECS Component Definition
+```typescript
+export const Combat = defineComponent({
+  level: Types.ui8,
+  xp: Types.ui32,
+  attackBonus: Types.i16,
+  strengthBonus: Types.i16,
+  defenseBonus: Types.i16
+});
+```
+
+### Colyseus Schema
+```typescript
+export class PlayerSchema extends Schema {
+  @type("string") id!: string;
+  @type("uint8") level!: number;
+  @type(Position) position!: Position;
+}
+```
+
+### OSRS Formula Implementation
+```typescript
+/**
+ * Calculate max hit using OSRS combat formula
+ * @see https://oldschool.runescape.wiki/w/Combat_formula
+ */
+function calculateMaxHit(level: number, bonus: number): number {
+  const effective = level + bonus;
+  return Math.floor(0.5 + effective * (effective + 64) / 640);
+}
+```
+
+## Quality Gates
+
+Before suggesting any code:
+1. ✅ Includes proper TypeScript types
+2. ✅ Has comprehensive error handling
+3. ✅ Includes relevant unit tests
+4. ✅ Follows OSRS authenticity requirements
+5. ✅ Considers multiplayer implications
+6. ✅ Optimized for 60fps performance
+7. ✅ Includes JSDoc documentation
+
+## Success Criteria
+
+A successful implementation should:
+- Run smoothly at 60fps with 4 players and 20+ enemies
+- Feel authentic to OSRS mechanics and progression
+- Scale well for future feature additions
+- Have >90% test coverage for game logic
+- Include complete API documentation
+
+## Avoid These Common Mistakes
+
+- ❌ Using approximations instead of exact OSRS formulas
+- ❌ Client-authoritative design (security risk)
+- ❌ Hardcoded values (use OSRS data API)
+- ❌ Missing error handling in async code
+- ❌ Poor performance (target 60fps always)
+- ❌ Incomplete type definitions
+- ❌ Missing tests for game mechanics
+
+Remember: This is a multiplayer game that needs to feel responsive and fair to all players while maintaining 100% authentic OSRS mechanics.
+
+## GitHub Files Integration
+
+- All .github files use YAML frontmatter for proper recognition by VS Code GitHub Copilot
+- **Instruction files** use `applyTo: '**'` frontmatter and `.instructions.md` extension for global application
+- Prompt files use `mode: agent` for AI assistance
+- Chat modes use `mode: chat` with role specialization  
+- Reference docs use `mode: reference` with type classification
+- Templates use `mode: template` for GitHub integration
+- Issue templates include proper GitHub frontmatter with assignees and labels
