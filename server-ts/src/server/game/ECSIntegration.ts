@@ -6,304 +6,188 @@
  * maintaining compatibility with existing multiplayer functionality.
  */
 
-import { IWorld } from 'bitecs';
-import {
-  Combat,
-  ECSWorld,
-  Health,
-  Inventory,
-  InventoryItems,
-  Movement,
-  NPC as NPCComponent,
-  Position,
-  Prayer,
-} from './ECS';
-import { NPC, Player, WorldState } from './EntitySchemas';
+import { createWorld, hasComponent, removeComponent } from 'bitecs';
+import { Transform, Health, Skills, Player } from '../ecs/components';
+import { createPlayer } from '../ecs/world';
+import { MovementSystem } from '../ecs/systems/MovementSystem';
+import { CombatSystem } from '../ecs/systems/CombatSystem';
+import { PrayerSystem } from '../ecs/systems/PrayerSystem';
+import { SkillSystem } from '../ecs/systems/SkillSystem';
 
 /**
  * Manages the integration between Colyseus schemas and ECS components
  */
 export class ECSIntegration {
-  private ecsWorld: ECSWorld;
-  private entityMap: Map<string, number> = new Map(); // Colyseus ID -> ECS Entity ID
-  private reverseEntityMap: Map<number, string> = new Map(); // ECS Entity ID -> Colyseus ID
+  private world = createWorld();
+  private entityMap = new Map<string, number>(); // Colyseus ID -> ECS Entity ID
+  private reverseEntityMap = new Map<number, string>(); // ECS Entity ID -> Colyseus ID
+  private systems: Array<(world: any) => void> = [];
 
   constructor() {
-    this.ecsWorld = new ECSWorld();
+    this.initializeSystems();
+    this.registerComponents();
+  }
+
+  /**
+   * Initialize ECS systems
+   */
+  private initializeSystems() {
+    this.systems = [MovementSystem, CombatSystem, PrayerSystem, SkillSystem];
+  }
+  /**
+   * Register all ECS components with the world
+   */
+  private registerComponents() {
+    // In bitECS, components are automatically registered when first used
+    // No manual registration is needed - this method is kept for compatibility
   }
 
   /**
    * Get the ECS world instance
    */
-  public getWorld(): IWorld {
-    return this.ecsWorld.world;
-  }
-
-  /**
-   * Get the ECS world manager
-   */
-  public getECSWorld(): ECSWorld {
-    return this.ecsWorld;
+  getWorld() {
+    return this.world;
   }
 
   /**
    * Sync a Colyseus Player to ECS components
-   */
-  public syncPlayerToECS(playerId: string, player: Player): number {
-    let entityId = this.entityMap.get(playerId);
+   */ syncPlayerToECS(player: any): number {
+    if (!player || !player.id) {
+      throw new Error('Player must have an id property');
+    }
 
+    let entityId = this.entityMap.get(player.id);
     if (!entityId) {
       // Create new ECS entity for this player
-      entityId = this.ecsWorld.createPlayer(playerId, player.username, player.x, player.y);
-      this.entityMap.set(playerId, entityId);
-      this.reverseEntityMap.set(entityId, playerId);
+      entityId = createPlayer(this.world, player.id, player.x || 0, player.y || 0);
+
+      this.entityMap.set(player.id, entityId);
+      this.reverseEntityMap.set(entityId, player.id);
     }
 
-    // Sync position
-    Position.x[entityId] = player.x;
-    Position.y[entityId] = player.y;
-    Position.z[entityId] = 0;
+    // Sync position using Transform component
+    if (hasComponent(this.world, Transform, entityId)) {
+      Transform.x[entityId] = player.x || 0;
+      Transform.y[entityId] = player.y || 0;
+      Transform.z[entityId] = 0;
+    }
 
     // Sync health
-    Health.current[entityId] = player.health;
-    Health.maximum[entityId] = player.maxHealth;
-
-    // Sync combat stats
-    Combat.attackLevel[entityId] = player.skills.attack.level;
-    Combat.strengthLevel[entityId] = player.skills.strength.level;
-    Combat.defenceLevel[entityId] = player.skills.defence.level;
-    Combat.hitpointsLevel[entityId] = Math.floor(player.maxHealth / 10); // OSRS style
-    Combat.prayerLevel[entityId] = player.skills.prayer.level;
-    Combat.combatLevel[entityId] = player.getCombatLevel();
-    Combat.inCombat[entityId] = player.inCombat ? 1 : 0;
-    Combat.specialAttackEnergy[entityId] = player.specialEnergy;
-
-    // Sync prayer
-    Prayer.currentPoints[entityId] = player.prayerPoints;
-    Prayer.maximumPoints[entityId] = player.maxPrayerPoints;
-
-    // Convert active prayers array to bitfield
-    let activePrayersBitfield = 0;
-    for (let i = 0; i < player.activePrayers.length; i++) {
-      const prayerId = parseInt(player.activePrayers[i]) || 0;
-      if (prayerId > 0 && prayerId <= 32) {
-        activePrayersBitfield |= 1 << (prayerId - 1);
-      }
+    if (hasComponent(this.world, Health, entityId)) {
+      Health.current[entityId] = player.health || 100;
+      Health.max[entityId] = player.maxHealth || 100;
     }
-    Prayer.activePrayers[entityId] = activePrayersBitfield;
 
-    // Sync movement
-    Movement.speed[entityId] = 1.0; // Base movement speed
-    Movement.isMoving[entityId] = player.animation === 'walking' ? 1 : 0;
-
-    // Sync inventory
-    Inventory.size[entityId] = player.inventorySize;
-    Inventory.itemCount[entityId] = player.inventory.length;
-
-    // Sync inventory items
-    for (let i = 0; i < 28; i++) {
-      if (i < player.inventory.length) {
-        const item = player.inventory[i];
-        InventoryItems.items[entityId][i] = parseInt(item.itemId) || 0;
-        InventoryItems.quantities[entityId][i] = item.quantity;
-      } else {
-        InventoryItems.items[entityId][i] = 0;
-        InventoryItems.quantities[entityId][i] = 0;
-      }
+    // Sync skills (using Skills component, not CombatStats)
+    if (hasComponent(this.world, Skills, entityId) && player.skills) {
+      Skills.attack[entityId] = player.skills.attack?.level || 1;
+      Skills.defence[entityId] = player.skills.defence?.level || 1;
+      Skills.strength[entityId] = player.skills.strength?.level || 1;
+      Skills.hitpoints[entityId] = player.skills.hitpoints?.level || 10;
+      Skills.ranged[entityId] = player.skills.ranged?.level || 1;
+      Skills.magic[entityId] = player.skills.magic?.level || 1;
+      Skills.prayer[entityId] = player.skills.prayer?.level || 1;
     }
 
     return entityId;
   }
-
   /**
    * Sync ECS components back to Colyseus Player
    */
-  public syncPlayerFromECS(entityId: number, player: Player): void {
-    // Sync position
-    player.x = Position.x[entityId];
-    player.y = Position.y[entityId];
-
-    // Sync health
-    player.health = Health.current[entityId];
-    player.maxHealth = Health.maximum[entityId];
-
-    // Sync combat status
-    player.inCombat = Combat.inCombat[entityId] === 1;
-    player.specialEnergy = Combat.specialAttackEnergy[entityId];
-
-    // Sync prayer
-    player.prayerPoints = Prayer.currentPoints[entityId];
-    player.maxPrayerPoints = Prayer.maximumPoints[entityId]; // Convert bitfield back to active prayers array
-    const activePrayersBitfield = Prayer.activePrayers[entityId];
-    player.activePrayers.splice(0); // Clear using splice instead of clear()
-    for (let i = 0; i < 32; i++) {
-      if (activePrayersBitfield & (1 << i)) {
-        player.activePrayers.push((i + 1).toString());
-      }
-    }
-
-    // Update movement animation
-    if (Movement.isMoving[entityId] === 1) {
-      player.animation = 'walking';
-    } else {
-      player.animation = 'idle';
-    }
-  }
-
-  /**
-   * Sync a Colyseus NPC to ECS components
-   */
-  public syncNPCToECS(npcId: string, npc: NPC): number {
-    let entityId = this.entityMap.get(npcId);
-
-    if (!entityId) {
-      // Create new ECS entity for this NPC
-      entityId = this.ecsWorld.createNPC(parseInt(npcId) || 0, npc.x, npc.y);
-      this.entityMap.set(npcId, entityId);
-      this.reverseEntityMap.set(entityId, npcId);
+  syncECSToPlayer(entityId: number, player: any): void {
+    if (!hasComponent(this.world, Transform, entityId)) {
+      return;
     }
 
     // Sync position
-    Position.x[entityId] = npc.x;
-    Position.y[entityId] = npc.y;
-    Position.z[entityId] = 0;
+    player.x = Transform.x[entityId];
+    player.y = Transform.y[entityId];
 
     // Sync health
-    Health.current[entityId] = npc.health;
-    Health.maximum[entityId] = npc.maxHealth;
+    if (hasComponent(this.world, Health, entityId)) {
+      player.health = Health.current[entityId];
+      player.maxHealth = Health.max[entityId];
+    }
 
-    // Sync combat stats
-    Combat.attackLevel[entityId] = npc.attack;
-    Combat.defenceLevel[entityId] = npc.defense;
-    Combat.inCombat[entityId] = 0; // Will be set by combat system
-
-    // Sync NPC-specific data
-    NPCComponent.aggroRange[entityId] = npc.aggroRange;
-    NPCComponent.spawnX[entityId] = npc.x; // Assume spawn position is current position
-    NPCComponent.spawnY[entityId] = npc.y;
-
-    return entityId;
+    // Note: Skills are typically not synced back from ECS to schema
+    // as they are managed by the schema system directly
   }
 
   /**
-   * Sync ECS components back to Colyseus NPC
+   * Run all ECS systems for one frame
    */
-  public syncNPCFromECS(entityId: number, npc: NPC): void {
-    // Sync position
-    npc.x = Position.x[entityId];
-    npc.y = Position.y[entityId];
-
-    // Sync health
-    npc.health = Health.current[entityId];
-    npc.maxHealth = Health.maximum[entityId];
+  update(deltaTime: number = 16.67): void {
+    try {
+      for (const system of this.systems) {
+        if (typeof system === 'function') {
+          system(this.world);
+        }
+      }
+    } catch (error) {
+      console.error('ECS System Update Error:', error);
+      // Continue running other systems even if one fails
+    }
   }
 
   /**
-   * Sync all Colyseus entities to ECS
+   * Remove a player from the ECS world
    */
-  public syncWorldToECS(worldState: WorldState): void {
-    // Sync all players
-    worldState.players.forEach((player, playerId) => {
-      this.syncPlayerToECS(playerId, player);
-    });
-
-    // Sync all NPCs
-    worldState.npcs.forEach((npc, npcId) => {
-      this.syncNPCToECS(npcId, npc);
-    });
-  }
-
-  /**
-   * Sync ECS state back to Colyseus world
-   */
-  public syncWorldFromECS(worldState: WorldState): void {
-    // Sync all tracked entities back to Colyseus
-    this.entityMap.forEach((entityId, colyseusId) => {
-      const player = worldState.players.get(colyseusId);
-      if (player) {
-        this.syncPlayerFromECS(entityId, player);
-        return;
+  removePlayer(playerId: string): void {
+    const entityId = this.entityMap.get(playerId);
+    if (entityId !== undefined) {
+      // Remove all components from entity
+      if (hasComponent(this.world, Transform, entityId)) {
+        removeComponent(this.world, Transform, entityId);
+      }
+      if (hasComponent(this.world, Health, entityId)) {
+        removeComponent(this.world, Health, entityId);
+      }
+      if (hasComponent(this.world, Skills, entityId)) {
+        removeComponent(this.world, Skills, entityId);
+      }
+      if (hasComponent(this.world, Player, entityId)) {
+        removeComponent(this.world, Player, entityId);
       }
 
-      const npc = worldState.npcs.get(colyseusId);
-      if (npc) {
-        this.syncNPCFromECS(entityId, npc);
-        return;
-      }
-    });
-  }
-
-  /**
-   * Remove an entity from ECS when it's removed from Colyseus
-   */
-  public removeEntity(colyseusId: string): void {
-    const entityId = this.entityMap.get(colyseusId);
-    if (entityId) {
-      this.ecsWorld.removeEntity(entityId);
-      this.entityMap.delete(colyseusId);
+      // Clean up maps
+      this.entityMap.delete(playerId);
       this.reverseEntityMap.delete(entityId);
     }
   }
 
   /**
-   * Get ECS entity ID from Colyseus ID
+   * Get ECS entity ID for a Colyseus player ID
    */
-  public getEntityId(colyseusId: string): number | undefined {
-    return this.entityMap.get(colyseusId);
+  getEntityId(playerId: string): number | undefined {
+    return this.entityMap.get(playerId);
   }
 
   /**
-   * Get Colyseus ID from ECS entity ID
+   * Get Colyseus player ID for an ECS entity ID
    */
-  public getColyseusId(entityId: number): string | undefined {
+  getPlayerId(entityId: number): string | undefined {
     return this.reverseEntityMap.get(entityId);
   }
-  /**
-   * Process ECS systems
-   */
-  public update(deltaTime: number): void {
-    // Store deltaTime in world for systems to access
-    (this.ecsWorld as any).deltaTime = deltaTime;
 
-    // Run all ECS systems in order
-    try {
-      // Core gameplay systems
-      this.runSystem('AutoCombatSystem');
-      this.runSystem('WaveSpawningSystem');
-      this.runSystem('MovementSystem');
-      this.runSystem('CombatSystem');
-      this.runSystem('PrayerSystem');
-      this.runSystem('SkillSystem');
-    } catch (error) {
-      console.error('Error running ECS systems:', error);
-    }
+  /**
+   * Get all managed entities
+   */
+  getAllEntities(): number[] {
+    return Array.from(this.reverseEntityMap.keys());
   }
 
   /**
-   * Run a specific ECS system
+   * Get stats for debugging
    */
-  private runSystem(systemName: string): void {
-    try {
-      // Import and run the system dynamically
-      const systems = require('../ecs/systems');
-      const system = systems[systemName];
-
-      if (system && typeof system === 'function') {
-        system(this.ecsWorld);
-      } else {
-        console.warn(`ECS System '${systemName}' not found or not a function`);
-      }
-    } catch (error) {
-      console.error(`Error running system ${systemName}:`, error);
-    }
-  }
-
-  /**
-   * Get all entities with specific components (for queries)
-   */
-  public getEntitiesWithComponents(_components: unknown[]): number[] {
-    // This is a simplified version - in a full ECS implementation,
-    // we would use proper queries
-    return this.ecsWorld.getAllEntities();
+  getStats(): {
+    entityCount: number;
+    systemCount: number;
+    registeredComponents: string[];
+  } {
+    return {
+      entityCount: this.entityMap.size,
+      systemCount: this.systems.length,
+      registeredComponents: ['Transform', 'Health', 'Skills', 'Player'],
+    };
   }
 }

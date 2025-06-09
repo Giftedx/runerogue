@@ -9,6 +9,7 @@ import { sendGameEventNotification } from '../discord-bot';
 import economyIntegration from '../economy-integration';
 import { CombatSystem } from './CombatSystem';
 import { ECSIntegration } from './ECSIntegration';
+import { ECSAutomationManager } from './ECSAutomationManager';
 import {
   AreaMap,
   ArraySchema,
@@ -112,7 +113,7 @@ export class GameRoom extends Room<WorldState> {
   private combatSystem!: CombatSystem;
   private itemManager!: ItemManager;
   private gatheringSystem!: GatheringSystem;
-  private ecsIntegration!: ECSIntegration;
+  private ecsAutomationManager!: ECSAutomationManager;
   private waveManager!: WaveManager;
   private lootPickupRadius = 50; // Distance in pixels for loot pickup validation
   private lastUpdateTime: number = 0;
@@ -176,8 +177,13 @@ export class GameRoom extends Room<WorldState> {
 
     this.initializeDefaultMap(); // Initialize with a default or sample map
 
-    // Initialize ECS integration
-    this.ecsIntegration = new ECSIntegration();
+    // Initialize ECS automation manager for fully automated ECS systems
+    this.ecsAutomationManager = new ECSAutomationManager({
+      targetFrameRate: 60,
+      performanceMonitoringEnabled: true,
+      autoRecoveryEnabled: true,
+      maxErrorsPerSecond: 5,
+    });
 
     // Initialize systems
     this.itemManager = ItemManager.getInstance();
@@ -197,27 +203,20 @@ export class GameRoom extends Room<WorldState> {
       this.gatheringSystem.spawnResources(this.state, currentMap.width, currentMap.height);
     }
 
-    // Main game loop: ECS systems + Colyseus sync (60 FPS)
-    this.setSimulationInterval(() => {
-      const currentTime = Date.now();
-      const deltaTime = currentTime - this.lastUpdateTime || 16; // Default to 16ms (60 FPS)
+    // Start the ECS automation manager for fully automated systems
+    this.ecsAutomationManager.start().catch(error => {
+      console.error('Failed to start ECS automation:', error);
+    });
 
-      // Sync Colyseus state to ECS
-      this.ecsIntegration.syncWorldToECS(this.state); // TEMPORARILY DISABLED: ECS systems causing excessive errors
-      // TODO: Re-enable once ECS component registration is fixed
-      // this.ecsIntegration.update(deltaTime);
+    // Main game loop: Legacy systems only (ECS is now fully automated)
+    this.setSimulationInterval(() => {
       // Update wave manager (survivor mechanics)
       this.waveManager.update();
-
-      // Sync ECS state back to Colyseus
-      this.ecsIntegration.syncWorldFromECS(this.state);
 
       // Update legacy systems that haven't been converted to ECS yet
       this.updateNPCs();
       this.updateNPCBehavior();
       this.gatheringSystem.updateResources(this.state);
-
-      this.lastUpdateTime = currentTime;
     }, 1000 / 60); // 60 FPS for smooth gameplay
 
     // Legacy NPCs for testing (will be removed when wave system takes over)
@@ -968,6 +967,14 @@ export class GameRoom extends Room<WorldState> {
       // Add player to room state
       this.state.players.set(client.sessionId, player);
 
+      // Add player to ECS automation manager
+      try {
+        const entityId = this.ecsAutomationManager.addPlayer(player);
+        console.log(`Player ${player.username} added to ECS with entity ID: ${entityId}`);
+      } catch (ecsError) {
+        console.warn('Failed to add player to ECS:', ecsError);
+      }
+
       // Log successful join
       console.log(`✅ Player ${player.username} (${client.sessionId}) joined successfully`);
       console.log(`Room now has ${this.state.players.size} players`);
@@ -998,6 +1005,14 @@ export class GameRoom extends Room<WorldState> {
       if (player.inventory.length > 0) {
         console.log(`💰 Player ${player.username} left with ${player.inventory.length} items`);
         // TODO: Implement loot dropping when LootManager is properly implemented
+      }
+
+      // Remove player from ECS automation manager
+      try {
+        this.ecsAutomationManager.removePlayer(client.sessionId);
+        console.log(`Player ${player.username} removed from ECS`);
+      } catch (ecsError) {
+        console.warn('Failed to remove player from ECS:', ecsError);
       }
 
       // Remove player from room state
@@ -1079,5 +1094,22 @@ export class GameRoom extends Room<WorldState> {
   private validateStateIntegrity(): void {
     // Placeholder for state integrity validation
     // TODO: Implement comprehensive state validation
+  }
+
+  /**
+   * Called when the room is being disposed
+   */
+  async onDispose(): Promise<void> {
+    console.log('GameRoom disposing...');
+
+    try {
+      // Stop the ECS automation manager
+      await this.ecsAutomationManager.stop();
+      console.log('ECS automation manager stopped successfully');
+    } catch (error) {
+      console.error('Error stopping ECS automation manager:', error);
+    }
+
+    console.log('GameRoom disposed');
   }
 }

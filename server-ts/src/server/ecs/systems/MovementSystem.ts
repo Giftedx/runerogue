@@ -1,5 +1,5 @@
 import { defineQuery, defineSystem, enterQuery, exitQuery, IWorld } from 'bitecs';
-import { Transform, Movement, Player, NPC, Dead } from '../components';
+import { Transform, Movement, Dead } from '../components';
 
 // Query for all entities that can move (have Transform and Movement components)
 const movementQuery = defineQuery([Transform, Movement]);

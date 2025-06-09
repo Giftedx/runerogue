@@ -100,52 +100,66 @@ jest.mock('../../game/LootManager', () => ({
   },
 }));
 
+// Create a consistent mock ItemManager instance to maintain singleton behavior
+const mockItemManagerInstance = {
+  getItemDefinition: jest.fn(async (itemId: string) => {
+    if (itemId === 'starter_sword') {
+      return {
+        id: 'starter_sword_id',
+        itemId: 'starter_sword',
+        name: 'Starter Sword',
+        description: 'A basic sword for new adventurers.',
+        attack: 5,
+        defense: 0,
+        isStackable: false,
+        baseValue: 10,
+        isTradeable: true,
+      };
+    } else if (itemId === 'starter_shield') {
+      return {
+        id: 'starter_shield_id',
+        itemId: 'starter_shield',
+        name: 'Starter Shield',
+        description: 'A basic shield for new adventurers.',
+        attack: 0,
+        defense: 5,
+        isStackable: false,
+        baseValue: 10,
+        isTradeable: true,
+      };
+    } else if (itemId === 'sword_of_heroes') {
+      return mockSwordOfHeroesDefinition;
+    } else if (itemId === 'health_potion') {
+      return {
+        id: 'health_potion_id',
+        itemId: 'health_potion',
+        name: 'Health Potion',
+        description: 'Restores health.',
+        attack: 0,
+        defense: 0,
+        isStackable: true,
+        baseValue: 5,
+        isTradeable: true,
+      };
+    }
+    return undefined;
+  }),
+  getItemDefinitions: jest.fn(async (ids: string[]) => {
+    const result = new Map();
+    for (const id of ids) {
+      const item = await mockItemManagerInstance.getItemDefinition(id);
+      if (item) {
+        result.set(id, item);
+      }
+    }
+    return result;
+  }),
+  syncWithEconomy: jest.fn().mockResolvedValue(undefined),
+};
+
 jest.mock('../../game/ItemManager', () => ({
   ItemManager: {
-    getInstance: jest.fn(() => ({
-      getItemDefinition: jest.fn(async (itemId: string) => {
-        if (itemId === 'starter_sword') {
-          return {
-            id: 'starter_sword_id',
-            itemId: 'starter_sword',
-            name: 'Starter Sword',
-            description: 'A basic sword for new adventurers.',
-            attack: 5,
-            defense: 0,
-            isStackable: false,
-            baseValue: 10,
-            isTradeable: true,
-          };
-        } else if (itemId === 'starter_shield') {
-          return {
-            id: 'starter_shield_id',
-            itemId: 'starter_shield',
-            name: 'Starter Shield',
-            description: 'A basic shield for new adventurers.',
-            attack: 0,
-            defense: 5,
-            isStackable: false,
-            baseValue: 10,
-            isTradeable: true,
-          };
-        } else if (itemId === 'sword_of_heroes') {
-          return mockSwordOfHeroesDefinition;
-        } else if (itemId === 'health_potion') {
-          return {
-            id: 'health_potion_id',
-            itemId: 'health_potion',
-            name: 'Health Potion',
-            description: 'Restores health.',
-            attack: 0,
-            defense: 0,
-            isStackable: true,
-            baseValue: 5,
-            isTradeable: true,
-          };
-        }
-        return undefined;
-      }),
-    })),
+    getInstance: jest.fn(() => mockItemManagerInstance),
   },
 }));
 
@@ -173,9 +187,8 @@ jest.mock('../../game/multiplayerSync', () => ({
 
 process.env.COLYSEUS_URI = 'ws://localhost:2567';
 
-// TEMPORARILY SKIP ALL GAMEROOM TESTS TO AVOID INFINITE LOOP
-// TODO: Fix ItemManager mocking issue causing infinite loop in player join
-describe.skip('GameRoom (SKIPPED - Infinite Loop Issue)', () => {
+// GameRoom Tests - Fixed infinite loop by properly mocking ItemManager singleton
+describe('GameRoom', () => {
   let colyseus: ColyseusTestServer;
   let room: Room<GameState>;
 
