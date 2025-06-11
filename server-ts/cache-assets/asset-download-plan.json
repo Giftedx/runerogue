@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "createdAt": "2025-06-11T15:57:23.912Z",
+  "sources": [
+    {
+      "name": "OpenRS2 Cache Archive",
+      "url": "https://archive.openrs2.org/caches",
+      "description": "Complete OSRS cache files for direct extraction",
+      "priority": 1,
+      "assetTypes": [
+        "sprites",
+        "models",
+        "animations",
+        "sounds"
+      ]
+    },
+    {
+      "name": "OSRSBox Database",
+      "url": "https://www.osrsbox.com/",
+      "description": "Comprehensive item and NPC database with images",
+      "priority": 2,
+      "assetTypes": [
+        "items",
+        "npcs",
+        "objects"
+      ]
+    },
+    {
+      "name": "RuneMonk Entity Viewer",
+      "url": "https://runemonk.com/",
+      "description": "Interactive entity viewer with model previews",
+      "priority": 3,
+      "assetTypes": [
+        "models",
+        "animations",
+        "sprites"
+      ]
+    },
+    {
+      "name": "OSRS Wiki Images",
+      "url": "https://oldschool.runescape.wiki/",
+      "description": "High-quality images and documentation",
+      "priority": 4,
+      "assetTypes": [
+        "sprites",
+        "icons",
+        "interfaces"
+      ]
+    }
+  ],
+  "extractionStrategy": {
+    "phase1": "Download complete cache from OpenRS2",
+    "phase2": "Extract using osrscachereader or alternative tools",
+    "phase3": "Supplement with web-sourced assets",
+    "phase4": "Generate unified manifest and optimize for game client"
+  },
+  "instructions": [
+    "1. Download latest OSRS cache from OpenRS2 archive",
+    "2. Install osrscachereader or use alternative cache tools",
+    "3. Run comprehensive extraction script",
+    "4. Validate and optimize assets for web deployment",
+    "5. Generate final manifest for game client integration"
+  ]
+}

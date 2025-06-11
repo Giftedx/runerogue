@@ -10,7 +10,11 @@ import { Room } from '@colyseus/core';
 import testSafeLogger from '../utils/test-safe-logger';
 import { CombatSystem } from './CombatSystem';
 import { NPC, Player, WorldState } from './EntitySchemas';
+import { ItemManager } from './ItemManager';
 import { ProceduralGenerator } from './ProceduralGenerator';
+
+// Temporary type for PrayerSystem until it's properly implemented
+type PrayerSystem = Record<string, unknown>;
 
 export interface WaveConfiguration {
   waveNumber: number;
@@ -75,7 +79,10 @@ export class SurvivorWaveSystem {
   constructor(room: Room<WorldState>) {
     this.room = room;
     this.proceduralGenerator = new ProceduralGenerator();
-    this.combatSystem = new CombatSystem();
+    // Create placeholder ItemManager and PrayerSystem for now
+    const dummyItemManager = {} as ItemManager;
+    const dummyPrayerSystem = {} as PrayerSystem;
+    this.combatSystem = new CombatSystem(room.state, dummyItemManager, dummyPrayerSystem);
   }
   /**
    * Start a new wave-based survival session

@@ -92,17 +92,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-    // Initialize Colyseus client
-    const colyseusClient = new Client(CONFIG.SERVER_URL);
-
     // Initialize game client
     const gameClient = new GameClient(
-      colyseusClient,
+      CONFIG.SERVER_URL,
       gameState,
       gameRenderer,
+      inputManager,
       uiManager,
       audioManager,
-      discord,
       user
     );
 

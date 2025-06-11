@@ -151,6 +151,36 @@ export class GameClient {
       this.audioManager.playSfx('collect');
     });
 
+    // Handle health bar updates from ECS systems
+    this.room.onMessage('healthBar', message => {
+      console.log('Health bar updates:', message);
+      // The renderer can handle health bar updates directly
+      if (message.events) {
+        for (const event of message.events) {
+          this.renderer.updateHealthBar(event.entityId, event);
+        }
+      }
+    });
+
+    // Handle damage number events from ECS systems
+    this.room.onMessage('damageNumbers', message => {
+      console.log('Damage numbers:', message);
+      // Enhanced damage number display with type support
+      if (message.events) {
+        for (const event of message.events) {
+          this.renderer.showEnhancedDamageNumber(event);
+        }
+      }
+    });
+
+    // Handle XP gain events from ECS systems
+    this.room.onMessage('xpGains', message => {
+      console.log('XP gains:', message);
+      if (message.events) {
+        this.renderer.showXPNotifications(message.events);
+      }
+    });
+
     // Handle disconnection
     this.room.onLeave(code => {
       console.log('Left room:', code);
@@ -180,6 +210,19 @@ export class GameClient {
 
     // Request next frame
     requestAnimationFrame(() => this.gameLoop());
+  }
+
+  // Update game client (called from main game loop)
+  public update(deltaTime: number): void {
+    if (!this.isRunning) return;
+
+    // Update renderer with current game state
+    if (this.renderer && this.gameState) {
+      this.renderer.render(this.gameState, deltaTime);
+    }
+
+    // Handle any pending input
+    this.inputManager.update();
   }
 
   // Input handlers
@@ -220,6 +263,35 @@ export class GameClient {
     if (!this.room) return;
 
     this.room.send('equip_item', { itemIndex, slot });
+  }
+
+  // Send movement command to server
+  public sendMoveCommand(direction: string): void {
+    if (!this.room) return;
+    this.room.send('move', { direction });
+  }
+
+  // Send attack command to server
+  public sendAttackCommand(targetId: string): void {
+    if (!this.room) return;
+    this.room.send('attack', { targetId });
+  }
+
+  // Send collect command to server
+  public sendCollectCommand(itemId: string): void {
+    if (!this.room) return;
+    this.room.send('collect', { itemId });
+  }
+
+  // Send use item command to server
+  public sendUseItemCommand(itemId: string): void {
+    if (!this.room) return;
+    this.room.send('use_item', { itemId });
+  }
+
+  // Connect method (alias for start for compatibility)
+  public async connect(): Promise<void> {
+    return this.start();
   }
 
   // Clean up resources when game is stopped

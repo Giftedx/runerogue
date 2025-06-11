@@ -58,6 +58,8 @@ export class WaveManager {
   private biomeType: BiomeType;
   private proceduralGen: ProceduralGenerator;
   private itemManager: ItemManager;
+  private broadcast: (type: string, payload: any) => void;
+  private createEcsEnemy: (npc: NPC) => void;
 
   // Wave configuration constants
   private readonly BASE_ENEMY_COUNT = 5;
@@ -66,15 +68,26 @@ export class WaveManager {
   private readonly BOSS_WAVE_INTERVAL = 5;
   private readonly WAVE_PREP_TIME = 10000; // 10 seconds between waves
 
+  /**
+   * @param state Game state
+   * @param itemManager Item manager
+   * @param broadcast Broadcast callback (type, payload) => void
+   * @param createEcsEnemy Callback to create/register ECS entity for an NPC
+   * @param biomeType Biome type (optional)
+   */
   constructor(
     state: GameState,
     itemManager: ItemManager,
+    broadcast: (type: string, payload: any) => void,
+    createEcsEnemy: (npc: NPC) => void,
     biomeType: BiomeType = BiomeType.VARROCK
   ) {
     this.state = state;
     this.biomeType = biomeType;
     this.proceduralGen = new ProceduralGenerator();
     this.itemManager = itemManager;
+    this.broadcast = broadcast;
+    this.createEcsEnemy = createEcsEnemy;
   }
 
   /**
@@ -243,41 +256,52 @@ export class WaveManager {
   /**
    * Spawn enemies for the wave
    */
+  /**
+   * Spawn enemies for the wave and register them as ECS entities
+   * @param config Wave configuration
+   */
   private async spawnWaveEnemies(config: WaveConfig): Promise<void> {
     const spawnPositions = this.generateSpawnPositions(config.enemyCount);
 
     for (let i = 0; i < config.enemyCount; i++) {
-      // Select enemy type
-      const enemyType = this.selectRandomEnemyType(config.enemyTypes);
-      const position = spawnPositions[i];
+      try {
+        // Select enemy type
+        const enemyType = this.selectRandomEnemyType(config.enemyTypes);
+        const position = spawnPositions[i];
 
-      // Create NPC with wave-scaled stats
-      const npc = new NPC(
-        `wave_${this.currentWave}_enemy_${i}`,
-        enemyType.npcId,
-        position.x,
-        position.y,
-        enemyType.npcId,
-        [] // Loot will be added based on wave rewards
-      );
+        // Create NPC with wave-scaled stats
+        const npc = new NPC(
+          `wave_${this.currentWave}_enemy_${i}`,
+          enemyType.npcId,
+          position.x,
+          position.y,
+          enemyType.npcId,
+          [] // Loot will be added based on wave rewards
+        );
 
-      // Scale enemy stats based on difficulty
-      npc.health = Math.floor(npc.health * config.difficulty);
-      npc.maxHealth = Math.floor(npc.maxHealth * config.difficulty);
-      npc.attack = Math.floor(npc.attack * config.difficulty);
-      npc.defense = Math.floor(npc.defense * config.difficulty);
+        // Scale enemy stats based on difficulty
+        npc.health = Math.floor(npc.health * config.difficulty);
+        npc.maxHealth = Math.floor(npc.maxHealth * config.difficulty);
+        npc.attack = Math.floor(npc.attack * config.difficulty);
+        npc.defense = Math.floor(npc.defense * config.difficulty);
 
-      // Boss modifications
-      if (config.bossWave) {
-        npc.health *= 10;
-        npc.maxHealth *= 10;
-        npc.attack *= 2;
-        npc.defense *= 2;
-        npc.name = `${npc.name} Boss`;
+        // Boss modifications
+        if (config.bossWave) {
+          npc.health *= 10;
+          npc.maxHealth *= 10;
+          npc.attack *= 2;
+          npc.defense *= 2;
+          npc.name = `${npc.name} Boss`;
+        }
+
+        // Add to game state
+        this.state.npcs.set(npc.id, npc);
+
+        // Register as ECS entity
+        this.createEcsEnemy(npc);
+      } catch (err) {
+        console.error('Failed to spawn/register ECS enemy:', err);
       }
-
-      // Add to game state
-      this.state.npcs.set(npc.id, npc);
 
       // Delay between spawns
       if (i < config.enemyCount - 1) {
@@ -363,6 +387,127 @@ export class WaveManager {
     if (this.enemiesRemaining <= 0) {
       this.completeWave();
     }
+  }
+
+  /**
+   * Enhanced automatic wave progression system
+   * Starts waves automatically based on player count and game state
+   */
+  public startAutomaticWaveProgression(): void {
+    // Start first wave after a brief delay for players to prepare
+    setTimeout(() => {
+      if (this.state.players.size > 0 && !this.waveInProgress) {
+        this.startNextWave().catch(error => {
+          console.error('Failed to start automatic wave:', error);
+        });
+      }
+    }, 5000); // 5 second initial delay
+
+    // Set up periodic wave progression
+    setInterval(() => {
+      this.checkWaveProgression();
+    }, 1000); // Check every second
+  }
+
+  /**
+   * Check if wave should progress automatically
+   */
+  private checkWaveProgression(): void {
+    // Don't start waves if no players
+    if (this.state.players.size === 0) {
+      return;
+    }
+
+    // Check if current wave is complete
+    if (this.waveInProgress && this.enemiesRemaining <= 0) {
+      this.completeWave();
+    }
+
+    // Start next wave if ready
+    if (!this.waveInProgress && this.shouldStartNextWave()) {
+      this.startNextWave().catch(error => {
+        console.error('Failed to start next wave:', error);
+      });
+    }
+  }
+
+  /**
+   * Determine if the next wave should start
+   */
+  private shouldStartNextWave(): boolean {
+    // Don't start if already in progress
+    if (this.waveInProgress) return false;
+
+    // Always start first wave if no waves have been started
+    if (this.currentWave === 0) return true;
+
+    // Wait for wave preparation time between waves
+    const timeSinceLastWave = Date.now() - this.waveStartTime;
+    if (timeSinceLastWave < this.WAVE_PREP_TIME) return false;
+
+    // Start if at least one player is alive
+    const alivePlayers = Array.from(this.state.players.values()).filter(
+      player => player.health > 0
+    );
+    return alivePlayers.length > 0;
+  }
+
+  /**
+   * Complete the current wave and distribute rewards
+   */
+  private completeWave(): void {
+    if (!this.waveInProgress) return;
+
+    this.waveInProgress = false;
+    const waveTime = Date.now() - this.waveStartTime;
+
+    // Calculate and distribute rewards to surviving players
+    const survivors = Array.from(this.state.players.values()).filter(player => player.health > 0);
+
+    const waveConfig = this.generateWaveConfig(this.currentWave);
+
+    survivors.forEach(player => {
+      this.distributeWaveRewards(player, waveConfig.rewards, waveTime);
+    });
+
+    // Broadcast wave completion
+    this.broadcast('wave_completed', {
+      waveNumber: this.currentWave,
+      completionTime: waveTime,
+      survivorCount: survivors.length,
+      totalPlayers: this.state.players.size,
+      nextWaveIn: this.WAVE_PREP_TIME,
+      timestamp: Date.now(),
+    });
+
+    console.log(
+      `✅ Wave ${this.currentWave} completed! ${survivors.length}/${this.state.players.size} players survived.`
+    );
+  }
+
+  /**
+   * Enhanced enemy death tracking for wave progression
+   */
+  public onEnemyDefeated(npcId: string): void {
+    const npc = this.state.npcs.get(npcId);
+    if (!npc || !npc.isWaveEnemy) return;
+
+    this.enemiesRemaining = Math.max(0, this.enemiesRemaining - 1);
+
+    // Broadcast enemy defeat
+    this.broadcast('enemy_defeated', {
+      npcId: npcId,
+      enemiesRemaining: this.enemiesRemaining,
+      waveNumber: this.currentWave,
+      timestamp: Date.now(),
+    });
+
+    // Remove defeated enemy from state
+    this.state.npcs.delete(npcId);
+
+    console.log(
+      `🗡️ Enemy defeated! ${this.enemiesRemaining} enemies remaining in wave ${this.currentWave}`
+    );
   }
 
   /**
@@ -588,6 +733,10 @@ export class WaveManager {
   /**
    * Broadcast wave start to all players
    */
+  /**
+   * Broadcast wave start to all clients
+   * @param config Wave configuration
+   */
   private broadcastWaveStart(config: WaveConfig): void {
     const message = {
       type: 'wave_start',
@@ -596,13 +745,16 @@ export class WaveManager {
       isBossWave: config.bossWave,
       prepTime: 0,
     };
-
-    // TODO: Broadcast to all connected clients
+    this.broadcast('wave_start', message);
     console.log('Wave started:', message);
   }
 
   /**
    * Broadcast wave completion
+   */
+  /**
+   * Broadcast wave completion to all clients
+   * @param duration Wave duration in ms
    */
   private broadcastWaveComplete(duration: number): void {
     const message = {
@@ -611,8 +763,7 @@ export class WaveManager {
       duration: Math.floor(duration / 1000), // Convert to seconds
       nextWaveIn: this.WAVE_PREP_TIME / 1000,
     };
-
-    // TODO: Broadcast to all connected clients
+    this.broadcast('wave_complete', message);
     console.log('Wave completed:', message);
   }
 

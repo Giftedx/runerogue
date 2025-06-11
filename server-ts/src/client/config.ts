@@ -9,6 +9,7 @@ export const CONFIG = {
   CANVAS_WIDTH: 800,
   CANVAS_HEIGHT: 600,
   TILE_SIZE: 32,
+  MAX_PLAYERS_PER_ROOM: 10,
 
   // Game physics
   PLAYER_MOVE_SPEED: 3,
@@ -34,7 +35,10 @@ export const CONFIG = {
       SFX: {
         ATTACK: '/assets/audio/attack.mp3',
         HIT: '/assets/audio/hit.mp3',
+        MISS: '/assets/audio/miss.mp3',
         COLLECT: '/assets/audio/collect.mp3',
+        LEVEL_UP: '/assets/audio/levelup.mp3',
+        DEATH: '/assets/audio/death.mp3',
       },
     },
     FONTS: {

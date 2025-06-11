@@ -1,119 +1,111 @@
-import { defineQuery, defineSystem, hasComponent } from 'bitecs';
-import { Attack, Enemy, Health, Level, Player, Position } from '../components';
-import { ECSWorld } from '../world';
+import { defineQuery, defineSystem, hasComponent, IWorld } from 'bitecs';
+import { Transform, Health, CombatStats, Player, NPC, Monster, Skills } from '../components';
+import { calculateMaxHit, calculateAccuracy } from '@runerogue/osrs-data';
+import { queueDamageEvent, queueHealEvent } from './DamageNumberSystem';
 
-const playerQuery = defineQuery([Position, Health, Attack, Level, Player]);
-const enemyQuery = defineQuery([Position, Health, Attack, Level, Enemy]);
+// Queries for auto-combat system
+const playerQuery = defineQuery([Player, Transform, Health, CombatStats, Skills]);
+const enemyQuery = defineQuery([Monster, Transform, Health, CombatStats]);
+const npcQuery = defineQuery([NPC, Transform, Health, CombatStats]);
+
+// Combat state tracking
+const lastAttackTime = new Map<number, number>();
+const combatTargets = new Map<number, number>();
+
+// OSRS combat timing (600ms per tick)
+const OSRS_TICK_TIME = 600;
+const PLAYER_ATTACK_SPEED = 4; // 4 ticks = 2.4 seconds
+const ENEMY_ATTACK_SPEED = 5; // 5 ticks = 3.0 seconds
 
 /**
- * AutoCombatSystem handles automatic combat between players and enemies
- * Players will automatically attack the nearest enemy within range
+ * Combat event interface for network broadcasting
  */
-export const AutoCombatSystem = defineSystem((world: ECSWorld) => {
+interface CombatEvent {
+  type: 'damage' | 'miss' | 'death' | 'xp_gain';
+  attackerId: number;
+  targetId: number;
+  damage: number;
+  timestamp: number;
+}
+
+/**
+ * Extended world interface with network broadcaster
+ */
+interface WorldWithBroadcaster extends IWorld {
+  networkBroadcaster?: (type: string, data: CombatEvent) => void;
+}
+
+/**
+ * AutoCombatSystem - Handles automatic combat targeting and AI
+ *
+ * Features:
+ * - Players automatically target nearest enemies within range
+ * - Enemies intelligently target closest players
+ * - OSRS-authentic combat timing and damage calculations
+ * - Proper aggression ranges and combat engagement
+ */
+export const AutoCombatSystem = defineSystem((world: IWorld) => {
+  const currentTime = Date.now();
   const players = playerQuery(world);
   const enemies = enemyQuery(world);
+  const npcs = npcQuery(world);
 
-  // Process each player for auto-combat
-  for (const playerId of players) {
+  // Combine all hostile entities (both monsters and aggressive NPCs)
+  const allEnemies = [...enemies, ...npcs.filter(npcId => isAggressive(world, npcId))];
+
+  // Process player auto-targeting
+  for (let i = 0; i < players.length; i++) {
+    const playerId = players[i];
+
     // Skip dead players
     if (Health.current[playerId] <= 0) continue;
 
-    const playerPos = {
-      x: Position.x[playerId],
-      y: Position.y[playerId],
-    };
-
-    let nearestEnemy = null;
-    let nearestDistance = Infinity;
-    const attackRange = 100; // Base attack range
-
-    // Find nearest enemy within range
-    for (const enemyId of enemies) {
-      // Skip dead enemies
-      if (Health.current[enemyId] <= 0) continue;
-
-      const enemyPos = {
-        x: Position.x[enemyId],
-        y: Position.y[enemyId],
-      };
-
-      const distance = Math.sqrt(
-        Math.pow(playerPos.x - enemyPos.x, 2) + Math.pow(playerPos.y - enemyPos.y, 2)
-      );
-
-      if (distance <= attackRange && distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestEnemy = enemyId;
+    // Check if player is already in combat
+    const existingTarget = combatTargets.get(playerId);
+    if (existingTarget && Health.current[existingTarget] > 0) {
+      // Continue attacking current target if still alive and in range
+      if (isInRange(world, playerId, existingTarget, getAttackRange(world, playerId))) {
+        attemptAttack(world, playerId, existingTarget, currentTime);
+        continue;
+      } else {
+        // Target out of range, find new target
+        combatTargets.delete(playerId);
       }
     }
 
-    // Attack nearest enemy if found
+    // Find nearest enemy to attack
+    const nearestEnemy = findNearestEnemy(world, playerId, allEnemies);
     if (nearestEnemy !== null) {
-      const currentTime = Date.now();
-      const lastAttackTime = world.lastAttackTime?.get(playerId) || 0;
-      const attackSpeed = 4000; // 4 seconds between attacks (OSRS style)
-
-      if (currentTime - lastAttackTime >= attackSpeed) {
-        performAttack(world, playerId, nearestEnemy);
-
-        // Update last attack time
-        if (!world.lastAttackTime) {
-          world.lastAttackTime = new Map();
-        }
-        world.lastAttackTime.set(playerId, currentTime);
-      }
+      combatTargets.set(playerId, nearestEnemy);
+      attemptAttack(world, playerId, nearestEnemy, currentTime);
     }
   }
 
-  // Enemy AI - enemies attack nearest player
-  for (const enemyId of enemies) {
+  // Process enemy AI targeting
+  for (let i = 0; i < allEnemies.length; i++) {
+    const enemyId = allEnemies[i];
+
     // Skip dead enemies
     if (Health.current[enemyId] <= 0) continue;
 
-    const enemyPos = {
-      x: Position.x[enemyId],
-      y: Position.y[enemyId],
-    };
-
-    let nearestPlayer = null;
-    let nearestDistance = Infinity;
-    const attackRange = 80; // Enemy attack range
-
-    // Find nearest player within range
-    for (const playerId of players) {
-      // Skip dead players
-      if (Health.current[playerId] <= 0) continue;
-
-      const playerPos = {
-        x: Position.x[playerId],
-        y: Position.y[playerId],
-      };
-
-      const distance = Math.sqrt(
-        Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)
-      );
-
-      if (distance <= attackRange && distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestPlayer = playerId;
+    // Check if enemy is already targeting someone
+    const existingTarget = combatTargets.get(enemyId);
+    if (existingTarget && Health.current[existingTarget] > 0) {
+      // Continue attacking current target if in range
+      if (isInRange(world, enemyId, existingTarget, getAggroRange(world, enemyId))) {
+        attemptAttack(world, enemyId, existingTarget, currentTime);
+        continue;
+      } else {
+        // Target out of range, find new target
+        combatTargets.delete(enemyId);
       }
     }
 
-    // Attack nearest player if found
+    // Find nearest player to attack
+    const nearestPlayer = findNearestPlayer(world, enemyId, players);
     if (nearestPlayer !== null) {
-      const currentTime = Date.now();
-      const lastAttackTime = world.lastEnemyAttackTime?.get(enemyId) || 0;
-      const attackSpeed = 3000; // 3 seconds between enemy attacks
-
-      if (currentTime - lastAttackTime >= attackSpeed) {
-        performAttack(world, enemyId, nearestPlayer);
-
-        // Update last attack time
-        if (!world.lastEnemyAttackTime) {
-          world.lastEnemyAttackTime = new Map();
-        }
-        world.lastEnemyAttackTime.set(enemyId, currentTime);
-      }
+      combatTargets.set(enemyId, nearestPlayer);
+      attemptAttack(world, enemyId, nearestPlayer, currentTime);
     }
   }
 
@@ -121,35 +113,154 @@ export const AutoCombatSystem = defineSystem((world: ECSWorld) => {
 });
 
 /**
- * Performs an attack between attacker and target
+ * Find the nearest enemy within attack range for a player
  */
-function performAttack(world: ECSWorld, attackerId: number, targetId: number) {
-  const attackerLevel = Level.combat[attackerId] || 1;
-  const attackerAttack = Attack.melee[attackerId] || 1;
+function findNearestEnemy(world: IWorld, playerId: number, enemies: number[]): number | null {
+  const playerX = Transform.x[playerId];
+  const playerY = Transform.y[playerId];
+  const attackRange = getAttackRange(world, playerId);
 
-  const targetLevel = Level.combat[targetId] || 1;
-  const targetDefence = Level.defence?.[targetId] || 1;
+  let nearestEnemy = null;
+  let nearestDistance = Infinity;
 
-  // OSRS-inspired damage calculation
-  const maxHit = calculateMaxHit(attackerLevel, attackerAttack);
-  const accuracy = calculateAccuracy(attackerLevel, attackerAttack, targetLevel, targetDefence);
+  for (let i = 0; i < enemies.length; i++) {
+    const enemyId = enemies[i];
+
+    // Skip dead enemies
+    if (Health.current[enemyId] <= 0) continue;
+
+    const distance = calculateDistance(
+      playerX,
+      playerY,
+      Transform.x[enemyId],
+      Transform.y[enemyId]
+    );
+
+    if (distance <= attackRange && distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestEnemy = enemyId;
+    }
+  }
+
+  return nearestEnemy;
+}
+
+/**
+ * Find the nearest player within aggro range for an enemy
+ */
+function findNearestPlayer(world: IWorld, enemyId: number, players: number[]): number | null {
+  const enemyX = Transform.x[enemyId];
+  const enemyY = Transform.y[enemyId];
+  const aggroRange = getAggroRange(world, enemyId);
+
+  let nearestPlayer = null;
+  let nearestDistance = Infinity;
+
+  for (let i = 0; i < players.length; i++) {
+    const playerId = players[i];
+
+    // Skip dead players
+    if (Health.current[playerId] <= 0) continue;
+
+    const distance = calculateDistance(
+      enemyX,
+      enemyY,
+      Transform.x[playerId],
+      Transform.y[playerId]
+    );
+
+    if (distance <= aggroRange && distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestPlayer = playerId;
+    }
+  }
+
+  return nearestPlayer;
+}
+
+/**
+ * Attempt to perform an attack if enough time has passed
+ */
+function attemptAttack(
+  world: IWorld,
+  attackerId: number,
+  targetId: number,
+  currentTime: number
+): void {
+  const lastAttack = lastAttackTime.get(attackerId) || 0;
+  const attackSpeed = hasComponent(world, Player, attackerId)
+    ? PLAYER_ATTACK_SPEED * OSRS_TICK_TIME
+    : ENEMY_ATTACK_SPEED * OSRS_TICK_TIME;
+
+  if (currentTime - lastAttack >= attackSpeed) {
+    performAttack(world, attackerId, targetId);
+    lastAttackTime.set(attackerId, currentTime);
+  }
+}
+
+/**
+ * Perform an attack using OSRS combat formulas
+ */
+function performAttack(world: IWorld, attackerId: number, targetId: number): void {
+  // Convert ECS component data to OSRS format for calculations
+  const attackerStats = {
+    attack: CombatStats.attack[attackerId],
+    strength: CombatStats.strength[attackerId],
+    defence: CombatStats.defence[attackerId],
+    hitpoints: Health.max[attackerId],
+    prayer: 1, // Will be enhanced when prayer is implemented
+  };
+
+  const defenderStats = {
+    attack: CombatStats.attack[targetId],
+    strength: CombatStats.strength[targetId],
+    defence: CombatStats.defence[targetId],
+    hitpoints: Health.max[targetId],
+    prayer: 1,
+  };
+
+  const attackerEquipment = {
+    attackBonus: CombatStats.attackBonus[attackerId] || 0,
+    strengthBonus: CombatStats.strengthBonus[attackerId] || 0,
+    defenceBonus: CombatStats.defenceBonus[attackerId] || 0,
+  };
+
+  const defenderEquipment = {
+    attackBonus: CombatStats.attackBonus[targetId] || 0,
+    strengthBonus: CombatStats.strengthBonus[targetId] || 0,
+    defenceBonus: CombatStats.defenceBonus[targetId] || 0,
+  };
+
+  // Calculate max hit and accuracy using OSRS formulas
+  const maxHit = calculateMaxHit(attackerStats, attackerEquipment);
+  const hitChance = calculateAccuracy(
+    attackerStats,
+    attackerEquipment,
+    defenderStats,
+    defenderEquipment
+  );
 
   // Roll for hit
   const hitRoll = Math.random();
+  const isCritical = Math.random() < 0.1; // 10% critical hit chance
 
-  if (hitRoll < accuracy) {
+  if (hitRoll < hitChance) {
     // Hit - calculate damage
-    const damage = Math.floor(Math.random() * (maxHit + 1));
+    let damage = Math.floor(Math.random() * (maxHit + 1));
+
+    // Apply critical hit multiplier
+    if (isCritical) {
+      damage = Math.floor(damage * 1.5);
+    }
 
     // Apply damage
     Health.current[targetId] = Math.max(0, Health.current[targetId] - damage);
 
-    // Add combat event for UI feedback
-    if (!world.combatEvents) {
-      world.combatEvents = [];
-    }
+    // Queue damage number for visual feedback
+    queueDamageEvent(world, targetId, damage, isCritical, false);
 
-    world.combatEvents.push({
+    // Broadcast combat event
+    broadcastCombatEvent(world, {
       type: 'damage',
       attackerId,
       targetId,
@@ -157,17 +268,16 @@ function performAttack(world: ECSWorld, attackerId: number, targetId: number) {
       timestamp: Date.now(),
     });
 
-    // Check if target died
+    // Check for death
     if (Health.current[targetId] <= 0) {
-      handleDeath(world, targetId, attackerId);
+      handleEntityDeath(world, targetId, attackerId);
     }
   } else {
-    // Miss
-    if (!world.combatEvents) {
-      world.combatEvents = [];
-    }
+    // Miss - queue miss indicator for visual feedback
+    queueDamageEvent(world, targetId, 0, false, true);
 
-    world.combatEvents.push({
+    // Broadcast combat event
+    broadcastCombatEvent(world, {
       type: 'miss',
       attackerId,
       targetId,
@@ -178,59 +288,108 @@ function performAttack(world: ECSWorld, attackerId: number, targetId: number) {
 }
 
 /**
- * Calculate maximum hit based on OSRS formulas
+ * Handle entity death and XP rewards
  */
-function calculateMaxHit(level: number, attack: number): number {
-  // Simplified OSRS max hit formula
-  const baseDamage = Math.floor(level * 0.5) + Math.floor(attack * 0.3);
-  return Math.max(1, baseDamage);
-}
+function handleEntityDeath(world: IWorld, deadEntityId: number, killerId: number): void {
+  // Award XP if player killed an enemy
+  if (
+    hasComponent(world, Player, killerId) &&
+    (hasComponent(world, Monster, deadEntityId) || hasComponent(world, NPC, deadEntityId))
+  ) {
+    const baseXP =
+      CombatStats.attack[deadEntityId] +
+      CombatStats.strength[deadEntityId] +
+      CombatStats.defence[deadEntityId];
+    const xpGain = Math.max(1, Math.floor(baseXP * 0.33)); // 1/3 of total combat stats as XP
 
-/**
- * Calculate hit accuracy based on OSRS formulas
- */
-function calculateAccuracy(
-  attackLevel: number,
-  attack: number,
-  defenceLevel: number,
-  defence: number
-): number {
-  // Simplified OSRS accuracy calculation
-  const attackRoll = attackLevel + attack;
-  const defenceRoll = defenceLevel + defence;
-
-  const accuracy = attackRoll / (attackRoll + defenceRoll);
-  return Math.min(0.95, Math.max(0.05, accuracy)); // Cap between 5% and 95%
-}
-
-/**
- * Handle entity death
- */
-function handleDeath(world: ECSWorld, deadEntityId: number, killerId: number) {
-  // Add death event
-  if (!world.deathEvents) {
-    world.deathEvents = [];
+    // Award attack, strength, defence, and hitpoints XP
+    awardCombatXP(world, killerId, xpGain);
   }
 
-  world.deathEvents.push({
-    deadEntityId,
-    killerId,
+  // Broadcast death event
+  broadcastCombatEvent(world, {
+    type: 'death',
+    attackerId: killerId,
+    targetId: deadEntityId,
+    damage: 0,
     timestamp: Date.now(),
   });
 
-  // If enemy died, award XP to player
-  if (hasComponent(world, Enemy, deadEntityId) && hasComponent(world, Player, killerId)) {
-    const xpGain = Level.combat[deadEntityId] * 4; // 4 XP per enemy combat level
+  // Clean up combat state
+  combatTargets.delete(deadEntityId);
+  lastAttackTime.delete(deadEntityId);
+}
 
-    if (!world.xpEvents) {
-      world.xpEvents = [];
-    }
+/**
+ * Award combat XP to a player
+ */
+function awardCombatXP(world: IWorld, playerId: number, baseXP: number): void {
+  if (!hasComponent(world, Skills, playerId)) return;
 
-    world.xpEvents.push({
-      playerId: killerId,
-      skill: 'combat',
-      xp: xpGain,
-      timestamp: Date.now(),
-    });
+  // Award XP to attack, strength, defence, and hitpoints
+  const skillXP = Math.floor(baseXP / 4);
+
+  // This would integrate with the SkillSystem for actual XP calculations
+  broadcastCombatEvent(world, {
+    type: 'xp_gain',
+    attackerId: playerId,
+    targetId: 0,
+    damage: skillXP,
+    timestamp: Date.now(),
+  });
+}
+
+/**
+ * Broadcast combat events through the network system
+ */
+function broadcastCombatEvent(world: IWorld, event: CombatEvent): void {
+  const worldWithBroadcaster = world as WorldWithBroadcaster;
+  const broadcaster = worldWithBroadcaster.networkBroadcaster;
+  if (broadcaster && typeof broadcaster === 'function') {
+    broadcaster('combat_event', event);
   }
+}
+
+/**
+ * Check if two entities are within range
+ */
+function isInRange(world: IWorld, entity1: number, entity2: number, range: number): boolean {
+  const distance = calculateDistance(
+    Transform.x[entity1],
+    Transform.y[entity1],
+    Transform.x[entity2],
+    Transform.y[entity2]
+  );
+  return distance <= range;
+}
+
+/**
+ * Calculate distance between two points
+ */
+function calculateDistance(x1: number, y1: number, x2: number, y2: number): number {
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
+/**
+ * Get attack range for an entity
+ */
+function getAttackRange(world: IWorld, entityId: number): number {
+  // Base attack range - could be enhanced with weapon bonuses
+  return hasComponent(world, Player, entityId) ? 1.5 : 1.0; // tiles
+}
+
+/**
+ * Get aggro range for an enemy
+ */
+function getAggroRange(_world: IWorld, _entityId: number): number {
+  // Enemies have larger aggro range than attack range
+  return 3.0; // tiles
+}
+
+/**
+ * Check if an NPC is aggressive
+ */
+function isAggressive(_world: IWorld, _npcId: number): boolean {
+  // For now, assume all NPCs are aggressive - could be enhanced with NPC data
+  return true;
 }

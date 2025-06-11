@@ -6,13 +6,67 @@
  * maintaining compatibility with existing multiplayer functionality.
  */
 
-import { createWorld, hasComponent, removeComponent } from 'bitecs';
-import { Transform, Health, Skills, Player } from '../ecs/components';
+import { createWorld, hasComponent, removeComponent, IWorld } from 'bitecs';
+import { Transform, Health, Skills, Player, NetworkEntity } from '../ecs/components';
 import { createPlayer } from '../ecs/world';
 import { MovementSystem } from '../ecs/systems/MovementSystem';
 import { CombatSystem } from '../ecs/systems/CombatSystem';
+import { AutoCombatSystem } from '../ecs/systems/AutoCombatSystem';
 import { PrayerSystem } from '../ecs/systems/PrayerSystem';
 import { SkillSystem } from '../ecs/systems/SkillSystem';
+import { NetworkSyncSystem, setNetworkBroadcaster } from '../ecs/systems/NetworkSyncSystem';
+import { WaveSpawningSystem } from '../ecs/systems/WaveSpawningSystem';
+import { HealthBarSystem, setHealthEventBroadcaster } from '../ecs/systems/HealthBarSystem';
+import { DamageNumberSystem, setDamageNumberBroadcaster } from '../ecs/systems/DamageNumberSystem';
+import { XPNotificationSystem, setXPEventBroadcaster } from '../ecs/systems/XPNotificationSystem';
+
+/**
+ * Player schema interface for ECS integration
+ */
+interface PlayerSchema {
+  id: string;
+  x: number;
+  y: number;
+  health: number;
+  maxHealth: number;
+  skills?: {
+    attack?: { level: number };
+    defence?: { level: number };
+    strength?: { level: number };
+    hitpoints?: { level: number };
+    ranged?: { level: number };
+    magic?: { level: number };
+    prayer?: { level: number };
+  };
+  _positionUpdated?: boolean;
+  _healthUpdated?: boolean;
+}
+
+/**
+ * NPC schema interface for ECS integration
+ */
+interface NPCSchema {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  health: number;
+  maxHealth: number;
+  combatLevel: number;
+}
+
+/**
+ * Extended world interface with custom properties
+ */
+interface ExtendedWorld extends IWorld {
+  deltaTime?: number;
+  networkBroadcaster?: (type: string, data: unknown) => void;
+}
+
+/**
+ * ECS System function type
+ */
+type ECSSystem = (world: IWorld) => void;
 
 /**
  * Manages the integration between Colyseus schemas and ECS components
@@ -21,7 +75,8 @@ export class ECSIntegration {
   private world = createWorld();
   private entityMap = new Map<string, number>(); // Colyseus ID -> ECS Entity ID
   private reverseEntityMap = new Map<number, string>(); // ECS Entity ID -> Colyseus ID
-  private systems: Array<(world: any) => void> = [];
+  private systems: ECSSystem[] = [];
+  private broadcaster?: (type: string, data: unknown) => void;
 
   constructor() {
     this.initializeSystems();
@@ -32,7 +87,18 @@ export class ECSIntegration {
    * Initialize ECS systems
    */
   private initializeSystems() {
-    this.systems = [MovementSystem, CombatSystem, PrayerSystem, SkillSystem];
+    this.systems = [
+      MovementSystem,
+      CombatSystem,
+      AutoCombatSystem,
+      PrayerSystem,
+      SkillSystem,
+      WaveSpawningSystem,
+      NetworkSyncSystem,
+      HealthBarSystem,
+      DamageNumberSystem,
+      XPNotificationSystem,
+    ];
   }
   /**
    * Register all ECS components with the world
@@ -50,8 +116,22 @@ export class ECSIntegration {
   }
 
   /**
+   * Simple hash function for string values
+   */
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  /**
    * Sync a Colyseus Player to ECS components
-   */ syncPlayerToECS(player: any): number {
+   */
+  syncPlayerToECS(player: PlayerSchema): number {
     if (!player || !player.id) {
       throw new Error('Player must have an id property');
     }
@@ -76,9 +156,7 @@ export class ECSIntegration {
     if (hasComponent(this.world, Health, entityId)) {
       Health.current[entityId] = player.health || 100;
       Health.max[entityId] = player.maxHealth || 100;
-    }
-
-    // Sync skills (using Skills component, not CombatStats)
+    } // Sync skills (using Skills component, not CombatStats)
     if (hasComponent(this.world, Skills, entityId) && player.skills) {
       Skills.attack[entityId] = player.skills.attack?.level || 1;
       Skills.defence[entityId] = player.skills.defence?.level || 1;
@@ -89,43 +167,82 @@ export class ECSIntegration {
       Skills.prayer[entityId] = player.skills.prayer?.level || 1;
     }
 
+    // Add NetworkEntity component for multiplayer sync
+    if (hasComponent(this.world, NetworkEntity, entityId)) {
+      NetworkEntity.sessionHash[entityId] = this.hashString(player.id);
+      NetworkEntity.lastUpdate[entityId] = Date.now();
+    }
+
     return entityId;
   }
+
   /**
    * Sync ECS components back to Colyseus Player
    */
-  syncECSToPlayer(entityId: number, player: any): void {
+  syncECSToPlayer(entityId: number, player: PlayerSchema): void {
     if (!hasComponent(this.world, Transform, entityId)) {
       return;
     }
 
-    // Sync position
-    player.x = Transform.x[entityId];
-    player.y = Transform.y[entityId];
+    // Check if position has changed significantly to avoid unnecessary updates
+    const newX = Transform.x[entityId];
+    const newY = Transform.y[entityId];
+    const threshold = 0.01; // Small threshold to avoid floating point issues
+
+    const positionChanged =
+      Math.abs(player.x - newX) > threshold || Math.abs(player.y - newY) > threshold;
+
+    if (positionChanged) {
+      // Sync position
+      player.x = newX;
+      player.y = newY;
+
+      // Mark that this player has had a position update
+      player._positionUpdated = true;
+    }
 
     // Sync health
     if (hasComponent(this.world, Health, entityId)) {
-      player.health = Health.current[entityId];
-      player.maxHealth = Health.max[entityId];
+      const healthChanged =
+        player.health !== Health.current[entityId] || player.maxHealth !== Health.max[entityId];
+
+      if (healthChanged) {
+        player.health = Health.current[entityId];
+        player.maxHealth = Health.max[entityId];
+        player._healthUpdated = true;
+      }
     }
 
     // Note: Skills are typically not synced back from ECS to schema
     // as they are managed by the schema system directly
   }
-
   /**
-   * Run all ECS systems for one frame
+   * Run all ECS systems for one frame (optimized)
    */
   update(deltaTime: number = 16.67): void {
     try {
+      // Only run systems if there are entities to process
+      if (this.entityMap.size === 0) {
+        return;
+      }
+
+      // Set delta time on world for systems to use
+      const extendedWorld = this.world as ExtendedWorld;
+      extendedWorld.deltaTime = deltaTime / 1000; // Convert to seconds
+
+      // Run each system with error isolation
       for (const system of this.systems) {
         if (typeof system === 'function') {
-          system(this.world);
+          try {
+            system(this.world);
+          } catch (systemError) {
+            console.error(`ECS System Error in ${system.name || 'unnamed system'}:`, systemError);
+            // Continue with other systems
+          }
         }
       }
     } catch (error) {
-      console.error('ECS System Update Error:', error);
-      // Continue running other systems even if one fails
+      console.error('ECS Integration Update Error:', error);
     }
   }
 
@@ -189,5 +306,33 @@ export class ECSIntegration {
       systemCount: this.systems.length,
       registeredComponents: ['Transform', 'Health', 'Skills', 'Player'],
     };
+  }
+
+  /**
+   * Set up network broadcaster for ECS systems
+   */
+  public setNetworkBroadcaster(broadcaster: (type: string, data: unknown) => void): void {
+    this.broadcaster = broadcaster;
+
+    // Set up the broadcaster for the NetworkSyncSystem
+    setNetworkBroadcaster(this.world, broadcaster);
+
+    // Set up the broadcaster for visual feedback systems
+    setHealthEventBroadcaster(broadcaster);
+    setDamageNumberBroadcaster(broadcaster);
+    setXPEventBroadcaster(broadcaster);
+
+    // Set up the broadcaster for AutoCombatSystem (stored on world for access)
+    const extendedWorld = this.world as ExtendedWorld;
+    extendedWorld.networkBroadcaster = broadcaster;
+  }
+
+  /**
+   * Create an ECS enemy entity from NPC data
+   */
+  public createEnemyEntity(_npc: NPCSchema): number {
+    // This will be implemented when we have enemy creation functions
+    // For now, return a placeholder
+    return 0;
   }
 }

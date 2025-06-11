@@ -1,8 +1,8 @@
 import { defineQuery, defineSystem, IWorld } from 'bitecs';
-import { Player, Skills, SkillExperience } from '../components';
+import { Player, SkillLevels, SkillXP } from '../components';
 
 // Query for players (all players have skills)
-const playerQuery = defineQuery([Player, Skills, SkillExperience]);
+const playerQuery = defineQuery([Player, SkillLevels, SkillXP]);
 
 // OSRS XP table (levels 1-99)
 const XP_TABLE = [
@@ -110,55 +110,55 @@ const XP_TABLE = [
 // Skill names for indexing
 export enum SkillType {
   ATTACK = 'attack',
-  STRENGTH = 'strength',
   DEFENCE = 'defence',
+  STRENGTH = 'strength',
+  HITPOINTS = 'hitpoints',
   RANGED = 'ranged',
   PRAYER = 'prayer',
   MAGIC = 'magic',
-  RUNECRAFTING = 'runecrafting',
-  HITPOINTS = 'hitpoints',
-  CRAFTING = 'crafting',
-  MINING = 'mining',
-  SMITHING = 'smithing',
-  FISHING = 'fishing',
   COOKING = 'cooking',
-  FIREMAKING = 'firemaking',
   WOODCUTTING = 'woodcutting',
-  AGILITY = 'agility',
-  HERBLORE = 'herblore',
-  THIEVING = 'thieving',
   FLETCHING = 'fletching',
+  FISHING = 'fishing',
+  FIREMAKING = 'firemaking',
+  CRAFTING = 'crafting',
+  SMITHING = 'smithing',
+  MINING = 'mining',
+  HERBLORE = 'herblore',
+  AGILITY = 'agility',
+  THIEVING = 'thieving',
   SLAYER = 'slayer',
   FARMING = 'farming',
-  CONSTRUCTION = 'construction',
+  RUNECRAFT = 'runecraft',
   HUNTER = 'hunter',
+  CONSTRUCTION = 'construction',
 }
 
 // Map skill names to XP property names
-const SKILL_XP_MAP: Record<SkillType, keyof typeof SkillExperience> = {
-  [SkillType.ATTACK]: 'attackXP',
-  [SkillType.STRENGTH]: 'strengthXP',
-  [SkillType.DEFENCE]: 'defenceXP',
-  [SkillType.RANGED]: 'rangedXP',
-  [SkillType.PRAYER]: 'prayerXP',
-  [SkillType.MAGIC]: 'magicXP',
-  [SkillType.RUNECRAFTING]: 'runecraftingXP',
-  [SkillType.HITPOINTS]: 'hitpointsXP',
-  [SkillType.CRAFTING]: 'craftingXP',
-  [SkillType.MINING]: 'miningXP',
-  [SkillType.SMITHING]: 'smithingXP',
-  [SkillType.FISHING]: 'fishingXP',
-  [SkillType.COOKING]: 'cookingXP',
-  [SkillType.FIREMAKING]: 'firemakingXP',
-  [SkillType.WOODCUTTING]: 'woodcuttingXP',
-  [SkillType.AGILITY]: 'agilityXP',
-  [SkillType.HERBLORE]: 'herbloreXP',
-  [SkillType.THIEVING]: 'thievingXP',
-  [SkillType.FLETCHING]: 'fletchingXP',
-  [SkillType.SLAYER]: 'slayerXP',
-  [SkillType.FARMING]: 'farmingXP',
-  [SkillType.CONSTRUCTION]: 'constructionXP',
-  [SkillType.HUNTER]: 'hunterXP',
+const SKILL_XP_MAP: Record<SkillType, keyof typeof SkillXP> = {
+  [SkillType.ATTACK]: 'attack',
+  [SkillType.DEFENCE]: 'defence',
+  [SkillType.STRENGTH]: 'strength',
+  [SkillType.HITPOINTS]: 'hitpoints',
+  [SkillType.RANGED]: 'ranged',
+  [SkillType.PRAYER]: 'prayer',
+  [SkillType.MAGIC]: 'magic',
+  [SkillType.COOKING]: 'cooking',
+  [SkillType.WOODCUTTING]: 'woodcutting',
+  [SkillType.FLETCHING]: 'fletching',
+  [SkillType.FISHING]: 'fishing',
+  [SkillType.FIREMAKING]: 'firemaking',
+  [SkillType.CRAFTING]: 'crafting',
+  [SkillType.SMITHING]: 'smithing',
+  [SkillType.MINING]: 'mining',
+  [SkillType.HERBLORE]: 'herblore',
+  [SkillType.AGILITY]: 'agility',
+  [SkillType.THIEVING]: 'thieving',
+  [SkillType.SLAYER]: 'slayer',
+  [SkillType.FARMING]: 'farming',
+  [SkillType.RUNECRAFT]: 'runecraft',
+  [SkillType.HUNTER]: 'hunter',
+  [SkillType.CONSTRUCTION]: 'construction',
 };
 
 // Track previous levels for level-up detection
@@ -239,24 +239,34 @@ export function getXPToNextLevel(currentXP: number): number {
 /**
  * Add XP to a skill
  */
+/**
+ * Add XP to a player's skill, enforcing OSRS XP cap.
+ * @param world ECS world
+ * @param playerId Player entity ID
+ * @param skill SkillType
+ * @param xp Amount of XP to add
+ */
 export function addSkillXP(world: IWorld, playerId: number, skill: SkillType, xp: number): void {
   const xpProp = SKILL_XP_MAP[skill];
-  const currentXP = SkillExperience[xpProp][playerId] || 0;
-  const maxXP = 200000000; // 200M XP cap in OSRS
-
-  SkillExperience[xpProp][playerId] = Math.min(currentXP + xp, maxXP);
+  const currentXP = SkillXP[xpProp][playerId] ?? 0;
+  const maxXP = 200_000_000; // 200M XP cap in OSRS
+  SkillXP[xpProp][playerId] = Math.min(currentXP + xp, maxXP);
 }
 
 /**
  * Get total level (sum of all skill levels)
  */
+/**
+ * Get total level (sum of all skill levels)
+ * @param world ECS world
+ * @param playerId Player entity ID
+ * @returns Total level
+ */
 export function getTotalLevel(world: IWorld, playerId: number): number {
   let total = 0;
-
   for (const skill of Object.values(SkillType)) {
-    total += Skills[skill][playerId] || 1;
+    total += SkillLevels[skill][playerId] ?? 1;
   }
-
   return total;
 }
 

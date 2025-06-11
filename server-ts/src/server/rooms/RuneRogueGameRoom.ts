@@ -9,7 +9,7 @@
  */
 
 import { Client, Room } from '@colyseus/core';
-import { GameRoomState, Player, Enemy } from '../schemas/GameSchemas';
+import { GameRoomState, Player, Enemy } from '../game/EntitySchemas';
 
 /**
  * Message types for client-server communication

@@ -1,31 +1,31 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "skipLibCheck": true,
-        "noEmitOnError": false
-    },
-    "include": [
-        "src/server/index.ts",
-        "src/server/schemas/CoreSchemas.ts",
-        "src/server/rooms/CleanGameRoom.ts"
-    ],
-    "exclude": [
-        "src/server/utils/**/*",
-        "src/server/__tests__/**/*",
-        "src/services/**/*",
-        "src/test/**/*",
-        "src/server/game/**/*",
-        "src/server/ecs/**/*",
-        "src/server/auth/**/*",
-        "src/server/persistence/**/*",
-        "src/server/routes/**/*",
-        "src/server/docs/**/*",
-        "src/server/economy-integration.ts",
-        "src/server/discord-bot.ts",
-        "src/server/app.config.ts",
-        "src/server/logger.ts",
-        "src/client/**/*",
-        "jest.setup.ts",
-        "**/*.test.ts"
-    ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmitOnError": false
+  },
+  "include": [
+    "src/server/index.ts",
+    "src/server/schemas/CoreSchemas.ts",
+    "src/server/rooms/CleanGameRoom.ts"
+  ],
+  "exclude": [
+    "src/server/utils/**/*",
+    "src/server/__tests__/**/*",
+    "src/services/**/*",
+    "src/test/**/*",
+    "src/server/game/**/*",
+    "src/server/ecs/**/*",
+    "src/server/auth/**/*",
+    "src/server/persistence/**/*",
+    "src/server/routes/**/*",
+    "src/server/docs/**/*",
+    "src/server/economy-integration.ts",
+    "src/server/discord-bot.ts",
+    "src/server/app.config.ts",
+    "src/server/logger.ts",
+    "src/client/**/*",
+    "jest.setup.ts",
+    "**/*.test.ts"
+  ]
 }

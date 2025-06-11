@@ -5,7 +5,7 @@ module.exports = {
   testTimeout: 30000,
   forceExit: true,
   verbose: true,
-  testPathIgnorePatterns: ['<rootDir>/client/meta-ui/'],
+  testPathIgnorePatterns: ['<rootDir>/client/meta-ui/', '<rootDir>/dist/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
@@ -15,31 +15,23 @@ module.exports = {
     '<rootDir>/client/meta-ui/__tests__',
     '<rootDir>/src/server/__tests__/__mocks__/@colyseus/colyseus.js/src/Connection.ts',
   ],
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        experimentalDecorators: true,
-        emitDecoratorMetadata: true,
-        target: 'es2018',
-        module: 'commonjs',
-        moduleResolution: 'node',
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
-        skipLibCheck: true,
-      },
-    },
-  },
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        tsconfig: {
-          experimentalDecorators: true,
-          emitDecoratorMetadata: true,
-          target: 'es2018',
-          module: 'commonjs',
-        },
+        tsconfig: './tsconfig.test.json',
+        isolatedModules: true,
       },
     ],
   },
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/**/__tests__/**',
+    '!src/**/__mocks__/**',
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html'],
 };

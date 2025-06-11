@@ -9,11 +9,10 @@ import {
 import {
   Transform,
   Health,
-  CombatStats,
-  Equipment,
-  Skills,
-  SkillExperience,
-  ActivePrayers,
+  EquipmentBonuses,
+  SkillLevels,
+  SkillXP,
+  Prayer,
   Player,
   NPC,
   Monster,
@@ -22,12 +21,18 @@ import {
   PrayerFlag,
   isPrayerActive,
 } from '../components';
+import { queueDamageEvent } from './DamageNumberSystem';
 
 // Combat queries
-const combatQuery = defineQuery([InCombat, Transform, Health, CombatStats]);
-const playerCombatQuery = defineQuery([Player, InCombat, Skills, ActivePrayers]);
-const targetableQuery = defineQuery([Transform, Health, CombatStats]);
-const deadQuery = defineQuery([Dead]);
+const combatQuery = defineQuery([
+  InCombat,
+  Transform,
+  Health,
+  SkillLevels,
+  EquipmentBonuses,
+  Prayer,
+]);
+// Unused queries removed for lint cleanliness
 
 // Combat state tracking (entity -> target mapping)
 const combatTargets = new Map<number, number>();
@@ -75,16 +80,22 @@ export const CombatSystem = defineSystem((world: IWorld) => {
 /**
  * Calculate max hit using OSRS formula
  */
+/**
+ * Calculate max hit using OSRS formula (melee only, for now)
+ * @param world ECS world
+ * @param attackerId Attacker entity ID
+ * @returns Max hit value
+ */
 function calculateMaxHit(world: IWorld, attackerId: number): number {
-  const strengthLevel = Skills.strength[attackerId] || 1;
-  const strengthBonus = CombatStats.strengthBonus[attackerId] || 0;
+  const strengthLevel = SkillLevels.strength[attackerId] || 1;
+  const strengthBonus = EquipmentBonuses.meleeStrength[attackerId] || 0;
 
   // Get prayer bonus
   let prayerMultiplier = 1;
   let styleBonus = 0;
 
   if (hasComponent(world, Player, attackerId)) {
-    const prayers = ActivePrayers.prayers[attackerId] || 0;
+    const prayers = Prayer.activeMask[attackerId] || 0;
 
     // Prayer multipliers (multiplicative)
     if (isPrayerActive(prayers, PrayerFlag.BURST_OF_STRENGTH)) {
@@ -116,16 +127,23 @@ function calculateMaxHit(world: IWorld, attackerId: number): number {
 /**
  * Calculate hit chance using OSRS formula
  */
+/**
+ * Calculate hit chance using OSRS formula (melee only, for now)
+ * @param world ECS world
+ * @param attackerId Attacker entity ID
+ * @param targetId Target entity ID
+ * @returns Hit chance (0-1)
+ */
 function calculateHitChance(world: IWorld, attackerId: number, targetId: number): number {
   // Attacker's effective attack level
-  const attackLevel = Skills.attack[attackerId] || 1;
-  const attackBonus = CombatStats.attackBonus[attackerId] || 0;
+  const attackLevel = SkillLevels.attack[attackerId] || 1;
+  const attackBonus = EquipmentBonuses.attackStab[attackerId] || 0;
 
   let attackPrayerMultiplier = 1;
   let attackStyleBonus = 0;
 
   if (hasComponent(world, Player, attackerId)) {
-    const prayers = ActivePrayers.prayers[attackerId] || 0;
+    const prayers = Prayer.activeMask[attackerId] || 0;
 
     // Attack prayer multipliers
     if (isPrayerActive(prayers, PrayerFlag.CLARITY_OF_THOUGHT)) {
@@ -148,14 +166,14 @@ function calculateHitChance(world: IWorld, attackerId: number, targetId: number)
   const attackRoll = effectiveAttack * (attackBonus + 64);
 
   // Target's effective defence level
-  const defenceLevel = Skills.defence[targetId] || 1;
-  const defenceBonus = CombatStats.defenceBonus[targetId] || 0;
+  const defenceLevel = SkillLevels.defence[targetId] || 1;
+  const defenceBonus = EquipmentBonuses.defenceStab[targetId] || 0;
 
   let defencePrayerMultiplier = 1;
   let defenceStyleBonus = 0;
 
   if (hasComponent(world, Player, targetId)) {
-    const prayers = ActivePrayers.prayers[targetId] || 0;
+    const prayers = Prayer.activeMask[targetId] || 0;
 
     // Defence prayer multipliers
     if (isPrayerActive(prayers, PrayerFlag.THICK_SKIN)) {
@@ -204,25 +222,41 @@ function performAttack(world: IWorld, attackerId: number, targetId: number): voi
     // Successful hit - roll damage
     const damage = Math.floor(Math.random() * (maxHit + 1));
 
+    // Check for critical hit (5% chance for now, can be enhanced later)
+    const isCritical = Math.random() < 0.05;
+    const finalDamage = isCritical ? Math.floor(damage * 1.5) : damage;
+
     // Apply damage
     const currentHealth = Health.current[targetId];
-    const newHealth = Math.max(0, currentHealth - damage);
+    const newHealth = Math.max(0, currentHealth - finalDamage);
     Health.current[targetId] = newHealth;
 
+    // Queue damage number event for visual feedback
+    queueDamageEvent(world, targetId, finalDamage, isCritical, false);
+
     // Award XP to attacker if they're a player
-    if (hasComponent(world, Player, attackerId) && damage > 0) {
-      awardCombatXP(world, attackerId, damage);
+    if (hasComponent(world, Player, attackerId) && finalDamage > 0) {
+      awardCombatXP(world, attackerId, finalDamage);
     }
 
     // Check if target died
     if (newHealth === 0) {
       handleDeath(world, targetId, attackerId);
     }
+  } else {
+    // Miss - queue miss event for visual feedback
+    queueDamageEvent(world, targetId, 0, false, true);
   }
 }
 
 /**
  * Award combat XP based on damage dealt
+ */
+/**
+ * Award combat XP based on damage dealt
+ * @param world ECS world
+ * @param playerId Player entity ID
+ * @param damage Damage dealt
  */
 function awardCombatXP(world: IWorld, playerId: number, damage: number): void {
   // OSRS XP formula: 4 XP per damage in Hitpoints, distributed based on combat style
@@ -234,10 +268,10 @@ function awardCombatXP(world: IWorld, playerId: number, damage: number): void {
   const defenceXP = Math.floor(hitpointsXP / 3);
 
   // Add XP
-  SkillExperience.attackXP[playerId] += attackXP;
-  SkillExperience.strengthXP[playerId] += strengthXP;
-  SkillExperience.defenceXP[playerId] += defenceXP;
-  SkillExperience.hitpointsXP[playerId] += hitpointsXP;
+  SkillXP.attack[playerId] += attackXP;
+  SkillXP.strength[playerId] += strengthXP;
+  SkillXP.defence[playerId] += defenceXP;
+  SkillXP.hitpoints[playerId] += hitpointsXP;
 
   // TODO: Check for level ups
 }
@@ -278,8 +312,9 @@ function isInCombatRange(world: IWorld, attackerId: number, targetId: number): b
 /**
  * Get attack speed (in game ticks)
  */
-function getAttackSpeed(world: IWorld, entityId: number): number {
-  // TODO: Get from weapon component
+
+function getAttackSpeed(_world: IWorld, _entityId: number): number {
+  // TODO: Get from weapon component (future enhancement)
   // Default weapon speed is 4 ticks (2.4 seconds)
   return 4;
 }

@@ -79,6 +79,11 @@ export class AudioManager {
     }
   }
 
+  // Generic SFX player (alias for playSound)
+  public playSfx(key: string): void {
+    this.playSound(key);
+  }
+
   // Play attack sound
   public playAttackSound(): void {
     this.playSound('attack');
@@ -186,7 +191,6 @@ export class AudioManager {
   // Mute all audio
   public mute(): void {
     const wasMusicEnabled = this.isMusicEnabled;
-    const wasSoundEnabled = this.isSoundEnabled;
 
     this.isMusicEnabled = false;
     this.isSoundEnabled = false;
@@ -205,6 +209,18 @@ export class AudioManager {
 
     this.playMusic();
     this.savePreferences();
+  }
+
+  // Stop all audio
+  public stopAll(): void {
+    // Stop all sound effects
+    for (const sound of this.sounds.values()) {
+      sound.pause();
+      sound.currentTime = 0;
+    }
+
+    // Stop music
+    this.stopMusic();
   }
 
   // Preload all audio assets
@@ -245,6 +261,6 @@ export class AudioManager {
     this.music = new Audio();
     this.music.loop = true;
 
-    console.log('Placeholder audio created');
+    // Audio placeholder created for development
   }
 }

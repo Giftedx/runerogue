@@ -33,6 +33,24 @@ import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema';
 import 'reflect-metadata';
 
 /**
+ * ItemDefinition interface for items
+ */
+export interface ItemDefinition {
+  itemId: string;
+  name: string;
+  description: string;
+  value: number;
+  attack: number;
+  defense: number;
+  isStackable: boolean;
+  iconUrl?: string;
+  category?: string;
+  requirements?: {
+    [skill: string]: number;
+  };
+}
+
+/**
  * Basic inventory item schema
  */
 export class InventoryItem extends Schema {
@@ -41,14 +59,22 @@ export class InventoryItem extends Schema {
   @type('number') public quantity: number = 1;
   @type('number') public value: number = 0;
   @type('boolean') public stackable: boolean = false;
+  @type('string') public description: string = '';
+  @type('number') public attack: number = 0;
+  @type('number') public defense: number = 0;
+  @type('boolean') public isStackable: boolean = false;
 
-  constructor(itemDef?: any, quantity: number = 1) {
+  constructor(itemDef?: Partial<ItemDefinition>, quantity: number = 1) {
     super();
     if (itemDef) {
-      this.itemId = itemDef.itemId || itemDef.id || '';
+      this.itemId = itemDef.itemId || '';
       this.name = itemDef.name || '';
-      this.value = itemDef.baseValue || itemDef.value || 0;
+      this.value = itemDef.value || 0;
       this.stackable = itemDef.isStackable || false;
+      this.isStackable = itemDef.isStackable || false;
+      this.description = itemDef.description || '';
+      this.attack = itemDef.attack || 0;
+      this.defense = itemDef.defense || 0;
       this.quantity = quantity;
     }
   }
@@ -86,6 +112,12 @@ export class PlayerSkills extends Schema {
   @type(SkillLevel) public magic: SkillLevel = new SkillLevel();
   /** Ranged skill */
   @type(SkillLevel) public ranged: SkillLevel = new SkillLevel();
+  /** Mining skill */
+  @type(SkillLevel) public mining: SkillLevel = new SkillLevel();
+  /** Woodcutting skill */
+  @type(SkillLevel) public woodcutting: SkillLevel = new SkillLevel();
+  /** Fishing skill */
+  @type(SkillLevel) public fishing: SkillLevel = new SkillLevel();
   // Add more skills as needed
 }
 
@@ -130,6 +162,22 @@ export class Player extends Schema {
    * OSRS-style skills object for ECS integration
    */
   @type(PlayerSkills) public skills: PlayerSkills = new PlayerSkills();
+  /** Player gold amount */
+  @type('number') public gold: number = 0;
+  /** Last attack time (for combat cooldown) */
+  @type('number') public lastAttackTime: number = 0;
+  /** Last activity time (for persistence) */
+  @type('number') public lastActivity: number = Date.now();
+  /** Prayer bonus from equipment */
+  @type('number') public prayerBonus: number = 0;
+  /** Player is running */
+  @type('boolean') public isRunning: boolean = false;
+  /** Last movement time (for rate limiting) */
+  @type('number') public lastMovementTime: number = 0;
+  /** Player is busy (gathering, etc.) */
+  @type('boolean') public isBusy: boolean = false;
+  /** Time when player will no longer be busy */
+  @type('number') public busyUntil: number = 0;
 
   constructor() {
     super();
@@ -146,14 +194,78 @@ export class Player extends Schema {
       this.inventory = new ArraySchema<InventoryItem>();
     }
   }
-
   takeDamage(damage: number): boolean {
-    this.hp = Math.max(0, this.hp - damage);
-    return this.hp <= 0;
+    this.health = Math.max(0, this.health - damage);
+    return this.health <= 0;
   }
 
   heal(amount: number): void {
-    this.hp = Math.min(this.maxHp, this.hp + amount);
+    this.health = Math.min(this.maxHealth, this.health + amount);
+  }
+
+  get isAlive(): boolean {
+    return this.health > 0;
+  }
+
+  /**
+   * Drain prayer points
+   */
+  drainPrayerPoints(amount: number): void {
+    this.prayerPoints = Math.max(0, this.prayerPoints - amount);
+  }
+
+  /**
+   * Get combat level using OSRS formula
+   */
+  getCombatLevel(): number {
+    return getCombatLevel(this.skills);
+  }
+
+  /**
+   * Set player as busy for a certain duration
+   */
+  setBusy(duration: number): void {
+    this.isBusy = true;
+    this.busyUntil = Date.now() + duration;
+  }
+
+  // Add position property for compatibility
+  get position() {
+    return {
+      x: this.x,
+      y: this.y,
+      targetX: this.x,
+      targetY: this.y,
+      isMoving: false,
+    };
+  }
+
+  // Add equipment property for compatibility
+  get equipment() {
+    return {
+      weapon: '',
+      armor: '',
+      shield: '',
+    };
+  }
+
+  // Add stats property for compatibility
+  get stats() {
+    return {
+      strength: this.skills.strength.level,
+      attack: this.skills.attack.level,
+      defence: this.skills.defence.level,
+      hitpoints: this.skills.hitpoints.level,
+    };
+  }
+
+  // Add bonuses property for compatibility
+  get bonuses() {
+    return {
+      strengthBonus: 0,
+      attackBonus: 0,
+      defenceBonus: 0,
+    };
   }
 }
 
@@ -174,9 +286,46 @@ export class NPC extends Schema {
   @type('number') public aggroRange: number = 5;
   @type('string') public targetId: string = '';
   @type('boolean') public isDead: boolean = false;
+  @type('boolean') public isWaveEnemy: boolean = false;
+  @type('boolean') public isBusy: boolean = false;
+  @type('number') public busyUntil: number = 0;
+  @type('string') public currentTargetId: string = '';
+  @type('boolean') public inCombat: boolean = false;
+  // Additional properties expected by GameRoom
+  @type('string') public npcId: string = '';
+  @type('number') public attackRange: number = 1;
+  @type('number') public attackSpeed: number = 4;
+  // Note: lootTable is not serialized, used for server-side logic only
+  public lootTable: Array<{
+    itemId: string;
+    probability: number;
+    minQuantity?: number;
+    maxQuantity?: number;
+  }> = [];
 
-  constructor() {
+  constructor(
+    id?: string,
+    name?: string,
+    x?: number,
+    y?: number,
+    type?: string,
+    lootTable?: Array<{
+      itemId: string;
+      probability: number;
+      minQuantity?: number;
+      maxQuantity?: number;
+    }>
+  ) {
     super();
+    if (id) this.id = id;
+    if (name) this.name = name;
+    if (x !== undefined) this.x = x;
+    if (y !== undefined) this.y = y;
+    if (type) this.type = type;
+    if (lootTable) this.lootTable = lootTable;
+
+    // Set npcId to match id for compatibility
+    if (id) this.npcId = id;
   }
 
   takeDamage(damage: number): boolean {
@@ -208,6 +357,7 @@ export class LootDrop extends Schema {
 export class Enemy extends Schema {
   @type('string') public id: string = '';
   @type('string') public type: string = '';
+  @type('string') public name: string = '';
   @type('number') public x: number = 0;
   @type('number') public y: number = 0;
   @type('number') public health: number = 10;
@@ -217,8 +367,44 @@ export class Enemy extends Schema {
   @type('string') public targetId: string = '';
   @type('string') public lastAction: string = '';
 
-  constructor() {
+  constructor(id?: string, name?: string, level?: number) {
     super();
+    if (id) this.id = id;
+    if (name) this.name = name;
+    if (level !== undefined) {
+      this.combatLevel = level;
+      this.maxHealth = level * 10;
+      this.health = this.maxHealth;
+    }
+  }
+
+  takeDamage(damage: number): boolean {
+    this.health = Math.max(0, this.health - damage);
+    return this.health <= 0;
+  }
+
+  get isAlive(): boolean {
+    return this.health > 0;
+  }
+
+  // Add position property for compatibility
+  get position() {
+    return {
+      x: this.x,
+      y: this.y,
+      targetX: this.x,
+      targetY: this.y,
+      isMoving: false,
+    };
+  }
+
+  // Add stats property for compatibility
+  get stats() {
+    return {
+      strength: this.combatLevel,
+      attack: this.combatLevel,
+      defence: this.combatLevel,
+    };
   }
 }
 
@@ -227,16 +413,38 @@ export class Enemy extends Schema {
  */
 export class Trade extends Schema {
   @type('string') public id: string = '';
-  @type('string') public initiatorId: string = '';
-  @type('string') public recipientId: string = '';
-  @type([InventoryItem]) public initiatorItems = new ArraySchema<InventoryItem>();
-  @type([InventoryItem]) public recipientItems = new ArraySchema<InventoryItem>();
-  @type('boolean') public initiatorAccepted: boolean = false;
-  @type('boolean') public recipientAccepted: boolean = false;
+  @type('string') public tradeId: string = '';
+  @type('string') public proposerId: string = '';
+  @type('string') public accepterId: string = '';
+  @type([InventoryItem]) public proposerItems = new ArraySchema<InventoryItem>();
+  @type([InventoryItem]) public accepterItems = new ArraySchema<InventoryItem>();
+  @type('boolean') public proposerAccepted: boolean = false;
+  @type('boolean') public accepterAccepted: boolean = false;
   @type('string') public status: string = 'pending';
 
-  constructor() {
+  constructor(tradeId?: string, proposerId?: string, accepterId?: string) {
     super();
+    if (tradeId) this.tradeId = tradeId;
+    if (tradeId) this.id = tradeId;
+    if (proposerId) this.proposerId = proposerId;
+    if (accepterId) this.accepterId = accepterId;
+  }
+
+  // Methods expected by GameRoom
+  clearProposerItems(): void {
+    this.proposerItems.clear();
+  }
+
+  clearAccepterItems(): void {
+    this.accepterItems.clear();
+  }
+
+  addProposerItem(item: InventoryItem): void {
+    this.proposerItems.push(item);
+  }
+
+  addAccepterItem(item: InventoryItem): void {
+    this.accepterItems.push(item);
   }
 }
 
@@ -367,11 +575,14 @@ export class GameState extends Schema {
   @type('number') public enemiesRemaining: number = 0;
   @type('string') public gamePhase: string = 'waiting';
   @type('string') public currentMapId: string = '';
+  @type('boolean') public gameStarted: boolean = false;
+  @type('string') public roomId: string = '';
   @type({ map: Player }) public players = new MapSchema<Player>();
   @type({ map: Enemy }) public enemies = new MapSchema<Enemy>();
   @type({ map: NPC }) public npcs = new MapSchema<NPC>();
   @type({ map: LootDrop }) public lootDrops = new MapSchema<LootDrop>();
   @type({ map: Trade }) public trades = new MapSchema<Trade>();
+  @type({ map: Trade }) public activeTrades = new MapSchema<Trade>();
   @type({ map: AreaMap }) public maps = new MapSchema<AreaMap>();
   @type({ map: Resource }) public resources = new MapSchema<Resource>();
 
@@ -395,27 +606,85 @@ export class WorldState extends GameState {
   }
 }
 
+/**
+ * Main game room state schema with management methods
+ */
+export class GameRoomState extends GameState {
+  constructor() {
+    super();
+  }
+
+  /**
+   * Add a player to the game
+   */
+  addPlayer(sessionId: string, username: string): Player {
+    const player = createPlayer(sessionId, username);
+    this.players.set(sessionId, player);
+    return player;
+  }
+
+  /**
+   * Get a player by session ID
+   */
+  getPlayer(sessionId: string): Player | undefined {
+    return this.players.get(sessionId);
+  }
+
+  /**
+   * Remove a player from the game
+   */
+  removePlayer(sessionId: string): boolean {
+    return this.players.delete(sessionId);
+  }
+
+  /**
+   * Add an enemy to the game
+   */
+  addEnemy(enemy: Enemy): void {
+    this.enemies.set(enemy.id, enemy);
+  }
+
+  /**
+   * Remove an enemy from the game
+   */
+  removeEnemy(enemyId: string): boolean {
+    return this.enemies.delete(enemyId);
+  }
+
+  /**
+   * Get wave system for compatibility
+   */
+  get wave() {
+    return {
+      enemiesRemaining: this.enemiesRemaining,
+      currentWave: this.waveNumber,
+      isActive: this.gamePhase === 'combat',
+    };
+  }
+}
+
 // Message schemas for client-server communication
 export class DropItemMessage extends Schema {
   @type('string') public playerId: string = '';
-  @type('number') public slotIndex: number = 0;
+  @type('number') public itemIndex: number = 0; // Changed from slotIndex to match GameRoom usage
   @type('number') public quantity: number = 1;
 }
 
 export class EquipItemMessage extends Schema {
   @type('string') public playerId: string = '';
-  @type('number') public slotIndex: number = 0;
+  @type('number') public itemIndex: number = 0; // Added missing property
+  @type('string') public slot: string = ''; // Added missing property (weapon, armor, etc.)
 }
 
 export class TradeRequestMessage extends Schema {
   @type('string') public fromPlayerId: string = '';
-  @type('string') public toPlayerId: string = '';
+  @type('string') public targetPlayerId: string = ''; // Changed to match GameRoom usage
 }
 
 export class TradeOfferMessage extends Schema {
   @type('string') public tradeId: string = '';
   @type('string') public playerId: string = '';
-  @type([InventoryItem]) public items = new ArraySchema<InventoryItem>();
+  @type([InventoryItem]) public offeredItems = new ArraySchema<InventoryItem>(); // Changed from items
 }
 
 export class TradeAcceptMessage extends Schema {

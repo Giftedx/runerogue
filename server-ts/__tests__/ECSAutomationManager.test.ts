@@ -69,10 +69,12 @@ describe('ECSAutomationManager', () => {
       expect(ecsIntegration.getStats().systemCount).toBeGreaterThan(0);
     });
   });
-
   describe('Automation Lifecycle', () => {
     it('should start automation successfully', async () => {
       await automationManager.start();
+
+      // Wait a brief moment to ensure uptime > 0
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const status = automationManager.getStatus();
       expect(status.isRunning).toBe(true);
@@ -274,7 +276,7 @@ describe('ECSAutomationManager', () => {
       // Fast-forward to trigger updates
       jest.advanceTimersByTime(100);
 
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/⚠️ ECS System Error/));
+      expect(errorSpy).toHaveBeenCalledWith('⚠️ ECS System Error:', 'Test ECS error');
 
       errorSpy.mockRestore();
     });

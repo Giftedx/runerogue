@@ -118,6 +118,13 @@ export class GameRoom extends Room<WorldState> {
   private lootPickupRadius = 50; // Distance in pixels for loot pickup validation
   private lastUpdateTime: number = 0;
 
+  // Enhanced movement tracking for anti-cheat and rate limiting
+  private playerMovementLog: Map<string, Array<{ timestamp: number; x: number; y: number }>> =
+    new Map();
+  private readonly MAX_MOVEMENT_HISTORY = 10;
+  private readonly MOVEMENT_RATE_LIMIT = 5; // Max 5 moves per second
+  private readonly MOVEMENT_DISTANCE_CHECK = 2; // Max 2 tiles per move (allows diagonal)
+
   /**
    * Ensure all schema instances have Symbol.metadata for serialization
    */
@@ -193,9 +200,67 @@ export class GameRoom extends Room<WorldState> {
       this.itemManager,
       new (require('./PrayerSystem').PrayerSystem)()
     );
+    // Enhanced combat event handling with wave integration
+    this.combatSystem.setCombatEventBroadcaster((type, payload) => {
+      // Broadcast to all clients
+      this.broadcast(type, payload);
 
-    // Initialize wave manager for survivor mechanics
-    this.waveManager = new WaveManager(this.state as any, this.itemManager);
+      // Handle enemy deaths for wave progression
+      if (type === 'npc_death' && payload.npcId) {
+        this.waveManager.onEnemyDefeated(payload.npcId);
+      }
+
+      // Handle player deaths for game state management
+      if (type === 'player_death' && payload.playerId) {
+        const deadPlayer = this.state.players.get(payload.playerId);
+        if (deadPlayer) {
+          deadPlayer.health = 0;
+          // Could implement respawn mechanics here
+          console.log(`💀 Player ${deadPlayer.username} has been defeated!`);
+        }
+      }
+    }); // Initialize wave manager with enhanced enemy-ECS integration
+    const waveManagerEcsWorld = this.ecsAutomationManager.getECSIntegration().getWorld();
+    this.waveManager = new WaveManager(
+      this.state as any,
+      this.itemManager,
+      (type, payload) => this.broadcast(type, payload),
+      npc => {
+        // Enhanced ECS integration for spawned enemies
+        try {
+          const npcIdNum = parseInt(npc.npcId, 10) || 0;
+          const combatLevel = npc.combatLevel || 1;
+          const isMonster = true;
+
+          // Mark as wave enemy for proper tracking
+          npc.isWaveEnemy = true;
+
+          // Create ECS entity with enhanced combat capabilities
+          require('../ecs/world').createNPC(
+            waveManagerEcsWorld,
+            npcIdNum,
+            npc.x,
+            npc.y,
+            combatLevel,
+            isMonster
+          );
+
+          console.log(
+            `🏆 Wave enemy spawned: ${npc.name} (Level ${combatLevel}) at (${npc.x}, ${npc.y})`
+          );
+        } catch (err) {
+          console.error('Failed to create ECS entity for wave enemy:', npc, err);
+        }
+      }
+    );
+
+    // Start automatic wave progression after room initialization
+    setTimeout(() => {
+      if (this.state.players.size > 0) {
+        this.waveManager.startAutomaticWaveProgression();
+        console.log('🌊 Automatic wave progression started');
+      }
+    }, 3000); // 3 second delay for room stabilization
 
     // Spawn resources after map initialization
     const currentMap = this.state.maps.get(this.state.currentMapId);
@@ -208,8 +273,20 @@ export class GameRoom extends Room<WorldState> {
       console.error('Failed to start ECS automation:', error);
     });
 
-    // Main game loop: Legacy systems only (ECS is now fully automated)
+    // Set up network broadcaster for ECS systems
+    // Create a unified network broadcaster for all ECS visual systems
+    const ecsNetworkBroadcaster = (type: string, data: unknown) => {
+      this.broadcast(type, data);
+    };
+
+    // Set up broadcasters for all visual feedback systems
+    this.ecsAutomationManager.getECSIntegration().setNetworkBroadcaster(ecsNetworkBroadcaster);
+
+    // Main game loop: Legacy systems + ECS sync
     this.setSimulationInterval(() => {
+      // Sync ECS positions back to Colyseus schemas for connected players
+      this.syncECSToColyseus();
+
       // Update wave manager (survivor mechanics)
       this.waveManager.update();
 
@@ -316,15 +393,141 @@ export class GameRoom extends Room<WorldState> {
           this.broadcast('updatePlayerState', { playerId: targetId, playerState: defenderState });
       }
     });
-
     this.onMessage('player_movement', (client, message) => {
+      /**
+       * Enhanced, secure, OSRS-authentic movement handler with ECS integration.
+       * Uses ECS as authoritative source for movement validation and state.
+       * Now with improved multiplayer synchronization.
+       */
       const player = this.state.players.get(client.sessionId);
-      if (player) {
-        player.x = message.x;
-        player.y = message.y;
-        console.log(`Player ${client.sessionId} moved to (${player.x}, ${player.y})`);
-        this.broadcast('updatePlayerState', { playerId: client.sessionId, playerState: player });
+      if (!player) return;
+
+      const now = Date.now();
+      const playerId = client.sessionId;
+
+      // Initialize movement log for new players
+      if (!this.playerMovementLog.has(playerId)) {
+        this.playerMovementLog.set(playerId, []);
       }
+
+      const movementHistory = this.playerMovementLog.get(playerId)!;
+
+      // Rate limiting: Check recent moves
+      const recentMoves = movementHistory.filter(move => now - move.timestamp < 1000);
+      if (recentMoves.length >= this.MOVEMENT_RATE_LIMIT) {
+        client.send('move_error', {
+          message: 'Movement rate limit exceeded. Please slow down.',
+          code: 'RATE_LIMIT',
+        });
+        return;
+      }
+
+      // Validate target position is within map bounds
+      const currentMap = this.state.maps.get(this.state.currentMapId);
+      if (!currentMap) return;
+      const { width, height, collisionMap } = currentMap;
+      const { targetX, targetY } = message;
+
+      if (
+        typeof targetX !== 'number' ||
+        typeof targetY !== 'number' ||
+        targetX < 0 ||
+        targetY < 0 ||
+        targetX >= width ||
+        targetY >= height
+      ) {
+        client.send('move_error', {
+          message: 'Invalid move: out of bounds.',
+          code: 'OUT_OF_BOUNDS',
+        });
+        return;
+      }
+
+      // Check collision map (if tile is walkable)
+      if (collisionMap && collisionMap[targetY] && collisionMap[targetY][targetX]) {
+        client.send('move_error', {
+          message: 'Invalid move: tile is blocked.',
+          code: 'BLOCKED_TILE',
+        });
+        return;
+      }
+
+      // Enhanced distance validation
+      const dx = targetX - player.x;
+      const dy = targetY - player.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > this.MOVEMENT_DISTANCE_CHECK) {
+        client.send('move_error', {
+          message: 'Invalid move: distance too far.',
+          code: 'DISTANCE_TOO_FAR',
+          maxDistance: this.MOVEMENT_DISTANCE_CHECK,
+        });
+        return;
+      }
+
+      // Log this movement for rate limiting and anti-cheat
+      movementHistory.push({ timestamp: now, x: targetX, y: targetY });
+
+      // Keep only recent history
+      if (movementHistory.length > this.MAX_MOVEMENT_HISTORY) {
+        movementHistory.shift();
+      }
+
+      // Get ECS entity ID for this player and sync to ECS
+      let entityId;
+      try {
+        entityId = this.ecsAutomationManager.getECSIntegration().syncPlayerToECS(player);
+      } catch (ecsError) {
+        console.warn('Failed to sync player to ECS for movement:', ecsError);
+        return;
+      }
+
+      // OSRS walking speed: 1 tile per 0.6s (base run speed is faster)
+      const OSRS_TILE_TIME = player.isRunning ? 0.3 : 0.6; // Running is 2x faster
+      const OSRS_TILE_SIZE = 1; // tile is 1 unit
+
+      // Set ECS movement target and speed (ECS is now authoritative)
+      const movementEcsWorld = this.ecsAutomationManager.getECSIntegration().getWorld();
+      const { setMovementTarget } = require('../ecs/systems/MovementSystem');
+      const { Movement } = require('../ecs/components');
+
+      setMovementTarget(movementEcsWorld, entityId, targetX, targetY);
+      if (Movement.speed[entityId] !== undefined) {
+        Movement.speed[entityId] = OSRS_TILE_SIZE / OSRS_TILE_TIME;
+      }
+
+      // UPDATE: Immediately update Colyseus state for responsive client feedback
+      player.x = targetX;
+      player.y = targetY;
+      player.lastMovementTime = now;
+
+      // Send movement confirmation to the requesting player
+      client.send('move_confirmed', {
+        x: targetX,
+        y: targetY,
+        timestamp: now,
+        entityId: entityId,
+      });
+
+      // Broadcast real-time position update to all other players for immediate synchronization
+      this.broadcast(
+        'player_position_update',
+        {
+          playerId: client.sessionId,
+          x: targetX,
+          y: targetY,
+          timestamp: now,
+          isRunning: player.isRunning || false,
+        },
+        { except: client }
+      );
+
+      console.log(
+        `Player ${client.sessionId} moved to (${targetX}, ${targetY}) - broadcasted to ${this.clients.length - 1} other players`
+      );
+
+      // Note: Additional ECS validation and interpolation is handled by NetworkSyncSystem
     });
 
     // Equip item handler
@@ -625,7 +828,7 @@ export class GameRoom extends Room<WorldState> {
           if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
             await economyIntegration.removeItemFromInventory(
               economyProfile.id,
-              itemDef.id,
+              parseInt(itemDef.id, 10) || 0,
               offeredItem.quantity
             );
             console.log(
@@ -938,91 +1141,156 @@ export class GameRoom extends Room<WorldState> {
         accepterClient.send('trade_cancelled', { tradeId: message.tradeId });
       }
     });
-  }
-  /**
-   * Called when a player joins the room
+  } /**
+   * Enhanced onJoin handler with immediate multiplayer synchronization
    */
-  async onJoin(client: Client, options: any): Promise<void> {
-    console.log(`Player ${client.sessionId} joining...`);
+  async onJoin(client: Client, options?: any): Promise<void> {
+    console.log(`🎮 Player ${client.sessionId} joining game room`);
 
     try {
-      // Create new player instance
-      const player = new Player();
-      player.id = client.sessionId;
-      player.username =
-        options.username || options.name || `Player_${client.sessionId.substring(0, 6)}`;
+      // Create new player with enhanced multiplayer-ready state
+      const newPlayer = new Player();
+      newPlayer.id = client.sessionId;
+      newPlayer.username = options?.username || `Player${Math.floor(Math.random() * 1000)}`;
 
-      // Set starting position (spawn point)
-      player.x = 50;
-      player.y = 50;
+      // Set spawn position (add some randomization to avoid overlap)
+      const spawnRadius = 3;
+      const spawnX = 50 + Math.floor(Math.random() * spawnRadius * 2) - spawnRadius;
+      const spawnY = 50 + Math.floor(Math.random() * spawnRadius * 2) - spawnRadius;
 
-      // Initialize starting stats
-      player.health = 100;
-      player.maxHealth = 100;
-      player.lastActivity = Date.now();
+      newPlayer.x = spawnX;
+      newPlayer.y = spawnY;
+      newPlayer.health = 100;
+      newPlayer.combatLevel = 3;
+      newPlayer.isRunning = false;
+      newPlayer.lastMovementTime = Date.now();
 
-      // Add starter items to inventory
-      await this.addStarterItems(player);
+      // Add player to game state
+      this.state.players.set(client.sessionId, newPlayer);
 
-      // Add player to room state
-      this.state.players.set(client.sessionId, player);
-
-      // Add player to ECS automation manager
+      // Sync player to ECS for immediate combat and movement capability
       try {
-        const entityId = this.ecsAutomationManager.addPlayer(player);
-        console.log(`Player ${player.username} added to ECS with entity ID: ${entityId}`);
+        const entityId = this.ecsAutomationManager.getECSIntegration().syncPlayerToECS(newPlayer);
+        console.log(`✅ Player ${client.sessionId} synced to ECS with entity ID: ${entityId}`);
       } catch (ecsError) {
-        console.warn('Failed to add player to ECS:', ecsError);
+        console.error('Failed to sync new player to ECS:', ecsError);
       }
 
-      // Log successful join
-      console.log(`✅ Player ${player.username} (${client.sessionId}) joined successfully`);
-      console.log(`Room now has ${this.state.players.size} players`);
-      // Send welcome message to player (matching test expectations)
+      // Send immediate welcome message with current room state
       client.send('welcome', {
-        message: 'Welcome to RuneScape Discord Game!',
         playerId: client.sessionId,
+        playerState: newPlayer,
+        roomState: {
+          playerCount: this.state.players.size,
+          currentMap: this.state.currentMapId,
+          gameStarted: this.state.gameStarted,
+        },
+        timestamp: Date.now(),
       });
+
+      // Broadcast player join event to all existing players
+      this.broadcast(
+        'player_joined',
+        {
+          playerId: client.sessionId,
+          playerState: {
+            id: newPlayer.id,
+            username: newPlayer.username,
+            x: newPlayer.x,
+            y: newPlayer.y,
+            health: newPlayer.health,
+            combatLevel: newPlayer.combatLevel,
+          },
+          playerCount: this.state.players.size,
+          timestamp: Date.now(),
+        },
+        { except: client }
+      );
+
+      // Send existing players data to the new player
+      const existingPlayers: any[] = [];
+      this.state.players.forEach((player, playerId) => {
+        if (playerId !== client.sessionId) {
+          existingPlayers.push({
+            id: player.id,
+            username: player.username,
+            x: player.x,
+            y: player.y,
+            health: player.health,
+            combatLevel: player.combatLevel,
+            isRunning: player.isRunning,
+          });
+        }
+      });
+
+      if (existingPlayers.length > 0) {
+        client.send('existing_players', {
+          players: existingPlayers,
+          timestamp: Date.now(),
+        });
+      }
+
+      console.log(
+        `✅ Player ${client.sessionId} (${newPlayer.username}) joined successfully. Room now has ${this.state.players.size} players.`
+      );
     } catch (error) {
-      console.error(`❌ Error adding player ${client.sessionId}:`, error);
-      throw error; // Let Colyseus handle the error
+      console.error(`❌ Failed to add player ${client.sessionId}:`, error);
+      client.send('join_error', {
+        message: 'Failed to join game. Please try again.',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   }
   /**
    * Called when a player leaves the room
+   */ /**
+   * Enhanced onLeave handler with multiplayer cleanup
    */
   async onLeave(client: Client, consented: boolean): Promise<void> {
-    console.log(`Player ${client.sessionId} leaving (consented: ${consented})...`);
+    const playerId = client.sessionId;
+    console.log(`🚪 Player ${playerId} leaving room (consented: ${consented})`);
 
     try {
-      const player = this.state.players.get(client.sessionId);
-      if (!player) {
-        console.warn(`Player ${client.sessionId} not found in state during leave`);
-        return;
+      // Get player before removal for broadcasting
+      const leavingPlayer = this.state.players.get(playerId);
+
+      if (leavingPlayer) {
+        // Remove from ECS systems
+        try {
+          const ecsWorld = this.ecsAutomationManager.getECSIntegration().getWorld();
+          // The ECS system should handle cleanup automatically when player entity is removed
+        } catch (ecsError) {
+          console.error('Error during ECS cleanup for leaving player:', ecsError);
+        }
+
+        // Clean up movement tracking
+        this.playerMovementLog.delete(playerId);
+
+        // Remove player from game state
+        this.state.players.delete(playerId);
+
+        // Broadcast player leave event to remaining players
+        this.broadcast('player_left', {
+          playerId: playerId,
+          username: leavingPlayer.username,
+          playerCount: this.state.players.size,
+          timestamp: Date.now(),
+        });
+
+        console.log(
+          `✅ Player ${playerId} (${leavingPlayer.username}) removed successfully. Room now has ${this.state.players.size} players.`
+        );
+      } else {
+        console.warn(`⚠️ Player ${playerId} was not found in game state during leave`);
       }
 
-      // Handle inventory drop as loot (simplified)
-      if (player.inventory.length > 0) {
-        console.log(`💰 Player ${player.username} left with ${player.inventory.length} items`);
-        // TODO: Implement loot dropping when LootManager is properly implemented
+      // If no players remain, consider pausing the game loop or cleanup
+      if (this.state.players.size === 0) {
+        console.log('🏠 Room is now empty - all players have left');
+        // The room will be automatically disposed by Colyseus
       }
-
-      // Remove player from ECS automation manager
-      try {
-        this.ecsAutomationManager.removePlayer(client.sessionId);
-        console.log(`Player ${player.username} removed from ECS`);
-      } catch (ecsError) {
-        console.warn('Failed to remove player from ECS:', ecsError);
-      }
-
-      // Remove player from room state
-      this.state.players.delete(client.sessionId);
-
-      console.log(`✅ Player ${player.username} (${client.sessionId}) left successfully`);
-      console.log(`Room now has ${this.state.players.size} players`);
     } catch (error) {
-      console.error(`❌ Error removing player ${client.sessionId}:`, error);
-      // Don't throw - player should still be removed even if cleanup fails
+      console.error(`❌ Error handling player leave for ${playerId}:`, error);
     }
   }
 
@@ -1097,6 +1365,25 @@ export class GameRoom extends Room<WorldState> {
   }
 
   /**
+   * Sync ECS positions back to Colyseus schemas for smooth multiplayer updates
+   */
+  private syncECSToColyseus(): void {
+    try {
+      const ecsIntegration = this.ecsAutomationManager.getECSIntegration();
+
+      // Sync all connected players from ECS back to Colyseus
+      for (const [sessionId, player] of this.state.players.entries()) {
+        const entityId = ecsIntegration.getEntityId(sessionId);
+        if (entityId !== undefined) {
+          ecsIntegration.syncECSToPlayer(entityId, player);
+        }
+      }
+    } catch (error) {
+      console.warn('Error syncing ECS to Colyseus:', error);
+    }
+  }
+
+  /**
    * Called when the room is being disposed
    */
   async onDispose(): Promise<void> {
@@ -1111,5 +1398,114 @@ export class GameRoom extends Room<WorldState> {
     }
 
     console.log('GameRoom disposed');
+  }
+
+  /**
+   * Start trade timeout for automatic cancellation
+   */
+  private startTradeTimeout(tradeId: string): void {
+    setTimeout(() => {
+      const trade = this.state.activeTrades.get(tradeId);
+      if (trade && trade.status === 'pending') {
+        this.cancelTradeAndReturnItems(trade);
+
+        // Notify players that trade timed out
+        const player1 = this.state.players.get(trade.player1Id);
+        const player2 = this.state.players.get(trade.player2Id);
+
+        if (player1) {
+          this.sendToPlayer(trade.player1Id, 'trade_timeout', { tradeId });
+        }
+        if (player2) {
+          this.sendToPlayer(trade.player2Id, 'trade_timeout', { tradeId });
+        }
+      }
+    }, 60000); // 60 second timeout
+  }
+
+  /**
+   * Cancel trade and return items to players
+   */
+  private cancelTradeAndReturnItems(trade: any): void {
+    try {
+      // Return items to player 1
+      if (trade.player1Offer && trade.player1Offer.length > 0) {
+        const player1 = this.state.players.get(trade.player1Id);
+        if (player1) {
+          for (const item of trade.player1Offer) {
+            this.addItemToPlayerInventory(player1, item);
+          }
+        }
+      }
+
+      // Return items to player 2
+      if (trade.player2Offer && trade.player2Offer.length > 0) {
+        const player2 = this.state.players.get(trade.player2Id);
+        if (player2) {
+          for (const item of trade.player2Offer) {
+            this.addItemToPlayerInventory(player2, item);
+          }
+        }
+      }
+
+      // Remove trade from active trades
+      this.state.activeTrades.delete(trade.id);
+
+      console.log(`Trade ${trade.id} cancelled and items returned`);
+    } catch (error) {
+      console.error('Error cancelling trade and returning items:', error);
+    }
+  }
+
+  /**
+   * Helper method to add item to player inventory
+   */
+  private addItemToPlayerInventory(player: Player, item: any): void {
+    try {
+      // Find existing stack or empty slot
+      let added = false;
+
+      for (const [slotIndex, inventoryItem] of player.inventory.entries()) {
+        if (!inventoryItem) {
+          // Empty slot found
+          player.inventory.set(slotIndex, item);
+          added = true;
+          break;
+        } else if (inventoryItem.itemId === item.itemId && inventoryItem.stackable) {
+          // Stackable item found
+          inventoryItem.quantity += item.quantity;
+          added = true;
+          break;
+        }
+      }
+
+      if (!added) {
+        console.warn(
+          `Could not add item ${item.itemId} to player ${player.id} inventory - no space`
+        );
+      }
+    } catch (error) {
+      console.error('Error adding item to player inventory:', error);
+    }
+  }
+
+  /**
+   * Send a message to a specific player by session ID
+   */
+  private sendToPlayer(
+    sessionId: string,
+    messageType: string,
+    data: Record<string, unknown>
+  ): void {
+    try {
+      const client = this.clients.find(client => client.sessionId === sessionId);
+      if (client) {
+        client.send(messageType, data);
+      } else {
+        console.warn(`Could not find client for session ID: ${sessionId}`);
+      }
+    } catch (error) {
+      console.error(`Error sending message to player ${sessionId}:`, error);
+    }
   }
 }

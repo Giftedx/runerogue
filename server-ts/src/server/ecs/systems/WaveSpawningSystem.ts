@@ -86,7 +86,7 @@ function spawnWaveEnemy(world: IWorld): void {
   // Create NPC entity in ECS
   const npcId = createNPC(
     world,
-    `${enemyType}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    Date.now() + Math.floor(Math.random() * 1000), // Generate numeric ID
     spawnPos.x,
     spawnPos.y,
     enemyType

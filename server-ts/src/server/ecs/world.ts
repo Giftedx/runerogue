@@ -1,7 +1,13 @@
 import { addComponent, addEntity, createWorld, IWorld } from 'bitecs';
+
+/**
+ * Extended ECS world interface for RuneRogue, allowing custom properties.
+ */
+export interface RuneRogueWorld extends IWorld {
+  entityCapacity?: number;
+  deltaTime?: number;
+}
 import {
-  ActivePrayers,
-  CombatStats,
   Equipment,
   Health,
   Inventory,
@@ -14,25 +20,45 @@ import {
   NPCData,
   Player,
   Resource,
-  SkillExperience,
-  Skills,
+  SkillLevels,
+  SkillXP,
+  Prayer,
   Transform,
 } from './components';
-import { CombatSystem, MovementSystem, PrayerSystem, SkillSystem } from './systems';
+import {
+  CombatSystem,
+  MovementSystem,
+  PrayerSystem,
+  SkillSystem,
+  ResourceNodeSystem,
+  WoodcuttingSystem,
+  MiningSystem,
+  FishingSystem,
+  CookingSystem,
+  FiremakingSystem,
+} from './systems';
 
 // Create the ECS world with a high entity capacity
 export const createECSWorld = (): IWorld => {
-  const world = createWorld();
-
+  const world: RuneRogueWorld = createWorld();
   // Set world configuration
-  (world as any).entityCapacity = 10000; // Support up to 10k entities
-  (world as any).deltaTime = 0.016; // Default 60 FPS
-
+  world.entityCapacity = 10000; // Support up to 10k entities
+  world.deltaTime = 0.016; // Default 60 FPS
   return world;
 };
 
-// Systems array for the game loop
-export const GAME_SYSTEMS = [MovementSystem, CombatSystem, PrayerSystem, SkillSystem];
+/**
+ * Systems array for the game loop, in OSRS-authentic execution order.
+ * Includes WoodcuttingSystem and ResourceNodeSystem for resource gathering.
+ */
+export const GAME_SYSTEMS = [
+  MovementSystem,
+  CombatSystem,
+  PrayerSystem,
+  SkillSystem,
+  ResourceNodeSystem,
+  WoodcuttingSystem,
+];
 
 /**
  * Create a new player entity
@@ -44,13 +70,12 @@ export function createPlayer(world: IWorld, sessionId: string, x: number, y: num
   addComponent(world, Player, eid);
   addComponent(world, Transform, eid);
   addComponent(world, Health, eid);
-  addComponent(world, CombatStats, eid);
   addComponent(world, Equipment, eid);
-  addComponent(world, Skills, eid);
-  addComponent(world, SkillExperience, eid);
+  addComponent(world, SkillLevels, eid);
+  addComponent(world, SkillXP, eid);
+  addComponent(world, Prayer, eid);
   addComponent(world, Inventory, eid);
   addComponent(world, Movement, eid);
-  addComponent(world, ActivePrayers, eid);
   addComponent(world, NetworkEntity, eid);
 
   // Initialize position
@@ -62,43 +87,31 @@ export function createPlayer(world: IWorld, sessionId: string, x: number, y: num
   // Initialize health
   Health.current[eid] = 10;
   Health.max[eid] = 10;
-  Health.regenRate[eid] = 0;
 
-  // Initialize combat stats
-  CombatStats.attack[eid] = 1;
-  CombatStats.strength[eid] = 1;
-  CombatStats.defence[eid] = 1;
-  CombatStats.attackBonus[eid] = 0;
-  CombatStats.strengthBonus[eid] = 0;
-  CombatStats.defenceBonus[eid] = 0;
+  // Initialize skill levels (OSRS combat skills)
+  SkillLevels.attack[eid] = 1;
+  SkillLevels.strength[eid] = 1;
+  SkillLevels.defence[eid] = 1;
+  SkillLevels.hitpoints[eid] = 10;
+  SkillLevels.ranged[eid] = 1;
+  SkillLevels.prayer[eid] = 1;
+  SkillLevels.magic[eid] = 1;
 
-  // Initialize skills (all start at level 1 except HP)
-  Skills.attack[eid] = 1;
-  Skills.strength[eid] = 1;
-  Skills.defence[eid] = 1;
-  Skills.ranged[eid] = 1;
-  Skills.prayer[eid] = 1;
-  Skills.magic[eid] = 1;
-  Skills.runecrafting[eid] = 1;
-  Skills.hitpoints[eid] = 10; // HP starts at 10
-  Skills.crafting[eid] = 1;
-  Skills.mining[eid] = 1;
-  Skills.smithing[eid] = 1;
-  Skills.fishing[eid] = 1;
-  Skills.cooking[eid] = 1;
-  Skills.firemaking[eid] = 1;
-  Skills.woodcutting[eid] = 1;
-  Skills.agility[eid] = 1;
-  Skills.herblore[eid] = 1;
-  Skills.thieving[eid] = 1;
-  Skills.fletching[eid] = 1;
-  Skills.slayer[eid] = 1;
-  Skills.farming[eid] = 1;
-  Skills.construction[eid] = 1;
-  Skills.hunter[eid] = 1;
+  // Initialize skill XP (OSRS combat skills)
+  SkillXP.attack[eid] = 0;
+  SkillXP.strength[eid] = 0;
+  SkillXP.defence[eid] = 0;
+  SkillXP.hitpoints[eid] = 1154; // XP for level 10
+  SkillXP.ranged[eid] = 0;
+  SkillXP.prayer[eid] = 0;
+  SkillXP.magic[eid] = 0;
 
-  // Initialize XP (HP starts with XP for level 10)
-  SkillExperience.hitpointsXP[eid] = 1154; // XP for level 10
+  // Initialize prayer (bitmask, points, etc.)
+  Prayer.points[eid] = 1;
+  Prayer.activeMask[eid] = 0;
+  Prayer.drainRate[eid] = 0;
+  Prayer.drainTimer[eid] = 0;
+  Prayer.level[eid] = 1;
 
   // Initialize movement
   Movement.speed[eid] = 5.0; // Units per second
@@ -134,8 +147,8 @@ export function createNPC(
   }
   addComponent(world, Transform, eid);
   addComponent(world, Health, eid);
-  addComponent(world, CombatStats, eid);
-  addComponent(world, Skills, eid);
+  addComponent(world, SkillLevels, eid);
+  addComponent(world, SkillXP, eid);
   addComponent(world, NPCData, eid);
   addComponent(world, Movement, eid);
 
@@ -159,20 +172,31 @@ export function createNPC(
   Health.max[eid] = maxHealth;
   Health.regenRate[eid] = 0;
 
-  // Initialize combat stats based on combat level
+  // Initialize skill levels based on combat level
   const statLevel = Math.max(1, Math.floor(combatLevel * 0.8));
-  CombatStats.attack[eid] = statLevel;
-  CombatStats.strength[eid] = statLevel;
-  CombatStats.defence[eid] = statLevel;
-  CombatStats.attackBonus[eid] = combatLevel;
-  CombatStats.strengthBonus[eid] = combatLevel;
-  CombatStats.defenceBonus[eid] = combatLevel;
+  SkillLevels.attack[eid] = statLevel;
+  SkillLevels.strength[eid] = statLevel;
+  SkillLevels.defence[eid] = statLevel;
+  SkillLevels.hitpoints[eid] = Math.max(10, combatLevel);
+  SkillLevels.ranged[eid] = 1;
+  SkillLevels.prayer[eid] = 1;
+  SkillLevels.magic[eid] = 1;
 
-  // Initialize skills
-  Skills.attack[eid] = statLevel;
-  Skills.strength[eid] = statLevel;
-  Skills.defence[eid] = statLevel;
-  Skills.hitpoints[eid] = Math.max(10, combatLevel);
+  // Initialize skill XP (all 0 except HP)
+  SkillXP.attack[eid] = 0;
+  SkillXP.strength[eid] = 0;
+  SkillXP.defence[eid] = 0;
+  SkillXP.hitpoints[eid] = 1154; // XP for level 10
+  SkillXP.ranged[eid] = 0;
+  SkillXP.prayer[eid] = 0;
+  SkillXP.magic[eid] = 0;
+
+  // Initialize prayer (bitmask, points, etc.)
+  Prayer.points[eid] = 1;
+  Prayer.activeMask[eid] = 0;
+  Prayer.drainRate[eid] = 0;
+  Prayer.drainTimer[eid] = 0;
+  Prayer.level[eid] = 1;
 
   // Initialize movement
   Movement.speed[eid] = 3.0; // NPCs move slower than players
@@ -182,6 +206,21 @@ export function createNPC(
   Movement.targetY[eid] = y;
 
   return eid;
+}
+
+/**
+ * Create a monster entity (convenience function)
+ */
+export function createMonster(
+  world: IWorld,
+  name: string,
+  x: number,
+  y: number,
+  combatLevel: number = 10
+): number {
+  // Use a hash of the name as NPC ID for testing
+  const npcId = Math.abs(name.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0));
+  return createNPC(world, npcId, x, y, combatLevel, true);
 }
 
 /**
@@ -274,7 +313,7 @@ function hashString(str: string): number {
  */
 export function runGameSystems(world: IWorld, deltaTime: number): void {
   // Update delta time
-  (world as any).deltaTime = deltaTime;
+  (world as RuneRogueWorld).deltaTime = deltaTime;
 
   // Run each system in order
   for (const system of GAME_SYSTEMS) {

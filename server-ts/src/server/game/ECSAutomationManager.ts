@@ -196,41 +196,47 @@ export class ECSAutomationManager {
     } catch (error) {
       throw new Error(`ECS Integration validation failed: ${error.message}`);
     }
-  }
-  /**
+  } /**
    * Start the main update loop with frame rate control
    */
   private startUpdateLoop(): void {
     const targetFrameTime = 1000 / this.config.targetFrameRate;
+    let lastUpdateTime = performance.now();
 
     const updateStep = () => {
       if (!this.isRunning) return;
 
-      const frameStart = performance.now();
-      const deltaTime = this.lastFrameTime > 0 ? frameStart - this.lastFrameTime : targetFrameTime;
+      const currentTime = performance.now();
+      const deltaTime = currentTime - lastUpdateTime;
+
+      // Skip update if too little time has passed (prevents unnecessary work)
+      if (deltaTime < targetFrameTime * 0.5) {
+        this.updateLoop = setTimeout(updateStep, 1);
+        return;
+      }
 
       try {
         // Execute ECS systems update
         this.executeECSUpdate(deltaTime);
 
-        // Update performance metrics (only if enabled)
-        if (this.config.performanceMonitoringEnabled) {
+        // Update performance metrics (only if enabled and less frequently)
+        if (this.config.performanceMonitoringEnabled && this.frameCount % 10 === 0) {
           this.updatePerformanceMetrics(deltaTime);
         }
 
-        this.lastFrameTime = frameStart;
+        lastUpdateTime = currentTime;
         this.frameCount++;
 
-        // Optimized scheduling - use setImmediate for high-frequency updates
-        const frameTime = performance.now() - frameStart;
-        const remainingTime = targetFrameTime - frameTime;
+        // Optimized scheduling - reduce timer precision for better performance
+        const frameTime = performance.now() - currentTime;
+        const remainingTime = Math.max(0, targetFrameTime - frameTime);
 
         if (remainingTime > 1) {
           // Use setTimeout for precise timing when we have time to spare
           this.updateLoop = setTimeout(updateStep, remainingTime);
         } else {
           // Use setImmediate for immediate next tick when running behind
-          this.updateLoop = setTimeout(() => setImmediate(updateStep), 0);
+          this.updateLoop = setTimeout(updateStep, 0);
         }
       } catch (error) {
         this.handleSystemError(error);
@@ -242,7 +248,6 @@ export class ECSAutomationManager {
       }
     };
 
-    this.lastFrameTime = performance.now();
     updateStep();
   }
 
@@ -541,12 +546,21 @@ export class ECSAutomationManager {
       throw error;
     }
   }
-
   /**
    * Sync ECS state back to Colyseus player
    */
   public syncToPlayer(entityId: number, player: any): void {
     try {
+      // Validate entityId
+      if (entityId < 0 || !Number.isInteger(entityId)) {
+        throw new Error(`Invalid entity ID: ${entityId}`);
+      }
+
+      // Validate player object
+      if (!player || typeof player !== 'object') {
+        throw new Error('Invalid player object provided');
+      }
+
       this.ecsIntegration.syncECSToPlayer(entityId, player);
     } catch (error) {
       this.recordSystemError('PlayerSync', error);

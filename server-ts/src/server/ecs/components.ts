@@ -5,242 +5,248 @@ import { Types, defineComponent } from 'bitecs';
 // ============================================
 
 /**
- * Transform Component - Position and rotation in world space
+ * Position Component - 2D world position
  */
-export const Transform = defineComponent({
+export const Position = defineComponent({
   x: Types.f32,
   y: Types.f32,
-  z: Types.f32,
-  rotation: Types.f32,
 });
 
 /**
- * Health Component - Current and max health with regeneration
+ * Health Component - Current and max HP
  */
 export const Health = defineComponent({
   current: Types.ui16,
   max: Types.ui16,
-  regenRate: Types.f32,
 });
 
 /**
- * Combat Stats Component - Core combat attributes
+ * Skill Levels Component - All OSRS combat skills (level)
  */
-export const CombatStats = defineComponent({
+/**
+ * SkillLevels Component - All 23 OSRS skills (level)
+ * Order and names must match OSRS exactly for authenticity.
+ */
+export const SkillLevels = defineComponent({
   attack: Types.ui8,
-  strength: Types.ui8,
   defence: Types.ui8,
-  attackBonus: Types.i16,
-  strengthBonus: Types.i16,
-  defenceBonus: Types.i16,
+  strength: Types.ui8,
+  hitpoints: Types.ui8,
+  ranged: Types.ui8,
+  prayer: Types.ui8,
+  magic: Types.ui8,
+  cooking: Types.ui8,
+  woodcutting: Types.ui8,
+  fletching: Types.ui8,
+  fishing: Types.ui8,
+  firemaking: Types.ui8,
+  crafting: Types.ui8,
+  smithing: Types.ui8,
+  mining: Types.ui8,
+  herblore: Types.ui8,
+  agility: Types.ui8,
+  thieving: Types.ui8,
+  slayer: Types.ui8,
+  farming: Types.ui8,
+  runecraft: Types.ui8,
+  hunter: Types.ui8,
+  construction: Types.ui8,
 });
 
 /**
- * Equipment Component - References to equipped items
+ * Skill XP Component - All OSRS combat skills (xp)
+ */
+/**
+ * SkillXP Component - All 23 OSRS skills (xp)
+ * Order and names must match OSRS exactly for authenticity.
+ */
+export const SkillXP = defineComponent({
+  attack: Types.ui32,
+  defence: Types.ui32,
+  strength: Types.ui32,
+  hitpoints: Types.ui32,
+  ranged: Types.ui32,
+  prayer: Types.ui32,
+  magic: Types.ui32,
+  cooking: Types.ui32,
+  woodcutting: Types.ui32,
+  fletching: Types.ui32,
+  fishing: Types.ui32,
+  firemaking: Types.ui32,
+  crafting: Types.ui32,
+  smithing: Types.ui32,
+  mining: Types.ui32,
+  herblore: Types.ui32,
+  agility: Types.ui32,
+  thieving: Types.ui32,
+  slayer: Types.ui32,
+  farming: Types.ui32,
+  runecraft: Types.ui32,
+  hunter: Types.ui32,
+  construction: Types.ui32,
+});
+
+/**
+ * EquipmentBonuses Component - OSRS equipment bonuses
+ */
+export const EquipmentBonuses = defineComponent({
+  attackStab: Types.i16,
+  attackSlash: Types.i16,
+  attackCrush: Types.i16,
+  attackMagic: Types.i16,
+  attackRanged: Types.i16,
+  defenceStab: Types.i16,
+  defenceSlash: Types.i16,
+  defenceCrush: Types.i16,
+  defenceMagic: Types.i16,
+  defenceRanged: Types.i16,
+  meleeStrength: Types.i16,
+  rangedStrength: Types.i16,
+  magicDamage: Types.i16,
+  prayer: Types.i16,
+});
+
+/**
+ * Equipment Component - All OSRS equipment slots (item entity IDs)
  */
 export const Equipment = defineComponent({
   weapon: Types.eid,
-  armor: Types.eid,
-  shield: Types.eid,
   helmet: Types.eid,
-  boots: Types.eid,
+  chest: Types.eid,
+  legs: Types.eid,
+  shield: Types.eid,
   gloves: Types.eid,
-  cape: Types.eid,
+  boots: Types.eid,
   ring: Types.eid,
   amulet: Types.eid,
 });
 
 /**
- * Skills Component - All OSRS skills (current levels)
+ * Prayer Component - Prayer points, active prayers (bitmask), drain rate
  */
-export const Skills = defineComponent({
-  attack: Types.ui8,
-  strength: Types.ui8,
-  defence: Types.ui8,
-  ranged: Types.ui8,
-  prayer: Types.ui8,
-  magic: Types.ui8,
-  runecrafting: Types.ui8,
-  hitpoints: Types.ui8,
-  crafting: Types.ui8,
-  mining: Types.ui8,
-  smithing: Types.ui8,
-  fishing: Types.ui8,
-  cooking: Types.ui8,
-  firemaking: Types.ui8,
-  woodcutting: Types.ui8,
-  agility: Types.ui8,
-  herblore: Types.ui8,
-  thieving: Types.ui8,
-  fletching: Types.ui8,
-  slayer: Types.ui8,
-  farming: Types.ui8,
-  construction: Types.ui8,
-  hunter: Types.ui8,
+export const Prayer = defineComponent({
+  points: Types.ui8,
+  activeMask: Types.ui32, // Bitmask for active prayers
+  drainRate: Types.f32,
+  drainTimer: Types.f32,
+  level: Types.ui8,
 });
 
 /**
- * Skill Experience Component - XP for all skills
+ * SpecialAttack Component - Energy and cooldown
  */
-export const SkillExperience = defineComponent({
-  attackXP: Types.ui32,
-  strengthXP: Types.ui32,
-  defenceXP: Types.ui32,
-  rangedXP: Types.ui32,
-  prayerXP: Types.ui32,
-  magicXP: Types.ui32,
-  runecraftingXP: Types.ui32,
-  hitpointsXP: Types.ui32,
-  craftingXP: Types.ui32,
-  miningXP: Types.ui32,
-  smithingXP: Types.ui32,
-  fishingXP: Types.ui32,
-  cookingXP: Types.ui32,
-  firemakingXP: Types.ui32,
-  woodcuttingXP: Types.ui32,
-  agilityXP: Types.ui32,
-  herbloreXP: Types.ui32,
-  thievingXP: Types.ui32,
-  fletchingXP: Types.ui32,
-  slayerXP: Types.ui32,
-  farmingXP: Types.ui32,
-  constructionXP: Types.ui32,
-  hunterXP: Types.ui32,
+export const SpecialAttack = defineComponent({
+  energy: Types.ui8,
+  cooldownTimer: Types.f32,
 });
 
 /**
- * Inventory Component - 28 slot OSRS inventory
- * Note: Using separate arrays for slots and quantities
+ * Target Component - Target entity ID
  */
-export const Inventory = defineComponent({
-  // Item entity IDs for each slot (0 = empty)
-  slot0: Types.eid,
-  slot1: Types.eid,
-  slot2: Types.eid,
-  slot3: Types.eid,
-  slot4: Types.eid,
-  slot5: Types.eid,
-  slot6: Types.eid,
-  slot7: Types.eid,
-  slot8: Types.eid,
-  slot9: Types.eid,
-  slot10: Types.eid,
-  slot11: Types.eid,
-  slot12: Types.eid,
-  slot13: Types.eid,
-  slot14: Types.eid,
-  slot15: Types.eid,
-  slot16: Types.eid,
-  slot17: Types.eid,
-  slot18: Types.eid,
-  slot19: Types.eid,
-  slot20: Types.eid,
-  slot21: Types.eid,
-  slot22: Types.eid,
-  slot23: Types.eid,
-  slot24: Types.eid,
-  slot25: Types.eid,
-  slot26: Types.eid,
-  slot27: Types.eid,
-
-  // Quantities for each slot
-  qty0: Types.ui16,
-  qty1: Types.ui16,
-  qty2: Types.ui16,
-  qty3: Types.ui16,
-  qty4: Types.ui16,
-  qty5: Types.ui16,
-  qty6: Types.ui16,
-  qty7: Types.ui16,
-  qty8: Types.ui16,
-  qty9: Types.ui16,
-  qty10: Types.ui16,
-  qty11: Types.ui16,
-  qty12: Types.ui16,
-  qty13: Types.ui16,
-  qty14: Types.ui16,
-  qty15: Types.ui16,
-  qty16: Types.ui16,
-  qty17: Types.ui16,
-  qty18: Types.ui16,
-  qty19: Types.ui16,
-  qty20: Types.ui16,
-  qty21: Types.ui16,
-  qty22: Types.ui16,
-  qty23: Types.ui16,
-  qty24: Types.ui16,
-  qty25: Types.ui16,
-  qty26: Types.ui16,
-  qty27: Types.ui16,
+export const Target = defineComponent({
+  id: Types.eid,
 });
 
 /**
- * Item Component - Represents an item
+ * AttackTimer Component - Weapon cooldown and last attack tick
  */
-export const Item = defineComponent({
-  itemId: Types.ui16, // OSRS item ID
-  quantity: Types.ui16, // Stack size
-  noted: Types.ui8, // 0 = normal, 1 = noted
-  charges: Types.ui16, // For degradable items
+export const AttackTimer = defineComponent({
+  cooldown: Types.f32,
+  lastAttack: Types.ui32,
 });
 
 /**
- * NPC Data Component
+ * Input Component - Movement and attack input
  */
-export const NPCData = defineComponent({
-  npcId: Types.ui16, // OSRS NPC ID
-  combatLevel: Types.ui8,
-  aggroRange: Types.ui8,
-  attackRange: Types.ui8,
-  attackSpeed: Types.ui8,
-  respawnTime: Types.ui16,
+export const Input = defineComponent({
+  moveX: Types.f32,
+  moveY: Types.f32,
+  isMoving: Types.ui8,
+  isAttacking: Types.ui8,
 });
 
 /**
- * Movement Component - Velocity and target position
+ * Velocity Component - For movement system
  */
-export const Movement = defineComponent({
-  velocityX: Types.f32,
-  velocityY: Types.f32,
-  speed: Types.f32,
-  targetX: Types.f32,
-  targetY: Types.f32,
-});
-
-/**
- * Active Prayers Component - Using bitflags for efficiency
- */
-export const ActivePrayers = defineComponent({
-  prayers: Types.ui32, // Each bit represents a prayer
-});
-
-/**
- * Network Entity Component - For multiplayer sync
- */
-export const NetworkEntity = defineComponent({
-  sessionHash: Types.ui32, // Hashed session ID
-  lastUpdate: Types.f64, // Timestamp
-});
-
-/**
- * Loot Drop Component - For items on the ground
- */
-export const LootDrop = defineComponent({
-  ownerId: Types.eid, // Player who can pick it up
-  despawnTime: Types.f64, // When it despawns
+export const Velocity = defineComponent({
   x: Types.f32,
   y: Types.f32,
+  maxSpeed: Types.f32,
 });
 
 /**
- * Resource Component - For gathering nodes
+ * Name Component - Player or enemy name (index into string table or external map)
  */
-export const Resource = defineComponent({
-  resourceType: Types.ui8, // 0=tree, 1=rock, 2=fishing spot, etc
-  resourceId: Types.ui16, // Specific resource ID
-  remainingYield: Types.ui8, // How many gathers left
-  respawnTime: Types.f32, // Time to respawn after depletion
+export const Name = defineComponent({
+  value: Types.ui32, // Use a string table or external map for actual string
 });
+
+/**
+ * CombatState Component - In-combat timer
+ */
+export const CombatState = defineComponent({
+  inCombatTimer: Types.f32,
+});
+
+/**
+ * Enemy Component - Enemy type (index or enum)
+ */
+export const Enemy = defineComponent({
+  type: Types.ui8, // Index into EnemyType array
+});
+
+/**
+ * AI Component - Aggro range, etc.
+ */
+export const AI = defineComponent({
+  aggroRange: Types.f32,
+});
+
+/**
+ * Dead Component - Marks entity as dead
+ */
+export const Dead = defineComponent({
+  timer: Types.f32,
+});
+
+/**
+ * WaveState Component - For wave spawning
+ */
+export const WaveState = defineComponent({
+  currentWave: Types.ui16,
+  enemiesToSpawn: Types.ui16,
+  spawnTimer: Types.f32,
+});
+
+/**
+ * ResourceNode Component - for all resource nodes (trees, rocks, fishing spots, etc.)
+ * type: string (e.g. 'tree', 'oak_tree', 'fishing_spot', 'copper_rock')
+ * depleted: 0 (active) or 1 (depleted)
+ * respawnTimer: ticks until respawn
+ */
+export const ResourceNode = defineComponent({
+  type: Types.ui16, // index into resource type table
+  depleted: Types.ui8,
+  respawnTimer: Types.ui16,
+});
+
+/**
+ * Gathering Component - marks a player as gathering a resource node
+ * target: entityId of the resource node
+ */
+export const Gathering = defineComponent({
+  target: Types.eid,
+});
+
+/**
+ * Inventory Component - manages player inventory (itemId -> quantity)
+ * This is a placeholder; real implementation should be a map or array.
+ */
+export const Inventory = {
+  hasItem: (playerId: number, itemId: string) => true, // TODO: implement
+  addItem: (playerId: number, itemId: string, qty: number) => {}, // TODO: implement
+  removeItem: (playerId: number, itemId: string, qty: number) => {}, // TODO: implement
+};
 
 // ============================================
 // Tag Components (no data, just markers)
@@ -259,39 +265,29 @@ export const Gathering = defineComponent();
 // Prayer Flags
 // ============================================
 
-export enum PrayerFlag {
-  // Level 1 prayers
-  THICK_SKIN = 1 << 0,
-  BURST_OF_STRENGTH = 1 << 1,
-  CLARITY_OF_THOUGHT = 1 << 2,
-  SHARP_EYE = 1 << 3,
-  MYSTIC_WILL = 1 << 4,
-
-  // Level 4+ prayers
-  ROCK_SKIN = 1 << 5,
-  SUPERHUMAN_STRENGTH = 1 << 6,
-  IMPROVED_REFLEXES = 1 << 7,
-
-  // Protection prayers
-  PROTECT_FROM_MAGIC = 1 << 8,
-  PROTECT_FROM_MISSILES = 1 << 9,
-  PROTECT_FROM_MELEE = 1 << 10,
-
-  // Higher level prayers
-  EAGLE_EYE = 1 << 11,
-  MYSTIC_MIGHT = 1 << 12,
-  STEEL_SKIN = 1 << 13,
-  ULTIMATE_STRENGTH = 1 << 14,
-  INCREDIBLE_REFLEXES = 1 << 15,
-
-  // Advanced prayers
-  PIETY = 1 << 16,
-  CHIVALRY = 1 << 17,
-  RIGOUR = 1 << 18,
-  AUGURY = 1 << 19,
-
-  // Additional prayers can be added up to bit 31
-}
+// PrayerFlag as const object for bitmask usage (not enum, for bitecs compatibility)
+export const PrayerFlag = {
+  THICK_SKIN: 1 << 0,
+  BURST_OF_STRENGTH: 1 << 1,
+  CLARITY_OF_THOUGHT: 1 << 2,
+  SHARP_EYE: 1 << 3,
+  MYSTIC_WILL: 1 << 4,
+  ROCK_SKIN: 1 << 5,
+  SUPERHUMAN_STRENGTH: 1 << 6,
+  IMPROVED_REFLEXES: 1 << 7,
+  PROTECT_FROM_MAGIC: 1 << 8,
+  PROTECT_FROM_MISSILES: 1 << 9,
+  PROTECT_FROM_MELEE: 1 << 10,
+  EAGLE_EYE: 1 << 11,
+  MYSTIC_MIGHT: 1 << 12,
+  STEEL_SKIN: 1 << 13,
+  ULTIMATE_STRENGTH: 1 << 14,
+  INCREDIBLE_REFLEXES: 1 << 15,
+  PIETY: 1 << 16,
+  CHIVALRY: 1 << 17,
+  RIGOUR: 1 << 18,
+  AUGURY: 1 << 19,
+} as const;
 
 // ============================================
 // Helper Functions

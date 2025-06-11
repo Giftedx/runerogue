@@ -1,15 +1,13 @@
 /**
  * Shared Utilities Package - Main Entry Point
  * Common types, constants, and utilities for RuneRogue
- * 
+ *
  * @package @runerogue/shared
  */
 
-// Export all OSRS types and constants
-export * from './types/osrs';
+// Re-export all types for easy importing
+export * from "./types/game";
+export * from "./types/osrs";
 
-// Export game constants
-export * from './constants/game';
-
-// Export utility functions
-export * from './utils/validation'; 
+// Version info
+export const SHARED_VERSION = "1.0.0";

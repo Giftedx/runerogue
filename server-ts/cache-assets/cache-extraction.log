@@ -1,0 +1,43 @@
+[2025-06-11T14:03:58.257Z] [INFO] Created extraction directories in: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets
+[2025-06-11T14:03:58.257Z] [INFO] Checking osrscachereader availability...
+[2025-06-11T14:03:58.289Z] [WARN] ✗ osrscachereader not available: Error [ERR_INTERNAL_ASSERTION]: Unexpected module status 3.
+This is caused by either a bug in Node.js or incorrect usage of Node.js internals.
+Please open an issue with this stack trace at https://github.com/nodejs/node/issues
+
+[2025-06-11T14:03:58.290Z] [INFO] Using fallback extraction methods
+[2025-06-11T14:03:58.290Z] [INFO] Starting fallback asset extraction...
+[2025-06-11T14:03:58.291Z] [INFO] Extracting asset metadata from MCP OSRS tools...
+[2025-06-11T14:03:58.314Z] [WARN] MCP extraction failed: TypeError: searchOSRSAssets is not a function
+[2025-06-11T14:03:58.314Z] [INFO] Extracting assets from OSRS Wiki...
+[2025-06-11T14:03:58.618Z] [WARN] Wiki extraction failed: TypeError: wikiExtractor.extractAssets is not a function
+[2025-06-11T14:03:58.619Z] [INFO] Extracting assets from web sources...
+[2025-06-11T14:03:58.619Z] [INFO] Web source extraction - creating download plan
+[2025-06-11T14:03:58.620Z] [INFO] Creating comprehensive asset download plan...
+[2025-06-11T14:03:58.621Z] [INFO] Asset download plan saved: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets\asset-download-plan.json
+[2025-06-11T14:03:58.622Z] [INFO] Manifest saved to: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets\cache-manifest.json
+[2025-06-11T14:03:58.622Z] [INFO] Fallback extraction complete: 0 assets extracted
+[2025-06-11T15:57:08.362Z] [INFO] Created extraction directories in: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets
+[2025-06-11T15:57:09.585Z] [INFO] osrscachereader already installed
+[2025-06-11T15:57:09.585Z] [INFO] Dynamically importing osrscachereader...
+[2025-06-11T15:57:09.618Z] [INFO] Cache extraction failed: Error [ERR_INTERNAL_ASSERTION]: Unexpected module status 3.
+This is caused by either a bug in Node.js or incorrect usage of Node.js internals.
+Please open an issue with this stack trace at https://github.com/nodejs/node/issues
+
+[2025-06-11T15:57:23.608Z] [INFO] Created extraction directories in: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets
+[2025-06-11T15:57:23.609Z] [INFO] Checking osrscachereader availability...
+[2025-06-11T15:57:23.641Z] [WARN] ✗ osrscachereader not available: Error [ERR_INTERNAL_ASSERTION]: Unexpected module status 3.
+This is caused by either a bug in Node.js or incorrect usage of Node.js internals.
+Please open an issue with this stack trace at https://github.com/nodejs/node/issues
+
+[2025-06-11T15:57:23.641Z] [INFO] Using fallback extraction methods
+[2025-06-11T15:57:23.642Z] [INFO] Starting fallback asset extraction...
+[2025-06-11T15:57:23.642Z] [INFO] Extracting asset metadata from MCP OSRS tools...
+[2025-06-11T15:57:23.665Z] [WARN] MCP extraction failed: TypeError: searchOSRSAssets is not a function
+[2025-06-11T15:57:23.666Z] [INFO] Extracting assets from OSRS Wiki...
+[2025-06-11T15:57:23.910Z] [WARN] Wiki extraction failed: TypeError: wikiExtractor.extractAssets is not a function
+[2025-06-11T15:57:23.911Z] [INFO] Extracting assets from web sources...
+[2025-06-11T15:57:23.911Z] [INFO] Web source extraction - creating download plan
+[2025-06-11T15:57:23.912Z] [INFO] Creating comprehensive asset download plan...
+[2025-06-11T15:57:23.913Z] [INFO] Asset download plan saved: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets\asset-download-plan.json
+[2025-06-11T15:57:23.914Z] [INFO] Manifest saved to: C:\Users\aggis\GitHub\runerogue\server-ts\cache-assets\cache-manifest.json
+[2025-06-11T15:57:23.914Z] [INFO] Fallback extraction complete: 0 assets extracted
