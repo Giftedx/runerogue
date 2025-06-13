@@ -1,19 +1,22 @@
 /**
  * OSRS Data Package - Main Entry Point
  * Canonical source of truth for all OSRS mechanics in RuneRogue
- * 
+ *
  * @author agent/osrs-data (The Lorekeeper)
  * @package @runerogue/osrs-data
  */
 
+// Gathering skills data and calculators
+export * from "./skills/gathering-data";
+
 // Combat calculators
-export * from './calculators/combat';
+export * from "./calculators/combat";
 
 // Data API
-export * from './api/server';
+export * from "./api/server";
 
 // Wiki scrapers
-export * from './scrapers/wiki-scraper';
+export * from "./scrapers/wiki-scraper";
 
 // Type definitions for OSRS data
 export interface OSRSCombatStats {
@@ -62,11 +65,11 @@ export const OSRS_CONSTANTS = {
  * Initial enemy IDs that must be implemented
  */
 export const INITIAL_ENEMIES = [
-  'goblin',
-  'cow', 
-  'chicken',
-  'giant_rat',
-  'zombie'
+  "goblin",
+  "cow",
+  "chicken",
+  "giant_rat",
+  "zombie",
 ] as const;
 
-export type InitialEnemyId = typeof INITIAL_ENEMIES[number]; 
+export type InitialEnemyId = (typeof INITIAL_ENEMIES)[number];

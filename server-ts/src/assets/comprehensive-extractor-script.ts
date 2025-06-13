@@ -24,7 +24,22 @@ interface ExtractedAsset {
     extractedAt: string;
     searchTerm?: string;
     category?: string;
+    altText?: string;
+    formats?: string[];
   };
+}
+
+interface MCPResult {
+  id: string | number;
+  value?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+interface SearchResult {
+  title?: string;
+  url?: string;
+  [key: string]: unknown;
 }
 
 interface ExtractionSummary {
@@ -112,12 +127,13 @@ class ComprehensiveOSRSExtractor {
             const results = await this.searchMCPData(search.type, term);
 
             for (const result of results) {
+              const mcpResult = result as MCPResult;
               this.addAsset({
-                id: `mcp_${search.type}_${result.id}`,
-                name: result.value || `${search.type}_${result.id}`,
+                id: `mcp_${search.type}_${mcpResult.id}`,
+                name: mcpResult.value ?? `${search.type}_${mcpResult.id}`,
                 type: search.category,
                 source: 'mcp',
-                data: result,
+                data: mcpResult,
                 metadata: {
                   extractedAt: new Date().toISOString(),
                   searchTerm: term,
@@ -217,13 +233,14 @@ class ComprehensiveOSRSExtractor {
           const searchResults = await this.searchWithFirecrawl(query);
 
           for (const result of searchResults) {
+            const searchResult = result as SearchResult;
             this.addAsset({
-              id: `search_${this.generateId(result.title || result.url)}`,
-              name: result.title || 'Unknown Resource',
+              id: `search_${this.generateId(searchResult.title ?? searchResult.url ?? 'unknown')}`,
+              name: searchResult.title ?? 'Unknown Resource',
               type: 'web_resource',
               source: 'firecrawl_search',
               urls: {
-                download: result.url,
+                download: searchResult.url,
               },
               metadata: {
                 extractedAt: new Date().toISOString(),

@@ -10,7 +10,14 @@ import { Types, defineComponent } from 'bitecs';
 export const Position = defineComponent({
   x: Types.f32,
   y: Types.f32,
+  z: Types.f32,
+  rotation: Types.f32,
 });
+
+/**
+ * Transform Component - Alternative name for Position (used by many systems)
+ */
+export const Transform = Position;
 
 /**
  * Health Component - Current and max HP
@@ -18,6 +25,7 @@ export const Position = defineComponent({
 export const Health = defineComponent({
   current: Types.ui16,
   max: Types.ui16,
+  regenRate: Types.f32,
 });
 
 /**
@@ -54,6 +62,11 @@ export const SkillLevels = defineComponent({
 });
 
 /**
+ * Skills Component - Alternative name for SkillLevels (used by some systems)
+ */
+export const Skills = SkillLevels;
+
+/**
  * Skill XP Component - All OSRS combat skills (xp)
  */
 /**
@@ -85,6 +98,11 @@ export const SkillXP = defineComponent({
   hunter: Types.ui32,
   construction: Types.ui32,
 });
+
+/**
+ * SkillExperience Component - Alternative name for SkillXP (used by some systems)
+ */
+export const SkillExperience = SkillXP;
 
 /**
  * EquipmentBonuses Component - OSRS equipment bonuses
@@ -243,10 +261,107 @@ export const Gathering = defineComponent({
  * This is a placeholder; real implementation should be a map or array.
  */
 export const Inventory = {
-  hasItem: (playerId: number, itemId: string) => true, // TODO: implement
-  addItem: (playerId: number, itemId: string, qty: number) => {}, // TODO: implement
-  removeItem: (playerId: number, itemId: string, qty: number) => {}, // TODO: implement
+  hasItem: (_playerId: number, _itemId: string) => true, // TODO: implement
+  addItem: (_playerId: number, _itemId: string, _qty: number) => {}, // TODO: implement
+  removeItem: (_playerId: number, _itemId: string, _qty: number) => {}, // TODO: implement
 };
+
+/**
+ * Movement Component - Velocity and movement state
+ */
+export const Movement = defineComponent({
+  velocityX: Types.f32,
+  velocityY: Types.f32,
+  speed: Types.f32,
+  isMoving: Types.ui8,
+  targetX: Types.f32,
+  targetY: Types.f32,
+});
+
+/**
+ * NetworkEntity Component - For network synchronization
+ */
+export const NetworkEntity = defineComponent({
+  sessionId: Types.ui32,
+  lastUpdate: Types.ui32,
+  dirty: Types.ui8,
+  sessionHash: Types.ui32,
+});
+
+/**
+ * CombatStats Component - Combat bonuses and stats
+ */
+export const CombatStats = defineComponent({
+  attack: Types.ui8,
+  strength: Types.ui8,
+  defence: Types.ui8,
+  hitpoints: Types.ui8,
+  ranged: Types.ui8,
+  prayer: Types.ui8,
+  magic: Types.ui8,
+  attackBonus: Types.i16,
+  strengthBonus: Types.i16,
+  defenceBonus: Types.i16,
+  rangedBonus: Types.i16,
+  magicBonus: Types.i16,
+});
+
+/**
+ * Item Component - Item data and properties
+ */
+export const Item = defineComponent({
+  id: Types.ui32,
+  quantity: Types.ui16,
+  type: Types.ui16,
+  rarity: Types.ui8,
+  itemId: Types.ui32,
+  noted: Types.ui8,
+  charges: Types.ui16,
+});
+
+/**
+ * LootDrop Component - Dropped loot from enemies
+ */
+export const LootDrop = defineComponent({
+  itemId: Types.ui32,
+  quantity: Types.ui16,
+  dropTimer: Types.f32,
+  playerId: Types.eid,
+  ownerId: Types.eid,
+  despawnTime: Types.ui32,
+  x: Types.f32,
+  y: Types.f32,
+});
+
+/**
+ * NPCData Component - NPC specific data
+ */
+export const NPCData = defineComponent({
+  npcId: Types.ui16,
+  spawnX: Types.f32,
+  spawnY: Types.f32,
+  respawnTimer: Types.f32,
+  maxDistance: Types.f32,
+  combatLevel: Types.ui8,
+  aggroRange: Types.f32,
+  attackRange: Types.f32,
+  attackSpeed: Types.ui8,
+  respawnTime: Types.ui16,
+});
+
+/**
+ * Resource Component - Resource node data
+ */
+export const Resource = defineComponent({
+  resourceType: Types.ui16,
+  maxQuantity: Types.ui16,
+  currentQuantity: Types.ui16,
+  respawnTime: Types.ui16,
+  skillRequired: Types.ui8,
+  levelRequired: Types.ui8,
+  resourceId: Types.ui32,
+  remainingYield: Types.ui16,
+});
 
 // ============================================
 // Tag Components (no data, just markers)
@@ -256,10 +371,9 @@ export const Player = defineComponent();
 export const NPC = defineComponent();
 export const Monster = defineComponent();
 export const Projectile = defineComponent();
-export const Dead = defineComponent();
+// Note: Dead and Gathering are already defined above with data components
 export const Respawning = defineComponent();
 export const InCombat = defineComponent();
-export const Gathering = defineComponent();
 
 // ============================================
 // Prayer Flags
@@ -296,27 +410,39 @@ export const PrayerFlag = {
 /**
  * Check if a prayer is active
  */
-export function isPrayerActive(prayers: number, flag: PrayerFlag): boolean {
+export function isPrayerActive(
+  prayers: number,
+  flag: (typeof PrayerFlag)[keyof typeof PrayerFlag]
+): boolean {
   return (prayers & flag) !== 0;
 }
 
 /**
  * Activate a prayer
  */
-export function activatePrayer(prayers: number, flag: PrayerFlag): number {
+export function activatePrayer(
+  prayers: number,
+  flag: (typeof PrayerFlag)[keyof typeof PrayerFlag]
+): number {
   return prayers | flag;
 }
 
 /**
  * Deactivate a prayer
  */
-export function deactivatePrayer(prayers: number, flag: PrayerFlag): number {
+export function deactivatePrayer(
+  prayers: number,
+  flag: (typeof PrayerFlag)[keyof typeof PrayerFlag]
+): number {
   return prayers & ~flag;
 }
 
 /**
  * Toggle a prayer
  */
-export function togglePrayer(prayers: number, flag: PrayerFlag): number {
+export function togglePrayer(
+  prayers: number,
+  flag: (typeof PrayerFlag)[keyof typeof PrayerFlag]
+): number {
   return prayers ^ flag;
 }

@@ -8,7 +8,6 @@
       "esnext"
     ],
     "outDir": "./dist",
-    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "isolatedModules": true,

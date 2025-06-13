@@ -22,8 +22,8 @@ export {
   hasSkillRequirement,
 } from './SkillSystem';
 export { ResourceNodeSystem } from './ResourceNodeSystem';
-export { WoodcuttingSystem } from './WoodcuttingSystem';
-export { MiningSystem } from './MiningSystem';
-export { FishingSystem } from './FishingSystem';
-export { CookingSystem } from './CookingSystem';
-export { FiremakingSystem } from './FiremakingSystem';
+export { WoodcuttingSystem, startWoodcutting, stopWoodcutting } from './WoodcuttingSystem';
+export { MiningSystem, startMining, stopMining } from './MiningSystem';
+export { FishingSystem, startFishing, stopFishing } from './FishingSystem';
+export { CookingSystem, startCooking, stopCooking } from './CookingSystem';
+export { FiremakingSystem, startFiremaking, stopFiremaking } from './FiremakingSystem';

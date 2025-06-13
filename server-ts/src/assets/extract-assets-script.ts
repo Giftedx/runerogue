@@ -10,6 +10,11 @@
  *   npm run verify-assets               # Verify extraction
  */
 
+// Patch Node.js fs module to handle EMFILE errors gracefully
+import * as fs from 'fs';
+import * as gracefulFs from 'graceful-fs';
+gracefulFs.gracefulify(fs);
+
 import { OSRSAssetExtractor } from './osrs-asset-extractor';
 import { program } from 'commander';
 

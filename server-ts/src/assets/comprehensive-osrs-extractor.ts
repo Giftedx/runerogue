@@ -246,7 +246,15 @@ export class ComprehensiveOSRSAssetExtractor {
     console.log(`\n🔄 Executing: ${task.category} from ${task.sourceType}`);
     console.log(`📊 Expected assets: ~${task.estimatedCount}`);
 
-    const logEntry = {
+    const logEntry: {
+      task: AssetCategory;
+      source: AssetSource;
+      startTime: string;
+      status: string;
+      extractedCount?: number;
+      duration?: number;
+      error?: string;
+    } = {
       task: task.category,
       source: task.sourceType,
       startTime: new Date().toISOString(),

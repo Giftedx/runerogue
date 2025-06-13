@@ -24,7 +24,7 @@ import {
   Dead,
 } from '../components';
 import { addSkillXP } from './SkillSystem';
-import { OSRS_RESOURCE_DATA } from '../data/osrs-resource-data';
+import { OSRS_RESOURCE_DATA } from '../../data/osrs-resource-data';
 
 /**
  * ResourceNode component - attach to all resource nodes (trees, rocks, fishing spots, etc.)

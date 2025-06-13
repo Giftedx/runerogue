@@ -33,7 +33,7 @@ export class CleanGameRoom extends Room<GameRoomState> {
     console.log('CleanGameRoom created with options:', options);
 
     // Initialize game state using the working CoreSchemas
-    this.setState(createGameRoomState());
+    this.state = createGameRoomState();
 
     // Set up game loop
     this.setSimulationInterval(deltaTime => this.update(deltaTime));

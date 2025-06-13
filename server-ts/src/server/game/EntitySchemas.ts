@@ -48,6 +48,19 @@ export interface ItemDefinition {
   requirements?: {
     [skill: string]: number;
   };
+  // Additional OSRS properties
+  weight?: number;
+  tradeable?: boolean;
+  members?: boolean;
+  questItem?: boolean;
+  equipable?: boolean;
+  // Combat level requirements
+  attackLevelRequired?: number;
+  strengthLevelRequired?: number;
+  defenceLevelRequired?: number;
+  rangedLevelRequired?: number;
+  magicLevelRequired?: number;
+  prayerLevelRequired?: number;
 }
 
 /**

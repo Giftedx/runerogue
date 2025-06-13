@@ -1410,14 +1410,14 @@ export class GameRoom extends Room<WorldState> {
         this.cancelTradeAndReturnItems(trade);
 
         // Notify players that trade timed out
-        const player1 = this.state.players.get(trade.player1Id);
-        const player2 = this.state.players.get(trade.player2Id);
+        const player1 = this.state.players.get(trade.proposerId);
+        const player2 = this.state.players.get(trade.accepterId);
 
         if (player1) {
-          this.sendToPlayer(trade.player1Id, 'trade_timeout', { tradeId });
+          this.sendToPlayer(trade.proposerId, 'trade_timeout', { tradeId });
         }
         if (player2) {
-          this.sendToPlayer(trade.player2Id, 'trade_timeout', { tradeId });
+          this.sendToPlayer(trade.accepterId, 'trade_timeout', { tradeId });
         }
       }
     }, 60000); // 60 second timeout
@@ -1468,7 +1468,7 @@ export class GameRoom extends Room<WorldState> {
       for (const [slotIndex, inventoryItem] of player.inventory.entries()) {
         if (!inventoryItem) {
           // Empty slot found
-          player.inventory.set(slotIndex, item);
+          player.inventory[slotIndex] = item;
           added = true;
           break;
         } else if (inventoryItem.itemId === item.itemId && inventoryItem.stackable) {

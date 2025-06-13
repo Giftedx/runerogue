@@ -17,7 +17,7 @@ export interface HealthBarEvent {
 /**
  * HealthBarSystem - Manages health bar visual feedback
  */
-export class HealthBarSystem {
+export class HealthBarSystemClass {
   private healthBars: Map<string, HealthBarEvent> = new Map();
   private networkBroadcaster: ((type: string, data: Record<string, unknown>) => void) | null = null;
 
@@ -158,20 +158,43 @@ export function getHealthBarSystem(): HealthBarSystemClass {
   return globalHealthBarSystem;
 }
 
-// Rename the class to avoid naming conflicts
-export class HealthBarSystemClass {
+/**
+ * Set the broadcaster for health bar events
+ */
+export function setHealthBarBroadcaster(
+  broadcaster: (type: string, data: Record<string, unknown>) => void
+): void {
+  if (!globalHealthBarSystem) {
+    globalHealthBarSystem = new HealthBarSystemClass();
+  }
+  globalHealthBarSystem.setBroadcaster(broadcaster);
+}
+
+/**
+ * Queue a health bar update event
+ */
+export function queueHealthBarUpdate(
+  entityId: string,
+  currentHealth: number,
+  maxHealth: number,
+  position: { x: number; y: number },
+  visible: boolean = true
+): void {
+  if (!globalHealthBarSystem) {
+    globalHealthBarSystem = new HealthBarSystemClass();
+  }
+  globalHealthBarSystem.updateHealthBar(entityId, currentHealth, maxHealth, position, visible);
+}
+
+/**
+ * HealthBarSystemClass - Implementation class for health bar management
+ */
+class HealthBarSystemImpl {
   private healthBars: Map<string, HealthBarEvent> = new Map();
   private networkBroadcaster: ((type: string, data: Record<string, unknown>) => void) | null = null;
 
   constructor() {
     this.healthBars = new Map();
-  }
-
-  /**
-   * Sets the network broadcaster function for sending health bar events to clients
-   */
-  setBroadcaster(broadcaster: (type: string, data: Record<string, unknown>) => void): void {
-    this.networkBroadcaster = broadcaster;
   }
 
   /**

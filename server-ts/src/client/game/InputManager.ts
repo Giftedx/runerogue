@@ -53,7 +53,9 @@ export class InputManager {
 
   // Set up Discord-specific event handlers
   private setupDiscordEvents(): void {
-    // Handle Discord button interactions
+    // Discord command handlers would be implemented here
+    // Currently commented out due to SDK interface changes
+    /*
     this.discord.commands.on('attack', interaction => {
       // Find nearest NPC and attack it
       const gameState = (window as any).gameState;
@@ -77,12 +79,7 @@ export class InputManager {
           this.onCollectLoot(nearestLoot.id);
         }
       }
-
-      // Acknowledge the interaction
-      interaction.acknowledge();
-    });
-
-    // Add more Discord command handlers as needed
+    */
   }
 
   // Handle mouse down event

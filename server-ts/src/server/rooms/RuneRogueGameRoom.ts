@@ -36,7 +36,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
   async onCreate(options: any) {
     console.log('🎮 Creating RuneRogue game room...');
 
-    this.setState(new GameRoomState());
+    this.state = new GameRoomState();
     this.setupMessageHandlers();
     this.startGameLoop();
     this.startWaveSpawning();

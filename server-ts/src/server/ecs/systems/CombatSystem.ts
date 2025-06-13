@@ -232,7 +232,10 @@ function performAttack(world: IWorld, attackerId: number, targetId: number): voi
     Health.current[targetId] = newHealth;
 
     // Queue damage number event for visual feedback
-    queueDamageEvent(world, targetId, finalDamage, isCritical, false);
+    queueDamageEvent(targetId.toString(), finalDamage, {
+      x: Transform.x[targetId],
+      y: Transform.y[targetId],
+    });
 
     // Award XP to attacker if they're a player
     if (hasComponent(world, Player, attackerId) && finalDamage > 0) {
@@ -245,7 +248,10 @@ function performAttack(world: IWorld, attackerId: number, targetId: number): voi
     }
   } else {
     // Miss - queue miss event for visual feedback
-    queueDamageEvent(world, targetId, 0, false, true);
+    queueDamageEvent(targetId.toString(), 0, {
+      x: Transform.x[targetId],
+      y: Transform.y[targetId],
+    });
   }
 }
 

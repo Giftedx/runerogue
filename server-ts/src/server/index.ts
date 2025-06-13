@@ -3,6 +3,11 @@
  * Clean server implementation with working Colyseus schemas
  */
 
+// Patch Node.js fs module to handle EMFILE errors gracefully
+import * as fs from 'fs';
+import * as gracefulFs from 'graceful-fs';
+gracefulFs.gracefulify(fs);
+
 import 'dotenv/config';
 import { Server as ColyseusServer } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';

@@ -49,7 +49,7 @@ export const createECSWorld = (): IWorld => {
 
 /**
  * Systems array for the game loop, in OSRS-authentic execution order.
- * Includes WoodcuttingSystem and ResourceNodeSystem for resource gathering.
+ * Includes all gathering systems for complete resource collection.
  */
 export const GAME_SYSTEMS = [
   MovementSystem,
@@ -58,6 +58,10 @@ export const GAME_SYSTEMS = [
   SkillSystem,
   ResourceNodeSystem,
   WoodcuttingSystem,
+  MiningSystem,
+  FishingSystem,
+  CookingSystem,
+  FiremakingSystem,
 ];
 
 /**

@@ -200,7 +200,9 @@ export class UIManager {
 
   // Set up Discord UI components
   private setupDiscordUI(): void {
-    // Add Discord action buttons
+    // Discord command registration would be implemented here
+    // Currently commented out due to SDK interface changes
+    /*
     this.discord.commands.register({
       name: 'attack',
       description: 'Attack the nearest enemy',
@@ -220,6 +222,7 @@ export class UIManager {
       name: 'skills',
       description: 'View your skills',
     });
+    */
   }
 
   // Update player information in the UI

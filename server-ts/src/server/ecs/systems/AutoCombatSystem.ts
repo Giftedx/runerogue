@@ -1,6 +1,9 @@
 import { defineQuery, defineSystem, hasComponent, IWorld } from 'bitecs';
 import { Transform, Health, CombatStats, Player, NPC, Monster, Skills } from '../components';
-import { calculateMaxHit, calculateAccuracy } from '@runerogue/osrs-data';
+import {
+  calculateMaxHit,
+  calculateAccuracy,
+} from '../../../../../packages/osrs-data/src/calculators/combat';
 import { queueDamageEvent, queueHealEvent } from './DamageNumberSystem';
 
 // Queries for auto-combat system
@@ -257,7 +260,10 @@ function performAttack(world: IWorld, attackerId: number, targetId: number): voi
     Health.current[targetId] = Math.max(0, Health.current[targetId] - damage);
 
     // Queue damage number for visual feedback
-    queueDamageEvent(world, targetId, damage, isCritical, false);
+    queueDamageEvent(targetId.toString(), damage, {
+      x: Transform.x[targetId],
+      y: Transform.y[targetId],
+    });
 
     // Broadcast combat event
     broadcastCombatEvent(world, {
@@ -274,7 +280,10 @@ function performAttack(world: IWorld, attackerId: number, targetId: number): voi
     }
   } else {
     // Miss - queue miss indicator for visual feedback
-    queueDamageEvent(world, targetId, 0, false, true);
+    queueDamageEvent(targetId.toString(), 0, {
+      x: Transform.x[targetId],
+      y: Transform.y[targetId],
+    });
 
     // Broadcast combat event
     broadcastCombatEvent(world, {

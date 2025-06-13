@@ -1,4 +1,4 @@
-import { World, defineQuery } from 'bitecs';
+import { IWorld, defineQuery } from 'bitecs';
 import * as Components from '../ecs/components';
 import {
   GameRoomState,
@@ -24,7 +24,7 @@ import { EnemyType } from '@runerogue/shared';
  */
 export class StateSyncSystem {
   private room: Room<GameRoomState>;
-  private world: World;
+  private world: IWorld;
 
   // Entity mapping (CRITICAL for maintaining sync)
   // These maps are managed by GameRoom on player/enemy creation/deletion
@@ -38,10 +38,9 @@ export class StateSyncSystem {
   private enemyQuery = defineQuery([Components.Enemy, Components.Position, Components.Health]);
   // Query for entities that have been marked for removal
   private deadEntityQuery = defineQuery([Components.Dead]);
-
   constructor(
     room: Room<GameRoomState>,
-    world: World,
+    world: IWorld,
     entityMaps: {
       playerEntityMap: Map<string, number>;
       entityPlayerMap: Map<number, string>;

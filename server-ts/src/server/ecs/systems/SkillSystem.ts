@@ -183,11 +183,11 @@ export const SkillSystem = defineSystem((world: IWorld) => {
     // Check each skill for level changes
     for (const skillType of Object.values(SkillType)) {
       const xpProp = SKILL_XP_MAP[skillType];
-      const currentXP = SkillExperience[xpProp][playerId] || 0;
+      const currentXP = SkillXP[xpProp][playerId] || 0;
       const newLevel = getLevelForXP(currentXP);
 
       // Update skill level
-      Skills[skillType][playerId] = newLevel;
+      SkillLevels[skillType][playerId] = newLevel;
 
       // Check for level up
       const previousLevel = prevLevels[skillType] || 1;
@@ -278,7 +278,7 @@ export function getTotalXP(world: IWorld, playerId: number): number {
 
   for (const skill of Object.values(SkillType)) {
     const xpProp = SKILL_XP_MAP[skill];
-    total += SkillExperience[xpProp][playerId] || 0;
+    total += SkillXP[xpProp][playerId] || 0;
   }
 
   return total;
@@ -288,13 +288,13 @@ export function getTotalXP(world: IWorld, playerId: number): number {
  * Get combat level
  */
 export function getCombatLevel(world: IWorld, playerId: number): number {
-  const attack = Skills.attack[playerId] || 1;
-  const strength = Skills.strength[playerId] || 1;
-  const defence = Skills.defence[playerId] || 1;
-  const hitpoints = Skills.hitpoints[playerId] || 10;
-  const prayer = Skills.prayer[playerId] || 1;
-  const ranged = Skills.ranged[playerId] || 1;
-  const magic = Skills.magic[playerId] || 1;
+  const attack = SkillLevels.attack[playerId] || 1;
+  const strength = SkillLevels.strength[playerId] || 1;
+  const defence = SkillLevels.defence[playerId] || 1;
+  const hitpoints = SkillLevels.hitpoints[playerId] || 10;
+  const prayer = SkillLevels.prayer[playerId] || 1;
+  const ranged = SkillLevels.ranged[playerId] || 1;
+  const magic = SkillLevels.magic[playerId] || 1;
 
   // OSRS combat level formula
   const base = 0.25 * (defence + hitpoints + Math.floor(prayer / 2));
@@ -351,7 +351,7 @@ export function hasSkillRequirement(
   requirements: Partial<Record<SkillType, number>>
 ): boolean {
   for (const [skill, requiredLevel] of Object.entries(requirements)) {
-    const playerLevel = Skills[skill as SkillType][playerId] || 1;
+    const playerLevel = SkillLevels[skill as SkillType][playerId] || 1;
     if (playerLevel < requiredLevel) {
       return false;
     }

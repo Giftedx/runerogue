@@ -1,0 +1,194 @@
+
+> runerogue@0.1.0 build
+> tsc --project tsconfig.json
+
+src/assets/comprehensive-asset-coordinator.ts(118,48): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './osrs-cache-reader.js'?
+src/assets/comprehensive-asset-coordinator.ts(411,5): error TS2322: Type 'ComprehensiveAssetManifest' is not assignable to type 'void'.
+src/assets/comprehensive-extractor-script.ts(116,50): error TS2339: Property 'id' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(117,30): error TS2339: Property 'value' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(117,64): error TS2339: Property 'id' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(221,52): error TS2339: Property 'title' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(221,68): error TS2339: Property 'url' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(222,28): error TS2339: Property 'title' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(226,34): error TS2339: Property 'url' does not exist on type 'unknown'.
+src/assets/comprehensive-extractor-script.ts(304,13): error TS2353: Object literal may only specify known properties, and 'altText' does not exist in type '{ extractedAt: string; searchTerm?: string; category?: string; }'.
+src/assets/comprehensive-extractor-script.ts(340,13): error TS2353: Object literal may only specify known properties, and 'formats' does not exist in type '{ extractedAt: string; searchTerm?: string; category?: string; }'.
+src/assets/comprehensive-osrs-extractor.ts(260,16): error TS2339: Property 'extractedCount' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
+src/assets/comprehensive-osrs-extractor.ts(261,16): error TS2339: Property 'duration' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
+src/assets/comprehensive-osrs-extractor.ts(263,71): error TS2339: Property 'duration' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
+src/assets/comprehensive-osrs-extractor.ts(266,16): error TS2339: Property 'error' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
+src/assets/comprehensive-osrs-extractor.ts(267,16): error TS2339: Property 'duration' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
+src/assets/demo-assets.ts(36,34): error TS2339: Property 'hasAsset' does not exist on type 'OSRSAssetLoader'.
+src/assets/demo-assets.ts(54,34): error TS2339: Property 'hasAsset' does not exist on type 'OSRSAssetLoader'.
+src/assets/osrs-cache-reader-fallback.ts(201,49): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './mcp-osrs-extractor.js'?
+src/assets/osrs-cache-reader-fallback.ts(227,51): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './osrs-asset-extractor.js'?
+src/assets/osrs-cache-reader-fallback.ts(234,29): error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/assets/osrs-cache-reader-fallback.ts(471,35): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+src/assets/osrs-cache-reader-fallback.ts(471,47): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+src/assets/ultimate-osrs-extractor.ts(18,19): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+src/client/game/GameClient.ts(57,51): error TS2339: Property 'id' does not exist on type 'Room<any>'.
+src/client/game/GameClient.ts(71,35): error TS2554: Expected 0 arguments, but got 1.
+src/client/game/GameClient.ts(225,23): error TS2339: Property 'update' does not exist on type 'InputManager'.
+src/client/game/InputManager.ts(57,27): error TS2339: Property 'on' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
+src/client/game/InputManager.ts(71,27): error TS2339: Property 'on' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
+src/client/game/UIManager.ts(204,27): error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
+src/client/game/UIManager.ts(209,27): error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
+src/client/game/UIManager.ts(214,27): error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
+src/client/game/UIManager.ts(219,27): error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
+src/client/index.ts(24,32): error TS2339: Property 'user' does not exist on type 'DiscordSDK'.
+src/client/index.ts(72,39): error TS2554: Expected 1 arguments, but got 2.
+src/client/index.ts(91,39): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/client/index.ts(99,7): error TS2345: Argument of type 'OSRSStyleRenderer' is not assignable to parameter of type 'GameRenderer'.
+  Type 'OSRSStyleRenderer' is missing the following properties from type 'GameRenderer': damageNumbers, skillPopups, healthBars, renderResources, and 14 more.
+src/client/index.ts(333,11): error TS2339: Property 'presence' does not exist on type 'DiscordSDK'.
+src/client/index.ts(335,42): error TS2339: Property 'combatLevel' does not exist on type 'PlayerState'.
+src/client/index.ts(336,32): error TS2339: Property 'roomId' does not exist on type 'GameState'.
+src/client/networking/CombatEventHandler.ts(11,35): error TS2307: Cannot find module '../../../server/ecs/systems/DamageNumberSystem' or its corresponding type declarations.
+src/client/networking/CombatEventHandler.ts(12,32): error TS2307: Cannot find module '../../../server/ecs/systems/HealthBarSystem' or its corresponding type declarations.
+src/client/networking/CombatEventHandler.ts(13,50): error TS2307: Cannot find module '../../../server/ecs/systems/XPNotificationSystem' or its corresponding type declarations.
+src/client/networking/CombatEventHandler.ts(14,10): error TS2440: Import declaration conflicts with local declaration of 'XPNotificationManager'.
+src/client/networking/CombatEventHandler.ts(147,47): error TS2339: Property 'handleXPGainEvents' does not exist on type 'XPNotificationManager'.
+src/client/ui/DamageNumber.ts(11,35): error TS2307: Cannot find module '../../../server/ecs/systems/DamageNumberSystem' or its corresponding type declarations.
+src/client/ui/DamageNumber.ts(51,18): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/DamageNumber.ts(52,17): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/DamageNumber.ts(64,12): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/DamageNumber.ts(146,24): error TS2304: Cannot find name 'Phaser'.
+src/client/ui/DamageNumber.ts(159,20): error TS2304: Cannot find name 'Phaser'.
+src/client/ui/DamageNumber.ts(252,18): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/DamageNumber.ts(260,22): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(56,18): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(61,22): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(62,23): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(63,20): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(64,23): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(65,24): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(78,12): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBar.ts(183,30): error TS2304: Cannot find name 'Phaser'.
+src/client/ui/HealthBar.ts(184,11): error TS2304: Cannot find name 'Phaser'.
+src/client/ui/HealthBar.ts(185,11): error TS2304: Cannot find name 'Phaser'.
+src/client/ui/HealthBar.ts(191,11): error TS2304: Cannot find name 'Phaser'.
+src/client/ui/HealthBarManager.ts(12,32): error TS2307: Cannot find module '../../../server/ecs/systems/HealthBarSystem' or its corresponding type declarations.
+src/client/ui/HealthBarManager.ts(58,18): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/HealthBarManager.ts(71,12): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotification.ts(18,18): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotification.ts(19,22): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotification.ts(20,17): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotification.ts(21,23): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotification.ts(25,22): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotification.ts(27,5): error TS2322: Type '{ x: number; y: number; skill: string; xpGained: number; newLevel?: number; duration: number; fontSize: number; color: string; }' is not assignable to type 'Required<XPNotificationConfig>'.
+  Property 'newLevel' is optional in type '{ x: number; y: number; skill: string; xpGained: number; newLevel?: number; duration: number; fontSize: number; color: string; }' but required in type 'Required<XPNotificationConfig>'.
+src/client/ui/XPNotificationManager.ts(18,18): error TS2503: Cannot find namespace 'Phaser'.
+src/client/ui/XPNotificationManager.ts(22,22): error TS2503: Cannot find namespace 'Phaser'.
+src/logger.ts(77,7): error TS2345: Argument of type 'DailyRotateFile' is not assignable to parameter of type 'ConsoleTransportInstance'.
+  Type 'DailyRotateFile' is missing the following properties from type 'ConsoleTransportInstance': name, stderrLevels, eol
+src/schema-test.ts(2,31): error TS2307: Cannot find module '../server/game/EntitySchemas' or its corresponding type declarations.
+src/server/auth/middleware.ts(37,14): error TS2451: Cannot redeclare block-scoped variable 'generateAccessToken'.
+src/server/auth/middleware.ts(44,14): error TS2451: Cannot redeclare block-scoped variable 'authenticateToken'.
+src/server/clean-server.ts(46,23): error TS2339: Property 'presence' does not exist on type 'Server'.
+src/server/clean-server.ts(55,36): error TS2339: Property 'presence' does not exist on type 'Server'.
+src/server/economy-integration.ts(113,37): error TS2339: Property 'getPlayerProfile' does not exist on type 'EconomyClient'.
+src/server/economy-integration.ts(114,43): error TS2339: Property 'getPlayerProfile' does not exist on type 'EconomyClient'.
+src/server/ecs/systems/AutoCombatSystem.ts(260,47): error TS2554: Expected 3 arguments, but got 5.
+src/server/ecs/systems/AutoCombatSystem.ts(277,42): error TS2554: Expected 3 arguments, but got 5.
+src/server/ecs/systems/CombatSystem.ts(235,52): error TS2554: Expected 3 arguments, but got 5.
+src/server/ecs/systems/CombatSystem.ts(248,42): error TS2554: Expected 3 arguments, but got 5.
+src/server/ecs/systems/CookingSystem.ts(21,3): error TS2724: '"@runerogue/osrs-data"' has no exported member named 'calculateCookingSuccess'. Did you mean 'calculateMiningSuccess'?
+src/server/ecs/systems/CookingSystem.ts(24,3): error TS2724: '"@runerogue/osrs-data"' has no exported member named 'ROCKY_PET_DROP_RATE'. Did you mean 'PET_DROP_RATES'?
+src/server/ecs/systems/CookingSystem.ts(97,22): error TS2554: Expected 3-5 arguments, but got 2.
+src/server/ecs/systems/CookingSystemNew.ts(21,3): error TS2724: '"@runerogue/osrs-data"' has no exported member named 'calculateCookingSuccess'. Did you mean 'calculateMiningSuccess'?
+src/server/ecs/systems/CookingSystemNew.ts(24,3): error TS2724: '"@runerogue/osrs-data"' has no exported member named 'ROCKY_PET_DROP_RATE'. Did you mean 'PET_DROP_RATES'?
+src/server/ecs/systems/CookingSystemNew.ts(97,22): error TS2554: Expected 3-5 arguments, but got 2.
+src/server/ecs/systems/FiremakingSystem.ts(20,3): error TS2724: '"@runerogue/osrs-data"' has no exported member named 'calculateFiremakingSuccess'. Did you mean 'calculateFishingSuccess'?
+src/server/ecs/systems/FiremakingSystem.ts(22,3): error TS2305: Module '"@runerogue/osrs-data"' has no exported member 'PHOENIX_PET_DROP_RATES'.
+src/server/ecs/systems/FiremakingSystem.ts(23,3): error TS2305: Module '"@runerogue/osrs-data"' has no exported member 'TINDERBOX_ID'.
+src/server/ecs/systems/FiremakingSystemNew.ts(20,3): error TS2724: '"@runerogue/osrs-data"' has no exported member named 'calculateFiremakingSuccess'. Did you mean 'calculateFishingSuccess'?
+src/server/ecs/systems/FiremakingSystemNew.ts(22,3): error TS2305: Module '"@runerogue/osrs-data"' has no exported member 'PHOENIX_PET_DROP_RATES'.
+src/server/ecs/systems/FiremakingSystemNew.ts(23,3): error TS2305: Module '"@runerogue/osrs-data"' has no exported member 'TINDERBOX_ID'.
+src/server/ecs/systems/FishingSystem.ts(48,16): error TS2304: Cannot find name 'FISH'.
+src/server/ecs/systems/FishingSystem.ts(89,16): error TS2304: Cannot find name 'FISH'.
+src/server/ecs/systems/FishingSystem.ts(98,74): error TS2554: Expected 2 arguments, but got 3.
+src/server/ecs/systems/ResourceNodeSystem.ts(27,36): error TS2307: Cannot find module '../data/osrs-resource-data' or its corresponding type declarations.
+src/server/ecs/systems/WaveSpawningSystem.ts(92,5): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/server/game/EnhancedItemManager.ts(185,7): error TS2353: Object literal may only specify known properties, and 'weight' does not exist in type 'ItemDefinition'.
+src/server/game/EnhancedItemManager.ts(385,32): error TS2339: Property 'attackLevelRequired' does not exist on type 'ItemDefinition'.
+src/server/game/EnhancedItemManager.ts(388,32): error TS2339: Property 'strengthLevelRequired' does not exist on type 'ItemDefinition'.
+src/server/game/EnhancedItemManager.ts(391,32): error TS2339: Property 'defenceLevelRequired' does not exist on type 'ItemDefinition'.
+src/server/game/EnhancedItemManager.ts(394,32): error TS2339: Property 'rangedLevelRequired' does not exist on type 'ItemDefinition'.
+src/server/game/EnhancedItemManager.ts(397,32): error TS2339: Property 'magicLevelRequired' does not exist on type 'ItemDefinition'.
+src/server/game/EnhancedItemManager.ts(400,32): error TS2339: Property 'prayerLevelRequired' does not exist on type 'ItemDefinition'.
+src/server/game/GameRoom.ts(829,38): error TS2339: Property 'removeItemFromInventory' does not exist on type 'EconomyIntegration'.
+src/server/game/GameRoom.ts(992,15): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/server/game/GameRoom.ts(1021,15): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/server/game/GameRoom.ts(1104,17): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/server/game/GameRoom.ts(1413,54): error TS2339: Property 'player1Id' does not exist on type 'Trade'.
+src/server/game/GameRoom.ts(1414,54): error TS2339: Property 'player2Id' does not exist on type 'Trade'.
+src/server/game/GameRoom.ts(1417,35): error TS2339: Property 'player1Id' does not exist on type 'Trade'.
+src/server/game/GameRoom.ts(1420,35): error TS2339: Property 'player2Id' does not exist on type 'Trade'.
+src/server/game/GameRoom.ts(1471,28): error TS2339: Property 'set' does not exist on type 'ArraySchema<InventoryItem>'.
+src/server/game/ItemManager.ts(111,39): error TS2339: Property 'itemId' does not exist on type 'Item'.
+src/server/game/ItemManager.ts(121,41): error TS2339: Property 'itemId' does not exist on type 'Item'.
+src/server/game/ItemManager.ts(121,49): error TS2345: Argument of type 'Item' is not assignable to parameter of type 'ItemDefinition'.
+  Type 'Item' is missing the following properties from type 'ItemDefinition': itemId, attack, defense, isStackable, and 2 more.
+src/server/game/multiplayerSync.ts(62,10): error TS2339: Property 'broadcast' does not exist on type 'Server'.
+src/server/game/multiplayerSync.ts(106,10): error TS2339: Property 'broadcast' does not exist on type 'Server'.
+src/server/game/multiplayerSync.ts(195,10): error TS2339: Property 'broadcast' does not exist on type 'Server'.
+src/server/game/ProceduralGenerator.clean.ts(288,7): error TS2353: Object literal may only specify known properties, and 'terrain' does not exist in type '{ name?: string; id?: string; height?: number; width?: number; biome?: string; collisionMap?: boolean[][]; }'.
+src/server/game/ProceduralGenerator.ts(288,7): error TS2353: Object literal may only specify known properties, and 'terrain' does not exist in type '{ name?: string; id?: string; height?: number; width?: number; biome?: string; collisionMap?: boolean[][]; }'.
+src/server/game/ProceduralMapGenerator.ts(62,16): error TS2749: 'RNG' refers to a value, but is being used as a type here. Did you mean 'typeof RNG'?
+src/server/game/ProceduralMapGenerator.ts(66,20): error TS2351: This expression is not constructable.
+  Type 'RNG' has no construct signatures.
+src/server/game/ProceduralMapGenerator.ts(258,29): error TS2339: Property 'Maze' does not exist on type '{ Arena: typeof Arena; Uniform: typeof Uniform; Cellular: typeof Cellular; Digger: typeof Digger; EllerMaze: typeof EllerMaze; DividedMaze: typeof DividedMaze; IceyMaze: typeof IceyMaze; Rogue: typeof Rogue; }'.
+src/server/game/SurvivorWaveSystem.ts(85,72): error TS2345: Argument of type 'PrayerSystem' is not assignable to parameter of type 'import("C:/Users/aggis/GitHub/runerogue/server-ts/src/server/game/PrayerSystem").PrayerSystem'.
+  Type 'PrayerSystem' is missing the following properties from type 'PrayerSystem': player, prayers, drainInterval, DRAIN_TICK_MS, and 15 more.
+src/server/game/WaveManager.ts(458,11): error TS2393: Duplicate function implementation.
+src/server/game/WaveManager.ts(470,12): error TS2339: Property 'distributeWaveRewards' does not exist on type 'WaveManager'.
+src/server/game/WaveManager.ts(516,17): error TS2393: Duplicate function implementation.
+src/server/index.ts(39,3): error TS2353: Object literal may only specify known properties, and 'transport' does not exist in type 'ServerOptions'.
+src/server/persistence/PlayerPersistence.ts(248,21): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(timeout: string | number | Timeout): void', gave the following error.
+    Argument of type 'Timer' is not assignable to parameter of type 'string | number | Timeout'.
+      Type 'Timer' is missing the following properties from type 'Timeout': close, _onTimeout, [Symbol.dispose]
+  Overload 2 of 2, '(id: number): void', gave the following error.
+    Argument of type 'Timer' is not assignable to parameter of type 'number'.
+src/server/rooms/GameRoom.ts(73,39): error TS2339: Property 'target' does not exist on type 'ClientMessage'.
+  Property 'target' does not exist on type '{ type: "attack"; targetId: string; }'.
+src/server/rooms/GameRoom.ts(76,41): error TS2339: Property 'targetId' does not exist on type 'ClientMessage'.
+  Property 'targetId' does not exist on type '{ type: "move"; target: Vector2; }'.
+src/server/rooms/GameRoom.ts(80,41): error TS2339: Property 'action' does not exist on type 'ClientMessage'.
+  Property 'action' does not exist on type '{ type: "move"; target: Vector2; }'.
+src/server/rooms/GameRoom.ts(80,57): error TS2339: Property 'prayer' does not exist on type 'ClientMessage'.
+  Property 'prayer' does not exist on type '{ type: "move"; target: Vector2; }'.
+src/server/rooms/GameRoom.ts(83,48): error TS2339: Property 'targetId' does not exist on type 'ClientMessage'.
+  Property 'targetId' does not exist on type '{ type: "move"; target: Vector2; }'.
+src/server/rooms/GameRoom.ts(86,39): error TS2339: Property 'message' does not exist on type 'ClientMessage'.
+  Property 'message' does not exist on type '{ type: "move"; target: Vector2; }'.
+src/server/rooms/GameRoom.ts(188,37): error TS2339: Property 'waveStartTime' does not exist on type 'GameRoomState'.
+src/server/rooms/GameRoom.ts(196,46): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(timeout: string | number | Timeout): void', gave the following error.
+    Argument of type 'Timer' is not assignable to parameter of type 'string | number | Timeout'.
+      Type 'Timer' is missing the following properties from type 'Timeout': close, _onTimeout, [Symbol.dispose]
+  Overload 2 of 2, '(id: number): void', gave the following error.
+    Argument of type 'Timer' is not assignable to parameter of type 'number'.
+src/server/rooms/GameRoom.ts(319,54): error TS2339: Property 'clear' does not exist on type 'Timer'.
+src/server/rooms/RuneRogueGameRoom.ts(264,10): error TS2339: Property 'waveStartTime' does not exist on type '{ enemiesRemaining: number; currentWave: number; isActive: boolean; }'.
+src/server/schemas/GameRoomState.ts(89,21): error TS2416: Property 'activePrayers' in type 'PrayerSchema' is not assignable to the same property in base type 'PrayerState'.
+  Type 'ArraySchema<string>' is not assignable to type 'string[]'.
+    The types returned by 'entries()' are incompatible between these types.
+      Type 'IterableIterator<[number, string]>' is missing the following properties from type 'ArrayIterator<[number, string]>': map, filter, take, drop, and 9 more.
+src/server/systems/StateSyncSystem.ts(108,26): error TS2352: Conversion of type 'number' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/server/utils/early-metadata-init.ts(38,11): error TS2352: Conversion of type 'Function' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'Function'.
+src/server/utils/early-metadata-init.ts(39,8): error TS2352: Conversion of type 'Function' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'Function'.
+src/server/utils/reflect-metadata-init.ts(15,23): error TS2540: Cannot assign to 'metadata' because it is a read-only property.
+src/server/utils/reflect-metadata-init.ts(19,19): error TS2540: Cannot assign to 'metadata' because it is a read-only property.
+src/server/utils/reflect-metadata-init.ts(23,19): error TS2540: Cannot assign to 'metadata' because it is a read-only property.
+src/services/economy-client.ts(144,11): error TS2322: Type '(success: any, error: any) => void' is not assignable to type 'AxiosResponseInterceptorUse<AxiosResponse<any, any>>'.
+  Type 'void' is not assignable to type 'number'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path C:\Users\aggis\GitHub\runerogue\server-ts
+npm error workspace runerogue@0.1.0
+npm error location C:\Users\aggis\GitHub\runerogue\server-ts
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc --project tsconfig.json

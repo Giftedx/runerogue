@@ -89,7 +89,8 @@ function spawnWaveEnemy(world: IWorld): void {
     Date.now() + Math.floor(Math.random() * 1000), // Generate numeric ID
     spawnPos.x,
     spawnPos.y,
-    enemyType
+    enemyLevel,
+    true // isMonster
   );
 
   // Scale stats based on level

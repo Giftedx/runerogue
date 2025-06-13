@@ -115,7 +115,7 @@ export class ComprehensiveAssetCoordinator {
 
     try {
       // Check if osrscachereader is available
-      const { OSRSCacheReader } = await import('./osrs-cache-reader');
+      const { OSRSCacheReader } = await import('./osrs-cache-reader.js');
       const cacheReader = new OSRSCacheReader(undefined, path.join(this.outputDir, 'cache'));
 
       const result = await cacheReader.extractAllAssets();
@@ -401,7 +401,7 @@ Next Steps:
 /**
  * CLI entry point
  */
-async function main(): Promise<void> {
+async function main(): Promise<ComprehensiveAssetManifest> {
   const coordinator = new ComprehensiveAssetCoordinator('./ultimate-osrs-assets');
 
   try {
@@ -419,5 +419,3 @@ async function main(): Promise<void> {
 if (require.main === module) {
   main().catch(console.error);
 }
-
-export { ComprehensiveAssetCoordinator, ComprehensiveAssetManifest, AssetEntry };

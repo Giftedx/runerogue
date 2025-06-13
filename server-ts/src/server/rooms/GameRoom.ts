@@ -1,12 +1,9 @@
-import { Room, Client, Delayed } from 'colyseus';
-import { World, addEntity, removeEntity, System } from 'bitecs';
+import { Room, Client } from 'colyseus';
+import { IWorld, addEntity, removeEntity, addComponent, createWorld } from 'bitecs';
 import { GameRoomState, PlayerSchema } from '../schemas/GameRoomState';
 import * as Components from '../ecs/components';
 import * as Systems from '../ecs/systems';
 import { StateSyncSystem } from '../systems/StateSyncSystem';
-import {} from // Removed unused combat calculation imports
-// Removed unused getCombatLevel import
-'@runerogue/osrs-data';
 import {
   ClientMessage,
   ServerMessage,
@@ -17,9 +14,9 @@ import {
 const OSRS_GAME_TICK_MS = 600;
 
 export class GameRoom extends Room<GameRoomState> {
-  private world: World;
+  private world: IWorld;
   private stateSyncSystem: StateSyncSystem;
-  private ecsSystems: System[] = [];
+  private ecsSystems: Function[] = [];
 
   private playerEntityMap = new Map<string, number>();
   private entityPlayerMap = new Map<number, string>();
@@ -35,12 +32,11 @@ export class GameRoom extends Room<GameRoomState> {
   private enemiesToSpawnThisWave = 0;
   private enemiesSpawnedThisWave = 0;
   private waveStartTime = 0;
-  private nextWaveTimeout?: Delayed;
+  private nextWaveTimeout?: any;
 
   private entityIdCounter = 0;
-
   async onCreate(options: any) {
-    this.setState(new GameRoomState());
+    this.state = new GameRoomState();
     this.state.gameStarted = false;
     this.state.gameEnded = false;
 
@@ -55,21 +51,18 @@ export class GameRoom extends Room<GameRoomState> {
     this.setupMessageHandlers();
     this.setMetadata({ name: 'RuneRogue Alpha', mode: 'Survival' });
   }
-
   private initializeECSSystems() {
-    if (Systems.InputSystem) this.ecsSystems.push(Systems.InputSystem);
+    // Add available systems
     if (Systems.MovementSystem) this.ecsSystems.push(Systems.MovementSystem);
-    if (Systems.AISystem) this.ecsSystems.push(Systems.AISystem);
-    if (Systems.TargetingSystem) this.ecsSystems.push(Systems.TargetingSystem);
-    if (Systems.AttackTimerSystem) this.ecsSystems.push(Systems.AttackTimerSystem);
     if (Systems.CombatSystem) this.ecsSystems.push(Systems.CombatSystem);
-    if (Systems.ProjectileSystem) this.ecsSystems.push(Systems.ProjectileSystem);
-    if (Systems.HealthSystem) this.ecsSystems.push(Systems.HealthSystem);
     if (Systems.PrayerSystem) this.ecsSystems.push(Systems.PrayerSystem);
-    if (Systems.XPChangeSystem) this.ecsSystems.push(Systems.XPChangeSystem);
-    if (Systems.LevelUpSystem) this.ecsSystems.push(Systems.LevelUpSystem);
-    if (Systems.SpawnSystem) this.ecsSystems.push(Systems.SpawnSystem);
-    if (Systems.CleanupSystem) this.ecsSystems.push(Systems.CleanupSystem);
+    if (Systems.SkillSystem) this.ecsSystems.push(Systems.SkillSystem);
+    if (Systems.ResourceNodeSystem) this.ecsSystems.push(Systems.ResourceNodeSystem);
+    if (Systems.WoodcuttingSystem) this.ecsSystems.push(Systems.WoodcuttingSystem);
+    if (Systems.MiningSystem) this.ecsSystems.push(Systems.MiningSystem);
+    if (Systems.FishingSystem) this.ecsSystems.push(Systems.FishingSystem);
+    if (Systems.CookingSystem) this.ecsSystems.push(Systems.CookingSystem);
+    if (Systems.FiremakingSystem) this.ecsSystems.push(Systems.FiremakingSystem);
   }
 
   private setupMessageHandlers() {
@@ -189,23 +182,23 @@ export class GameRoom extends Room<GameRoomState> {
     if (this.state.gameStarted) return;
     this.state.gameStarted = true;
     this.currentWave = 0;
-    this.waveStartTime = this.clock.currentTime;
-    this.gameLoopInterval = this.clock.setInterval(() => this.tick(), this.TICK_RATE);
+    this.waveStartTime = this.state.waveStartTime;
+    this.gameLoopInterval = setInterval(() => this.tick(), this.TICK_RATE);
     this.startNextWave();
   }
 
   private endGame() {
     if (!this.state.gameStarted || this.state.gameEnded) return;
     this.state.gameEnded = true;
-    if (this.gameLoopInterval) this.gameLoopInterval.clear();
-    if (this.nextWaveTimeout) this.nextWaveTimeout.clear();
-    const timePlayed = Math.floor((this.clock.currentTime - this.waveStartTime) / 1000);
+    if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
+    if (this.nextWaveTimeout) clearTimeout(this.nextWaveTimeout);
+    const timePlayed = Math.floor((Date.now() - this.waveStartTime) / 1000);
     this.broadcast('gameOver', {
       survivedWaves: this.currentWave,
       totalXp: 0,
       timePlayed,
     } as ServerMessage);
-    this.clock.setTimeout(() => this.disconnect(), 30000);
+    setTimeout(() => this.disconnect(), 30000);
   }
 
   private tick() {
@@ -249,7 +242,7 @@ export class GameRoom extends Room<GameRoomState> {
     } as ServerMessage);
     const delayBetweenWaves = 10000;
     this.state.wave.nextWaveIn = delayBetweenWaves / 1000;
-    this.nextWaveTimeout = this.clock.setTimeout(() => {
+    this.nextWaveTimeout = setTimeout(() => {
       this.startNextWave();
     }, delayBetweenWaves);
   }

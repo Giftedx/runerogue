@@ -198,7 +198,7 @@ class OSRSCacheReaderFallback {
     try {
       // This would use our existing MCP integration
       // Import the MCP extractor
-      const { searchOSRSAssets } = await import('./mcp-osrs-extractor');
+      const { searchOSRSAssets } = await import('./mcp-osrs-extractor.js');
 
       // Search for various asset types
       const itemResults = await searchOSRSAssets('objtypes', 'dragon scimitar');
@@ -224,26 +224,31 @@ class OSRSCacheReaderFallback {
 
     try {
       // Import and use our existing Wiki extractor
-      const { OSRSAssetExtractor } = await import('./osrs-asset-extractor');
+      const { OSRSAssetExtractor } = await import('./osrs-asset-extractor.js');
 
       const wikiExtractor = new OSRSAssetExtractor();
-      const wikiResult = await wikiExtractor.extractAssets();
-
-      // Convert wiki results to our format
+      const wikiResult = await wikiExtractor.extractAssets(); // Convert wiki results to our format
       for (const [category, assets] of Object.entries(wikiResult.assets)) {
-        for (const asset of assets) {
-          const cacheAsset: CacheAsset = {
-            id: parseInt(asset.name.replace(/\D/g, '') || '0'),
-            name: asset.name,
-            category: category as any,
-            data: asset,
-            extractedFiles: asset.files?.map(f => f.path) || [],
-            metadata: {
-              source: 'osrs-wiki',
-              ...asset.metadata,
-            },
-          };
-          result.extractedAssets.push(cacheAsset);
+        if (Array.isArray(assets)) {
+          for (const asset of assets) {
+            const assetData = asset as {
+              name: string;
+              files?: Array<{ path: string }>;
+              [key: string]: unknown;
+            };
+            const cacheAsset: CacheAsset = {
+              id: parseInt(assetData.name.replace(/\D/g, '') ?? '0'),
+              name: assetData.name,
+              category: category as any,
+              data: assetData,
+              extractedFiles: assetData.files?.map(f => f.path) ?? [],
+              metadata: {
+                source: 'osrs-wiki',
+                ...assetData.metadata,
+              },
+            };
+            result.extractedAssets.push(cacheAsset);
+          }
         }
       }
 
@@ -468,4 +473,5 @@ if (require.main === module) {
   main().catch(console.error);
 }
 
-export { OSRSCacheReaderFallback, CacheAsset, CacheExtractionResult };
+export { OSRSCacheReaderFallback };
+export type { CacheAsset, CacheExtractionResult };

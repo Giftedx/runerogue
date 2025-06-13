@@ -54,7 +54,7 @@ export class GameClient {
         discordId: this.user.id,
       });
 
-      console.log('Connected to room:', this.room.id);
+      console.log('Connected to room:', this.room.roomId);
 
       // Set up room message handlers
       this.setupRoomHandlers();
@@ -68,7 +68,7 @@ export class GameClient {
       this.uiManager.showGameUI();
 
       // Play background music
-      this.audioManager.playMusic('main');
+      this.audioManager.playMusic();
     } catch (error) {
       console.error('Failed to join room:', error);
       this.uiManager.showError('Failed to connect to game server');
@@ -222,7 +222,7 @@ export class GameClient {
     }
 
     // Handle any pending input
-    this.inputManager.update();
+    // InputManager handles events automatically
   }
 
   // Input handlers
