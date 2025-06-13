@@ -43,7 +43,7 @@ app.get('/health', (req, res) => {
     service: 'RuneRogue Game Server',
     version: '0.1.0',
     uptime: process.uptime(),
-    rooms: gameServer.presence?.channels?.size || 0,
+    rooms: 0, // TODO: Get actual room count when presence is properly configured
     timestamp: new Date().toISOString(),
     environment: NODE_ENV,
   });
@@ -52,7 +52,8 @@ app.get('/health', (req, res) => {
 // API endpoint for room info
 app.get('/api/rooms', async (req, res) => {
   try {
-    const rooms = await gameServer.presence.find({});
+    // TODO: Implement proper room listing when presence is configured
+    const rooms: any[] = []; // await gameServer.presence.find({});
     res.json({
       rooms: rooms.length,
       activeRooms: rooms.map(room => ({

@@ -3,7 +3,7 @@ export const CONFIG = {
   DISCORD_CLIENT_ID: 'YOUR_DISCORD_CLIENT_ID', // Replace with actual client ID
 
   // Server connection
-  SERVER_URL: 'ws://localhost:2567', // WebSocket URL for Colyseus server
+  SERVER_URL: 'ws://localhost:3001', // WebSocket URL for Colyseus server
 
   // Game settings
   CANVAS_WIDTH: 800,

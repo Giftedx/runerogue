@@ -141,9 +141,9 @@ export class EconomyClient {
     if (!this.client.interceptors || !this.client.interceptors.response) {
       this.client.interceptors = {
         response: {
-          use: (success: any, error: any) => {},
+          use: (_success: unknown, _error?: unknown) => 0, // Return number as required by AxiosResponseInterceptorUse
         },
-      };
+      } as typeof this.client.interceptors;
     }
 
     // Add response interceptor for error handling

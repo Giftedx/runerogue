@@ -1,12 +1,52 @@
 /**
- * Simple RuneRogue Server - Minimal working version
- * Bypasses complex schema issues for immediate functionality
+ * Simple RuneRogue Server - Working Colyseus Server
+ * Uses the CleanGameRoom with minimal setup
  */
 
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import { createServer } from 'http';
+import { Server as ColyseusServer } from '@colyseus/core';
+import { CleanGameRoom } from './rooms/CleanGameRoom';
+
+// Configuration
+const PORT = parseInt(process.env.PORT || '3001', 10);
+
+console.log('🚀 Starting Simple RuneRogue Server...');
+console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔌 Port: ${PORT}`);
+
+// Create Colyseus server
+const gameServer = new ColyseusServer();
+
+// Register game room
+gameServer.define('runerogue', CleanGameRoom);
+
+// Start server
+async function startServer() {
+  try {
+    await gameServer.listen(PORT);
+    console.log('✅ RuneRogue Server started successfully!');
+    console.log(`🎮 WebSocket: ws://localhost:${PORT}`);
+    console.log(`🔗 Connect: ws://localhost:${PORT}/runerogue`);
+  } catch (error) {
+    console.error('❌ Server startup failed:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('🛑 Shutting down server...');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('🛑 Received SIGTERM, shutting down...');
+  process.exit(0);
+});
+
+export { gameServer };
 
 // Configuration
 const PORT = parseInt(process.env.PORT || '3001', 10);

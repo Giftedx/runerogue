@@ -61,6 +61,9 @@ export interface ItemDefinition {
   rangedLevelRequired?: number;
   magicLevelRequired?: number;
   prayerLevelRequired?: number;
+  // Weapon properties
+  weaponSpeed?: number;
+  weaponType?: string;
 }
 
 /**

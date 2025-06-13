@@ -6,7 +6,7 @@
  */
 
 import { Room, Client } from "colyseus";
-import { GameState } from "../schemas/GameState.js";
+import { GameState } from "../schemas/GameState";
 
 export class RuneRogueRoom extends Room<GameState> {
   maxClients = 4; // Discord group limit

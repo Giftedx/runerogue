@@ -1052,4 +1052,33 @@ export class MCPOSRSDataExtractor {
   }
 }
 
+/**
+ * Search OSRS assets using MCP data
+ * @param query - Search query
+ */
+export async function searchOSRSAssets(query: string): Promise<any[]> {
+  const extractor = new MCPOSRSDataExtractor();
+
+  // Search across multiple asset types
+  const results = [];
+
+  try {
+    // Search objects/items
+    const objects = await extractor['searchMCPObjects'](query);
+    results.push(...objects.map(obj => ({ ...obj, type: 'object' })));
+
+    // Search NPCs
+    const npcs = await extractor['searchMCPNPCs'](query);
+    results.push(...npcs.map(npc => ({ ...npc, type: 'npc' })));
+
+    // Search sprites
+    const sprites = await extractor['searchMCPSprites'](query);
+    results.push(...sprites.map(sprite => ({ ...sprite, type: 'sprite' })));
+  } catch (error) {
+    console.error('Error searching OSRS assets:', error);
+  }
+
+  return results;
+}
+
 export default MCPOSRSDataExtractor;

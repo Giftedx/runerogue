@@ -989,7 +989,7 @@ export class GameRoom extends Room<WorldState> {
           if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
             await economyIntegration.addItemToInventory(
               economyProfile.id,
-              itemDef.id,
+              parseInt(itemDef.id, 10),
               item.quantity
             );
             console.log(
@@ -1018,7 +1018,7 @@ export class GameRoom extends Room<WorldState> {
           if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
             await economyIntegration.addItemToInventory(
               economyProfile.id,
-              itemDef.id,
+              parseInt(itemDef.id, 10),
               item.quantity
             );
             console.log(
@@ -1101,7 +1101,7 @@ export class GameRoom extends Room<WorldState> {
             if (economyProfile && economyProfile.id && itemDef && itemDef.id) {
               await economyIntegration.addItemToInventory(
                 economyProfile.id,
-                itemDef.id,
+                parseInt(itemDef.id, 10),
                 item.quantity
               );
               console.log(

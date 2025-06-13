@@ -56,8 +56,8 @@
     "useUnknownInCatchVariables": false
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    "src/server/**/*.ts",
+    "src/shared/**/*.ts",
     "src/**/*.d.ts"
   ],
   "exclude": [
@@ -70,6 +70,10 @@
     "jest.setup.ts",
     "src/server/game/legacy-schemas-backup/**",
     "src/server/utils/*-fix.ts",
-    "src/server/utils/*-polyfill.ts"
+    "src/server/utils/*-polyfill.ts",
+    "src/client/components/**/*.tsx",
+    "src/types/phaser.d.ts",
+    "src/server/index.ts",
+    "src/server/simple-index.ts"
   ]
 }

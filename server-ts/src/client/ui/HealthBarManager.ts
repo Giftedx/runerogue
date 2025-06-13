@@ -9,7 +9,7 @@
  */
 
 import { HealthBar, HealthBarConfig, DEFAULT_HEALTH_BAR_CONFIG } from './HealthBar';
-import { HealthBarEvent } from '../../../server/ecs/systems/HealthBarSystem';
+import { HealthBarEvent } from '../../types/ecs-events.js';
 
 /**
  * Configuration for the health bar manager

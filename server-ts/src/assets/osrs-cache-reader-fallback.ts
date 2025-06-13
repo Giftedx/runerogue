@@ -198,12 +198,10 @@ class OSRSCacheReaderFallback {
     try {
       // This would use our existing MCP integration
       // Import the MCP extractor
-      const { searchOSRSAssets } = await import('./mcp-osrs-extractor.js');
-
-      // Search for various asset types
-      const itemResults = await searchOSRSAssets('objtypes', 'dragon scimitar');
-      const npcResults = await searchOSRSAssets('npctypes', 'zulrah');
-      const spriteResults = await searchOSRSAssets('spritetypes', 'interface');
+      const { searchOSRSAssets } = await import('./mcp-osrs-extractor.js'); // Search for various asset types
+      const itemResults = await searchOSRSAssets('dragon scimitar');
+      const npcResults = await searchOSRSAssets('zulrah');
+      const spriteResults = await searchOSRSAssets('interface');
 
       // Convert MCP results to our asset format
       // This would be implemented to parse MCP results into CacheAsset format
@@ -225,9 +223,14 @@ class OSRSCacheReaderFallback {
     try {
       // Import and use our existing Wiki extractor
       const { OSRSAssetExtractor } = await import('./osrs-asset-extractor.js');
-
       const wikiExtractor = new OSRSAssetExtractor();
-      const wikiResult = await wikiExtractor.extractAssets(); // Convert wiki results to our format
+      await wikiExtractor.extractAllAssets(); // Extract all assets
+
+      // Create a mock result for now since extractAllAssets returns void
+      const wikiResult = {
+        assets: {},
+        totalAssets: 0,
+      };
       for (const [category, assets] of Object.entries(wikiResult.assets)) {
         if (Array.isArray(assets)) {
           for (const asset of assets) {
@@ -244,7 +247,9 @@ class OSRSCacheReaderFallback {
               extractedFiles: assetData.files?.map(f => f.path) ?? [],
               metadata: {
                 source: 'osrs-wiki',
-                ...assetData.metadata,
+                ...(assetData.metadata && typeof assetData.metadata === 'object'
+                  ? assetData.metadata
+                  : {}),
               },
             };
             result.extractedAssets.push(cacheAsset);

@@ -17,9 +17,6 @@ importers:
       graceful-fs:
         specifier: ^4.2.11
         version: 4.2.11
-      p-limit:
-        specifier: ^6.2.0
-        version: 6.2.0
       socket.io:
         specifier: ^4.8.1
         version: 4.8.1
@@ -289,7 +286,7 @@ importers:
         specifier: ^3.0.39
         version: 3.0.39
       '@colyseus/ws-transport':
-        specifier: ^0.16.0
+        specifier: ^0.16.5
         version: 0.16.5(@colyseus/core@0.16.18(@colyseus/schema@3.0.39))
       '@discord/embedded-app-sdk':
         specifier: ^2.0.0
@@ -297,9 +294,6 @@ importers:
       '@discordjs/rest':
         specifier: ^2.0.0
         version: 2.5.0
-      '@runerogue/osrs-data':
-        specifier: workspace:*
-        version: link:../packages/osrs-data
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4

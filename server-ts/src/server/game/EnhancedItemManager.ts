@@ -186,21 +186,20 @@ export class EnhancedItemManager {
       tradeable: osrsItem.tradeable ?? true,
       members: osrsItem.members || false,
       questItem: osrsItem.quest || false,
-      equipable: osrsItem.equipable || false,
-      // Combat requirements
+      equipable: osrsItem.equipable || false, // Combat requirements
       attackLevelRequired: osrsItem.attackLevelRequired || 1,
       strengthLevelRequired: osrsItem.strengthLevelRequired || 1,
       defenceLevelRequired: osrsItem.defenceLevelRequired || 1,
       rangedLevelRequired: osrsItem.rangedLevelRequired || 1,
       magicLevelRequired: osrsItem.magicLevelRequired || 1,
       prayerLevelRequired: osrsItem.prayerLevelRequired || 1,
-      // Combat bonuses
-      attackBonus: osrsItem.attackBonus || 0,
-      strengthBonus: osrsItem.strengthBonus || 0,
-      defenceBonus: osrsItem.defenceBonus || 0,
-      rangedBonus: osrsItem.rangedBonus || 0,
-      magicBonus: osrsItem.magicBonus || 0,
-      prayerBonus: osrsItem.prayerBonus || 0,
+      // Combat bonuses (note: these are not part of the base ItemDefinition interface)
+      // attackBonus: osrsItem.attackBonus || 0,
+      // strengthBonus: osrsItem.strengthBonus || 0,
+      // defenceBonus: osrsItem.defenceBonus || 0,
+      // rangedBonus: osrsItem.rangedBonus || 0,
+      // magicBonus: osrsItem.magicBonus || 0,
+      // prayerBonus: osrsItem.prayerBonus || 0,
       // Weapon specific
       weaponSpeed: osrsItem.weapon?.attackSpeed || 4,
       weaponType: osrsItem.weapon?.weaponType || 'none',

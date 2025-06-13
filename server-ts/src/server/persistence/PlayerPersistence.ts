@@ -44,7 +44,7 @@ export class PlayerPersistence {
   private static instance: PlayerPersistence;
   private saveDirectory: string;
   private saveInterval: number = 60000; // Auto-save every minute
-  private activePlayers: Map<string, NodeJS.Timer> = new Map();
+  private activePlayers: Map<string, NodeJS.Timeout> = new Map();
 
   private constructor() {
     // Use MongoDB in production, JSON files for development

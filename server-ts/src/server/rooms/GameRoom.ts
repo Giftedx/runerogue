@@ -5,9 +5,9 @@ import * as Components from '../ecs/components';
 import * as Systems from '../ecs/systems';
 import { StateSyncSystem } from '../systems/StateSyncSystem';
 import {
-  ClientMessage,
   ServerMessage,
   EnemyType,
+  Vector2,
   // Removed unused shared type imports
 } from '@runerogue/shared';
 
@@ -16,23 +16,31 @@ const OSRS_GAME_TICK_MS = 600;
 export class GameRoom extends Room<GameRoomState> {
   private world: IWorld;
   private stateSyncSystem: StateSyncSystem;
-  private ecsSystems: Function[] = [];
+  private ecsSystems: ((world: IWorld) => void)[] = [];
 
   private playerEntityMap = new Map<string, number>();
   private entityPlayerMap = new Map<number, string>();
   private enemyEntityMap = new Map<string, number>();
   private entityEnemyMap = new Map<number, string>();
-
-  private gameLoopInterval!: NodeJS.Timer;
+  private gameLoopInterval!: NodeJS.Timeout;
   public readonly TICK_RATE = 50;
   public tickCounter = 0;
+
+  // Performance monitoring
+  private performanceMetrics = {
+    avgTickTime: 0,
+    peakTickTime: 0,
+    playerCount: 0,
+    entityCount: 0,
+    lastReportTime: Date.now(),
+  };
 
   public currentWave = 0;
   private waveInProgress = false;
   private enemiesToSpawnThisWave = 0;
   private enemiesSpawnedThisWave = 0;
   private waveStartTime = 0;
-  private nextWaveTimeout?: any;
+  private nextWaveTimeout?: NodeJS.Timeout;
 
   private entityIdCounter = 0;
   async onCreate(options: any) {
@@ -64,45 +72,94 @@ export class GameRoom extends Room<GameRoomState> {
     if (Systems.CookingSystem) this.ecsSystems.push(Systems.CookingSystem);
     if (Systems.FiremakingSystem) this.ecsSystems.push(Systems.FiremakingSystem);
   }
-
   private setupMessageHandlers() {
-    this.onMessage<ClientMessage>('move', (client, message) =>
+    this.onMessage<{ target: Vector2 }>('move', (client, message) =>
       this.handleMove(client, message.target)
     );
-    this.onMessage<ClientMessage>('attack', (client, message) =>
+    this.onMessage<{ targetId: string }>('attack', (client, message) =>
       this.handleAttack(client, message.targetId)
     );
-    this.onMessage<ClientMessage>('stopAttack', client => this.handleStopAttack(client));
-    this.onMessage<ClientMessage>('prayer', (client, message) =>
-      this.handlePrayer(client, message.action, message.prayer)
+    this.onMessage('stopAttack', client => this.handleStopAttack(client));
+    this.onMessage<{ action: 'activate' | 'deactivate'; prayer: string }>(
+      'prayer',
+      (client, message) => this.handlePrayer(client, message.action, message.prayer)
     );
-    this.onMessage<ClientMessage>('specialAttack', (client, message) =>
+    this.onMessage<{ targetId?: string }>('specialAttack', (client, message) =>
       this.handleSpecialAttack(client, message.targetId)
     );
-    this.onMessage<ClientMessage>('chat', (client, message) =>
+    this.onMessage<{ message: string }>('chat', (client, message) =>
       this.handleChat(client, message.message)
     );
   }
-
   async onJoin(client: Client, options: any) {
-    const playerName = options.name || `Player${client.sessionId.slice(0, 4)}`;
-    const entity = addEntity(this.world);
-    this.playerEntityMap.set(client.sessionId, entity);
-    this.entityPlayerMap.set(entity, client.sessionId);
-    this.initializePlayerEntity(entity, playerName);
-    const playerState = new PlayerSchema();
-    playerState.id = client.sessionId;
-    playerState.name = playerName;
-    this.stateSyncSystem.execute(0);
-    this.state.players.set(client.sessionId, playerState);
-    if (this.state.players.size === 1 && !this.state.gameStarted) {
-      this.startGame();
+    try {
+      const playerName =
+        this.validatePlayerName(options.name) || `Player${client.sessionId.slice(0, 4)}`;
+
+      // Check room capacity
+      if (this.state.players.size >= 4) {
+        throw new Error('Room is full');
+      }
+
+      // Create ECS entity
+      const entity = addEntity(this.world);
+      this.playerEntityMap.set(client.sessionId, entity);
+      this.entityPlayerMap.set(entity, client.sessionId);
+
+      // Initialize player entity with OSRS defaults
+      this.initializePlayerEntity(entity, playerName);
+
+      // Create Colyseus state
+      const playerState = new PlayerSchema();
+      playerState.id = client.sessionId;
+      playerState.name = playerName;
+
+      // Sync initial state from ECS to Colyseus
+      this.stateSyncSystem.execute(0);
+      this.state.players.set(client.sessionId, playerState);
+
+      // Broadcast join event
+      this.broadcastPlayerJoin(playerName);
+
+      // Auto-start game if minimum players reached
+      this.checkGameStart();
+    } catch (error) {
+      console.error('Player join failed:', error);
+      client.leave(1000, 'Join failed: ' + (error as Error).message);
     }
+  }
+
+  /**
+   * Validate and sanitize player name
+   */
+  private validatePlayerName(name?: string): string | null {
+    if (!name || typeof name !== 'string') return null;
+
+    // OSRS name validation: 1-12 characters, alphanumeric and spaces
+    const sanitized = name.trim().slice(0, 12);
+    const validPattern = /^[a-zA-Z0-9 ]+$/;
+
+    return validPattern.test(sanitized) ? sanitized : null;
+  }
+
+  /**
+   * Broadcast player join event
+   */
+  private broadcastPlayerJoin(playerName: string) {
     this.broadcast('chatMessage', {
       playerId: 'system',
       playerName: 'System',
       message: `${playerName} has joined!`,
     } as ServerMessage);
+  }
+
+  /**
+   * Check if game should start
+   */
+  private checkGameStart() {
+    if (this.state.players.size === 1 && !this.state.gameStarted) {
+      this.startGame();
+    }
   }
 
   private initializePlayerEntity(entity: number, name: string) {
@@ -158,33 +215,127 @@ export class GameRoom extends Room<GameRoomState> {
     addComponent(this.world, Components.CombatState, entity);
     Components.CombatState.inCombatTimer[entity] = 0;
   }
-
   async onLeave(client: Client, consented: boolean) {
-    const playerName = this.state.players.get(client.sessionId)?.name || client.sessionId;
-    const entity = this.playerEntityMap.get(client.sessionId);
-    if (entity !== undefined) {
-      removeEntity(this.world, entity);
-      this.playerEntityMap.delete(client.sessionId);
-      this.entityPlayerMap.delete(entity);
+    try {
+      const playerName = this.state.players.get(client.sessionId)?.name || client.sessionId;
+      const entity = this.playerEntityMap.get(client.sessionId);
+
+      if (entity !== undefined) {
+        // Clean up ECS entity
+        removeEntity(this.world, entity);
+        this.playerEntityMap.delete(client.sessionId);
+        this.entityPlayerMap.delete(entity);
+      }
+
+      // Clean up Colyseus state
+      this.state.players.delete(client.sessionId);
+
+      // Broadcast leave event
+      this.broadcastPlayerLeave(playerName);
+
+      // Check if game should pause/end
+      this.checkGamePause();
+    } catch (error) {
+      console.error('Player leave cleanup failed:', error);
     }
-    this.state.players.delete(client.sessionId);
+  }
+
+  /**
+   * Broadcast player leave event
+   */
+  private broadcastPlayerLeave(playerName: string) {
     this.broadcast('chatMessage', {
       playerId: 'system',
       playerName: 'System',
       message: `${playerName} has left.`,
     } as ServerMessage);
+  }
+
+  /**
+   * Check if game should pause or end
+   */
+  private checkGamePause() {
     if (this.state.players.size === 0 && this.state.gameStarted) {
       this.endGame();
     }
   }
-
   private startGame() {
     if (this.state.gameStarted) return;
     this.state.gameStarted = true;
     this.currentWave = 0;
-    this.waveStartTime = this.state.waveStartTime;
-    this.gameLoopInterval = setInterval(() => this.tick(), this.TICK_RATE);
+    this.waveStartTime = Date.now();
+    this.startEnhancedGameLoop();
     this.startNextWave();
+  }
+
+  /**
+   * Enhanced game loop with performance monitoring and optimal timing
+   * Target: 20 TPS (50ms per tick) with consistent performance
+   */
+  private startEnhancedGameLoop() {
+    const targetTickTime = 1000 / 20; // 20 TPS = 50ms per tick
+    let lastTime = Date.now();
+
+    this.gameLoopInterval = setInterval(() => {
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      const tickStartTime = performance.now();
+
+      try {
+        this.updateGame(deltaTime);
+
+        // Performance monitoring
+        const tickEndTime = performance.now();
+        const tickDuration = tickEndTime - tickStartTime;
+        this.updatePerformanceMetrics(tickDuration);
+      } catch (error) {
+        console.error('Game loop error:', error);
+      }
+
+      lastTime = currentTime;
+    }, targetTickTime);
+  }
+
+  /**
+   * Enhanced game update with optimized system execution order
+   */
+  private updateGame(deltaTime: number) {
+    this.tickCounter++;
+
+    // Execute ECS systems in dependency order
+    this.runECSSystems(deltaTime);
+
+    // Synchronize state to clients (critical for multiplayer)
+    this.stateSyncSystem.execute(this.TICK_RATE);
+
+    // Wave management (after all gameplay systems)
+    this.checkWaveProgress();
+  }
+
+  /**
+   * Run ECS systems in optimal order for dependencies
+   */
+  private runECSSystems(deltaTime: number) {
+    // 1. Input processing & movement validation (highest priority)
+    // 2. Combat calculations
+    // 3. Skill progression
+    // 4. State updates
+    for (const system of this.ecsSystems) {
+      try {
+        system(this.world);
+      } catch (systemError) {
+        console.error(`ECS System error in ${system.name || 'unknown system'}:`, systemError);
+      }
+    }
+  }
+
+  /**
+   * Check wave progress separate from tick for cleaner logic
+   */
+  private checkWaveProgress() {
+    if (this.waveInProgress && this.state.enemies.size === 0) {
+      this.completeWave();
+    }
   }
 
   private endGame() {
@@ -200,16 +351,12 @@ export class GameRoom extends Room<GameRoomState> {
     } as ServerMessage);
     setTimeout(() => this.disconnect(), 30000);
   }
-
+  /**
+   * Legacy tick method - replaced by enhanced game loop
+   * Kept for compatibility if needed
+   */
   private tick() {
-    this.tickCounter++;
-    for (const system of this.ecsSystems) {
-      system(this.world);
-    }
-    this.stateSyncSystem.execute(this.TICK_RATE);
-    if (this.waveInProgress && this.state.enemies.size === 0) {
-      this.completeWave();
-    }
+    this.updateGame(this.TICK_RATE);
   }
 
   private startNextWave() {
@@ -258,13 +405,51 @@ export class GameRoom extends Room<GameRoomState> {
     if (wave <= 12) return ['wizard', 'moss_giant', 'hill_giant'];
     return ['lesser_demon', 'fire_giant'];
   }
-
   private handleMove(client: Client, target: { x: number; y: number }) {
     const entity = this.playerEntityMap.get(client.sessionId);
     if (entity === undefined || !Components.Input) return;
-    Components.Input.moveX[entity] = target.x;
-    Components.Input.moveY[entity] = target.y;
-    Components.Input.isMoving[entity] = 1;
+
+    const currentPos = {
+      x: Components.Position.x[entity],
+      y: Components.Position.y[entity],
+    };
+
+    // OSRS movement validation - prevent cheating
+    if (this.validateMovement(currentPos, target, entity)) {
+      Components.Input.moveX[entity] = target.x;
+      Components.Input.moveY[entity] = target.y;
+      Components.Input.isMoving[entity] = 1;
+    } else {
+      // Invalid movement - send correction back to client
+      this.send(client, 'positionCorrection', {
+        x: currentPos.x,
+        y: currentPos.y,
+        timestamp: Date.now(),
+      });
+    }
+  }
+
+  /**
+   * Validate movement according to OSRS mechanics
+   * Prevents speed hacking and impossible movements
+   */
+  private validateMovement(
+    current: { x: number; y: number },
+    target: { x: number; y: number },
+    entity: number
+  ): boolean {
+    const distance = Math.sqrt(
+      Math.pow(target.x - current.x, 2) + Math.pow(target.y - current.y, 2)
+    );
+
+    // OSRS: 1 tile per 0.6 seconds at base speed
+    // With 20 TPS server, max distance per tick is limited
+    const maxDistancePerTick = Components.Velocity?.maxSpeed?.[entity] || 64; // Default tile size in pixels
+
+    // Allow some tolerance for network lag but prevent major cheating
+    const maxAllowedDistance = maxDistancePerTick * 1.2; // 20% tolerance
+
+    return distance <= maxAllowedDistance;
   }
 
   private handleAttack(client: Client, targetId: string) {
@@ -312,8 +497,42 @@ export class GameRoom extends Room<GameRoomState> {
     } as ServerMessage);
   }
 
+  /**
+   * Update performance metrics for monitoring
+   */
+  private updatePerformanceMetrics(tickTime: number) {
+    this.performanceMetrics.avgTickTime =
+      this.performanceMetrics.avgTickTime * 0.9 + tickTime * 0.1;
+    this.performanceMetrics.peakTickTime = Math.max(this.performanceMetrics.peakTickTime, tickTime);
+    this.performanceMetrics.playerCount = this.state.players.size;
+    this.performanceMetrics.entityCount = this.playerEntityMap.size + this.enemyEntityMap.size;
+
+    // Report every 30 seconds
+    if (Date.now() - this.performanceMetrics.lastReportTime > 30000) {
+      this.logPerformanceReport();
+      this.performanceMetrics.lastReportTime = Date.now();
+      this.performanceMetrics.peakTickTime = 0; // Reset peak after reporting
+    }
+  }
+
+  /**
+   * Log performance report for monitoring
+   */
+  private logPerformanceReport() {
+    console.log('📊 GameRoom Performance Report:', {
+      room: this.roomId,
+      avgTickTime: `${this.performanceMetrics.avgTickTime.toFixed(2)}ms`,
+      peakTickTime: `${this.performanceMetrics.peakTickTime.toFixed(2)}ms`,
+      targetTickTime: '50ms (20 TPS)',
+      players: this.performanceMetrics.playerCount,
+      entities: this.performanceMetrics.entityCount,
+      wave: this.currentWave,
+      performance: this.performanceMetrics.avgTickTime < 50 ? '✅ Good' : '⚠️ Degraded',
+    });
+  }
+
   onDispose() {
-    if (this.gameLoopInterval) this.gameLoopInterval.clear();
-    if (this.nextWaveTimeout) this.nextWaveTimeout.clear();
+    if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
+    if (this.nextWaveTimeout) clearTimeout(this.nextWaveTimeout);
   }
 }

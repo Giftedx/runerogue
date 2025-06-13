@@ -59,11 +59,14 @@ export interface GeneratedMap {
  * Advanced procedural map generator using ROT.js
  */
 export class ProceduralMapGenerator {
-  private rng: RNG;
+  private rng: typeof RNG;
   private mapCounter = 0;
 
   constructor(seed?: number) {
-    this.rng = new RNG(seed);
+    this.rng = RNG;
+    if (seed !== undefined) {
+      this.rng.setSeed(seed);
+    }
   }
 
   /**
@@ -254,8 +257,8 @@ export class ProceduralMapGenerator {
       .fill(null)
       .map(() => Array(width).fill(TerrainType.WALL));
 
-    // Use ROT.js maze generation
-    const maze = new ROTMap.Maze(width, height);
+    // Use ROT.js maze generation (using EllerMaze as an example)
+    const maze = new ROTMap.EllerMaze(width, height);
     maze.create((x: number, y: number, value: number) => {
       if (x >= 0 && x < width && y >= 0 && y < height) {
         terrain[y][x] = value === 0 ? TerrainType.FLOOR : TerrainType.WALL;

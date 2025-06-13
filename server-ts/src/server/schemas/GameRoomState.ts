@@ -1,12 +1,5 @@
 import { Schema, MapSchema, ArraySchema, type } from '@colyseus/schema';
-import {
-  Vector2,
-  EquipmentBonuses,
-  ItemData,
-  CombatStats,
-  PrayerState,
-  Equipment,
-} from '@runerogue/shared';
+import { Vector2, EquipmentBonuses, ItemData, CombatStats, Equipment } from '@runerogue/shared';
 
 /**
  * COLYSEUS SCHEMAS FOR NETWORK SYNCHRONIZATION
@@ -84,7 +77,7 @@ export class EquipmentSchema extends Schema implements Equipment {
   // Add other slots as needed
 }
 
-export class PrayerSchema extends Schema implements PrayerState {
+export class PrayerSchema extends Schema {
   @type('number') points: number = 1;
   @type(['string']) activePrayers = new ArraySchema<string>();
   @type('number') drainRate: number = 0;

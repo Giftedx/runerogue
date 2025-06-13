@@ -8,15 +8,15 @@
  * @version 1.0.0
  */
 
-import { DamageNumberEvent } from '../../../server/ecs/systems/DamageNumberSystem';
-import { HealthBarEvent } from '../../../server/ecs/systems/HealthBarSystem';
-import { XPGainEvent as ServerXPGainEvent } from '../../../server/ecs/systems/XPNotificationSystem';
-import { XPNotificationManager } from '../ui/XPNotificationManager';
+import { DamageNumberEvent } from '../../types/ecs-events.js';
+import { HealthBarEvent } from '../../types/ecs-events.js';
+import { XPGainEvent as ServerXPGainEvent } from '../../types/ecs-events.js';
+import { XPNotificationManager } from '../ui/XPNotificationManager.js';
 
 /**
- * Interface for XP gain events
+ * Interface for XP gain events (client-side)
  */
-export interface XPGainEvent {
+export interface ClientXPGainEvent {
   skill: string;
   amount: number;
   newLevel?: number;
@@ -30,7 +30,7 @@ export interface XPGainEvent {
 interface VisualManagers {
   healthBarManager?: HealthBarManager;
   damageNumberManager?: DamageNumberManager;
-  xpNotificationManager?: XPNotificationManager;
+  xpNotificationManager?: IXPNotificationManager;
 }
 
 /**
@@ -52,8 +52,9 @@ interface DamageNumberManager {
 /**
  * XP notification manager interface
  */
-interface XPNotificationManager {
-  showXPGain(event: XPGainEvent): void;
+interface IXPNotificationManager {
+  showXPGain(event: ClientXPGainEvent): void;
+  handleXPGainEvents(events: any[]): void;
   cleanup(): void;
 }
 
@@ -94,7 +95,7 @@ export class CombatEventHandler {
     this.visualManagers.damageNumberManager = manager;
   }
 
-  public registerXPNotificationManager(manager: XPNotificationManager): void {
+  public registerXPNotificationManager(manager: IXPNotificationManager): void {
     this.visualManagers.xpNotificationManager = manager;
   }
 

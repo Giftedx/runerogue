@@ -7,22 +7,10 @@
  * @wiki https://oldschool.runescape.wiki/w/Damage_per_second/Melee
  */
 
-// import { OSRSCombatStats, OSRSEquipmentBonuses } from '../../../shared/src/types/osrs';
-
-// Temporary types for building
-interface OSRSCombatStats {
-  attack: number;
-  strength: number;
-  defence: number;
-  hitpoints: number;
-  prayer: number;
-}
-
-interface OSRSEquipmentBonuses {
-  attackBonus: number;
-  strengthBonus: number;
-  defenceBonus: number;
-}
+import {
+  OSRSCombatStats,
+  OSRSEquipmentBonuses,
+} from "../../../shared/src/types/osrs";
 
 /**
  * Calculate maximum hit for melee combat

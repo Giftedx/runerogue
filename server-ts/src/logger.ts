@@ -62,7 +62,7 @@ const consoleFormat = winston.format.combine(
 
 // Create transports based on environment
 const createTransports = () => {
-  const transportList = [
+  const transportList: winston.transport[] = [
     // Console transport for all environments
     new winston.transports.Console({
       format: consoleFormat,

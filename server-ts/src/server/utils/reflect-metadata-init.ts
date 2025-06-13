@@ -8,19 +8,40 @@ import 'reflect-metadata';
 
 // Comprehensive Symbol.metadata polyfill for Colyseus compatibility
 if (!Symbol.metadata) {
-  (Symbol as any).metadata = Symbol.for('Symbol.metadata');
+  // Use Object.defineProperty to avoid read-only property errors
+  Object.defineProperty(Symbol, 'metadata', {
+    value: Symbol.for('Symbol.metadata'),
+    writable: false,
+    enumerable: false,
+    configurable: true,
+  });
 
   // Also ensure it's available on all global Symbol objects
   if (typeof globalThis !== 'undefined' && !globalThis.Symbol.metadata) {
-    globalThis.Symbol.metadata = (Symbol as any).metadata;
+    Object.defineProperty(globalThis.Symbol, 'metadata', {
+      value: Symbol.metadata,
+      writable: false,
+      enumerable: false,
+      configurable: true,
+    });
   }
 
   if (typeof global !== 'undefined' && !global.Symbol.metadata) {
-    global.Symbol.metadata = (Symbol as any).metadata;
+    Object.defineProperty(global.Symbol, 'metadata', {
+      value: Symbol.metadata,
+      writable: false,
+      enumerable: false,
+      configurable: true,
+    });
   }
 
   if (typeof window !== 'undefined' && !window.Symbol.metadata) {
-    window.Symbol.metadata = (Symbol as any).metadata;
+    Object.defineProperty(window.Symbol, 'metadata', {
+      value: Symbol.metadata,
+      writable: false,
+      enumerable: false,
+      configurable: true,
+    });
   }
 }
 

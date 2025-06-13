@@ -20,10 +20,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const discord = new DiscordSDK(CONFIG.DISCORD_CLIENT_ID);
     await discord.ready();
 
-    // Get authenticated user - SDK method to be determined
-    const auth = await discord.authenticate({ scopes: ['identify'] });
-    const user = auth.user;
-    console.log(`Authenticated as Discord user: ${user.username}`);
+    // Get authenticated user - Temporarily commented out due to API changes
+    // const auth = await discord.authenticate({ scopes: ['identify'] });
+    // const user = auth.user;
+    // console.log(`Authenticated as Discord user: ${user.username}`);
+
+    // Mock user for now
+    const user = { username: 'Player', id: '12345' };
 
     // Create loading screen
     showLoadingScreen('Loading RuneRogue...');

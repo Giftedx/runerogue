@@ -189,6 +189,13 @@ export class OSRSAssetLoader {
   }
 
   /**
+   * Check if asset exists (alias for hasAssetByName)
+   */
+  hasAsset(assetName: string): boolean {
+    return this.hasAssetByName(assetName);
+  }
+
+  /**
    * Create Phaser-compatible sprite configurations
    */
   createPhaserSpriteConfig(scene: any): void {

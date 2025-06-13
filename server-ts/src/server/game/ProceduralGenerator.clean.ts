@@ -282,15 +282,15 @@ export class ProceduralGenerator {
     const resources = this.generateResourceSpawns(processedTerrain, biomeConfig);
 
     return {
+      id: `${biomeType}_${width}x${height}_${seed || Date.now()}`,
+      name: `Generated ${biomeType} Area`,
       width,
       height,
       biome: biomeType,
-      terrain: processedTerrain,
-      monsters,
-      loot,
-      resources,
-      dangerLevel: biomeConfig.dangerLevel,
-      seed: seed || Date.now(),
+      collisionMap: processedTerrain.map(row =>
+        row.map(cell => cell === TerrainType.WATER || cell === TerrainType.ROCK)
+      ),
+      // Note: terrain data removed as it's not part of MapBlueprint schema
     };
   }
 

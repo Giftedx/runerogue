@@ -1,7 +1,17 @@
 /**
  * Survivor Wave System for RuneRogue
  *
- * Implements wave-based survival mechanics with increasing difficulty,
+ * Implements wave-based surviva    this.room = room;
+    this.proceduralGenerator = new ProceduralGenerator();
+    // Create placeholder ItemManager and PrayerSystem for now
+    const dummyItemManager = {} as ItemManager;
+    // Create a minimal dummy player with proper type conversion
+    const dummyPlayer = new Player();
+    dummyPlayer.skills.prayer.level = 1;
+    dummyPlayer.prayerPoints = 1;
+    dummyPlayer.maxPrayerPoints = 1;
+    const dummyPrayerSystem = new PrayerSystem(dummyPlayer);
+    this.combatSystem = new CombatSystem(room.state, dummyItemManager, dummyPrayerSystem);ith increasing difficulty,
  * procedurally generated enemy spawns, and OSRS-inspired survival gameplay.
  */
 
@@ -11,10 +21,8 @@ import testSafeLogger from '../utils/test-safe-logger';
 import { CombatSystem } from './CombatSystem';
 import { NPC, Player, WorldState } from './EntitySchemas';
 import { ItemManager } from './ItemManager';
+import { PrayerSystem } from './PrayerSystem';
 import { ProceduralGenerator } from './ProceduralGenerator';
-
-// Temporary type for PrayerSystem until it's properly implemented
-type PrayerSystem = Record<string, unknown>;
 
 export interface WaveConfiguration {
   waveNumber: number;
@@ -81,7 +89,12 @@ export class SurvivorWaveSystem {
     this.proceduralGenerator = new ProceduralGenerator();
     // Create placeholder ItemManager and PrayerSystem for now
     const dummyItemManager = {} as ItemManager;
-    const dummyPrayerSystem = {} as PrayerSystem;
+    // Create a minimal dummy player with proper type conversion
+    const dummyPlayer = new Player();
+    dummyPlayer.skills.prayer.level = 1;
+    dummyPlayer.prayerPoints = 1;
+    dummyPlayer.maxPrayerPoints = 1;
+    const dummyPrayerSystem = new PrayerSystem(dummyPlayer);
     this.combatSystem = new CombatSystem(room.state, dummyItemManager, dummyPrayerSystem);
   }
   /**

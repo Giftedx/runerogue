@@ -266,9 +266,16 @@ export class GameClient {
   }
 
   // Send movement command to server
-  public sendMoveCommand(direction: string): void {
+  public sendMoveCommand(target: { x: number; y: number } | string): void {
     if (!this.room) return;
-    this.room.send('move', { direction });
+
+    if (typeof target === 'string') {
+      // Legacy direction-based movement
+      this.room.send('move', { direction: target });
+    } else {
+      // Coordinate-based movement
+      this.room.send('move', { target });
+    }
   }
 
   // Send attack command to server

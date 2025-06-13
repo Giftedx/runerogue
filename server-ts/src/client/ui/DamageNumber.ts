@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import { DamageNumberEvent } from '../../../server/ecs/systems/DamageNumberSystem';
+import { DamageNumberEvent } from '../../types/ecs-events.js';
 
 /**
  * Configuration for damage number appearance and animation
@@ -91,14 +91,14 @@ export class DamageNumber {
       color: this.event.color,
       stroke: '#000000',
       strokeThickness: 2,
-      fontStyle: this.event.type === 'critical' ? 'bold' : 'normal',
+      fontStyle: this.event.isCritical ? 'bold' : 'normal',
     });
 
     this.text.setOrigin(0.5, 0.5);
     this.text.setDepth(2000); // Render above everything else
 
     // Add special effects for critical hits
-    if (this.event.type === 'critical') {
+    if (this.event.isCritical) {
       this.addCriticalEffect();
     }
   }
@@ -108,12 +108,13 @@ export class DamageNumber {
    */
   private getFontSize(): number {
     switch (this.event.type) {
-      case 'critical':
-        return this.config.fontSize_critical * this.event.sizeMultiplier;
       case 'miss':
         return this.config.fontSize_miss;
       default:
-        return this.config.fontSize * this.event.sizeMultiplier;
+        if (this.event.isCritical) {
+          return this.config.fontSize_critical * (this.event.sizeMultiplier || 1);
+        }
+        return this.config.fontSize * (this.event.sizeMultiplier || 1);
     }
   }
 
@@ -124,11 +125,12 @@ export class DamageNumber {
     switch (this.event.type) {
       case 'miss':
         return 'MISS';
-      case 'critical':
-        return `${this.event.value}!`;
       case 'heal':
         return `+${this.event.value}`;
       default:
+        if (this.event.isCritical) {
+          return `${this.event.value}!`;
+        }
         return this.event.value.toString();
     }
   }
@@ -176,7 +178,7 @@ export class DamageNumber {
     });
 
     // Add subtle scale animation for critical hits
-    if (this.event.type === 'critical') {
+    if (this.event.isCritical) {
       this.scene.tweens.add({
         targets: this.text,
         scaleX: 1.2,

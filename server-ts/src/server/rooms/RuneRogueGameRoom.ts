@@ -258,10 +258,9 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    * Spawn a new wave of enemies
    */
   private spawnWave(): void {
+    // Increment wave number directly on the state
+    this.state.waveNumber++;
     const wave = this.state.wave;
-    wave.currentWave++;
-    wave.isActive = true;
-    wave.waveStartTime = Date.now();
 
     const enemyCount = Math.min(10, 2 + wave.currentWave);
 
@@ -283,8 +282,8 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    * Update wave progress
    */
   private updateWaveProgress(): void {
-    if (this.state.wave.enemiesRemaining === 0 && this.state.wave.isActive) {
-      this.state.wave.isActive = false;
+    if (this.state.wave.enemiesRemaining === 0) {
+      // Note: WaveSchema doesn't have isActive property
       console.log(`✅ Wave ${this.state.wave.currentWave} completed!`);
     }
   }

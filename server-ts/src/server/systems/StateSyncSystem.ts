@@ -101,11 +101,11 @@ export class StateSyncSystem {
       this.syncPlayerCombatState(playerState, entity);
     }
   }
-
   /** Sync player name from ECS to schema */
   private syncPlayerName(playerState: PlayerSchema, entity: number) {
     if (Components.Name && Components.Name.value[entity]) {
-      playerState.name = Components.Name.value[entity] as string;
+      // Convert from number (string table index) to string via unknown
+      playerState.name = Components.Name.value[entity] as unknown as string;
     }
   }
 

@@ -108,7 +108,7 @@ export class ItemManager {
       // Update local cache and definitions
       let updatedCount = 0;
       for (const item of items) {
-        const cacheKey = `item:${item.itemId}`;
+        const cacheKey = `item:${item.id}`;
         const existingItem = this.cache.get<ItemDefinition>(cacheKey);
 
         // Only update if item is new or modified
@@ -117,8 +117,20 @@ export class ItemManager {
           existingItem.name !== item.name ||
           existingItem.description !== item.description
         ) {
-          this.cache.set(cacheKey, item, CACHE_TTL_SECONDS.ITEM_DEFINITION);
-          this.itemDefinitions.set(item.itemId, item);
+          // Convert Item to ItemDefinition
+          const itemDefinition: ItemDefinition = {
+            id: item.id.toString(),
+            itemId: item.id.toString(),
+            name: item.name,
+            description: item.description || '',
+            baseValue: item.base_value || 0,
+            attack: 0, // Default values for missing properties
+            defense: 0,
+            isStackable: item.is_stackable || false,
+            isTradeable: item.is_tradeable || true,
+          };
+          this.cache.set(cacheKey, itemDefinition, CACHE_TTL_SECONDS.ITEM_DEFINITION);
+          this.itemDefinitions.set(item.id.toString(), itemDefinition);
           updatedCount++;
         }
       }

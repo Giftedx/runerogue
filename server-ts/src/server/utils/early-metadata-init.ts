@@ -35,12 +35,16 @@ Object.defineProperty(Symbol, 'metadata', {
 // Early patch for common class constructors
 function patchConstructor(constructor: unknown) {
   if (constructor && typeof constructor === 'function') {
-    if (!(constructor as Record<string | symbol, unknown>)[metadataSymbol]) {
-      (constructor as Record<string | symbol, unknown>)[metadataSymbol] = null;
+    const ctorWithMetadata = constructor as unknown as Record<string | symbol, unknown>;
+    if (!ctorWithMetadata[metadataSymbol]) {
+      ctorWithMetadata[metadataSymbol] = null;
     }
     const proto = (constructor as { prototype?: unknown }).prototype;
-    if (proto && !(proto as Record<string | symbol, unknown>)[metadataSymbol]) {
-      (proto as Record<string | symbol, unknown>)[metadataSymbol] = null;
+    if (proto) {
+      const protoWithMetadata = proto as unknown as Record<string | symbol, unknown>;
+      if (!protoWithMetadata[metadataSymbol]) {
+        protoWithMetadata[metadataSymbol] = null;
+      }
     }
   }
 }

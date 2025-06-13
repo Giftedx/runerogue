@@ -119,7 +119,7 @@ export class HealthBar {
     if (this.config.showBorder) {
       this.border = this.scene.add.rectangle(0, 0, this.config.width, this.config.height);
       this.border.setStrokeStyle(this.config.borderWidth, this.config.borderColor);
-      this.border.setFillStyle(0x000000, 0); // Transparent fill
+      this.border.setFillStyle(0x000000); // Transparent fill
       this.container.add(this.border);
     }
 

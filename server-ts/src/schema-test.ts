@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { InventoryItem } from '../server/game/EntitySchemas';
+import { InventoryItem } from './server/game/EntitySchemas.js';
 
 // Test if schema metadata is properly attached
 const item = new InventoryItem();

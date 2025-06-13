@@ -110,8 +110,8 @@ export class EconomyIntegration {
           this.cache.set(cacheKey, dummyProfile);
           return dummyProfile;
         }
-      } else if (typeof this.client.getPlayerProfile === 'function') {
-        const profile = await this.client.getPlayerProfile(username);
+      } else if (typeof (this.client as any).getPlayerProfile === 'function') {
+        const profile = await (this.client as any).getPlayerProfile(username);
         this.cache.set(cacheKey, profile);
         return profile;
       } else {
@@ -169,6 +169,34 @@ export class EconomyIntegration {
     } catch (error) {
       logger.error(`Failed to add item ${itemId} to player ${playerId} inventory:`, error);
       throw new Error(`Economy service error: Could not add item to inventory`);
+    }
+  }
+
+  /**
+   * Remove an item from a player's inventory
+   */
+  public async removeItemFromInventory(
+    playerId: number,
+    itemId: number,
+    quantity: number = 1
+  ): Promise<void> {
+    try {
+      // Check if the client has the method
+      if (typeof (this.client as any).removeInventoryItem === 'function') {
+        await (this.client as any).removeInventoryItem(playerId, {
+          item_id: itemId,
+          quantity,
+        });
+      } else {
+        // Log that the method is not implemented but don't throw
+        logger.warn(`removeInventoryItem method not implemented in EconomyClient`);
+      }
+
+      // Invalidate cache
+      this.cache.del(`inventory:${playerId}`);
+    } catch (error) {
+      logger.error(`Failed to remove item ${itemId} from player ${playerId} inventory:`, error);
+      throw new Error(`Economy service error: Could not remove item from inventory`);
     }
   }
 

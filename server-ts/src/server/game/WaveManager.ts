@@ -453,39 +453,6 @@ export class WaveManager {
   }
 
   /**
-   * Complete the current wave and distribute rewards
-   */
-  private completeWave(): void {
-    if (!this.waveInProgress) return;
-
-    this.waveInProgress = false;
-    const waveTime = Date.now() - this.waveStartTime;
-
-    // Calculate and distribute rewards to surviving players
-    const survivors = Array.from(this.state.players.values()).filter(player => player.health > 0);
-
-    const waveConfig = this.generateWaveConfig(this.currentWave);
-
-    survivors.forEach(player => {
-      this.distributeWaveRewards(player, waveConfig.rewards, waveTime);
-    });
-
-    // Broadcast wave completion
-    this.broadcast('wave_completed', {
-      waveNumber: this.currentWave,
-      completionTime: waveTime,
-      survivorCount: survivors.length,
-      totalPlayers: this.state.players.size,
-      nextWaveIn: this.WAVE_PREP_TIME,
-      timestamp: Date.now(),
-    });
-
-    console.log(
-      `✅ Wave ${this.currentWave} completed! ${survivors.length}/${this.state.players.size} players survived.`
-    );
-  }
-
-  /**
    * Enhanced enemy death tracking for wave progression
    */
   public onEnemyDefeated(npcId: string): void {

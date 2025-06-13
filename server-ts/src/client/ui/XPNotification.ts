@@ -28,6 +28,7 @@ export class XPNotification {
       duration: 2000,
       fontSize: 14,
       color: '#00ff00',
+      newLevel: undefined,
       ...config,
     };
 

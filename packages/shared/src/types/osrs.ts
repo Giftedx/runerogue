@@ -152,3 +152,46 @@ export const COMBAT_XP_RATES = {
     hitpoints: 1.33,
   },
 };
+
+/**
+ * OSRS Combat Stats Interface
+ * Player combat levels for damage and accuracy calculations
+ */
+export interface OSRSCombatStats {
+  attack: number;
+  strength: number;
+  defence: number;
+  hitpoints: number;
+  prayer: number;
+  ranged?: number;
+  magic?: number;
+}
+
+/**
+ * OSRS Equipment Bonuses Interface
+ * Equipment attack, strength, and defence bonuses
+ */
+export interface OSRSEquipmentBonuses {
+  attackBonus: number; // Melee attack bonus
+  strengthBonus: number; // Melee strength bonus
+  defenceBonus: number; // Melee defence bonus
+
+  // Optional specific attack bonuses
+  attackStab?: number;
+  attackSlash?: number;
+  attackCrush?: number;
+  attackMagic?: number;
+  attackRanged?: number;
+
+  // Optional defence bonuses
+  defenceStab?: number;
+  defenceSlash?: number;
+  defenceCrush?: number;
+  defenceMagic?: number;
+  defenceRanged?: number;
+
+  // Optional other bonuses
+  rangedStrengthBonus?: number;
+  magicDamageBonus?: number;
+  prayerBonus?: number;
+}

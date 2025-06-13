@@ -67,12 +67,21 @@ export class XPNotificationManager {
   }
 
   /**
-   * Handle multiple XP gain events from server
+   * Handle XP gain events (required by CombatEventHandler)
    */
-  public handleXPGainEvents(events: XPGainEvent[]): void {
-    events.forEach(event => {
-      this.createXPNotification(event);
-    });
+  public handleXPGainEvents(events: any[]): void {
+    for (const event of events) {
+      if (event.entity && event.skill && event.xpGained) {
+        this.createXPNotification({
+          entityId: event.entity,
+          skill: event.skill,
+          xpGained: event.xpGained,
+          newLevel: event.newLevel,
+          position: { x: event.x || 0, y: event.y || 0 },
+          timestamp: Date.now(),
+        });
+      }
+    }
   }
 
   /**
