@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue Phase 3: Combat Visualization & UI</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #2d5a27, #1a3d1a);
+        font-family: "Arial Black", Arial, sans-serif;
+        color: #ffffff;
+        overflow: hidden;
+      }
+
+      #game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+      }
+
+      #header {
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px 20px;
+        width: 100%;
+        box-sizing: border-box;
+        border-bottom: 2px solid #ffd700;
+        text-align: center;
+      }
+
+      #header h1 {
+        margin: 0;
+        color: #ffd700;
+        font-size: 20px;
+        text-shadow: 2px 2px 4px #000000;
+      }
+
+      #status-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 5px;
+      }
+
+      #status-text {
+        color: #00ff00;
+        font-size: 14px;
+      }
+
+      #controls-info {
+        color: #cccccc;
+        font-size: 12px;
+      }
+
+      #phaser-game {
+        border: 3px solid #8b4513;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        background: #2d5a27;
+      }
+
+      /* Loading screen styles */
+      #loading-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #2d5a27, #1a3d1a);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        transition: opacity 0.5s ease-out;
+      }
+
+      #loading-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #333;
+        border-top: 5px solid #ffd700;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        margin-top: 20px;
+        color: #ffffff;
+        font-size: 18px;
+        animation: pulse 2s ease-in-out infinite alternate;
+      }
+
+      @keyframes pulse {
+        from {
+          opacity: 0.7;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Feature list */
+      #feature-list {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #ffd700;
+        max-width: 300px;
+        z-index: 1001;
+      }
+
+      #feature-list h3 {
+        margin: 0 0 10px 0;
+        color: #ffd700;
+        font-size: 14px;
+      }
+
+      #feature-list ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #cccccc;
+        font-size: 12px;
+      }
+
+      #feature-list li {
+        margin-bottom: 5px;
+      }
+
+      /* Performance monitor */
+      #performance-monitor {
+        position: absolute;
+        top: 80px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #00ff00;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        color: #00ff00;
+        z-index: 1001;
+      }
+
+      /* Error overlay */
+      #error-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+      }
+
+      #error-overlay.show {
+        display: flex;
+      }
+
+      .error-content {
+        background: #ff0000;
+        color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 400px;
+      }
+
+      .error-content h2 {
+        margin-top: 0;
+      }
+
+      .error-content button {
+        background: #ffffff;
+        color: #ff0000;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .error-content button:hover {
+        background: #f0f0f0;
+      }
+
+      /* Responsive design */
+      @media (max-width: 1200px) {
+        #phaser-game {
+          transform: scale(0.8);
+          transform-origin: center center;
+        }
+      }
+
+      @media (max-width: 900px) {
+        #phaser-game {
+          transform: scale(0.6);
+        }
+
+        #feature-list {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading RuneRogue Phase 3...</div>
+      <div style="margin-top: 10px; color: #cccccc; font-size: 14px">
+        Initializing combat effects and UI systems
+      </div>
+    </div>
+
+    <!-- Error Overlay -->
+    <div id="error-overlay">
+      <div class="error-content">
+        <h2>Connection Error</h2>
+        <p>Unable to connect to RuneRogue server.</p>
+        <p>Please ensure the server is running on localhost:2567</p>
+        <button onclick="location.reload()">Retry</button>
+      </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div id="game-container">
+      <!-- Header -->
+      <div id="header">
+        <h1>🎮 RuneRogue Phase 3: Combat Visualization & UI</h1>
+        <div id="status-container">
+          <div id="status-text">Initializing...</div>
+          <div id="controls-info">
+            Click to move • Spacebar to start • Auto-combat enabled
+          </div>
+        </div>
+      </div>
+
+      <!-- Phaser Game Canvas -->
+      <div id="phaser-game"></div>
+    </div>
+
+    <!-- Feature List -->
+    <div id="feature-list">
+      <h3>🎯 Phase 3 Features</h3>
+      <ul>
+        <li>✅ OSRS Combat Effects</li>
+        <li>✅ Health & Prayer Orbs</li>
+        <li>✅ XP Counter & Tracking</li>
+        <li>✅ Mini-map with Players</li>
+        <li>✅ Wave Progress UI</li>
+        <li>✅ Performance Monitoring</li>
+        <li>✅ Damage Number Animation</li>
+        <li>✅ Kill Feed & Notifications</li>
+      </ul>
+    </div>
+
+    <!-- Performance Monitor -->
+    <div id="performance-monitor">
+      <div>FPS: <span id="fps-counter">--</span></div>
+      <div>Players: <span id="player-counter">0</span></div>
+      <div>Enemies: <span id="enemy-counter">0</span></div>
+      <div>Effects: <span id="effect-counter">0</span></div>
+    </div>    <!-- External Libraries -->
+    <script src="https://unpkg.com/phaser@3.80.1/dist/phaser.min.js"></script>
+    
+    <!-- Colyseus with module approach -->
+    <script type="module">
+      import { Client } from 'https://cdn.skypack.dev/colyseus.js@latest';
+      window.ColyseusClient = Client;
+    </script>
+    
+    <!-- Fallback Colyseus -->
+    <script src="https://unpkg.com/colyseus.js@0.15.0/dist/colyseus.js" 
+            onerror="console.warn('Colyseus CDN failed, using fallback')"
+            onload="console.log('Colyseus loaded from CDN')"></script>
+
+    <!-- OSRS Combat Effects Manager -->
+    <script src="assets/osrs/CombatEffectsManager.js"></script>
+
+    <!-- Enhanced Game Client -->
+    <script>
+      // Wait for Colyseus to load before loading game client
+      function loadGameClient() {
+        if (typeof Colyseus !== 'undefined') {
+          const script = document.createElement('script');
+          script.src = 'phase3-enhanced-client.js';
+          document.head.appendChild(script);
+        } else {
+          console.log('Waiting for Colyseus to load...');
+          setTimeout(loadGameClient, 100);
+        }
+      }
+      loadGameClient();
+    </script>
+
+    <script>
+      // Performance monitoring
+      let performanceMonitor = {
+        lastUpdate: Date.now(),
+        frameCount: 0,
+        fps: 0,
+
+        update() {
+          this.frameCount++;
+          const now = Date.now();
+
+          if (now - this.lastUpdate >= 1000) {
+            this.fps = Math.round(
+              (this.frameCount * 1000) / (now - this.lastUpdate)
+            );
+            this.frameCount = 0;
+            this.lastUpdate = now;
+
+            // Update display
+            document.getElementById("fps-counter").textContent = this.fps;
+
+            // Update counters if game exists
+            if (window.runerogueGame && window.runerogueGame.scene.scenes[0]) {
+              const scene = window.runerogueGame.scene.scenes[0];
+              if (scene.room && scene.room.state) {
+                document.getElementById("player-counter").textContent =
+                  scene.room.state.players.size || 0;
+                document.getElementById("enemy-counter").textContent =
+                  scene.room.state.enemies.size || 0;
+              }
+            }
+          }
+
+          requestAnimationFrame(() => this.update());
+        },
+      };
+
+      // Error handling
+      window.addEventListener("error", (event) => {
+        console.error("Game Error:", event.error);
+        if (
+          event.error.message.includes("connect") ||
+          event.error.message.includes("WebSocket")
+        ) {
+          document.getElementById("error-overlay").classList.add("show");
+        }
+      });
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("🚀 RuneRogue Phase 3 Client Loading...");
+
+        // Hide loading screen after a delay
+        setTimeout(() => {
+          document.getElementById("loading-screen").classList.add("hidden");
+        }, 2000);
+
+        // Start performance monitoring
+        performanceMonitor.update();
+
+        // Update game canvas container
+        if (window.runerogueGame) {
+          const gameCanvas = document.querySelector("canvas");
+          if (gameCanvas) {
+            document.getElementById("phaser-game").appendChild(gameCanvas);
+          }
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (event) => {
+        switch (event.code) {
+          case "F1":
+            event.preventDefault();
+            document.getElementById("feature-list").style.display =
+              document.getElementById("feature-list").style.display === "none" ?
+                "block"
+              : "none";
+            break;
+          case "F2":
+            event.preventDefault();
+            document.getElementById("performance-monitor").style.display =
+              (
+                document.getElementById("performance-monitor").style.display ===
+                "none"
+              ) ?
+                "block"
+              : "none";
+            break;
+          case "F5":
+            event.preventDefault();
+            location.reload();
+            break;
+        }
+      });
+
+      console.log("📋 Controls:");
+      console.log("• Click anywhere to move your character");
+      console.log("• Spacebar to start the game");
+      console.log("• F1 to toggle feature list");
+      console.log("• F2 to toggle performance monitor");
+      console.log("• F5 to refresh");
+    </script>
+  </body>
+</html>

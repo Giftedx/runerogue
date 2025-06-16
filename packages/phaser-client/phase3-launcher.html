@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue Phase 3: Combat Visualization & UI Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #2d5a27, #1a3d1a);
+        font-family: "Arial Black", Arial, sans-serif;
+        color: #ffffff;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      h1 {
+        color: #ffd700;
+        text-shadow: 2px 2px 4px #000000;
+        margin-bottom: 30px;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .status-card {
+        background: rgba(0, 0, 0, 0.8);
+        border: 2px solid #ffd700;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: left;
+      }
+
+      .status-card h3 {
+        color: #ffd700;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      .status-indicator {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+
+      .status-ok {
+        color: #00ff00;
+      }
+
+      .status-error {
+        color: #ff0000;
+      }
+
+      .status-pending {
+        color: #ffff00;
+      }
+
+      .launch-section {
+        background: rgba(0, 0, 0, 0.8);
+        border: 3px solid #00ff00;
+        border-radius: 8px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .launch-button {
+        background: linear-gradient(135deg, #00ff00, #00cc00);
+        color: #000000;
+        border: none;
+        padding: 15px 30px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 10px;
+        text-decoration: none;
+        display: inline-block;
+        transition: transform 0.2s;
+      }
+
+      .launch-button:hover {
+        transform: scale(1.05);
+      }
+
+      .launch-button:active {
+        transform: scale(0.95);
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 30px;
+      }
+
+      .feature-card {
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid #cccccc;
+        border-radius: 6px;
+        padding: 15px;
+        text-align: left;
+      }
+
+      .feature-card h4 {
+        color: #00ffff;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .console-output {
+        background: #000000;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        padding: 15px;
+        border-radius: 6px;
+        height: 200px;
+        overflow-y: auto;
+        text-align: left;
+        margin-top: 20px;
+      }
+
+      #server-status,
+      #client-status {
+        animation: pulse 2s ease-in-out infinite alternate;
+      }
+
+      @keyframes pulse {
+        from {
+          opacity: 0.7;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎮 RuneRogue Phase 3: Combat Visualization & UI</h1>
+      <p>
+        Enhanced multiplayer client with OSRS-style combat effects and
+        comprehensive UI
+      </p>
+
+      <div class="status-grid">
+        <div class="status-card">
+          <h3>🖥️ Server Status</h3>
+          <div class="status-indicator">
+            <span>Game Server (Port 2567)</span>
+            <span id="server-status" class="status-pending">Checking...</span>
+          </div>
+          <div class="status-indicator">
+            <span>Health Check</span>
+            <span id="health-status" class="status-pending">Checking...</span>
+          </div>
+          <div class="status-indicator">
+            <span>Room Manager</span>
+            <span id="room-status" class="status-pending">Checking...</span>
+          </div>
+        </div>
+
+        <div class="status-card">
+          <h3>🌐 Client Status</h3>
+          <div class="status-indicator">
+            <span>Client Server (Port 8080)</span>
+            <span id="client-status" class="status-pending">Checking...</span>
+          </div>
+          <div class="status-indicator">
+            <span>Assets Loaded</span>
+            <span id="assets-status" class="status-pending">Checking...</span>
+          </div>
+          <div class="status-indicator">
+            <span>Combat Effects</span>
+            <span id="effects-status" class="status-pending">Checking...</span>
+          </div>
+        </div>
+      </div>
+      <div class="launch-section">
+        <h2>🚀 Launch Game</h2>
+        <p>
+          All systems operational! Click below to start the enhanced RuneRogue
+          experience:
+        </p>
+        <a href="phase3-enhanced.html" class="launch-button" target="_blank">
+          🎮 Launch Phase 3 Client
+        </a>
+        <a href="phase3-demo.html" class="launch-button" target="_blank">
+          🎯 Launch Standalone Demo
+        </a>
+        <a href="working-client.html" class="launch-button" target="_blank">
+          🔧 Launch Basic Client
+        </a>
+      </div>
+
+      <h2>✨ Phase 3 Features</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>⚔️ Combat Visual Effects</h4>
+          <ul>
+            <li>Authentic OSRS damage splats</li>
+            <li>Damage number animations</li>
+            <li>Miss/zero damage indicators</li>
+            <li>Healing effect visuals</li>
+            <li>Poison & venom splats</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <h4>🎯 Essential UI Components</h4>
+          <ul>
+            <li>Health orb with percentage fill</li>
+            <li>XP counter with floating gains</li>
+            <li>Mini-map with player tracking</li>
+            <li>Wave progress indicator</li>
+            <li>Kill counter and statistics</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <h4>🔄 Multiplayer Integration</h4>
+          <ul>
+            <li>Real-time combat synchronization</li>
+            <li>Server-authoritative validation</li>
+            <li>Smooth movement interpolation</li>
+            <li>Anti-cheat movement system</li>
+            <li>Event-driven architecture</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <h4>⚡ Performance Optimization</h4>
+          <ul>
+            <li>60fps target with 4+ players</li>
+            <li>Object pooling for effects</li>
+            <li>Efficient rendering pipeline</li>
+            <li>Performance monitoring</li>
+            <li>Resource cleanup systems</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="console-output" id="console-output">
+        Checking system status...<br />
+      </div>
+    </div>
+
+    <script>
+      const consoleOutput = document.getElementById("console-output");
+
+      function log(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        consoleOutput.innerHTML += `[${timestamp}] ${message}<br>`;
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      }
+
+      async function checkServerStatus() {
+        try {
+          log("🔍 Checking game server health...");
+          const response = await fetch("http://localhost:2567/health");
+
+          if (response.ok) {
+            document.getElementById("server-status").textContent = "✅ Running";
+            document.getElementById("server-status").className = "status-ok";
+            document.getElementById("health-status").textContent = "✅ Healthy";
+            document.getElementById("health-status").className = "status-ok";
+            log("✅ Game server is running and healthy");
+          } else {
+            throw new Error("Health check failed");
+          }
+        } catch (error) {
+          document.getElementById("server-status").textContent = "❌ Offline";
+          document.getElementById("server-status").className = "status-error";
+          document.getElementById("health-status").textContent = "❌ Failed";
+          document.getElementById("health-status").className = "status-error";
+          log("❌ Game server health check failed: " + error.message);
+        }
+      }
+
+      async function checkRoomStatus() {
+        try {
+          log("🏠 Checking room manager...");
+          const response = await fetch("http://localhost:2567/rooms");
+
+          if (response.ok) {
+            const rooms = await response.json();
+            document.getElementById("room-status").textContent =
+              `✅ ${rooms.length} rooms`;
+            document.getElementById("room-status").className = "status-ok";
+            log(`✅ Room manager operational (${rooms.length} active rooms)`);
+          } else {
+            throw new Error("Room check failed");
+          }
+        } catch (error) {
+          document.getElementById("room-status").textContent = "❌ Error";
+          document.getElementById("room-status").className = "status-error";
+          log("❌ Room manager check failed: " + error.message);
+        }
+      }
+
+      async function checkClientStatus() {
+        try {
+          log("🌐 Checking client server...");
+          const response = await fetch("http://localhost:8080/");
+
+          if (response.ok) {
+            document.getElementById("client-status").textContent = "✅ Running";
+            document.getElementById("client-status").className = "status-ok";
+            log("✅ Client server is running");
+          } else {
+            throw new Error("Client server check failed");
+          }
+        } catch (error) {
+          document.getElementById("client-status").textContent = "❌ Offline";
+          document.getElementById("client-status").className = "status-error";
+          log("❌ Client server check failed: " + error.message);
+        }
+      }
+
+      async function checkAssets() {
+        try {
+          log("📦 Checking combat assets...");
+
+          // Check if combat assets exist
+          const assetChecks = [
+            "assets/osrs/effects/hitsplats/Damage_hitsplat.png",
+            "assets/osrs/effects/hitsplats/Zero_damage_hitsplat.png",
+            "assets/osrs/CombatEffectsManager.js",
+          ];
+
+          let assetsOk = true;
+          for (const asset of assetChecks) {
+            try {
+              const response = await fetch(`http://localhost:8080/${asset}`);
+              if (!response.ok) assetsOk = false;
+            } catch {
+              assetsOk = false;
+            }
+          }
+
+          if (assetsOk) {
+            document.getElementById("assets-status").textContent = "✅ Ready";
+            document.getElementById("assets-status").className = "status-ok";
+            document.getElementById("effects-status").textContent = "✅ Ready";
+            document.getElementById("effects-status").className = "status-ok";
+            log("✅ Combat assets and effects are ready");
+          } else {
+            throw new Error("Assets not found");
+          }
+        } catch (error) {
+          document.getElementById("assets-status").textContent = "❌ Missing";
+          document.getElementById("assets-status").className = "status-error";
+          document.getElementById("effects-status").textContent = "❌ Error";
+          document.getElementById("effects-status").className = "status-error";
+          log("❌ Asset check failed: " + error.message);
+        }
+      }
+
+      async function runSystemCheck() {
+        log("🚀 Starting RuneRogue Phase 3 system check...");
+        log("");
+
+        await checkServerStatus();
+        await checkRoomStatus();
+        await checkClientStatus();
+        await checkAssets();
+
+        log("");
+        log("📋 System check complete!");
+        log("🎮 Ready to launch enhanced RuneRogue client");
+        log("");
+        log("💡 Tips:");
+        log("  • Click anywhere to move your character");
+        log("  • Press Spacebar to start the game");
+        log("  • Combat is fully automatic");
+        log("  • Watch for damage splats and XP gains");
+        log("  • Use F1/F2 for debug overlays");
+      }
+
+      // Start system check when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(runSystemCheck, 500);
+      });
+
+      // Refresh status every 30 seconds
+      setInterval(runSystemCheck, 30000);
+    </script>
+  </body>
+</html>

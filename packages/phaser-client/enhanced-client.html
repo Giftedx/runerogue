@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue Enhanced - Phase 3 Visual Enhancement</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #1a1a1a;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      #phaser-game {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .loading-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #1a3d1a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        z-index: 2000;
+      }
+
+      .loading-screen h1 {
+        margin-bottom: 20px;
+        color: #4caf50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading-screen" id="loading-screen">
+      <h1>🛡️ RuneRogue Enhanced</h1>
+      <p>Phase 3 Visual Enhancement Loading...</p>
+      <div style="margin-top: 20px">
+        <div style="width: 200px; height: 4px; background: #333; border-radius: 2px">
+          <div
+            style="
+              width: 0%;
+              height: 100%;
+              background: #4caf50;
+              border-radius: 2px;
+              transition: width 0.3s;
+            "
+            id="loading-bar"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="phaser-game"></div>
+
+    <!-- Load Phaser from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+
+    <!-- Load Colyseus from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+
+    <!-- Load sprite generator -->
+    <script src="/assets/spriteGenerator.js"></script>
+
+    <!-- Our enhanced game client -->
+    <script src="enhanced-phaser-client.js"></script>
+
+    <script>
+      // Hide loading screen after a short delay
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.5s';
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        }
+      }, 2000);
+    </script>
+  </body>
+</html>

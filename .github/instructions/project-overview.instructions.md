@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # RuneRogue Project Overview
@@ -18,94 +18,83 @@ RuneRogue is an OSRS-inspired multiplayer roguelike survival game designed as a 
 
 ## Technology Stack
 
-### Frontend
-
-
-- **TypeScript** - Type-safe development
-- **Phaser 3** - Game rendering engine
-- **React** - UI components and menus
-- **Vite** - Build tool and development server
-
-
 ### Backend
 
 - **Node.js + TypeScript** - Server runtime
 - **Colyseus** - Real-time multiplayer framework
 - **Express** - REST API server
-- **bitECS** - Entity Component System architecture
+- **@colyseus/schema** - State synchronization
 
+### Frontend
+
+- **Phaser 3** - Game rendering engine (in packages/phaser-client)
+- **Godot** - Alternative game client (in client/godot)
+- **TypeScript** - Type-safe development
+- **Vite** - Build tool for web clients
 
 ### Data & Storage
 
-- **PostgreSQL** - Player data and statistics
-- **Prisma ORM** - Database abstraction
-
 - **OSRS Wiki API** - Authentic game data
+- **JSON Files** - Game data storage
+- **Express APIs** - Data access layer
 
 ### Infrastructure
 
-- **Turborepo** - Monorepo management
-- **pnpm** - Package management
+- **pnpm workspaces** - Monorepo management
+- **Lerna** - Package coordination
 - **Jest** - Testing framework
-- **Docker** - Containerization
 
 ## Project Structure
 
 ```
 runerogue/
 ├── packages/
-│   ├── osrs-data/          # OSRS formulas and data API (COMPLETE)
-│   ├── game-server/        # Colyseus multiplayer server (COMPLETE)
-│   └── shared/             # Shared types and utilities
-├── server-ts/              # Main game implementation
-│   ├── src/server/ecs/     # bitECS components and systems
-│   ├── src/server/game/    # Core game logic
-│   └── src/client/         # Client rendering and input
-├── client/                 # React UI and Discord integration
-└── docs/                   # Documentation and specifications
+│   ├── osrs-data/          # OSRS formulas and data API ✅
+│   ├── game-server/        # Colyseus multiplayer server ✅
+│   ├── server/             # Main server implementation ✅
+│   ├── phaser-client/      # Web-based Phaser client ✅
+│   └── shared/             # Shared types and utilities ✅
+├── client/                 # Godot client and web UI
+│   ├── godot/              # Godot game client
+│   └── src/                # Web client source
+├── scripts/                # Build and utility scripts
+└── docs/                   # Documentation and reports
 ```
-
 
 ## Development Phases
 
 ### ✅ Phase 0: Foundation (COMPLETE)
 
-- OSRS data pipeline with all combat formulas
-- Colyseus multiplayer server infrastructure  
-
-- bitECS entity component system
-- Comprehensive test suite (13/13 tests passing)
-- API server with OSRS data endpoints
+- OSRS data pipeline with combat formulas and Express API
+- Colyseus multiplayer server infrastructure with basic rooms
+- Shared types and utilities package
+- Test framework setup (Jest) with mixed coverage
 
 ### 🎯 Phase 1: Multiplayer Prototype (CURRENT)
 
-- Player movement and synchronization
-
-- Real-time combat visualization
-- Enemy spawning and AI
-- Basic UI with health/prayer bars
-- Discord activity integration
+- Fix failing tests and stabilize test coverage
+- Complete client-server integration for both Phaser and Godot clients
+- Implement real-time game state synchronization
+- Basic player movement and interaction
+- Simple UI with game status display
 
 ### 🚀 Phase 2: Core Gameplay (PLANNED)
 
-
-- Full OSRS skill system
-- Equipment and inventory
-- Advanced prayer system
-- Player progression and saves
-- Enhanced graphics and effects
+- Full OSRS skill system implementation
+- Equipment and inventory management
+- Advanced combat mechanics
+- Player progression and data persistence
+- Enhanced graphics and visual effects
 
 ### 📈 Phase 3: Polish & Launch (PLANNED)
 
-- Performance optimization
-
-- Advanced enemy types
-- Social features and leaderboards
-- Tutorial and onboarding
-- Public Discord activity release
+- Performance optimization and load testing
+- Advanced enemy AI and spawning systems
+- Social features and player interaction
+- Discord Activity integration
+- Public release and community features
 
 ## Key Principles
-
 
 ### OSRS Authenticity
 
@@ -122,7 +111,6 @@ runerogue/
 - **Low Latency**: Client prediction and smooth interpolation
 - **Scalable Architecture**: Clean ECS design for future features
 
-
 ### Code Quality
 
 - **Type Safety**: Strict TypeScript with comprehensive error handling
@@ -135,10 +123,9 @@ runerogue/
 
 ### Technical
 
-
 - 60fps sustained with 4 players + 20 enemies
 - <100ms server response time
-- >90% test coverage on game systems
+- > 90% test coverage on game systems
 - Zero production TypeScript errors
 
 ### Gameplay
@@ -157,13 +144,13 @@ runerogue/
 
 ## Current Status
 
-- **OSRS Data Pipeline**: ✅ Complete - All formulas implemented and tested
-- **Multiplayer Server**: ✅ Complete - Colyseus rooms operational
-- **ECS Architecture**: ✅ Complete - 14 components, 10 systems
-- **API Endpoints**: ✅ Complete - Full OSRS data access
-- **Client Integration**: 🔄 In Progress - Connecting Phaser to Colyseus
-- **Combat Visualization**: 🔄 In Progress - Rendering calculated damage
-- **UI Development**: 🔄 In Progress - Health bars and game interface
+- **OSRS Data Pipeline**: ✅ Complete - All formulas implemented, serving via Express API
+- **Multiplayer Server**: ✅ Basic infrastructure - Colyseus rooms and schemas implemented
+- **Game Server**: ✅ Core implementation - Located in packages/server with ECS and game logic
+- **Phaser Client**: 🔄 In Progress - Web-based client with multiple demo implementations
+- **Godot Client**: 🔄 In Progress - Alternative native client implementation
+- **Client Integration**: ❌ Needs Work - Clients need connection to multiplayer server
+- **Test Coverage**: ⚠️ Mixed - 27 passing, 79 failing tests (mostly archived legacy tests)
 
 ## Getting Started
 

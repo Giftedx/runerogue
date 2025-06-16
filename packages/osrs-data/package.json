@@ -17,6 +17,7 @@
     "serve": "ts-node src/api/server.ts"
   },
   "dependencies": {
+    "@runerogue/shared": "workspace:*",
     "axios": "^1.5.0",
     "cheerio": "1.0.0",
     "compression": "^1.7.4",

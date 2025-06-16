@@ -1,0 +1,98 @@
+npm verbose cli C:\Program Files\nodejs\node.exe C:\Users\aggis\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+npm info using npm@11.2.0
+npm info using node@v24.1.0
+npm verbose title npm test
+npm verbose argv "test" "--loglevel" "verbose"
+npm verbose logfile logs-max:10 dir:C:\Users\aggis\AppData\Local\npm-cache\_logs\2025-06-15T22_27_39_788Z-
+npm verbose logfile C:\Users\aggis\AppData\Local\npm-cache\_logs\2025-06-15T22_27_39_788Z-debug-0.log
+
+> runerogue@0.1.0 test
+> lerna run test
+
+lerna notice cli v8.2.2
+
+ Lerna (powered by Nx)   Running target test for 6 projects:
+
+- runerogue-client
+- @runerogue/game-server
+- @runerogue/osrs-data
+- @runerogue/phaser-client
+- @runerogue/server
+- @runerogue/shared
+
+
+
+> @runerogue/shared:test
+
+
+> @runerogue/game-server:test
+
+
+> @runerogue/phaser-client:test
+
+@runerogue/game-server: > @runerogue/game-server@0.1.0 test C:\Users\aggis\GitHub\runerogue\packages\game-server
+@runerogue/game-server: > jest
+@runerogue/shared: > @runerogue/shared@0.1.0 test C:\Users\aggis\GitHub\runerogue\packages\shared
+@runerogue/shared: > jest
+@runerogue/phaser-client: > @runerogue/phaser-client@0.1.0 test C:\Users\aggis\GitHub\runerogue\packages\phaser-client
+@runerogue/phaser-client: > echo 'No tests yet'
+@runerogue/phaser-client: 'No tests yet'
+@runerogue/game-server: Debugger listening on ws://127.0.0.1:52162/7669177b-6ccf-4aa9-9337-46a23a3495ec
+@runerogue/game-server: For help, see: https://nodejs.org/en/docs/inspector
+@runerogue/shared: Debugger listening on ws://127.0.0.1:52163/0a1f885d-fba3-47b0-b4b6-facaad6aa693
+@runerogue/shared: For help, see: https://nodejs.org/en/docs/inspector
+@runerogue/shared: Debugger attached.
+@runerogue/game-server: Debugger attached.
+@runerogue/game-server:  FAIL  src/__tests__/basic.test.ts
+@runerogue/game-server:   ÔùÅ Test suite failed to run
+@runerogue/game-server:     Configuration error:
+@runerogue/game-server:     
+@runerogue/game-server:     Could not locate module p-limit mapped as:
+@runerogue/game-server:     C:\Users\aggis\GitHub\runerogue\packages\game-server\__mocks__\p-limit.js.
+@runerogue/game-server:     
+@runerogue/game-server:     Please check your configuration for these entries:
+@runerogue/game-server:     {
+@runerogue/game-server:       "moduleNameMapper": {
+@runerogue/game-server:         "/p-limit/": "C:\Users\aggis\GitHub\runerogue\packages\game-server\__mocks__\p-limit.js"
+@runerogue/game-server:       },
+@runerogue/game-server:       "resolver": undefined
+@runerogue/game-server:     }
+@runerogue/game-server:       at createNoMappedModuleFoundError (../../node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:759:17)
+@runerogue/game-server: Test Suites: 1 failed, 1 total
+@runerogue/game-server: Tests:       0 total
+@runerogue/game-server: Snapshots:   0 total
+@runerogue/game-server: Time:        0.672 s
+@runerogue/game-server: Ran all test suites.
+@runerogue/game-server: Waiting for the debugger to disconnect...
+@runerogue/game-server: [41m[30mÔÇëELIFECYCLEÔÇë[39m[49m [31mTest failed. See above for more details.[39m
+@runerogue/shared:  PASS  src/__tests__/basic.test.ts
+@runerogue/shared:   Shared Package
+@runerogue/shared:     ÔêÜ should be able to import shared types (2 ms)
+@runerogue/shared:     ÔêÜ should pass basic test to verify Jest is working
+@runerogue/shared: Test Suites: 1 passed, 1 total
+@runerogue/shared: Tests:       2 passed, 2 total
+@runerogue/shared: Snapshots:   0 total
+@runerogue/shared: Time:        1.396 s, estimated 2 s
+@runerogue/shared: Ran all test suites.
+@runerogue/shared: Waiting for the debugger to disconnect...
+
+
+
+ Lerna (powered by Nx)   Running target test for 6 projects failed
+
+Tasks not run because their dependencies failed or --nx-bail=true:
+
+- runerogue-client:test
+- @runerogue/osrs-data:test
+- @runerogue/server:test
+
+Failed tasks:
+
+- @runerogue/game-server:test
+
+npm verbose cwd C:\Users\aggis\GitHub\runerogue
+npm verbose os Windows_NT 10.0.26100
+npm verbose node v24.1.0
+npm verbose npm  v11.2.0
+npm verbose exit 1
+npm verbose code 1

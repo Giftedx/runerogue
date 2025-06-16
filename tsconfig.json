@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2020", "DOM"],
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
@@ -24,7 +27,7 @@
   },
   "include": [
     "packages/*/src/**/*",
-    "apps/*/src/**/*", 
+    "apps/*/src/**/*",
     "tools/*/src/**/*",
     "tests/**/*",
     "*.d.ts"
@@ -37,10 +40,17 @@
     "**/*.spec.ts"
   ],
   "references": [
-    { "path": "./packages/shared" },
-    { "path": "./packages/osrs-data" },
-    { "path": "./packages/game-engine" },
-    { "path": "./packages/game-server" },
-    { "path": "./packages/discord-client" }
+    {
+      "path": "./packages/shared"
+    },
+    {
+      "path": "./packages/osrs-data"
+    },
+    {
+      "path": "./packages/game-server"
+    },
+    {
+      "path": "./packages/server"
+    }
   ]
-} 
+}

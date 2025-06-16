@@ -1,0 +1,342 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${MCP_GITHUB_TOKEN}"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
+    },
+    "osrs": {
+      "command": "npx",
+      "args": ["-y", "@jayarrowz/mcp-osrs"],
+      "env": {}
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {}
+    },
+    "runerogue-tools": {
+      "command": "node",
+      "args": [".github/copilot/runerogue-mcp-server.js"],
+      "env": {
+        "GITHUB_TOKEN": "${MCP_GITHUB_TOKEN}"
+      }
+    },
+    "tavily": {
+      "command": "npx",
+      "args": ["-y", "@mcptools/mcp-tavily"],
+      "env": {
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      }
+    },    "browser-tools": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/browser-tools-mcp",
+      "env": {}
+    },
+    "mcpso": {
+      "command": "node",
+      "args": ["server.js"],
+      "cwd": "external-repos/mcp-repos/mcpso",
+      "env": {}
+    },    "mcp-obsidian": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/mcp-obsidian",
+      "env": {}
+    },
+    "blender-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/blender-mcp",
+      "env": {}
+    },
+    "open-mcp-client": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/open-mcp-client",
+      "env": {}
+    },
+    "browsermcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/mcp",
+      "env": {}
+    },
+    "magic-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/magic-mcp",
+      "env": {}
+    },
+    "learn-agentic-ai": {
+      "command": "node",
+      "args": ["server.js"],
+      "cwd": "external-repos/mcp-repos/learn-agentic-ai",
+      "env": {}
+    },
+    "agentscope": {
+      "command": "python",
+      "args": ["-m", "agentscope.server"],
+      "cwd": "external-repos/mcp-repos/agentscope",
+      "env": {}
+    },
+    "nerve": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/nerve",
+      "env": {}
+    },    "5ire": {
+      "command": "node",
+      "args": ["server.js"],
+      "cwd": "external-repos/mcp-repos/5ire",
+      "env": {}
+    },
+    "fast-agent": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/fast-agent",
+      "env": {}
+    },
+    "supergateway": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/supergateway",
+      "env": {}
+    },
+    "shippie": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/shippie",
+      "env": {}
+    },
+    "kubb": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/kubb",
+      "env": {}
+    },
+    "mcp-inspector": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/inspector",
+      "env": {}
+    },
+    "upsonic": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/Upsonic",
+      "env": {}
+    },
+    "langchain-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/langchain-mcp-adapters",
+      "env": {}
+    },
+    "cognee-starter": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "external-repos/mcp-repos/cognee-starter",
+      "env": {}
+    }
+  },
+  "customTools": {
+    "runerogue_run_tests": {
+      "description": "Run tests for the RuneRogue project with specified modules or test paths",
+      "parameters": {
+        "properties": {
+          "testPath": {
+            "description": "Optional path to specific test file or directory",
+            "type": "string"
+          },
+          "markers": {
+            "description": "Optional pytest markers to filter tests",
+            "type": "string"
+          },
+          "verbose": {
+            "description": "Whether to run tests in verbose mode",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_lint_code": {
+      "description": "Run linting on the codebase or specified files",
+      "parameters": {
+        "properties": {
+          "filePath": {
+            "description": "Optional path to specific file or directory to lint",
+            "type": "string"
+          },
+          "fix": {
+            "description": "Whether to automatically fix linting issues when possible",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_generate_docs": {
+      "description": "Generate or update documentation for specified modules",
+      "parameters": {
+        "properties": {
+          "modulePath": {
+            "description": "Path to the module to document",
+            "type": "string"
+          },
+          "outputFormat": {
+            "description": "Output format (markdown or rst)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_create_issue": {
+      "description": "Create a GitHub issue with specified title, body, labels, and assignees",
+      "parameters": {
+        "properties": {
+          "title": {
+            "description": "Issue title",
+            "type": "string"
+          },
+          "body": {
+            "description": "Issue body content in markdown",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Comma-separated list of labels (default: copilot)",
+            "type": "string"
+          },
+          "assignees": {
+            "description": "Comma-separated list of assignees (default: github-copilot[bot])",
+            "type": "string"
+          }
+        },
+        "required": ["title", "body"],
+        "type": "object"
+      }
+    },
+    "tavily_search": {
+      "description": "Perform AI-powered web search using Tavily API for up-to-date information",
+      "parameters": {
+        "properties": {
+          "query": {
+            "description": "Search query to perform",
+            "type": "string"
+          },
+          "searchDepth": {
+            "description": "Search depth level (basic or advanced)",
+            "type": "string",
+            "enum": ["basic", "advanced"]
+          },
+          "topic": {
+            "description": "Search topic category",
+            "type": "string",
+            "enum": ["general", "news", "finance"]
+          },
+          "maxResults": {
+            "description": "Maximum number of results to return",
+            "type": "number"
+          },
+          "includeAnswer": {
+            "description": "Include AI-generated answer in results",
+            "type": "boolean"
+          }
+        },
+        "required": ["query"],
+        "type": "object"
+      }
+    },
+    "tavily_extract": {
+      "description": "Extract content from specified URLs using Tavily API",
+      "parameters": {
+        "properties": {
+          "urls": {
+            "description": "Array of URLs to extract content from",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "extractDepth": {
+            "description": "Content extraction depth (basic or advanced)",
+            "type": "string",
+            "enum": ["basic", "advanced"]
+          },
+          "includeImages": {
+            "description": "Include images in extracted content",
+            "type": "boolean"
+          }
+        },
+        "required": ["urls"],
+        "type": "object"
+      }
+    },
+    "runerogue_start_server": {
+      "description": "Start the RuneRogue game server",
+      "parameters": {
+        "properties": {
+          "port": {
+            "description": "Port to run the server on",
+            "type": "number"
+          },
+          "environment": {
+            "description": "Environment mode (development/production)",
+            "type": "string",
+            "enum": ["development", "production"]
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_run_combat_test": {
+      "description": "Run specific combat system tests for RuneRogue",
+      "parameters": {
+        "properties": {
+          "testType": {
+            "description": "Type of combat test to run",
+            "type": "string",
+            "enum": ["accuracy", "damage", "prayers", "special_attacks", "all"]
+          },
+          "verbose": {
+            "description": "Whether to run in verbose mode",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "runerogue_generate_map": {
+      "description": "Generate a new procedural map for RuneRogue",
+      "parameters": {
+        "properties": {
+          "biome": {
+            "description": "Biome type for the map",
+            "type": "string",
+            "enum": ["plains", "forest", "desert", "mountains", "swamp"]
+          },
+          "width": {
+            "description": "Map width",
+            "type": "number"
+          },
+          "height": {
+            "description": "Map height",
+            "type": "number"
+          }
+        },
+        "required": ["biome"],
+        "type": "object"
+      }
+    }
+  }
+} 

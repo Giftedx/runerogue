@@ -1,0 +1,23 @@
+{
+  "name": "@runerogue/phaser-client",
+  "version": "0.1.0",
+  "description": "Phaser 3 game clients for RuneRogue",
+  "main": "enhanced-phaser-client.js",
+  "scripts": {
+    "build": "echo 'No build step needed for static files'",
+    "dev": "echo 'Serve from parent server'",
+    "test": "echo 'No tests yet'",
+    "lint": "echo 'No linting setup yet'"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "keywords": [
+    "runescape",
+    "phaser",
+    "game",
+    "client"
+  ],
+  "author": "RuneRogue Team",
+  "license": "MIT"
+}

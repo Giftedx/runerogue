@@ -1,16 +1,16 @@
 /**
  * OSRS Data API Server
  * Express.js server providing OSRS data endpoints
- * 
+ *
  * @author agent/osrs-data (The Lorekeeper)
  */
 
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
 
-const app = express();
+const app: express.Express = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
@@ -20,12 +20,12 @@ app.use(compression());
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
-    status: 'healthy',
-    package: '@runerogue/osrs-data',
+    status: "healthy",
+    package: "@runerogue/osrs-data",
     timestamp: new Date().toISOString(),
-    note: 'API endpoints not yet implemented - agent/osrs-data task pending'
+    note: "API endpoints not yet implemented - agent/osrs-data task pending",
   });
 });
 
@@ -45,4 +45,4 @@ export function startServer(): void {
   });
 }
 
-export { app }; 
+export { app };

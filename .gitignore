@@ -72,34 +72,22 @@ config/local.yml
 logs/
 temp/
 
-<<<<<<< HEAD
 # Node.js dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Next.js
+# Build output
 .next/
 out/
 build/
+dist/
 
 # Godot build artifacts
 client/godot/builds/
 client/godot/.godot/
 client/godot/.import/
-
-# Auth service
-services/auth/.env
-services/auth/dist/
-services/auth/coverage/
-
-# Meta UI
-client/meta-ui/.env.local
-client/meta-ui/.next/
-client/meta-ui/out/
-client/meta-ui/build/
-client/meta-ui/coverage/
 
 # Package manager
 package-lock.json
@@ -107,9 +95,11 @@ yarn.lock
 
 # TypeScript
 *.tsbuildinfo
-=======
-# Godot build artifacts
-client/godot/builds/
-client/godot/.godot/
-client/godot/.import/
->>>>>>> origin/copilot/fix-7
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+ALL_FILES_COMPLETE.txt

@@ -16,10 +16,6 @@
       "conventionalCommits": true
     }
   },
-  "packages": [
-    "packages/*",
-    "apps/*",
-    "tools/*"
-  ],
+  "packages": ["packages/*", "client"],
   "stream": true
-} 
+}

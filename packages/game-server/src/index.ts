@@ -7,18 +7,18 @@
  */
 
 // Patch Node.js fs module to handle EMFILE errors gracefully
-import * as fs from "fs";
-import * as gracefulFs from "graceful-fs";
-gracefulFs.gracefulify(fs);
+// import * as fs from "fs";
+// import * as gracefulFs from "graceful-fs";
+// gracefulFs.gracefulify(fs);
 
 import { Server } from "colyseus";
 import { createServer } from "http";
 import express from "express";
 import cors from "cors";
-import { RuneRogueRoom } from "./rooms/RuneRogueRoom.js";
+import { RuneRogueRoom } from "./rooms/RuneRogueRoom";
 
 // Create Express app
-const app = express();
+const app: express.Express = express();
 app.use(cors());
 app.use(express.json());
 

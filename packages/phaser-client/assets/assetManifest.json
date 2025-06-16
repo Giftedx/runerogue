@@ -1,0 +1,45 @@
+{
+  "sprites": {
+    "player": {
+      "warrior": "/assets/sprites/player_warrior_32x32.png",
+      "mage": "/assets/sprites/player_mage_32x32.png",
+      "ranger": "/assets/sprites/player_ranger_32x32.png"
+    },
+    "enemies": {
+      "goblin": "/assets/sprites/enemy_goblin_32x32.png",
+      "skeleton": "/assets/sprites/enemy_skeleton_32x32.png",
+      "orc": "/assets/sprites/enemy_orc_32x32.png"
+    },
+    "ui": {
+      "healthBarBg": "/assets/ui/health_bar_bg.png",
+      "healthBarFill": "/assets/ui/health_bar_fill.png",
+      "button": "/assets/ui/button_32x32.png"
+    },
+    "osrs": {
+      "hitsplats": {
+        "damage": "/assets/osrs/effects/hitsplats/Damage_hitsplat.png",
+        "zero": "/assets/osrs/effects/hitsplats/Zero_damage_hitsplat.png",
+        "heal": "/assets/osrs/effects/hitsplats/Heal_hitsplat.png",
+        "poison": "/assets/osrs/effects/hitsplats/Poison_hitsplat.png",
+        "venom": "/assets/osrs/effects/hitsplats/Venom_hitsplat.png"
+      },
+      "projectiles": {
+        "bronze_arrow": "/assets/osrs/effects/projectiles/Bronze_arrow.png",
+        "iron_arrow": "/assets/osrs/effects/projectiles/Iron_arrow.png"
+      }
+    }
+  },
+  "tilesets": {
+    "ground": "/assets/sprites/ground_tileset_32x32.png",
+    "objects": "/assets/sprites/objects_tileset_32x32.png"
+  },
+  "audio": {
+    "combat": {
+      "attack1": "/assets/audio/attack1.wav",
+      "damage": "/assets/audio/damage.wav"
+    },
+    "ambient": {
+      "background": "/assets/audio/background.mp3"
+    }
+  }
+}

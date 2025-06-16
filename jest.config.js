@@ -31,7 +31,7 @@ module.exports = {
     {
       displayName: "discord-client",
       testMatch: ["<rootDir>/packages/discord-client/**/*.test.ts"],
-      testEnvironment: "jsdom",
+      testEnvironment: "node",
       preset: "ts-jest",
       transformIgnorePatterns: ["node_modules/(?!(p-limit|yocto-queue)/)"],
       setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],

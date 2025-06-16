@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <title>RuneRogue Connection Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+  </head>
+  <body>
+    <h1>RuneRogue Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="log"></div>
+
+    <script>
+      const log = document.getElementById("log");
+      const status = document.getElementById("status");
+
+      function addLog(message) {
+        console.log(message);
+        log.innerHTML +=
+          "<div>" + new Date().toISOString() + ": " + message + "</div>";
+      }
+
+      async function testConnection() {
+        try {
+          addLog("Creating Colyseus client...");
+          const client = new Colyseus.Client("ws://localhost:2567");
+
+          addLog("Attempting to join room...");
+          const room = await client.joinOrCreate("runerogue", {
+            name: "TestPlayer" + Math.floor(Math.random() * 1000),
+          });
+
+          addLog("✅ Successfully connected! Room ID: " + room.id);
+          addLog("Session ID: " + room.sessionId);
+          status.textContent = "Connected!";
+          status.style.color = "green";
+
+          // Listen for state changes
+          room.state.players.onAdd((player, playerId) => {
+            addLog("Player joined: " + playerId + " - " + player.name);
+          });
+
+          room.state.enemies.onAdd((enemy, enemyId) => {
+            addLog("Enemy spawned: " + enemyId + " - " + enemy.type);
+          });
+
+          // Send a test movement
+          setTimeout(() => {
+            addLog("Sending test movement...");
+            room.send("move", { x: 10, y: 10 });
+          }, 2000);
+
+          // Start game
+          setTimeout(() => {
+            addLog("Starting game...");
+            room.send("start_game");
+          }, 3000);
+        } catch (error) {
+          addLog("❌ Connection failed: " + error.message);
+          status.textContent = "Connection Failed";
+          status.style.color = "red";
+        }
+      }
+
+      testConnection();
+    </script>
+  </body>
+</html>

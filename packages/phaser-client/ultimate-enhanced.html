@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue Ultimate Enhanced - Phase 3 Complete</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0d1b0d;
+        font-family: 'Arial', sans-serif;
+        overflow: hidden;
+      }
+
+      #phaser-game {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Custom loading screen */
+      .ultimate-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #0d1b0d 0%, #1a3d1a 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        z-index: 3000;
+        transition: opacity 0.5s ease;
+      }
+
+      .ultimate-loading h1 {
+        font-size: 48px;
+        color: #4caf50;
+        margin-bottom: 10px;
+        text-shadow: 0 0 20px #4caf50;
+        animation: pulse 2s infinite;
+      }
+
+      .ultimate-loading .subtitle {
+        font-size: 18px;
+        color: #ffffff;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .ultimate-loading .features {
+        margin-bottom: 30px;
+        text-align: center;
+        opacity: 0.8;
+      }
+
+      .ultimate-loading .features div {
+        margin: 5px 0;
+        font-size: 14px;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .progress-container {
+        width: 400px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #8bc34a);
+        width: 0%;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 20px #4caf50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ultimate-loading" id="ultimate-loading">
+      <h1>🛡️ RuneRogue</h1>
+      <div class="subtitle">Ultimate Enhanced Edition<br />Phase 3 Visual Enhancement Complete</div>
+
+      <div class="features">
+        <div>✨ Advanced Sprite Animations</div>
+        <div>🎮 OSRS-Style UI System</div>
+        <div>💥 Particle Effects & Combat</div>
+        <div>🗺️ Interactive Minimap</div>
+        <div>💬 Enhanced Chat System</div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+
+      <div id="loading-text">Initializing enhanced systems...</div>
+    </div>
+
+    <div id="phaser-game"></div>
+
+    <!-- Load dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+
+    <!-- Load our enhanced systems -->
+    <script src="/assets/spriteGenerator.js"></script>
+    <script src="/assets/enhancedUI.js"></script>
+    <script src="ultimate-enhanced-client.js"></script>
+
+    <script>
+      // Enhanced loading sequence
+      let progress = 0;
+      const loadingSteps = [
+        'Loading core systems...',
+        'Generating OSRS-style sprites...',
+        'Initializing animation manager...',
+        'Setting up UI components...',
+        'Connecting to multiplayer server...',
+        'Finalizing enhanced experience...',
+        'Ready to play!',
+      ];
+
+      function updateLoadingProgress() {
+        progress += Math.random() * 15 + 5;
+        if (progress > 100) progress = 100;
+
+        document.getElementById('progress-bar').style.width = progress + '%';
+
+        const stepIndex = Math.floor((progress / 100) * loadingSteps.length);
+        if (stepIndex < loadingSteps.length) {
+          document.getElementById('loading-text').textContent = loadingSteps[stepIndex];
+        }
+
+        if (progress < 100) {
+          setTimeout(updateLoadingProgress, Math.random() * 300 + 200);
+        } else {
+          // Hide loading screen
+          setTimeout(() => {
+            const loadingDiv = document.getElementById('ultimate-loading');
+            loadingDiv.style.opacity = '0';
+            setTimeout(() => {
+              loadingDiv.style.display = 'none';
+            }, 500);
+          }, 1000);
+        }
+      }
+
+      // Start loading sequence
+      setTimeout(updateLoadingProgress, 500);
+    </script>
+  </body>
+</html>

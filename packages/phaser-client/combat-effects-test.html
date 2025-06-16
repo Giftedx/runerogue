@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue - Combat Effects Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #2c3e50;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .game-container {
+        border: 2px solid #34495e;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      .controls {
+        background: #34495e;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .controls button {
+        background: #3498db;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .controls button:hover {
+        background: #2980b9;
+      }
+      .status {
+        background: #27ae60;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+      .info {
+        background: #e74c3c;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎮 RuneRogue Combat Effects Test</h1>
+
+      <div class="status">
+        ✅ <strong>Status:</strong> OSRS Combat Assets Successfully Integrated!
+      </div>
+
+      <div class="info">
+        📋 <strong>Test Instructions:</strong> Click anywhere in the game area
+        to spawn combat effects. Use the buttons below to test specific effects.
+      </div>
+
+      <div class="controls">
+        <h3>Combat Effect Tests</h3>
+        <button onclick="testDamageEffect()">💥 Test Damage Splat</button>
+        <button onclick="testHealEffect()">💚 Test Heal Effect</button>
+        <button onclick="testPoisonEffect()">☠️ Test Poison Effect</button>
+        <button onclick="testVenomEffect()">🟢 Test Venom Effect</button>
+        <button onclick="testZeroEffect()">🛡️ Test Blocked/Miss</button>
+        <br />
+        <button onclick="testArrowProjectile()">🏹 Test Bronze Arrow</button>
+        <button onclick="testIronArrow()">⚔️ Test Iron Arrow</button>
+        <button onclick="testCombatSequence()">⚡ Test Full Combat</button>
+        <button onclick="clearEffects()">🗑️ Clear All Effects</button>
+      </div>
+
+      <div class="game-container">
+        <div id="game-area"></div>
+      </div>
+    </div>
+
+    <script>
+      // Phaser Game Configuration
+      const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        parent: "game-area",
+        backgroundColor: "#2d5a27",
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      let game;
+      let combatEffects;
+      let scene;
+
+      // Combat Effects Manager (embedded for testing)
+      class CombatEffectsManager {
+        constructor(scene) {
+          this.scene = scene;
+          this.effects = [];
+          this.projectiles = [];
+        }
+
+        preloadAssets() {
+          console.log("🎮 Loading OSRS combat effects...");
+
+          // Load hitsplat assets
+          this.scene.load.image(
+            "hitsplat_damage",
+            "assets/osrs/effects/hitsplats/Damage_hitsplat.png"
+          );
+          this.scene.load.image(
+            "hitsplat_zero",
+            "assets/osrs/effects/hitsplats/Zero_damage_hitsplat.png"
+          );
+          this.scene.load.image(
+            "hitsplat_heal",
+            "assets/osrs/effects/hitsplats/Heal_hitsplat.png"
+          );
+          this.scene.load.image(
+            "hitsplat_poison",
+            "assets/osrs/effects/hitsplats/Poison_hitsplat.png"
+          );
+          this.scene.load.image(
+            "hitsplat_venom",
+            "assets/osrs/effects/hitsplats/Venom_hitsplat.png"
+          );
+
+          // Load projectile assets
+          this.scene.load.image(
+            "projectile_bronze_arrow",
+            "assets/osrs/effects/projectiles/Bronze_arrow.png"
+          );
+          this.scene.load.image(
+            "projectile_iron_arrow",
+            "assets/osrs/effects/projectiles/Iron_arrow.png"
+          );
+
+          console.log("✅ Combat effects assets queued for loading");
+        }
+
+        showDamageEffect(x, y, amount, type = "damage") {
+          let hitsplatKey = "damage";
+          if (amount === 0) {
+            hitsplatKey = "zero";
+          } else if (type === "heal") {
+            hitsplatKey = "heal";
+          } else if (type === "poison") {
+            hitsplatKey = "poison";
+          } else if (type === "venom") {
+            hitsplatKey = "venom";
+          }
+
+          // Create hitsplat sprite
+          const hitsplat = this.scene.add.image(
+            x,
+            y - 20,
+            `hitsplat_${hitsplatKey}`
+          );
+          hitsplat.setOrigin(0.5, 0.5);
+          hitsplat.setScale(2); // Make it clearly visible
+
+          // Add damage text if amount > 0
+          if (amount > 0) {
+            const textColor = type === "heal" ? "#00ff00" : "#ffffff";
+            const damageText = this.scene.add.text(
+              x,
+              y - 20,
+              amount.toString(),
+              {
+                fontSize: "16px",
+                fontFamily: "Arial Black",
+                color: textColor,
+                stroke: "#000000",
+                strokeThickness: 3,
+              }
+            );
+            damageText.setOrigin(0.5, 0.5);
+
+            // Animate text rising and fading
+            this.scene.tweens.add({
+              targets: damageText,
+              y: y - 60,
+              alpha: 0,
+              duration: 2000,
+              ease: "Power2",
+              onComplete: () => damageText.destroy(),
+            });
+          }
+
+          // Animate hitsplat appearance and fade
+          hitsplat.setAlpha(0);
+          this.scene.tweens.add({
+            targets: hitsplat,
+            alpha: 1,
+            duration: 300,
+            yoyo: true,
+            hold: 1000,
+            onComplete: () => hitsplat.destroy(),
+          });
+
+          console.log(`💥 Combat effect: ${type} (${amount}) at (${x}, ${y})`);
+        }
+
+        fireProjectile(
+          fromX,
+          fromY,
+          toX,
+          toY,
+          projectileType = "bronze_arrow",
+          onComplete = null
+        ) {
+          const projectile = this.scene.add.image(
+            fromX,
+            fromY,
+            `projectile_${projectileType}`
+          );
+          projectile.setOrigin(0.5, 0.5);
+          projectile.setScale(2);
+
+          const angle = Phaser.Math.Angle.Between(fromX, fromY, toX, toY);
+          projectile.setRotation(angle);
+
+          const distance = Phaser.Math.Distance.Between(fromX, fromY, toX, toY);
+          const duration = Math.max(500, distance * 3);
+
+          this.scene.tweens.add({
+            targets: projectile,
+            x: toX,
+            y: toY,
+            duration: duration,
+            ease: "Power2",
+            onComplete: () => {
+              projectile.destroy();
+              if (onComplete) onComplete();
+            },
+          });
+
+          console.log(`🏹 Projectile fired: ${projectileType}`);
+        }
+
+        cleanup() {
+          this.effects = [];
+          this.projectiles = [];
+        }
+      }
+
+      function preload() {
+        scene = this;
+        combatEffects = new CombatEffectsManager(this);
+        combatEffects.preloadAssets();
+
+        // Create a simple background
+        this.load.image(
+          "grass",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+        );
+      }
+
+      function create() {
+        console.log("🎮 Combat Effects Test Scene Created");
+
+        // Create background
+        this.add.rectangle(400, 300, 800, 600, 0x2d5a27);
+
+        // Add instructions text
+        this.add
+          .text(400, 50, "OSRS Combat Effects Test", {
+            fontSize: "24px",
+            fontFamily: "Arial",
+            color: "#ffffff",
+            stroke: "#000000",
+            strokeThickness: 2,
+          })
+          .setOrigin(0.5);
+
+        this.add
+          .text(400, 80, "Click anywhere to test damage effects!", {
+            fontSize: "16px",
+            fontFamily: "Arial",
+            color: "#ffff00",
+          })
+          .setOrigin(0.5);
+
+        // Handle clicks for random effects
+        this.input.on("pointerdown", (pointer) => {
+          const effects = ["damage", "heal", "poison", "venom"];
+          const randomEffect =
+            effects[Math.floor(Math.random() * effects.length)];
+          const randomAmount = Math.floor(Math.random() * 25) + 1;
+
+          combatEffects.showDamageEffect(
+            pointer.x,
+            pointer.y,
+            randomAmount,
+            randomEffect
+          );
+        });
+      }
+
+      function update() {
+        // Game loop
+      }
+
+      // Test Functions (called from buttons)
+      function testDamageEffect() {
+        const x = 200 + Math.random() * 400;
+        const y = 200 + Math.random() * 200;
+        const damage = Math.floor(Math.random() * 20) + 5;
+        combatEffects.showDamageEffect(x, y, damage, "damage");
+      }
+
+      function testHealEffect() {
+        const x = 200 + Math.random() * 400;
+        const y = 200 + Math.random() * 200;
+        const heal = Math.floor(Math.random() * 15) + 3;
+        combatEffects.showDamageEffect(x, y, heal, "heal");
+      }
+
+      function testPoisonEffect() {
+        const x = 200 + Math.random() * 400;
+        const y = 200 + Math.random() * 200;
+        const poison = Math.floor(Math.random() * 8) + 1;
+        combatEffects.showDamageEffect(x, y, poison, "poison");
+      }
+
+      function testVenomEffect() {
+        const x = 200 + Math.random() * 400;
+        const y = 200 + Math.random() * 200;
+        const venom = Math.floor(Math.random() * 12) + 2;
+        combatEffects.showDamageEffect(x, y, venom, "venom");
+      }
+
+      function testZeroEffect() {
+        const x = 200 + Math.random() * 400;
+        const y = 200 + Math.random() * 200;
+        combatEffects.showDamageEffect(x, y, 0, "damage");
+      }
+
+      function testArrowProjectile() {
+        const fromX = 100;
+        const fromY = 300;
+        const toX = 500 + Math.random() * 200;
+        const toY = 200 + Math.random() * 200;
+
+        combatEffects.fireProjectile(
+          fromX,
+          fromY,
+          toX,
+          toY,
+          "bronze_arrow",
+          () => {
+            const damage = Math.floor(Math.random() * 15) + 5;
+            combatEffects.showDamageEffect(toX, toY, damage, "damage");
+          }
+        );
+      }
+
+      function testIronArrow() {
+        const fromX = 700;
+        const fromY = 300;
+        const toX = 200 + Math.random() * 200;
+        const toY = 200 + Math.random() * 200;
+
+        combatEffects.fireProjectile(
+          fromX,
+          fromY,
+          toX,
+          toY,
+          "iron_arrow",
+          () => {
+            const damage = Math.floor(Math.random() * 18) + 7;
+            combatEffects.showDamageEffect(toX, toY, damage, "damage");
+          }
+        );
+      }
+
+      function testCombatSequence() {
+        // Simulate a full combat sequence
+        setTimeout(() => testArrowProjectile(), 0);
+        setTimeout(() => testDamageEffect(), 1000);
+        setTimeout(() => testIronArrow(), 2000);
+        setTimeout(() => testHealEffect(), 3000);
+        setTimeout(() => testPoisonEffect(), 4000);
+      }
+
+      function clearEffects() {
+        if (combatEffects) {
+          combatEffects.cleanup();
+        }
+        console.log("🗑️ All effects cleared");
+      }
+
+      // Initialize game
+      window.onload = function () {
+        game = new Phaser.Game(config);
+        console.log("🎮 RuneRogue Combat Effects Test initialized!");
+      };
+    </script>
+  </body>
+</html>

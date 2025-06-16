@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue - Enhanced JSON Multiplayer Client</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #1a3d1a;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      #phaser-game {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .connected {
+        color: #00ff00 !important;
+      }
+
+      .connecting {
+        color: #ffff00 !important;
+      }
+
+      .disconnected {
+        color: #ff0000 !important;
+      }
+
+      /* Loading screen */
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #1a3d1a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 18px;
+        z-index: 2000;
+      }
+
+      /* Enhanced styling for controls */
+      #enhanced-controls {
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+      }
+
+      #enhanced-controls h3 {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+
+      #enhanced-controls ul {
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading screen -->
+    <div id="loading">
+      <div>
+        <h2>🎮 Loading Enhanced RuneRogue Multiplayer...</h2>
+        <p>Initializing enhanced Phaser client with OSRS-inspired features...</p>
+        <p style="font-size: 14px; color: #aaa">
+          ✨ Features: Click-to-move, Player stats, Enhanced UI, Real-time sync
+        </p>
+      </div>
+    </div>
+
+    <!-- Game container -->
+    <div id="phaser-game"></div>
+
+    <!-- Load Phaser from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+
+    <!-- Load Colyseus from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+
+    <!-- Our enhanced JSON multiplayer client -->
+    <script src="enhanced-multiplayer-client.js"></script>
+
+    <script>
+      // Hide loading screen once everything is loaded
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const loading = document.getElementById('loading');
+          if (loading) {
+            loading.style.display = 'none';
+          }
+        }, 1500);
+      });
+    </script>
+  </body>
+</html>

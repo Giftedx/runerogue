@@ -7,10 +7,7 @@
  * @wiki https://oldschool.runescape.wiki/w/Damage_per_second/Melee
  */
 
-import {
-  OSRSCombatStats,
-  OSRSEquipmentBonuses,
-} from "../../../shared/src/types/osrs";
+import { OSRSCombatStats, OSRSEquipmentBonuses } from "@runerogue/shared";
 
 /**
  * Calculate maximum hit for melee combat

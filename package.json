@@ -5,7 +5,6 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "server-ts",
     "client"
   ],
   "scripts": {
@@ -21,13 +20,16 @@
     "setup": "npm run bootstrap && npm run build",
     "osrs-data:dev": "npm run dev --workspace=packages/osrs-data",
     "game-server:dev": "npm run dev --workspace=packages/game-server",
-    "discord-client:dev": "npm run dev --workspace=packages/discord-client"
+    "server:dev": "npm run dev --workspace=packages/server",
+    "phaser-client:dev": "npm run dev --workspace=packages/phaser-client",
+    "client:dev": "npm run dev --workspace=client"
   },
   "dependencies": {
     "@runerogue/shared": "workspace:*",
     "colyseus.js": "^0.16.19",
     "graceful-fs": "^4.2.11",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
@@ -38,6 +40,7 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.0.0",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.0",
     "lerna": "^8.2.2",
     "prettier": "^3.0.3",
     "ts-jest": "^29.1.1",

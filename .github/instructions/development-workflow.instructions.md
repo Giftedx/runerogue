@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # RuneRogue Development Workflow
@@ -7,27 +7,24 @@ applyTo: '**'
 ## Development Environment Setup
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - pnpm package manager
 - PostgreSQL database
 - Git version control
 
 ### Initial Setup
+
 ```bash
 # Clone repository
 git clone <repository-url>
 cd runerogue
 
-# Install dependencies
+# Install dependencies using pnpm workspaces
 pnpm install
 
-# Set up environment
+# Set up environment (optional - most packages work without .env)
 cp env.template .env
-# Edit .env with your database credentials
-
-# Initialize database
-pnpm db:migrate
-pnpm db:seed
 
 # Start development servers
 pnpm dev
@@ -36,6 +33,7 @@ pnpm dev
 ## Daily Development Process
 
 ### 1. Start Development Session
+
 ```bash
 # Pull latest changes
 git pull origin main
@@ -43,22 +41,26 @@ git pull origin main
 # Install any new dependencies
 pnpm install
 
-# Start all services
+# Start all services in parallel
 pnpm dev
 ```
 
 ### 2. Run Tests Before Changes
+
 ```bash
-# Run full test suite
+# Run tests (currently mixed results - 27 passing, 79 failing)
 pnpm test
 
-# Run specific test category
-pnpm test:unit
-pnpm test:integration
-pnpm test:osrs
+# Run specific package tests
+pnpm test --scope=@runerogue/osrs-data
+pnpm test --scope=@runerogue/game-server
+
+# Skip archived legacy tests that are failing
+pnpm test --testPathIgnorePatterns="archived-tests"
 ```
 
 ### 3. Make Changes
+
 - Follow TypeScript best practices
 - Add comprehensive error handling
 - Include JSDoc documentation
@@ -66,6 +68,7 @@ pnpm test:osrs
 - Validate OSRS mechanics against Wiki
 
 ### 4. Validate Changes
+
 ```bash
 # Run tests
 pnpm test
@@ -81,6 +84,7 @@ pnpm format
 ```
 
 ### 5. Commit Changes
+
 ```bash
 # Stage changes
 git add .
@@ -95,12 +99,14 @@ git push origin feature/player-movement
 ## Branch Strategy
 
 ### Main Branches
+
 - `main` - Production-ready code
 - `develop` - Integration branch for features
 - `feature/*` - Individual feature development
 - `hotfix/*` - Critical bug fixes
 
 ### Feature Development
+
 ```bash
 # Create feature branch
 git checkout -b feature/combat-system
@@ -118,6 +124,7 @@ git push origin feature/combat-system
 ## Code Review Process
 
 ### Before Submitting PR
+
 - All tests passing
 - Code coverage maintained
 - OSRS mechanics validated
@@ -125,6 +132,7 @@ git push origin feature/combat-system
 - Documentation updated
 
 ### PR Requirements
+
 - Descriptive title and description
 - Link to related issues
 - Screenshots/videos for UI changes
@@ -132,6 +140,7 @@ git push origin feature/combat-system
 - Test results summary
 
 ### Review Checklist
+
 - ✅ Code follows project standards
 - ✅ Tests cover new functionality
 - ✅ OSRS authenticity maintained
@@ -142,51 +151,55 @@ git push origin feature/combat-system
 ## Testing Strategy
 
 ### Test Categories
-1. **Unit Tests** - Individual functions and components
-2. **Integration Tests** - API endpoints and database operations
-3. **OSRS Validation** - Game mechanics against Wiki data
-4. **Performance Tests** - 60fps with multiple players
-5. **End-to-End Tests** - Complete user workflows
+
+1. **Unit Tests** - Package-specific functionality testing
+2. **Integration Tests** - Cross-package and API testing
+3. **OSRS Validation** - Combat formulas against Wiki data
+4. **Client Tests** - Phaser and Godot client functionality
+5. **Multiplayer Tests** - Colyseus room and synchronization testing
 
 ### Test Execution
+
 ```bash
-# Run all tests
+# Run all tests (expect mixed results)
 pnpm test
 
-# Run with coverage
-pnpm test:coverage
+# Run tests for specific package
+pnpm --filter @runerogue/osrs-data test
+pnpm --filter @runerogue/game-server test
 
-# Run specific test files
-pnpm test combat.test.ts
+# Run tests excluding archived failures
+pnpm test --testPathIgnorePatterns="archived-tests-legacy|archived-tests-debug"
 
-# Run tests in watch mode
-pnpm test:watch
-
-# Run performance tests
-pnpm test:performance
+# Run with coverage for working tests
+pnpm test:coverage --testPathIgnorePatterns="archived"
 ```
 
 ### Test Standards
-- Minimum 90% code coverage for game logic
-- All OSRS calculations must match Wiki values
-- Performance tests must validate 60fps target
-- Integration tests cover all API endpoints
-- Mock external dependencies appropriately
+
+- **Core Packages**: Focus on packages/osrs-data and packages/game-server tests
+- **OSRS Authenticity**: All combat calculations must match Wiki values exactly
+- **Integration**: Client-server communication and data flow validation
+- **Legacy Cleanup**: Archived tests with missing dependencies should be fixed or removed
 
 ## Debugging Workflow
 
 ### Common Issues
+
 1. **Multiplayer Desync**
+
    - Check server authority validation
    - Verify state synchronization
    - Review client prediction logic
 
 2. **Performance Problems**
+
    - Profile with Chrome DevTools
    - Check ECS system efficiency
    - Monitor memory usage
 
 3. **OSRS Calculation Errors**
+
    - Compare against OSRS Wiki
    - Validate input parameters
    - Check rounding and floor operations
@@ -197,6 +210,7 @@ pnpm test:performance
    - Verify error handling
 
 ### Debugging Tools
+
 - Chrome DevTools for client debugging
 - Node.js inspector for server debugging
 - Colyseus dashboard for room monitoring
@@ -205,6 +219,7 @@ pnpm test:performance
 ## Performance Monitoring
 
 ### Key Metrics
+
 - Server tick rate (target: 20 TPS)
 - Client frame rate (target: 60 FPS)
 - Network latency (<100ms)
@@ -212,6 +227,7 @@ pnpm test:performance
 - Test coverage (>90%)
 
 ### Monitoring Commands
+
 ```bash
 # Performance profiling
 pnpm profile
@@ -229,6 +245,7 @@ pnpm load-test
 ## Deployment Process
 
 ### Development Deployment
+
 ```bash
 # Build for development
 pnpm build:dev
@@ -241,6 +258,7 @@ pnpm test:smoke
 ```
 
 ### Production Deployment
+
 ```bash
 # Build for production
 pnpm build:prod
@@ -258,6 +276,7 @@ pnpm monitor
 ## Emergency Procedures
 
 ### Critical Bug Response
+
 1. Identify and isolate the issue
 2. Create hotfix branch from main
 3. Implement minimal fix
@@ -266,6 +285,7 @@ pnpm monitor
 6. Post-mortem analysis
 
 ### Rollback Process
+
 ```bash
 # Rollback to previous version
 pnpm rollback:last
@@ -280,12 +300,14 @@ pnpm verify:deployment
 ## Resources and Documentation
 
 ### Internal Documentation
+
 - API documentation: `/docs/api`
 - Architecture guide: `/docs/architecture`
 - OSRS mechanics: `/docs/osrs`
 - Testing guide: `/docs/testing`
 
 ### External Resources
+
 - OSRS Wiki for game mechanics
 - Colyseus documentation for multiplayer
 - bitECS guide for entity systems

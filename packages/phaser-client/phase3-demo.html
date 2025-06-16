@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      RuneRogue Phase 3: Combat Visualization & UI - Standalone Demo
+    </title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #2d5a27, #1a3d1a);
+        font-family: "Arial Black", Arial, sans-serif;
+        color: #ffffff;
+        overflow: hidden;
+      }
+
+      #game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+      }
+
+      #header {
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px 20px;
+        width: 100%;
+        box-sizing: border-box;
+        border-bottom: 2px solid #ffd700;
+        text-align: center;
+      }
+
+      #header h1 {
+        margin: 0;
+        color: #ffd700;
+        font-size: 20px;
+        text-shadow: 2px 2px 4px #000000;
+      }
+
+      #status-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 5px;
+      }
+
+      #status-text {
+        color: #00ff00;
+        font-size: 14px;
+      }
+
+      #controls-text {
+        color: #ffff00;
+        font-size: 12px;
+      }
+
+      #game-canvas {
+        border: 3px solid #ffd700;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      }
+
+      #performance-container {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ffd700;
+      }
+
+      #performance-container h3 {
+        margin: 0 0 5px 0;
+        color: #ffd700;
+        font-size: 14px;
+      }
+
+      #performance-container div {
+        color: #ffffff;
+        font-size: 12px;
+        margin: 2px 0;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="header">
+        <h1>🎮 RuneRogue Phase 3: Combat Visualization & UI (Demo)</h1>
+        <div id="status-container">
+          <div id="status-text">Standalone Demo - No Server Required</div>
+          <div id="controls-text">
+            Click to move • Spacebar to start • Auto-combat enabled
+          </div>
+        </div>
+      </div>
+      <div id="game-canvas"></div>
+    </div>
+
+    <!-- Performance Monitor -->
+    <div id="performance-container" class="hidden">
+      <h3>🔧 Performance Monitor</h3>
+      <div>FPS: <span id="fps-counter">0</span></div>
+      <div>Players: <span id="player-counter">1</span></div>
+      <div>Enemies: <span id="enemy-counter">0</span></div>
+      <div>Effects: <span id="effect-counter">0</span></div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/phaser@3.80.1/dist/phaser.min.js"></script>
+
+    <!-- OSRS Combat Effects Manager -->
+    <script src="assets/osrs/CombatEffectsManager.js"></script>
+
+    <!-- Standalone Demo Client -->
+    <script>
+      console.log("🚀 RuneRogue Phase 3: Standalone Demo");
+      console.log(
+        "📋 Features: Combat Effects, Health Orbs, XP Counter, Mini-map"
+      );
+      console.log("⚡ Performance Target: 60fps with visual effects");
+
+      // Game Configuration
+      const config = {
+        type: Phaser.AUTO,
+        width: 1200,
+        height: 700,
+        parent: "game-canvas",
+        backgroundColor: "#2d5a27",
+        physics: {
+          default: "arcade",
+          arcade: {
+            debug: false,
+            gravity: { y: 0 },
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      // Game state
+      let player;
+      let enemies = [];
+      let combatEffectsManager;
+      let healthOrb;
+      let xpCounter;
+      let miniMap;
+      let cursors;
+      let lastEnemySpawn = 0;
+      let playerStats = {
+        health: 99,
+        maxHealth: 99,
+        xp: 0,
+        level: 10,
+      };
+
+      function preload() {
+        console.log("🎮 Standalone Demo preloading...");
+
+        // Load OSRS combat effects
+        if (typeof CombatEffectsManager !== "undefined") {
+          combatEffectsManager = new CombatEffectsManager(this);
+          console.log("✅ Combat effects manager ready");
+        }
+
+        // Create simple colored rectangles for demo
+        this.add
+          .graphics()
+          .fillStyle(0x0000ff)
+          .fillRect(0, 0, 32, 32)
+          .generateTexture("player", 32, 32);
+
+        this.add
+          .graphics()
+          .fillStyle(0xff0000)
+          .fillRect(0, 0, 24, 24)
+          .generateTexture("enemy", 24, 24);
+      }
+
+      function create() {
+        console.log("🎮 Standalone Demo created");
+
+        // Create player
+        player = this.physics.add.sprite(600, 350, "player");
+        player.setCollideWorldBounds(true);
+
+        // Setup input
+        cursors = this.input.keyboard.createCursorKeys();
+
+        // Click to move
+        this.input.on("pointerdown", (pointer) => {
+          this.physics.moveToObject(player, pointer, 200);
+        });
+
+        // Create UI elements
+        createUI.call(this);
+
+        // Performance monitoring
+        this.time.addEvent({
+          delay: 1000,
+          callback: updatePerformanceMonitor,
+          loop: true,
+        });
+
+        // Auto-spawn enemies for demo
+        this.time.addEvent({
+          delay: 2000,
+          callback: spawnEnemy,
+          callbackScope: this,
+          loop: true,
+        });
+
+        console.log(
+          "✅ Demo ready! Click to move around and watch combat effects"
+        );
+      }
+
+      function createUI() {
+        // Health Orb (simple version)
+        healthOrb = this.add.container(100, 50);
+        const orbBg = this.add.circle(0, 0, 30, 0x660000);
+        const orbFill = this.add.circle(0, 0, 25, 0x00ff00);
+        const healthText = this.add
+          .text(0, 0, "99", {
+            fontSize: "16px",
+            fill: "#ffffff",
+            align: "center",
+          })
+          .setOrigin(0.5);
+
+        healthOrb.add([orbBg, orbFill, healthText]);
+        healthOrb.setScrollFactor(0);
+
+        // XP Counter
+        xpCounter = this.add
+          .text(10, 100, "Total XP: 0", {
+            fontSize: "14px",
+            fill: "#ffff00",
+          })
+          .setScrollFactor(0);
+
+        // Mini-map
+        miniMap = this.add.container(1100, 100);
+        const mapBg = this.add.rectangle(0, 0, 150, 100, 0x000000, 0.7);
+        const mapBorder = this.add
+          .rectangle(0, 0, 150, 100)
+          .setStrokeStyle(2, 0xffd700);
+        const mapTitle = this.add
+          .text(0, -35, "Mini-map", {
+            fontSize: "12px",
+            fill: "#ffd700",
+            align: "center",
+          })
+          .setOrigin(0.5);
+
+        miniMap.add([mapBg, mapBorder, mapTitle]);
+        miniMap.setScrollFactor(0);
+      }
+
+      function spawnEnemy() {
+        const x = Phaser.Math.Between(100, 1100);
+        const y = Phaser.Math.Between(100, 600);
+
+        const enemy = this.physics.add.sprite(x, y, "enemy");
+        enemy.setTint(0xff6666);
+        enemies.push(enemy);
+
+        // Auto-combat after 1 second
+        this.time.delayedCall(1000, () => {
+          if (enemy.active) {
+            simulateCombat.call(this, enemy);
+          }
+        });
+
+        console.log(`👹 Enemy spawned at (${x}, ${y})`);
+      }
+
+      function simulateCombat(enemy) {
+        // Calculate distance for realistic combat
+        const distance = Phaser.Math.Distance.Between(
+          player.x,
+          player.y,
+          enemy.x,
+          enemy.y
+        );
+
+        if (distance < 200) {
+          // Simulate damage calculation
+          const damage = Phaser.Math.Between(1, 15);
+          const xpGain = Math.floor(damage * 4);
+
+          // Show damage splat using CombatEffectsManager
+          if (combatEffectsManager) {
+            combatEffectsManager.showDamageSplat(
+              enemy.x,
+              enemy.y - 20,
+              damage,
+              "damage"
+            );
+
+            // XP splat
+            combatEffectsManager.showXPSplat(
+              player.x,
+              player.y - 30,
+              xpGain,
+              "Attack"
+            );
+          }
+
+          // Update stats
+          playerStats.xp += xpGain;
+          xpCounter.setText(`Total XP: ${playerStats.xp}`);
+
+          // Remove enemy
+          enemy.destroy();
+          enemies = enemies.filter((e) => e !== enemy);
+
+          console.log(`⚔️ Combat! Damage: ${damage}, XP: ${xpGain}`);
+        }
+      }
+
+      function update() {
+        // Player movement with arrow keys
+        if (cursors.left.isDown) {
+          player.setVelocityX(-160);
+        } else if (cursors.right.isDown) {
+          player.setVelocityX(160);
+        } else {
+          player.setVelocityX(0);
+        }
+
+        if (cursors.up.isDown) {
+          player.setVelocityY(-160);
+        } else if (cursors.down.isDown) {
+          player.setVelocityY(160);
+        } else {
+          player.setVelocityY(0);
+        }
+
+        // Auto-combat with nearby enemies
+        enemies.forEach((enemy) => {
+          if (enemy.active) {
+            const distance = Phaser.Math.Distance.Between(
+              player.x,
+              player.y,
+              enemy.x,
+              enemy.y
+            );
+
+            if (distance < 100 && Math.random() < 0.01) {
+              simulateCombat.call(this, enemy);
+            }
+          }
+        });
+      }
+
+      function updatePerformanceMonitor() {
+        const game = window.phaserGame;
+        if (game) {
+          document.getElementById("fps-counter").textContent = Math.round(
+            game.loop.actualFps
+          );
+          document.getElementById("enemy-counter").textContent = enemies.length;
+          document.getElementById("effect-counter").textContent =
+            combatEffectsManager ?
+              combatEffectsManager.getActiveEffectCount()
+            : 0;
+        }
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (event) => {
+        switch (event.code) {
+          case "F1":
+            // Toggle feature info
+            console.log("📋 Phase 3 Features:");
+            console.log("• Combat Visual Effects - ✅ Implemented");
+            console.log(
+              "• Essential UI Components - ✅ Health orb, XP counter"
+            );
+            console.log("• Multiplayer Integration - ⚠️ Standalone demo");
+            console.log("• Performance Optimization - ✅ 60fps target");
+            break;
+          case "F2":
+            // Toggle performance monitor
+            const perfContainer = document.getElementById(
+              "performance-container"
+            );
+            perfContainer.classList.toggle("hidden");
+            break;
+          case "Space":
+            // Manually spawn enemy for testing
+            if (window.phaserGame && window.phaserGame.scene.scenes[0]) {
+              spawnEnemy.call(window.phaserGame.scene.scenes[0]);
+            }
+            break;
+        }
+      });
+
+      // Start the game
+      window.phaserGame = new Phaser.Game(config);
+
+      // Performance monitoring
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("📋 Controls:");
+        console.log("• Click anywhere to move your character");
+        console.log("• Spacebar to manually spawn enemy");
+        console.log("• F1 to show feature list");
+        console.log("• F2 to toggle performance monitor");
+        console.log("• F5 to refresh");
+      });
+    </script>
+  </body>
+</html>
