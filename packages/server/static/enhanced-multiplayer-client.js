@@ -1,3 +1,4 @@
+// DEPRECATED: Use osrs-combat-client.js and osrs-combat-client.html for the current client.
 /**
  * Enhanced Phaser + Colyseus Client for JSON-based multiplayer
  *

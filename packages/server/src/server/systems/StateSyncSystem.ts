@@ -13,7 +13,7 @@ import {
   ItemSchema,
   EnemyStatsSchema,
   EquipmentBonusesSchema,
-} from '../schemas/GameRoomState';
+} from '@runerogue/shared';
 import { Room } from 'colyseus';
 import { EnemyType } from '@runerogue/shared';
 

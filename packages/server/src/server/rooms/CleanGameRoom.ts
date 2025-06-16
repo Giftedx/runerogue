@@ -1,7 +1,15 @@
 /**
+ * @deprecated LEGACY ROOM - This room uses a deprecated, complex schema for testing.
+ * It is kept for debugging purposes only and is pending removal.
+ * Please use 'RuneRogueGameRoom' as a reference for the current implementation.
+ */
+
+/**
  * Clean RuneRogue Game Room using stable CoreSchemas
  * This replaces the previous broken implementations
  */
+
+// LEGACY: Not used in current production. Retained for reference, migration, or testing only.
 
 import { Room, Client } from '@colyseus/core';
 import {

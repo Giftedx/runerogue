@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import { BootScene } from "./scenes/BootScene";
 import { GameScene } from "./scenes/GameScene";
 import { UIScene } from "./scenes/UIScene";
+import type { GameClient } from "./GameClient";
+import type { GameRoomState, PlayerSchema, EnemySchema } from "@runerogue/shared";
 
 /**
  * Phaser 3 game engine configuration for RuneRogue.
@@ -28,7 +30,7 @@ export class PhaserGame extends Phaser.Game {
   /**
    * Set the GameClient instance on the GameScene for input handling
    */
-  setGameClient(gameClient: any): void {
+  setGameClient(gameClient: GameClient): void {
     const gameScene = this.scene.getScene("GameScene") as GameScene;
     if (gameScene) {
       gameScene.setGameClient(gameClient);
@@ -39,7 +41,7 @@ export class PhaserGame extends Phaser.Game {
    * Update game objects based on server state
    * @param state - Latest server state from Colyseus
    */
-  updateFromServerState(state: any): void {
+  updateFromServerState(state: GameRoomState): void {
     // TODO: Implement interpolation and update logic
     const gameScene = this.scene.getScene("GameScene") as GameScene;
     if (gameScene) {
@@ -50,7 +52,7 @@ export class PhaserGame extends Phaser.Game {
   /**
    * Create a new player entity in the game world
    */
-  createPlayerEntity(player: any, key: string): void {
+  createPlayerEntity(player: PlayerSchema, key: string): void {
     const gameScene = this.scene.getScene("GameScene") as GameScene;
     if (gameScene) {
       gameScene.createPlayerEntity(player, key);
@@ -60,7 +62,7 @@ export class PhaserGame extends Phaser.Game {
   /**
    * Create a new enemy entity in the game world
    */
-  createEnemyEntity(enemy: any, key: string): void {
+  createEnemyEntity(enemy: EnemySchema, key: string): void {
     const gameScene = this.scene.getScene("GameScene") as GameScene;
     if (gameScene) {
       gameScene.createEnemyEntity(enemy, key);

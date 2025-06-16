@@ -87,6 +87,21 @@
 **Dependencies**: Combat system stability
 **Scope**: Combat logging, stat commands, battle notifications
 
+### Multiplayer Systems Agent - ACTIVE
+**Primary Task**: Colyseus integration, reconnection protocol, state sync
+**Status**: ✅ IMPLEMENTED
+**Scope**: 30s reconnection grace, server-authoritative state, seamless multiplayer experience
+
+### Performance Agent - ACTIVE
+**Primary Task**: In-game performance monitoring, FPS and message rate validation
+**Status**: ✅ IMPLEMENTED
+**Scope**: Real-time overlay in browser client, 60fps target, multiplayer stress testing
+
+### Client UX Agent - ACTIVE
+**Primary Task**: OSRS-authentic click-to-move and UI polish
+**Status**: ✅ IMPLEMENTED
+**Scope**: Stepwise movement, visible target marker, OSRS walk speed, robust multiplayer input
+
 ## Immediate Action Items (Next 24 Hours)
 
 ### 1. Lead Architect - Prayer System Integration ✅ READY

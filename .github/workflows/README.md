@@ -1,34 +1,27 @@
-# GitHub Actions: Auto-Assign Copilot Agent
+# GitHub Workflows
 
-This workflow automates the reassignment of issues to GitHub Copilot as soon as it becomes available as an assignable user.
+This directory contains all the GitHub Actions workflows for the RuneRogue project.
 
-## How It Works
+## Active Workflows
 
-- **Runs every hour** (via cron) and can be triggered manually.
-- **Checks for Copilot** as an assignable collaborator.
-- **Reassigns all open issues** labeled `copilot-agent` and assigned to `Giftedx` to Copilot.
-- **Removes the placeholder assignee** (`Giftedx`).
+-   **`ci.yml`**: The main Continuous Integration (CI) pipeline. It runs on every push and pull request to the `main` and `develop` branches. Its jobs include:
+    -   `lint`: Lints and formats the code.
+    -   `test`: Runs the full test suite.
+    -   `build`: Builds the application packages.
+    -   `godot-build`: Builds the Godot client.
+    -   `deploy-staging` / `deploy-production`: Placeholder deployment jobs.
+    -   `notification`: Reports the status of the pipeline.
 
-## Setup
+-   **`copilot-agent-tasks.yml`**: A workflow for managing tasks assigned to the AI agent.
 
-1. Place the workflow YAML in `.github/workflows/auto-assign-copilot.yml`.
-2. Place the script in `scripts/auto_assign_copilot.js`.
-3. No extra secrets are needed; uses GitHub's built-in `GITHUB_TOKEN`.
+-   **`auto-assign-copilot.yml`**: Automatically assigns the `github-copilot[bot]` to issues with specific labels.
 
-## Customization
+-   **`create-copilot-task.yml`**: A workflow for creating a new Copilot agent task.
 
-- Change the `PLACEHOLDER_ASSIGNEE`, `COPILOT_ASSIGNEE`, or `LABEL` environment variables in the workflow if needed.
-- You may change the schedule or add notification steps as required.
+-   **`mcp-server-ci.yml`**: A CI pipeline specifically for MCP (Model Context Protocol) servers.
 
-## Manual Trigger
+-   **`doc-memory-hygiene.yml`**: A workflow for maintaining the hygiene of documentation and memory files.
 
-- Go to the Actions tab in GitHub and run the workflow manually if you want to force a check.
+## Legacy & Archived Workflows
 
-## Extending
-
-- For multi-agent or multi-label triage, extend the script logic.
-- For notifications (e.g., Slack, email), add a step in the workflow after reassignment.
-
----
-
-**This automation ensures agentic, hands-off triage for Copilot or future bots!**
+The `archive/` and `legacy-archive/` directories contain older or experimental workflows that are no longer in use but are kept for historical reference. They are not triggered and should not be modified.

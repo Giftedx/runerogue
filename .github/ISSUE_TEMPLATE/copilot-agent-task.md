@@ -76,12 +76,6 @@ assignees: github-copilot[bot]
 
 <!-- If applicable, provide examples of expected inputs/outputs or similar implementations -->
 
-## Task Priority
-
-<!-- Indicate the priority of this task: Low, Medium, High, Critical -->
-
-Priority:
-
 ## Related Issues
 
 <!-- Reference any related issues -->

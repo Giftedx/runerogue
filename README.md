@@ -159,4 +159,28 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## 🔄 Multiplayer Reconnection Protocol
+
+RuneRogue supports robust multiplayer reconnection using Colyseus's built-in protocol:
+
+- When a client disconnects (network loss, tab close, etc.), the server preserves their player state for a 30-second grace period.
+- If the client reconnects within this window (same session ID), their character and progress are fully restored.
+- If not, the player is removed from the game state as normal.
+- The browser client automatically attempts to reconnect up to 5 times, with exponential backoff, and provides clear UI feedback on connection status.
+- Manual refresh is prompted if reconnection fails.
+
+This ensures a seamless multiplayer experience and prevents ghost players or lost progress due to transient disconnects.
+
+## 📈 In-Game Performance Monitor
+
+The main browser client features a real-time performance monitor overlay (top-right):
+
+- **FPS**: Frames per second, updated every second (target: 60fps)
+- **Memory**: JS heap usage (if available)
+- **Msgs/s**: Colyseus message rate per second
+
+Use this overlay to validate performance, frame time, and network message rates during multiplayer sessions. This is essential for meeting the 60fps and stability requirements for 2-4 player games.
+
+---
+
 _RuneRogue Development Team - Building the future of nostalgic gaming_

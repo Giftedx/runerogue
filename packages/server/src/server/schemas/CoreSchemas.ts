@@ -1,4 +1,10 @@
 /**
+ * @deprecated LEGACY SCHEMA - This file contains a previous, more complex schema implementation.
+ * It is not used in the main game and is pending removal.
+ * Please use the schemas from '@runerogue/shared' instead.
+ */
+
+/**
  * Core Colyseus schemas using defineTypes approach for maximum compatibility
  * This replaces all decorator-based schemas to avoid Symbol.metadata issues
  */

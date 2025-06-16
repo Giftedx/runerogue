@@ -1,6 +1,7 @@
+// LEGACY: Not used in current production. Retained for reference, migration, or testing only.
 import { Room, Client } from 'colyseus';
 import { IWorld, addEntity, removeEntity, addComponent, createWorld } from 'bitecs';
-import { GameRoomState, PlayerSchema } from '../schemas/GameRoomState';
+import { GameRoomState, PlayerSchema } from '@runerogue/shared';
 import * as Components from '../ecs/components';
 import * as Systems from '../ecs/systems';
 import { StateSyncSystem } from '../systems/StateSyncSystem';

@@ -30,11 +30,11 @@ on:
 
 defaults:
   run:
-    working-directory: server-ts
+    working-directory: packages/server
 
 env:
-  NODE_VERSION: '20.x'  # Using LTS version for stability
-  NPM_VERSION: '10.x'
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '8.x'
   CI: true
   NODE_ENV: test
 
@@ -47,23 +47,28 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+        
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+        cache: 'pnpm'
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run ESLint
-      run: npm run lint
+      run: pnpm -r lint
       
     - name: Check formatting
-      run: npm run format:check
+      run: pnpm -r format:check
       
     - name: Check TypeScript types
-      run: npm run type-check
+      run: pnpm -r type-check
   
   test:
     name: Run Tests
@@ -79,23 +84,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
     - name: Set up Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        cache: 'pnpm'
     
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run tests with coverage
-      run: npm test -- --coverage
+      run: pnpm test -- --coverage
       
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage/lcov.info
         fail_ci_if_error: false
   
   build:
@@ -107,101 +116,31 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+    
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+        cache: 'pnpm'
     
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Build application
-      run: npm run build
+      run: pnpm -r build
       
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: |
-          dist/
-          package*.json
-          node_modules/
+          packages/*/dist
         retention-days: 5
   
-            libnss3 \
-            libatk1.0-0 \
-            libdrm2 \
-            libgtk-3-0 \
-            libgbm1 \
-            && rm -rf /var/lib/apt/lists/*
-        
-        # Set working directory
-        WORKDIR /app
-        
-        # Copy requirements and install dependencies
-        COPY requirements.txt .
-        RUN pip install --no-cache-dir -r requirements.txt
-        
-        # Install Playwright browsers
-        RUN playwright install chromium
-        
-        # Copy application code
-        COPY . .
-        
-        # Create non-root user
-        RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-        USER appuser
-        
-        # Set environment variables
-        ENV PYTHONPATH=/app
-        ENV FLASK_APP=app.py
-        ENV FLASK_ENV=production
-        
-        # Expose port
-        EXPOSE 5000
-        
-        # Health check
-        HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-          CMD curl -f http://localhost:5000/health || exit 1
-        
-        # Run application
-        CMD ["python", "app.py"]
-        EOF
-        
-    - name: Build Docker image
-      run: |
-        docker build -t runerogue:${{ github.sha }} .
-        docker tag runerogue:${{ github.sha }} runerogue:latest
-        
-    - name: Test Docker image
-      run: |
-        # Test that the image can start
-        docker run --rm -d --name test-container -p 5001:5000 \
-          -e DRY_RUN=true \
-          -e DEBUG=false \
-          runerogue:latest
-        
-        # Wait for container to start
-        sleep 10
-        
-        # Test health endpoint
-        curl -f http://localhost:5001/health || exit 1
-        
-        # Stop container
-        docker stop test-container
-        
-    - name: Save Docker image
-      run: |
-        docker save runerogue:latest | gzip > runerogue-image.tar.gz
-        
-    - name: Upload Docker image artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: docker-image
-        path: runerogue-image.tar.gz
-        retention-days: 30
-
   godot-build:
     name: Godot Client Build
     runs-on: ubuntu-latest
@@ -230,7 +169,7 @@ jobs:
         godot --headless --export-release "Web" builds/web/index.html
         
     - name: Upload Web build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: godot-web-build
         path: client/godot/builds/web/
@@ -249,84 +188,44 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [test, integration-test, security-scan]
+    needs: [test, build]
     if: github.ref == 'refs/heads/develop'
     environment: staging
     
     steps:
     - name: Deployment placeholder
-      run: |
-        echo "Deploying to staging environment..."
-        echo "DRY_RUN mode: ${{ env.DRY_RUN }}"
-        echo "This is where staging deployment would happen"
+      run: echo "Deploying to staging environment..."
 
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [test, integration-test, security-scan, docker-build, godot-build]
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> origin/copilot/fix-7
-=======
->>>>>>> origin/copilot/fix-7
-=======
->>>>>>> origin/copilot/fix-7
+    needs: [test, build, godot-build]
     if: github.ref == 'refs/heads/main'
     environment: production
     
     steps:
     - name: Deployment placeholder
-      run: |
-        echo "Deploying to production environment..."
-        echo "DRY_RUN mode: ${{ env.DRY_RUN }}"
-        echo "This is where production deployment would happen"
+      run: echo "Deploying to production environment..."
 
   notification:
     name: Notification
     runs-on: ubuntu-latest
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    needs: [test, test-auth-service, test-meta-ui, integration-test, security-scan, docker-build, godot-build]
-=======
-    needs: [test, integration-test, security-scan, godot-build]
->>>>>>> origin/copilot/fix-7
-=======
-    needs: [test, integration-test, security-scan, godot-build]
->>>>>>> origin/copilot/fix-7
-=======
-    needs: [test, integration-test, security-scan, godot-build]
->>>>>>> origin/copilot/fix-7
+    needs: [lint, test, build, godot-build, deploy-staging, deploy-production]
     if: always()
     
     steps:
-    - name: Update status
+    - name: Report Status
       run: |
         echo "Pipeline Status Update:"
-        echo "- Lint: ${{ needs.lint.result || 'skipped' }}"
-        echo "- Test: ${{ needs.test.result || 'skipped' }}"
-        echo "- Test Auth Service: ${{ needs.test-auth-service.result || 'skipped' }}"
-        echo "- Test Meta UI: ${{ needs.test-meta-ui.result || 'skipped' }}"
-        echo "- Integration Test: ${{ needs.integration-test.result || 'skipped' }}"
-        echo "- Security Scan: ${{ needs.security-scan.result || 'skipped' }}"
-        echo "- Docker Build: ${{ needs.docker-build.result || 'skipped' }}"
-        echo "- Godot Build: ${{ needs.godot-build.result || 'skipped' }}"
-        echo "DRY_RUN: ${{ env.DRY_RUN }}"
+        echo "- Lint: ${{ needs.lint.result }}"
+        echo "- Test: ${{ needs.test.result }}"
+        echo "- Build: ${{ needs.build.result }}"
+        echo "- Godot Build: ${{ needs.godot-build.result }}"
+        echo "- Deploy Staging: ${{ needs.deploy-staging.result }}"
+        echo "- Deploy Production: ${{ needs.deploy-production.result }}"
         
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.test-auth-service.result }}" == "success" && "${{ needs.test-meta-ui.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
-=======
-        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
->>>>>>> origin/copilot/fix-7
-=======
-        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
->>>>>>> origin/copilot/fix-7
-=======
-        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" && "${{ needs.godot-build.result }}" == "success" ]]; then
->>>>>>> origin/copilot/fix-7
-          echo "✅ All critical tests passed"
+        if [[ "${{ needs.test.result }}" == "success" && "${{ needs.build.result }}" == "success" ]]; then
+          echo "✅ All critical checks passed"
         else
-          echo "❌ Some tests failed"
+          echo "❌ A critical check failed"
         fi

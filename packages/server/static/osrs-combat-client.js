@@ -1,32 +1,31 @@
+/* global window, Phaser, prompt */
 /**
  * Enhanced RuneRogue Phaser Client with OSRS Combat Integration
  * Features: OSRS-style combat system, player stats, PvP mechanics
  */
 
-// Import Phaser and Colyseus
-const { Phaser } = window;
-const { Colyseus } = window;
-
-// Game configuration
-const config = {
-  type: Phaser.AUTO,
-  width: 1024,
-  height: 768,
-  backgroundColor: '#2d4a22', // OSRS-style forest green
-  parent: 'game-container',
-  scene: {
-    preload: preload,
-    create: create,
-    update: update,
-  },
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 0 },
-      debug: false,
+// Game configuration (define as a function)
+function getGameConfig() {
+  return {
+    type: window.Phaser.AUTO,
+    width: 1024,
+    height: 768,
+    backgroundColor: '#2d4a22', // OSRS-style forest green
+    parent: 'game-container',
+    scene: {
+      preload: preload,
+      create: create,
+      update: update,
     },
-  },
-};
+    physics: {
+      default: 'arcade',
+      arcade: {
+        gravity: { y: 0 },
+        debug: false,
+      },
+    },
+  };
+}
 
 // Game variables
 let scene;
@@ -40,16 +39,39 @@ let uiElements = {};
 let targetedPlayer = null;
 let lastMoveTime = 0;
 const moveThrottle = 100; // Minimum time between moves
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 // Player sprites and animations
 const PLAYER_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 
-function preload() {
-  scene = this;
+// Performance monitor variables
+let perfMonitor = {
+  fps: 0,
+  frameCount: 0,
+  lastUpdate: Date.now(),
+  memory: 0,
+  messageCount: 0,
+  lastMessageCount: 0,
+  ui: null,
+};
 
+/**
+ * OSRS-style click-to-move system with stepwise movement and target marker.
+ * - On click, show a marker and calculate a straight-line path to the target.
+ * - Animate the player moving one tile at a time, sending move commands at OSRS walk speed (1 tile per 0.6s).
+ * - If a new click occurs, update the path and marker.
+ */
+let moveQueue = [];
+let moveTarget = null;
+let moveMarker = null;
+const OSRS_WALK_INTERVAL = 600; // ms per tile (OSRS: 1 tile per 0.6s)
+let lastStepTime = 0;
+
+function preload() {
   // Create simple colored rectangles for players
   PLAYER_COLORS.forEach(color => {
-    scene.add
+    this.add
       .graphics()
       .fillStyle(Phaser.Display.Color.HexStringToColor(getColorHex(color)).color)
       .fillRect(0, 0, 32, 32)
@@ -57,19 +79,19 @@ function preload() {
   });
 
   // Create UI elements
-  scene.add
+  this.add
     .graphics()
     .fillStyle(0x654321)
     .fillRect(0, 0, 200, 150)
     .generateTexture('ui_panel', 200, 150);
 
-  scene.add
+  this.add
     .graphics()
     .fillStyle(0x8b4513)
     .fillRect(0, 0, 100, 20)
     .generateTexture('health_bar_bg', 100, 20);
 
-  scene.add
+  this.add
     .graphics()
     .fillStyle(0xff0000)
     .fillRect(0, 0, 100, 20)
@@ -82,18 +104,18 @@ async function create() {
   console.log('🎮 Initializing Enhanced OSRS Combat Client...');
 
   // Set up camera
-  camera = scene.cameras.main;
+  camera = this.cameras.main;
   camera.setZoom(0.8);
 
   // Create world bounds
-  scene.physics.world.setBounds(0, 0, 2000, 2000);
+  this.physics.world.setBounds(0, 0, 2000, 2000);
 
   // Set up input
-  cursors = scene.input.keyboard.createCursorKeys();
-  wasdKeys = scene.input.keyboard.addKeys('W,S,A,D');
+  cursors = this.input.keyboard.createCursorKeys();
+  wasdKeys = this.input.keyboard.addKeys('W,S,A,D');
 
   // Set up mouse/touch input for click-to-move and targeting
-  scene.input.on('pointerdown', handlePointerDown);
+  this.input.on('pointerdown', function(pointer) { handlePointerDown.call(this, pointer); });
 
   // Create UI
   createUI();
@@ -104,10 +126,10 @@ async function create() {
 
 function createUI() {
   // Stats panel (fixed position)
-  uiElements.statsPanel = scene.add.image(120, 100, 'ui_panel').setScrollFactor(0);
+  uiElements.statsPanel = this.add.image(120, 100, 'ui_panel').setScrollFactor(0);
 
   // Player stats text
-  uiElements.statsText = scene.add
+  uiElements.statsText = this.add
     .text(30, 30, 'Connecting...', {
       fontSize: '14px',
       fill: '#ffffff',
@@ -116,9 +138,9 @@ function createUI() {
     .setScrollFactor(0);
 
   // Health display
-  uiElements.healthBg = scene.add.image(120, 200, 'health_bar_bg').setScrollFactor(0);
-  uiElements.healthFill = scene.add.image(120, 200, 'health_bar_fill').setScrollFactor(0);
-  uiElements.healthText = scene.add
+  uiElements.healthBg = this.add.image(120, 200, 'health_bar_bg').setScrollFactor(0);
+  uiElements.healthFill = this.add.image(120, 200, 'health_bar_fill').setScrollFactor(0);
+  uiElements.healthText = this.add
     .text(70, 190, 'HP: 100/100', {
       fontSize: '12px',
       fill: '#ffffff',
@@ -131,7 +153,7 @@ function createUI() {
   uiElements.chatInput = null; // Will add if needed
 
   // Instructions
-  uiElements.instructions = scene.add
+  uiElements.instructions = this.add
     .text(
       10,
       720,
@@ -145,6 +167,18 @@ function createUI() {
       }
     )
     .setScrollFactor(0);
+
+  // Performance monitor panel (top-right)
+  perfMonitor.ui = this.add.text(800, 20, 'FPS: --\nMemory: --\nMsgs/s: --', {
+    fontSize: '14px',
+    fill: '#00ff00',
+    fontFamily: 'monospace',
+    backgroundColor: '#222',
+    padding: { x: 8, y: 6 },
+    align: 'right',
+  })
+    .setScrollFactor(0)
+    .setDepth(1000);
 
   console.log('✅ OSRS UI created');
 }
@@ -178,17 +212,17 @@ async function connectToServer() {
     try {
       // Method 1: Standard constructor
       if (window.Colyseus.Client) {
-        client = new window.Colyseus.Client('ws://localhost:3001');
+        client = new window.Colyseus.Client('ws://localhost:2567');
         console.log('✅ Client created using new Colyseus.Client()');
       }
       // Method 2: Direct function call
       else if (typeof window.Colyseus === 'function') {
-        client = window.Colyseus('ws://localhost:3001');
+        client = window.Colyseus('ws://localhost:2567');
         console.log('✅ Client created using Colyseus() function');
       }
       // Method 3: Check for alternative exports
       else if (window.Colyseus.default && window.Colyseus.default.Client) {
-        client = new window.Colyseus.default.Client('ws://localhost:3001');
+        client = new window.Colyseus.default.Client('ws://localhost:2567');
         console.log('✅ Client created using Colyseus.default.Client()');
       } else {
         throw new Error('No valid Colyseus client constructor found');
@@ -256,10 +290,10 @@ async function connectToServerAlternative() {
     let client;
 
     if (window.Colyseus && window.Colyseus.Client) {
-      client = new window.Colyseus.Client('ws://localhost:3001');
+      client = new window.Colyseus.Client('ws://localhost:2567');
     } else if (window.Colyseus) {
       // Some versions expose Client differently
-      client = window.Colyseus('ws://localhost:3001');
+      client = window.Colyseus('ws://localhost:2567');
     } else {
       throw new Error('Colyseus not available');
     }
@@ -339,19 +373,41 @@ function setupRoomHandlers() {
   });
 
   // Set up keyboard handlers
-  scene.input.keyboard.on('keydown-SPACE', () => {
+  this.input.keyboard.on('keydown-SPACE', () => {
     if (targetedPlayer) {
       attackPlayer(targetedPlayer);
     }
   });
 
-  scene.input.keyboard.on('keydown-ENTER', () => {
+  this.input.keyboard.on('keydown-ENTER', () => {
     // Simple chat implementation
     const message = prompt('Enter chat message:');
     if (message && message.trim()) {
       room.send('chat', { message: message.trim() });
     }
   });
+
+  // Handle room close/disconnect/error
+  room.onLeave(() => {
+    handleDisconnect('Room leave');
+  });
+  room.onError((code, message) => {
+    handleDisconnect(`Room error: ${message || code}`);
+  });
+  room.onStateChange.once(() => {
+    // Room state changed, reset reconnect attempts
+    reconnectAttempts = 0;
+    updateStatsDisplay('✅ Connected successfully!');
+  });
+
+  // Increment perfMonitor.messageCount for every room.onMessage
+  const origOnMessage = room.onMessage.bind(room);
+  room.onMessage = (type, handler) => {
+    origOnMessage(type, (...args) => {
+      perfMonitor.messageCount++;
+      handler(...args);
+    });
+  };
 }
 
 function updateGameState(gameState) {
@@ -387,12 +443,12 @@ function createPlayerSprite(player) {
   const color = PLAYER_COLORS[colorIndex];
 
   // Create player sprite
-  const sprite = scene.physics.add.sprite(player.x * 4, player.y * 4, color + '_player');
+  const sprite = this.physics.add.sprite(player.x * 4, player.y * 4, color + '_player');
   sprite.setCollideWorldBounds(true);
   sprite.setInteractive();
 
   // Add player info display
-  const combatLevelText = scene.add.text(sprite.x, sprite.y - 40, `CB: ${player.combatLevel}`, {
+  const combatLevelText = this.add.text(sprite.x, sprite.y - 40, `CB: ${player.combatLevel}`, {
     fontSize: '10px',
     fill: '#ffff00',
     fontFamily: 'monospace',
@@ -400,7 +456,7 @@ function createPlayerSprite(player) {
     padding: { x: 2, y: 1 },
   });
 
-  const usernameText = scene.add.text(sprite.x, sprite.y - 25, player.username, {
+  const usernameText = this.add.text(sprite.x, sprite.y - 25, player.username, {
     fontSize: '12px',
     fill: '#ffffff',
     fontFamily: 'monospace',
@@ -409,8 +465,8 @@ function createPlayerSprite(player) {
   });
 
   // Health bar
-  const healthBarBg = scene.add.rectangle(sprite.x, sprite.y - 50, 32, 4, 0x000000);
-  const healthBarFill = scene.add.rectangle(sprite.x, sprite.y - 50, 30, 2, 0x00ff00);
+  const healthBarBg = this.add.rectangle(sprite.x, sprite.y - 50, 32, 4, 0x000000);
+  const healthBarFill = this.add.rectangle(sprite.x, sprite.y - 50, 30, 2, 0x00ff00);
 
   // Store player data
   players[player.id] = {
@@ -484,7 +540,7 @@ function updatePlayerPosition(sessionId, x, y) {
   const playerObj = players[sessionId];
   if (playerObj) {
     // Smooth movement animation
-    scene.tweens.add({
+    this.tweens.add({
       targets: playerObj.sprite,
       x: x * 4,
       y: y * 4,
@@ -533,14 +589,14 @@ function handleCombatResult(result) {
   // Show floating combat text
   const defenderSprite = players[result.defenderId]?.sprite;
   if (defenderSprite) {
-    const combatText = scene.add.text(defenderSprite.x, defenderSprite.y - 60, hitText, {
+    const combatText = this.add.text(defenderSprite.x, defenderSprite.y - 60, hitText, {
       fontSize: '14px',
       fill: color,
       fontFamily: 'monospace',
       fontStyle: 'bold',
     });
 
-    scene.tweens.add({
+    this.tweens.add({
       targets: combatText,
       y: combatText.y - 30,
       alpha: 0,
@@ -620,7 +676,7 @@ function addCombatLogMessage(message, color = '#ffffff') {
     uiElements.combatLog.shift().destroy();
   }
 
-  const logText = scene.add
+  const logText = this.add
     .text(10, 300 + uiElements.combatLog.length * 15, message, {
       fontSize: '11px',
       fill: color,
@@ -635,17 +691,42 @@ function addCombatLogMessage(message, color = '#ffffff') {
 
 function handlePointerDown(pointer) {
   // Convert screen coordinates to world coordinates
-  const worldPoint = scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
+  const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+  if (!localPlayer) return;
+  const startX = Math.round(localPlayer.x);
+  const startY = Math.round(localPlayer.y);
+  const targetX = Math.floor(worldPoint.x / 4);
+  const targetY = Math.floor(worldPoint.y / 4);
 
-  // Check if clicking on a player (handled by sprite events)
-  // Otherwise, move to clicked location
-  if (localPlayer && Date.now() - lastMoveTime > moveThrottle) {
-    const newX = Math.floor(worldPoint.x / 4);
-    const newY = Math.floor(worldPoint.y / 4);
+  // Calculate straight-line path (no obstacles for now)
+  moveQueue = getLinePath(startX, startY, targetX, targetY);
+  moveTarget = { x: targetX, y: targetY };
 
-    room.send('move', { x: newX, y: newY });
-    lastMoveTime = Date.now();
+  // Show or move the marker
+  if (moveMarker) moveMarker.destroy();
+  moveMarker = this.add.graphics();
+  moveMarker.lineStyle(2, 0xffff00, 1);
+  moveMarker.strokeCircle(targetX * 4 + 16, targetY * 4 + 16, 18);
+  moveMarker.setDepth(1000);
+}
+
+/**
+ * Returns an array of tile coordinates [(x, y), ...] from (x0, y0) to (x1, y1) using Bresenham's line algorithm.
+ */
+function getLinePath(x0, y0, x1, y1) {
+  const path = [];
+  let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+  let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+  let err = dx + dy, e2;
+  let x = x0, y = y0;
+  while (true) {
+    if (x === x1 && y === y1) break;
+    e2 = 2 * err;
+    if (e2 >= dy) { err += dy; x += sx; }
+    if (e2 <= dx) { err += dx; y += sy; }
+    path.push({ x, y });
   }
+  return path;
 }
 
 function update() {
@@ -672,6 +753,46 @@ function update() {
       lastMoveTime = Date.now();
     }
   }
+
+  // Stepwise click-to-move
+  const now = Date.now();
+  if (moveQueue.length > 0 && now - lastStepTime >= OSRS_WALK_INTERVAL) {
+    const nextStep = moveQueue.shift();
+    if (nextStep) {
+      room.send('move', { x: nextStep.x, y: nextStep.y });
+      lastStepTime = now;
+    }
+    // If reached target, remove marker
+    if (moveQueue.length === 0 && moveMarker) {
+      moveMarker.destroy();
+      moveMarker = null;
+      moveTarget = null;
+    }
+  }
+
+  // Performance monitor logic
+  perfMonitor.frameCount++;
+  const nowPerf = Date.now();
+  if (nowPerf - perfMonitor.lastUpdate >= 1000) {
+    perfMonitor.fps = perfMonitor.frameCount;
+    perfMonitor.frameCount = 0;
+    // Memory usage (if available)
+    if (performance && performance.memory) {
+      perfMonitor.memory = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+    } else {
+      perfMonitor.memory = '--';
+    }
+    // Message rate
+    const msgs = perfMonitor.messageCount - perfMonitor.lastMessageCount;
+    perfMonitor.lastMessageCount = perfMonitor.messageCount;
+    // Update UI
+    if (perfMonitor.ui) {
+      perfMonitor.ui.setText(
+        `FPS: ${perfMonitor.fps}\nMemory: ${perfMonitor.memory} MB\nMsgs/s: ${msgs}`
+      );
+    }
+    perfMonitor.lastUpdate = nowPerf;
+  }
 }
 
 function updateStatsDisplay(text) {
@@ -692,7 +813,65 @@ function getColorHex(colorName) {
   return colors[colorName] || '#ffffff';
 }
 
-// Initialize game
-const game = new Phaser.Game(config);
+/**
+ * Handles Colyseus room disconnection events and attempts to reconnect.
+ * Shows connection status and reconnection attempts in the UI.
+ * If reconnection fails after several attempts, prompts the user to refresh.
+ *
+ * @param reason The reason for disconnection
+ */
+function handleDisconnect(reason) {
+  reconnectAttempts++;
+  updateStatsDisplay(
+    `🔌 Disconnected (${reason}). Attempting to reconnect... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`
+  );
+  console.warn(`🔌 Disconnected: ${reason}`);
 
-console.log('🎮 Enhanced RuneRogue OSRS Combat Client initialized!');
+  if (reconnectAttempts <= MAX_RECONNECT_ATTEMPTS) {
+    setTimeout(() => {
+      attemptReconnection();
+    }, 2000 * reconnectAttempts); // Exponential backoff
+  } else {
+    updateStatsDisplay(
+      '❌ Failed to reconnect after multiple attempts. Please refresh the page to try again.'
+    );
+  }
+}
+
+/**
+ * Attempts to reconnect to the Colyseus room using the previous session ID.
+ * Uses exponential backoff and updates the UI with status.
+ *
+ * If reconnection succeeds, restores the session and resets attempts.
+ * If it fails, triggers another disconnect attempt up to the max allowed.
+ */
+async function attemptReconnection() {
+  try {
+    if (!room || !room.sessionId) {
+      updateStatsDisplay('❌ No previous session to reconnect. Please refresh.');
+      return;
+    }
+    updateStatsDisplay('🔄 Attempting reconnection...');
+    const client = new window.Colyseus.Client('ws://localhost:2567');
+    room = await client.reconnect(room.id, room.sessionId);
+    setupRoomHandlers();
+    updateStatsDisplay('✅ Reconnected successfully!');
+    reconnectAttempts = 0;
+  } catch (error) {
+    console.error('❌ Reconnection failed:', error);
+    handleDisconnect(error.message || 'Unknown error');
+  }
+}
+
+// Initialize game after DOMContentLoaded and window.Phaser is available
+window.addEventListener('DOMContentLoaded', () => {
+  function waitForPhaser() {
+    if (window.Phaser && typeof window.Phaser.Game === 'function') {
+      const game = new window.Phaser.Game(getGameConfig());
+      console.log('🎮 Enhanced RuneRogue OSRS Combat Client initialized!');
+    } else {
+      setTimeout(waitForPhaser, 100);
+    }
+  }
+  waitForPhaser();
+});

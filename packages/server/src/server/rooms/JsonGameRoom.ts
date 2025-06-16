@@ -3,6 +3,8 @@
  * Enhanced with authentic OSRS combat formulas and player stats
  */
 
+// LEGACY: This room is not used in the current production server. Retained for reference, testing, or migration only.
+
 import { Room, Client } from '@colyseus/core';
 import {
   calculateCombatLevel,

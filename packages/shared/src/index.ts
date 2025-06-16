@@ -8,6 +8,7 @@
 // Re-export all types for easy importing
 export * from "./types/game";
 export * from "./types/osrs";
+export * from "./schemas/GameRoomState";
 
 // Version info
 export const SHARED_VERSION = "1.0.0";

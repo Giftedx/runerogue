@@ -142,4 +142,4 @@ export class GameRoomState extends Schema {
   @type(GameTimeSchema) gameTime = new GameTimeSchema();
   @type('boolean') gameStarted: boolean = false;
   @type('boolean') gameEnded: boolean = false;
-}
+} 

@@ -8,6 +8,8 @@
  * - Enemy spawning and waves
  */
 
+// LEGACY: Not used in current production. Retained for reference, migration, or testing only.
+
 import { Client, Room } from '@colyseus/core';
 import { GameRoomState, Player, Enemy } from '../game/EntitySchemas';
 

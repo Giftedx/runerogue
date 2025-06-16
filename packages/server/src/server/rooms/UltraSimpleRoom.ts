@@ -1,6 +1,14 @@
 /**
+ * @deprecated LEGACY ROOM - This room uses a deprecated, non-functional schema.
+ * It is kept for testing and debugging purposes only and is pending removal.
+ * Please use 'RuneRogueGameRoom' as a reference for the current implementation.
+ */
+
+/**
  * Ultra simple room to test basic schema encoding
  */
+
+// LEGACY/TEST: Not used in production. Retained for reference or testing only.
 
 import { Room, Client } from '@colyseus/core';
 import { UltraSimpleState, createUltraSimpleState } from '../schemas/UltraSimpleSchema';

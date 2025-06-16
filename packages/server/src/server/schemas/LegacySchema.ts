@@ -1,4 +1,10 @@
 /**
+ * @deprecated LEGACY SCHEMA - This file contains old schema definitions.
+ * It is not used in the main game and is pending removal.
+ * Please use the schemas from '@runerogue/shared' instead.
+ */
+
+/**
  * Legacy-style schema without decorators to fix Symbol.metadata issues
  * Using defineTypes pattern that's proven to work
  */

@@ -1,5 +1,6 @@
 import { Client, Room } from "colyseus.js";
-import type { GameRoomState, ServerMessage } from "../../../packages/shared/types";
+import { GameRoomState, PlayerSchema, EnemySchema } from "@runerogue/shared";
+import type { ServerMessage } from "@runerogue/shared";
 import { EventEmitter } from "events";
 import type { PhaserGame } from "./PhaserGame";
 
@@ -125,6 +126,5 @@ export class GameClient {
   private startClientPrediction(): void {
     // TODO: Implement client-side prediction logic
     // This can be expanded to track local input and predicted state
-  }
   }
 }

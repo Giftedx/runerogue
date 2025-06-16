@@ -1,4 +1,10 @@
 /**
+ * @deprecated LEGACY SCHEMA - This is a minimal schema for testing and debugging.
+ * It is not used in the main game and is pending removal.
+ * Please use the schemas from '@runerogue/shared' instead.
+ */
+
+/**
  * Minimal schema to isolate and fix Colyseus encoding issues
  * Based on official Colyseus examples and best practices
  */

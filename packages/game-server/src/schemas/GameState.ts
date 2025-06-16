@@ -1,4 +1,10 @@
 /**
+ * @deprecated LEGACY SCHEMA - This is a simplified, prototype schema.
+ * It is not used in the main game and is pending removal.
+ * The canonical, up-to-date schemas are in the '@runerogue/shared' package.
+ */
+
+/**
  * RuneRogue Game State Schema
  * Colyseus schema for synchronized game state
  *

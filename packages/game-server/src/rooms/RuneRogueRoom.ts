@@ -1,4 +1,8 @@
 /**
+ * @deprecated LEGACY ROOM - This is a simplified, non-ECS prototype implementation.
+ * It is kept for reference but is not part of the main game server.
+ * The canonical, active room is 'RuneRogueGameRoom' in the '@runerogue/server' package, which uses the ECS architecture.
+ *
  * RuneRogue Game Room
  * Main Colyseus room for RuneRogue multiplayer sessions
  *
@@ -220,17 +224,36 @@ export class RuneRogueRoom extends Room<GameState> {
     );
   }
 
+  /**
+   * Handles player disconnection with Colyseus reconnection support.
+   * If a client disconnects, allowReconnection gives them 30 seconds to reconnect and reclaim their state.
+   * If they reconnect within the window, their player state is preserved.
+   * If not, their player is removed from the game state.
+   *
+   * @param client The Colyseus client that left
+   * @param consented Whether the leave was voluntary
+   */
   onLeave(client: Client, consented: boolean) {
     console.log(
       `[${new Date().toISOString()}] Player left room '${this.roomId}' - Player ID: ${client.sessionId} (consented: ${consented})`
     );
 
-    // Remove player from game state
-    this.state.players.delete(client.sessionId);
-
-    console.log(
-      `[${new Date().toISOString()}] Room '${this.roomId}' state - Players: ${this.clients.length}/${this.maxClients}`
-    );
+    // Colyseus reconnection support: allow player to reconnect for 30 seconds
+    this.allowReconnection(client, 30).then(() => {
+      // Reconnection succeeded, do nothing (player state is preserved)
+      console.log(
+        `[${new Date().toISOString()}] Player reconnected to room '${this.roomId}' - Player ID: ${client.sessionId}`
+      );
+    }).catch(() => {
+      // Reconnection window expired, remove player
+      this.state.players.delete(client.sessionId);
+      console.log(
+        `[${new Date().toISOString()}] Player permanently left room '${this.roomId}' - Player ID: ${client.sessionId}`
+      );
+      console.log(
+        `[${new Date().toISOString()}] Room '${this.roomId}' state - Players: ${this.clients.length}/${this.maxClients}`
+      );
+    });
   }
 
   onDispose() {

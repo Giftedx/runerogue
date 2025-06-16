@@ -20,6 +20,7 @@ We've analyzed [Giftedx/runerogue](https://github.com/Giftedx/runerogue) - anoth
 2. **Clear Phases** - Sequential, not 9 parallel modules  
 3. **Platform Innovation** - Discord-native, not another client
 4. **Specialized Agents** - Clear ownership and boundaries
+5. **New Multiplayer Robustness:** Seamless reconnection, real-time performance validation, and authentic OSRS movement in the browser client.
 
 ---
 
@@ -43,6 +44,8 @@ We've analyzed [Giftedx/runerogue](https://github.com/Giftedx/runerogue) - anoth
    - Push work-in-progress for visibility
    - Mark as "Draft" until ready
    - Helps track progress
+
+- **New:** All multiplayer features must support reconnection (30s grace), in-game performance monitoring, and OSRS-authentic click-to-move for client polish.
 
 ---
 

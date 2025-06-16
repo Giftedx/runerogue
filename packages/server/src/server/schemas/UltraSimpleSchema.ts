@@ -1,4 +1,10 @@
 /**
+ * @deprecated LEGACY SCHEMA - This is a minimal, non-functional schema for testing purposes.
+ * It is not used in the main game and is pending removal.
+ * Please use the schemas from '@runerogue/shared' instead.
+ */
+
+/**
  * Ultra-simple schema to isolate Symbol.metadata issues
  * No MapSchema, just basic types
  */

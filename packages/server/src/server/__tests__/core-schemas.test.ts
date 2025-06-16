@@ -1,4 +1,9 @@
 /**
+ * @deprecated LEGACY TEST - This file tests deprecated schemas.
+ * It is not used in the main game and is pending removal.
+ */
+
+/**
  * Basic test to verify the new CoreSchemas work correctly
  */
 

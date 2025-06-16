@@ -1,3 +1,4 @@
+// DEPRECATED/ORPHANED: This file is not referenced or used in the current codebase. Retained for reference only.
 /**
  * JSON-based state synchronization room with OSRS combat integration
  * Enhanced with authentic OSRS combat formulas and player stats
