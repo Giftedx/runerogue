@@ -32,14 +32,16 @@ export class DiscordActivityService {
   async initialize(): Promise<boolean> {
     try {
       // Initialize Discord SDK
-      this.sdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+      const clientId =
+        import.meta.env?.VITE_DISCORD_CLIENT_ID || "development_client_id";
+      this.sdk = new DiscordSDK(clientId);
 
       // Wait for the SDK to be ready
       await this.sdk.ready();
 
       // Authenticate the user
       const { code } = await this.sdk.commands.authorize({
-        client_id: import.meta.env.VITE_DISCORD_CLIENT_ID,
+        client_id: clientId,
         response_type: "code",
         state: "",
         prompt: "none",

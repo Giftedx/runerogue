@@ -2,9 +2,9 @@ import Phaser from "phaser";
 import type { GameClient } from "../GameClient";
 import type {
   GameRoomState,
-  PlayerState,
-  ServerMessage,
-} from "../../../packages/shared/types";
+  PlayerSchema,
+  EnemySchema,
+} from "@runerogue/shared";
 
 /**
  * Main game scene that renders the game world and handles player/enemy entities.

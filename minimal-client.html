@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RuneRogue - Minimal Client Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #2c3e50;
+      color: white;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background: #34495e;
+    }
+    .connected {
+      background: #27ae60;
+    }
+    .error {
+      background: #e74c3c;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .game-area {
+      width: 600px;
+      height: 400px;
+      background: #1a252f;
+      border: 2px solid #34495e;
+      margin: 20px 0;
+      position: relative;
+    }
+    .player {
+      width: 20px;
+      height: 20px;
+      background: #e74c3c;
+      position: absolute;
+      border-radius: 50%;
+    }
+    .enemy {
+      width: 20px;
+      height: 20px;
+      background: #f39c12;
+      position: absolute;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛡️ RuneRogue - Minimal Client Test</h1>
+  
+  <div id="status" class="status">
+    Initializing...
+  </div>
+  
+  <div>
+    <button onclick="connect()">Connect to Game Server</button>
+    <button onclick="joinRoom()">Join Game Room</button>
+    <button onclick="testMovement()">Test Movement</button>
+    <button onclick="disconnect()">Disconnect</button>
+  </div>
+  
+  <div class="game-area" id="gameArea" onclick="moveToClick(event)">
+    <div style="position: absolute; top: 5px; left: 5px; font-size: 12px;">
+      Click to move
+    </div>
+  </div>
+  
+  <div>
+    <h3>Game State:</h3>
+    <pre id="gameState">Waiting for connection...</pre>
+  </div>
+
+  <script src="https://unpkg.com/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+  <script>
+    let client = null;
+    let room = null;
+    let playerId = null;
+    let players = new Map();
+    let enemies = new Map();
+
+    function updateStatus(message, isError = false, isConnected = false) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = 'status' + (isError ? ' error' : isConnected ? ' connected' : '');
+      console.log(message);
+    }
+
+    async function connect() {
+      try {
+        updateStatus('Connecting to game server...');
+        client = new Colyseus.Client('ws://localhost:2567');
+        updateStatus('Connected to game server!', false, true);
+      } catch (error) {
+        updateStatus(`Connection failed: ${error.message}`, true);
+      }
+    }
+
+    async function joinRoom() {
+      if (!client) {
+        updateStatus('Please connect first!', true);
+        return;
+      }
+
+      try {
+        updateStatus('Joining game room...');
+        room = await client.joinOrCreate('runerogue', {
+          playerName: 'TestPlayer_' + Math.floor(Math.random() * 1000)
+        });
+
+        playerId = room.sessionId;
+        
+        updateStatus(`Joined room! Player ID: ${playerId}`, false, true);
+
+        // Set up room event handlers
+        room.onStateChange((state) => {
+          updateGameState(state);
+        });
+
+        room.onMessage('*', (type, message) => {
+          console.log('Message received:', type, message);
+        });
+
+        room.onError((code, message) => {
+          updateStatus(`Room error: ${message}`, true);
+        });
+
+        room.onLeave((code) => {
+          updateStatus('Left room');
+        });
+
+      } catch (error) {
+        updateStatus(`Failed to join room: ${error.message}`, true);
+      }
+    }
+
+    function updateGameState(state) {
+      const gameStateEl = document.getElementById('gameState');
+      const gameArea = document.getElementById('gameArea');
+      
+      // Clear previous entities
+      gameArea.querySelectorAll('.player, .enemy').forEach(el => el.remove());
+      
+      let stateText = `Game Tick: ${state.gameTime || 0}\n`;
+      stateText += `Players: ${state.players ? Object.keys(state.players).length : 0}\n`;
+      stateText += `Enemies: ${state.enemies ? Object.keys(state.enemies).length : 0}\n\n`;
+
+      // Render players
+      if (state.players) {
+        Object.entries(state.players).forEach(([id, player]) => {
+          const playerEl = document.createElement('div');
+          playerEl.className = 'player';
+          playerEl.style.left = (player.x || 0) + 'px';
+          playerEl.style.top = (player.y || 0) + 'px';
+          playerEl.title = `Player ${id}`;
+          gameArea.appendChild(playerEl);
+
+          stateText += `Player ${id}: (${player.x || 0}, ${player.y || 0}) HP: ${player.health?.current || 'N/A'}\n`;
+        });
+      }
+
+      // Render enemies
+      if (state.enemies) {
+        Object.entries(state.enemies).forEach(([id, enemy]) => {
+          const enemyEl = document.createElement('div');
+          enemyEl.className = 'enemy';
+          enemyEl.style.left = (enemy.x || 0) + 'px';
+          enemyEl.style.top = (enemy.y || 0) + 'px';
+          enemyEl.title = `Enemy ${id}`;
+          gameArea.appendChild(enemyEl);
+
+          stateText += `Enemy ${id}: (${enemy.x || 0}, ${enemy.y || 0}) HP: ${enemy.health?.current || 'N/A'}\n`;
+        });
+      }
+
+      gameStateEl.textContent = stateText;
+    }
+
+    function moveToClick(event) {
+      if (!room) {
+        updateStatus('Join a room first!', true);
+        return;
+      }
+
+      const rect = event.target.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      room.send('move', { x: Math.floor(x), y: Math.floor(y) });
+      console.log(`Sent move command: (${Math.floor(x)}, ${Math.floor(y)})`);
+    }
+
+    function testMovement() {
+      if (!room) {
+        updateStatus('Join a room first!', true);
+        return;
+      }
+
+      const x = Math.floor(Math.random() * 580);
+      const y = Math.floor(Math.random() * 380);
+      
+      room.send('move', { x, y });
+      updateStatus(`Sent test movement to (${x}, ${y})`);
+    }
+
+    function disconnect() {
+      if (room) {
+        room.leave();
+        room = null;
+      }
+      if (client) {
+        client = null;
+      }
+      playerId = null;
+      updateStatus('Disconnected');
+    }
+
+    // Auto-connect on page load
+    window.addEventListener('load', () => {
+      updateStatus('Ready to connect!');
+    });
+  </script>
+</body>
+</html>
