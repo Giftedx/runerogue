@@ -6,7 +6,7 @@ import {
   StatType,
   ProtectionType,
 } from '../../game/PrayerSystem';
-import { Player, Skills, Skill } from '../../game/EntitySchemas';
+import { Player } from '../../game/EntitySchemas';
 
 // Mock implementation to avoid timer issues in tests
 class MockPrayerSystem extends PrayerSystem {
@@ -36,8 +36,7 @@ describe('PrayerSystem', () => {
     player.id = 'test-player';
     player.username = 'TestPlayer';
 
-    // Set up skills with proper prayer level
-    player.skills = new Skills();
+    // Set up skills with proper prayer level (skills are already initialized)
     player.skills.attack.level = 50;
     player.skills.strength.level = 50;
     player.skills.defence.level = 50;

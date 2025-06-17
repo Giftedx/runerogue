@@ -35,7 +35,7 @@ describe('Gathering Skills Integration', () => {
 
   test('should gain woodcutting XP when cutting logs', () => {
     // Record initial XP
-    const initialXP = SkillXP.woodcuttingXP[playerId] || 0;
+    const initialXP = SkillXP.woodcutting[playerId] || 0;
 
     // Start woodcutting
     startWoodcutting(world, playerId, treeId);
@@ -82,7 +82,7 @@ describe('Gathering Skills Integration', () => {
     // we verify the components and functions exist
 
     expect(SkillLevels.woodcutting).toBeDefined();
-    expect(SkillXP.woodcuttingXP).toBeDefined();
+    expect(SkillXP.woodcutting).toBeDefined();
     expect(startWoodcutting).toBeDefined();
     expect(stopWoodcutting).toBeDefined();
   });

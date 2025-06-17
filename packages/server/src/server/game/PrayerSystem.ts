@@ -421,6 +421,27 @@ export class PrayerSystem {
   }
 
   /**
+   * Get damage reduction percentage from protection prayers for a specific attack type
+   * @param attackType The type of attack (melee, ranged, magic)
+   * @returns Damage reduction percentage (0-100)
+   */
+  public getDamageReduction(attackType: ProtectionType): number {
+    for (const prayerId of this.player.activePrayers) {
+      const prayer = this.prayers.get(prayerId);
+      if (
+        prayer &&
+        prayer.protectionType === attackType &&
+        prayer.category === PrayerCategory.PROTECTION
+      ) {
+        // In OSRS, protection prayers typically reduce damage by 40% for NPCs, 50% for players
+        // For simplicity, we'll use 40% reduction
+        return 40;
+      }
+    }
+    return 0;
+  }
+
+  /**
    * Get all available prayers
    */
   public getAllPrayers(): Prayer[] {

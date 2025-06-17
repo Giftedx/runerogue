@@ -1,5 +1,5 @@
-import CombatSystem, { AttackType, CombatStyle } from '../../game/CombatSystem';
-import { Equipment, Player, Skills } from '../../game/EntitySchemas';
+import { CombatSystem, AttackType, CombatStyle } from '../../game/CombatSystem';
+import { Player, PlayerSkills, SkillLevel } from '../../game/EntitySchemas';
 
 /**
  * OSRS Combat Formula Validation Tests
@@ -15,11 +15,11 @@ describe('OSRS Combat Formula Implementation', () => {
     attacker = new Player();
     attacker.id = 'attacker1';
     attacker.username = 'TestAttacker';
-    attacker.skills = new Skills();
+    // Skills are already initialized as PlayerSkills in the new schema
     attacker.skills.attack.level = 70; // Level 70 attack
     attacker.skills.strength.level = 70; // Level 70 strength
-    attacker.equipment = new Equipment();
-    attacker.equipment.weapon = 'dragon_dagger'; // Dragon dagger (+20 stab, +18 str)
+    // Set equipment for testing
+    attacker.equippedWeapon = 'dragon_dagger'; // Dragon dagger (+20 stab, +18 str)
     attacker.activePrayers = [];
     attacker.specialEnergy = 100;
 
@@ -27,10 +27,10 @@ describe('OSRS Combat Formula Implementation', () => {
     defender = new Player();
     defender.id = 'defender1';
     defender.username = 'TestDefender';
-    defender.skills = new Skills();
+    // Skills are already initialized as PlayerSkills in the new schema
     defender.skills.defence.level = 60; // Level 60 defense
-    defender.equipment = new Equipment();
-    defender.equipment.armor = 'bronze_plate'; // Bronze plate (+12 slash defense)
+    // Set equipment for testing
+    defender.equippedArmor = 'bronze_plate'; // Bronze plate (+12 slash defense)
     defender.activePrayers = [];
     defender.health = 100;
   });
@@ -142,7 +142,8 @@ describe('OSRS Combat Formula Implementation', () => {
         attacker,
         defender,
         AttackType.STAB,
-        CombatStyle.ACCURATE
+        CombatStyle.ACCURATE,
+        CombatStyle.ACCURATE // Defender uses accurate style (no defense bonus)
       );
 
       expect(hitChance).toBeCloseTo(0.63, 2);
@@ -164,7 +165,8 @@ describe('OSRS Combat Formula Implementation', () => {
         attacker,
         defender,
         AttackType.SLASH,
-        CombatStyle.ACCURATE
+        CombatStyle.ACCURATE,
+        CombatStyle.ACCURATE // Defender uses accurate style (no defense bonus)
       );
 
       expect(hitChance).toBeCloseTo(0.21, 2);

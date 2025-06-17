@@ -1435,7 +1435,210 @@ just to doule check, as it didnt apprear you followed my instructions - did you 
 
 _**Assistant**_
 
-You're absolutely right - I apologize for not actually checking the codebase as requested. Let me thoroughly examine the actual files and structure to verify the accuracy of the development prompt. 
+You're absolutely right - I apologize for not actually checking the codebase as requested. Let me thoroughly examine the actual files and structure to verify the accuracy of the development prompt. Now let me check the actual task available in VS Code: Let me check the root `package.json` dev scripts: Now let me examine what client files actually exist: Based on my thorough examination of the codebase, here are the **critical corrections** to the development prompt:
+
+## ✅ **CORRECTED CURRENT STATE ANALYSIS**
+
+### Working Components (VERIFIED)
+
+1. **OSRS Data Pipeline (``)**
+   - ✅ Combat formulas exist in `/src/calculators/combat.ts`
+   - ✅ Express API structure exists but **NOT fully implemented** (server.ts has TODO comments)
+   - ✅ Basic setup exists but API endpoints are incomplete
+
+2. **Game Server Infrastructure (``)**
+   - ✅ Colyseus `RuneRogueRoom` exists but marked as **@deprecated LEGACY**
+   - ✅ Basic schemas exist but also marked as **@deprecated LEGACY**
+   - ✅ Server runs on port 2567
+
+3. **Main Server Implementation (``)**
+   - ✅ **ACTUAL main server** is in `index.ts`
+   - ✅ Uses `JsonGameRoom` as the active room (not `RuneRogueRoom`)
+   - ✅ Serves multiple client demos from `/static/` directory
+   - ✅ Runs on port 3001 (NOT 2567)
+
+4. **Phaser Client (``)**
+   - ✅ Multiple working HTML demos exist (enhanced-client.html, working-client.html, etc.)
+   - ❌ **NO `src/` directory** - all clients are static HTML files
+   - ❌ **NO TypeScript structure** for Phaser client yet
+
+### Critical Issues (VERIFIED)
+
+1. **Test Infrastructure**
+   - ✅ Jest config error confirmed: `p-limit` mock exists but path mapping incorrect
+   - ✅ Only `@runerogue/shared` tests pass
+   - ✅ Archived tests in `packages/server/archived-tests-*` causing confusion
+
+2. **Architecture Mismatch**
+   - ❌ **TWO SERVERS**: `` (port 2567) vs `` (port 3001)
+   - ❌ **LEGACY vs ACTIVE**: `` is marked deprecated
+   - ❌ **ROOM MISMATCH**: Active server uses `JsonGameRoom`, not `RuneRogueRoom`
+
+---
+
+## 🔧 **CORRECTED DEVELOPMENT PROMPT**
+
+# RuneRogue Development Task: MVP Implementation - Architecture Consolidation & Integration
+
+You are tasked with consolidating the RuneRogue server architecture and implementing functional client-server integration. The codebase currently has conflicting server implementations that need unification.
+
+## ✅ **VERIFIED Current State**
+
+- **Active Server**: `` (port 3001) with `JsonGameRoom`
+- **Legacy Server**: `` (port 2567) with deprecated `RuneRogueRoom`
+- **OSRS Data**: `` has structure but incomplete API endpoints
+- **Phaser Clients**: Multiple working HTML demos, no TypeScript structure
+- **Tests**: `@runerogue/game-server` fails due to Jest config, others blocked
+
+## 🎯 **Priority Tasks (CORRECTED ORDER)**
+
+### 1. **Fix Test Infrastructure & Consolidate Architecture (CRITICAL)**
+
+**Goal:** Single working server with passing tests.
+
+**Actions:**
+1. **Fix Jest Configuration in ``:**
+   ```bash
+   # The p-limit mock exists but moduleNameMapper path is incorrect
+   # Fix packages/game-server/jest.config.js
+   ```
+
+2. **Choose Active Server:**
+   - **Option A**: Use `` (currently active, port 3001, `JsonGameRoom`)
+   - **Option B**: Consolidate into `` (port 2567, needs room update)
+   - **Recommended**: Consolidate everything into `` since it's more complete
+
+3. **Clean Archived Tests:**
+   ```bash
+   # Remove problematic archived tests
+   rm -rf packages/server/archived-tests-legacy
+   rm -rf packages/server/archived-tests-debug
+   ```
+
+### 2. **Unify Server Architecture**
+
+**Current Issue:** Two servers running different rooms on different ports.
+
+**Solution:** 
+```typescript
+// Use packages/server as the main server (port 3001)
+// Import OSRS data capabilities
+// Ensure single room type for consistency
+// Update client connection URLs to port 3001 (not 2567)
+```
+
+**Verify Active Room:**
+- Current: `JsonGameRoom` in `JsonGameRoom.ts`
+- Legacy: `RuneRogueRoom` in `RuneRogueRoom.ts`
+
+### 3. **Connect Phaser Client to Active Server**
+
+**Current Clients:**
+- `enhanced-client.html` (most complete)
+- `working-client.html`
+- `ultimate-enhanced.html`
+
+**Connection Fix:**
+```javascript
+// In client JavaScript, connect to the ACTIVE server:
+const client = new Colyseus.Client('ws://localhost:3001'); // NOT 2567
+const room = await client.joinOrCreate('runerogue'); // Verify room name matches JsonGameRoom
+```
+
+### 4. **Implement OSRS Data API Endpoints**
+
+**Current State:** `server.ts` has TODO comments.
+
+**Required Endpoints:**
+```typescript
+// Add to packages/osrs-data/src/api/server.ts
+app.get('/api/combat/max-hit', (req, res) => { /* implement */ });
+app.get('/api/combat/accuracy', (req, res) => { /* implement */ });
+```
+
+**Integration:** Mount OSRS API in main server (``):
+```typescript
+// In packages/server/src/server/index.ts
+import { app as osrsAPI } from '@runerogue/osrs-data';
+app.use('/api/osrs', osrsAPI);
+```
+
+---
+
+## 🧪 **Testing Checklist (CORRECTED)**
+
+- [ ] **Jest config fixed** - `` tests pass
+- [ ] **Single server running** - Choose either port 2567 or 3001 (not both)
+- [ ] **Client connects successfully** - To the chosen server port
+- [ ] **Room joining works** - Client can join the active room type
+- [ ] **OSRS API accessible** - Endpoints return valid combat data
+- [ ] **Player state synchronization** - Multiple clients see each other
+
+---
+
+## ⚠️ **Critical Architecture Decisions Needed**
+
+1. **Server Consolidation:**
+   - **Recommended**: Use `` (port 3001) as main, retire ``
+   - **Alternative**: Consolidate everything into `` (port 2567)
+
+2. **Room Implementation:**
+   - Current active: `JsonGameRoom`
+   - Legacy: `RuneRogueRoom` (has more OSRS features but deprecated)
+   - **Decision needed**: Which room to use as canonical
+
+3. **Client Structure:**
+   - Current: Static HTML files with embedded JavaScript
+   - **Future**: TypeScript-based Phaser client structure
+
+---
+
+## 🚀 **Commands to Start (CORRECTED)**
+
+```bash
+# Fix tests first
+cd packages/game-server
+# Fix jest.config.js moduleNameMapper for p-limit
+pnpm test
+
+# Start the ACTIVE server (not the legacy one)
+cd packages/server
+pnpm dev  # Runs on port 3001
+
+# Test client connection
+# Open packages/phaser-client/enhanced-client.html
+# Verify WebSocket connects to ws://localhost:3001
+```
+
+---
+
+## 📍 **Key Files to Focus On (VERIFIED PATHS)**
+
+- **Main Server**: `index.ts` (port 3001)
+- **Active Room**: `JsonGameRoom.ts`
+- **Client Demo**: `enhanced-client.html`
+- **OSRS API**: `server.ts` (needs completion)
+- **Jest Config**: `jest.config.js` (fix p-limit mapping)
+
+**Start with architecture consolidation, then client integration. The codebase has two competing server implementations that need unification first.**
+
+---
+
+_**User**_
+
+read all plans and documentaion in the codebase be methodical and comprehensive, compare to reality of code in files and folders
+
+think and analyze our codebase to determin its current state and prioritize areas that are vital
+
+think about optimal next steps to codebase
+
+follow out all work the resulting next steps, highest priority first until completed - methodically. create a prompt for the next chat to carry out all the next steps.
+
+---
+
+_**Assistant**_
+
+
 
 ---
 

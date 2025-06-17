@@ -24,7 +24,7 @@ describe('ECS Integration Tests', () => {
     expect(Health.max[playerId]).toBe(10);
     expect(Skills.attack[playerId]).toBe(1);
     expect(Skills.hitpoints[playerId]).toBe(10);
-    expect(SkillExperience.hitpointsXP[playerId]).toBe(1154); // XP for level 10
+    expect(SkillExperience.hitpoints[playerId]).toBe(1154); // XP for level 10
   });
 
   test('should create an NPC entity with correct combat level scaling', () => {
@@ -125,7 +125,7 @@ describe('ECS Integration Tests', () => {
     // Start combat when in range
     startCombat(world, playerId, npcId);
 
-    const initialXP = SkillExperience.attackXP[playerId];
+    const initialXP = SkillExperience.attack[playerId];
 
     // Run all systems
     for (let i = 0; i < 50; i++) {
@@ -133,7 +133,7 @@ describe('ECS Integration Tests', () => {
     }
 
     // Player should have gained combat XP
-    expect(SkillExperience.attackXP[playerId]).toBeGreaterThan(initialXP);
+    expect(SkillExperience.attack[playerId]).toBeGreaterThan(initialXP);
 
     // Prayer points should have drained
     expect(Skills.prayer[playerId]).toBeLessThan(20);

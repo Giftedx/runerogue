@@ -1,42 +1,36 @@
-import { Room, Client } from "colyseus";
-import { IWorld, createWorld } from "bitecs";
-import { GameRoomState, PlayerSchema } from "@runerogue/shared";
-import * as Systems from "../systems";
-import * as Components from "../components";
+import { Room, Client } from 'colyseus';
+import { IWorld, createWorld } from 'bitecs';
+import { GameRoomState, PlayerSchema } from '@runerogue/shared';
+import { MovementSystem, createPlayer } from '../ecs';
 
 export class RuneRogueRoom extends Room<GameRoomState> {
   private world: IWorld;
   private systems: ((world: IWorld) => void)[] = [];
-
   onCreate(options: any) {
-    this.setState(new GameRoomState());
+    this.state = new GameRoomState();
     this.world = createWorld();
 
-    // Register systems
-    this.systems.push(Systems.createMovementSystem());
-    this.systems.push(Systems.createStateSyncSystem(this.state));
+    // Register systems - using proper ECS systems
+    this.systems.push(MovementSystem);
 
-    this.setSimulationInterval((deltaTime) => this.update(deltaTime));
+    this.setSimulationInterval(deltaTime => this.update(deltaTime));
 
-    this.onMessage("input", (client, message) => {
+    this.onMessage('input', (client, message) => {
       // Handle player input and update component data
     });
   }
-
   onJoin(client: Client, options: any) {
     const player = new PlayerSchema().assign({
       id: client.sessionId,
-      name: options.username || "Player",
+      name: options.username || 'Player',
     });
 
     this.state.players.set(client.sessionId, player);
+    const entityId = createPlayer(this.world, client.sessionId, 10, 10);
 
-    const entityId = Components.addPlayer(this.world, {
-      id: client.sessionId,
-      position: { x: 10, y: 10 },
-    });
-
-    console.log(`Player ${player.name} (${client.sessionId}) joined and created entity ${entityId}.`);
+    console.log(
+      `Player ${player.name} (${client.sessionId}) joined and created entity ${entityId}.`
+    );
   }
 
   onLeave(client: Client, consented: boolean) {
@@ -55,6 +49,6 @@ export class RuneRogueRoom extends Room<GameRoomState> {
   }
 
   onDispose() {
-    console.log("Room", this.roomId, "disposing...");
+    console.log('Room', this.roomId, 'disposing...');
   }
-} 
+}

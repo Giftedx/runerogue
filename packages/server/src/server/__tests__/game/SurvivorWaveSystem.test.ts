@@ -4,7 +4,7 @@
  */
 
 import { Room } from '@colyseus/core';
-import { NPC, Player, WorldState } from '../../game/EntitySchemas';
+import { NPC, Player, PlayerSkills, WorldState } from '../../game/EntitySchemas';
 import { SurvivorWaveSystem, WaveState } from '../../game/SurvivorWaveSystem';
 
 // Mock the Room class
@@ -50,15 +50,21 @@ describe('SurvivorWaveSystem', () => {
     testPlayer.prayerPoints = 50;
 
     // Initialize skills
-    testPlayer.skills = {
-      attack: { level: 10, experience: 1000 },
-      strength: { level: 10, experience: 1000 },
-      defence: { level: 10, experience: 1000 },
-      hitpoints: { level: 10, experience: 1000 },
-      prayer: { level: 10, experience: 1000 },
-      ranged: { level: 1, experience: 0 },
-      magic: { level: 1, experience: 0 },
-    };
+    testPlayer.skills = new PlayerSkills();
+    testPlayer.skills.attack.level = 10;
+    testPlayer.skills.attack.experience = 1000;
+    testPlayer.skills.strength.level = 10;
+    testPlayer.skills.strength.experience = 1000;
+    testPlayer.skills.defence.level = 10;
+    testPlayer.skills.defence.experience = 1000;
+    testPlayer.skills.hitpoints.level = 10;
+    testPlayer.skills.hitpoints.experience = 1000;
+    testPlayer.skills.prayer.level = 10;
+    testPlayer.skills.prayer.experience = 1000;
+    testPlayer.skills.ranged.level = 1;
+    testPlayer.skills.ranged.experience = 0;
+    testPlayer.skills.magic.level = 1;
+    testPlayer.skills.magic.experience = 0;
 
     mockRoom.state.players[testPlayer.id] = testPlayer;
   });

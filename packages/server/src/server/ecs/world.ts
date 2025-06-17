@@ -101,6 +101,24 @@ export function createPlayer(world: IWorld, sessionId: string, x: number, y: num
   SkillLevels.prayer[eid] = 1;
   SkillLevels.magic[eid] = 1;
 
+  // Initialize non-combat skills
+  SkillLevels.cooking[eid] = 1;
+  SkillLevels.woodcutting[eid] = 1;
+  SkillLevels.fletching[eid] = 1;
+  SkillLevels.fishing[eid] = 1;
+  SkillLevels.firemaking[eid] = 1;
+  SkillLevels.crafting[eid] = 1;
+  SkillLevels.smithing[eid] = 1;
+  SkillLevels.mining[eid] = 1;
+  SkillLevels.herblore[eid] = 1;
+  SkillLevels.agility[eid] = 1;
+  SkillLevels.thieving[eid] = 1;
+  SkillLevels.slayer[eid] = 1;
+  SkillLevels.farming[eid] = 1;
+  SkillLevels.runecraft[eid] = 1;
+  SkillLevels.hunter[eid] = 1;
+  SkillLevels.construction[eid] = 1;
+
   // Initialize skill XP (OSRS combat skills)
   SkillXP.attack[eid] = 0;
   SkillXP.strength[eid] = 0;
@@ -109,6 +127,24 @@ export function createPlayer(world: IWorld, sessionId: string, x: number, y: num
   SkillXP.ranged[eid] = 0;
   SkillXP.prayer[eid] = 0;
   SkillXP.magic[eid] = 0;
+
+  // Initialize non-combat skill XP
+  SkillXP.cooking[eid] = 0;
+  SkillXP.woodcutting[eid] = 0;
+  SkillXP.fletching[eid] = 0;
+  SkillXP.fishing[eid] = 0;
+  SkillXP.firemaking[eid] = 0;
+  SkillXP.crafting[eid] = 0;
+  SkillXP.smithing[eid] = 0;
+  SkillXP.mining[eid] = 0;
+  SkillXP.herblore[eid] = 0;
+  SkillXP.agility[eid] = 0;
+  SkillXP.thieving[eid] = 0;
+  SkillXP.slayer[eid] = 0;
+  SkillXP.farming[eid] = 0;
+  SkillXP.runecraft[eid] = 0;
+  SkillXP.hunter[eid] = 0;
+  SkillXP.construction[eid] = 0;
 
   // Initialize prayer (bitmask, points, etc.)
   Prayer.points[eid] = 1;

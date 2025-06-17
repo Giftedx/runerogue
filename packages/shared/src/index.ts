@@ -8,6 +8,8 @@
 // Re-export all types for easy importing
 export * from "./types/game";
 export * from "./types/osrs";
+
+// Re-export all schemas for client/server use
 export * from "./schemas/GameRoomState";
 
 // Version info

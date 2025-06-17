@@ -20,7 +20,7 @@ describe('GameRoom Simple Test', () => {
   });
 
   test('should be able to create schema instances', () => {
-    const { Player, InventoryItem, Skills } = require('../../game/EntitySchemas');
+    const { Player, InventoryItem, PlayerSkills } = require('../../game/EntitySchemas');
 
     const player = new Player();
     player.id = 'test-player';
@@ -33,18 +33,18 @@ describe('GameRoom Simple Test', () => {
     item.name = 'Test Item';
     item.quantity = 5;
 
-    const skills = new Skills();
-    skills.attack = 1;
-    skills.defence = 1;
+    const skills = new PlayerSkills();
+    skills.attack.level = 1;
+    skills.defence.level = 1;
 
     expect(player.id).toBe('test-player');
     expect(item.quantity).toBe(5);
-    expect(skills.attack).toBe(1);
+    expect(skills.attack.level).toBe(1);
 
     console.log('✅ Schema instances created successfully');
   });
   test('should be able to test encoding without Room', () => {
-    const { Player, InventoryItem, Skills } = require('../../game/EntitySchemas');
+    const { Player, InventoryItem, PlayerSkills } = require('../../game/EntitySchemas');
     const { ArraySchema } = require('@colyseus/schema');
 
     const player = new Player();
@@ -69,7 +69,7 @@ describe('GameRoom Simple Test', () => {
       expect(player.id).toBeDefined();
       expect(typeof player.x).toBe('number');
       expect(typeof player.y).toBe('number');
-      expect(player.skills).toBeInstanceOf(Skills);
+      expect(player.skills).toBeInstanceOf(PlayerSkills);
       expect(player.inventory).toBeInstanceOf(ArraySchema);
       console.log('✅ Player schema structure validation works');
     } catch (error) {
