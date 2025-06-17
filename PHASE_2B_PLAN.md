@@ -4,11 +4,11 @@
 
 **Status**: Client TypeScript build ✅ FIXED - Ready for Discord integration
 
-### Next Actions:
+### Next Actions
 
 1. **Create Discord Application**
 
-   - Go to https://discord.com/developers/applications
+   - Go to <https://discord.com/developers/applications>
    - Create new application named "RuneRogue"
    - Note the Application ID
 
@@ -32,7 +32,7 @@
    - Configure Vite for HTTPS
    - Test Discord Activity embedding
 
-### Current Status:
+### Current Status
 
 - ✅ TypeScript build working (0 errors)
 - ✅ React client functional
@@ -40,7 +40,7 @@
 - ✅ Server anti-cheat validating movement
 - 🎯 Ready for Discord integration
 
-### Files to Modify:
+### Files to Modify
 
 - `client/vite.config.ts` - Add HTTPS support
 - `client/.env` - Add Discord client ID

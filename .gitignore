@@ -103,3 +103,6 @@ coverage/
 *.tmp
 *.temp
 ALL_FILES_COMPLETE.txt
+client/cert.pem
+.gitignore
+client/key.pem

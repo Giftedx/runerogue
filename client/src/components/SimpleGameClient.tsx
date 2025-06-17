@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as Colyseus from "colyseus.js";
 import type { GameRoomState, PlayerSchema } from "@runerogue/shared";
+import { DiscordActivity, type DiscordUser } from "../discord/DiscordActivity";
 
 interface PlayerDisplay {
   id: string;
@@ -20,6 +21,10 @@ export const SimpleGameClient: React.FC = () => {
   const [isError, setIsError] = useState<boolean>(false);
   const [players, setPlayers] = useState<Record<string, PlayerDisplay>>({});
   const [playerId, setPlayerId] = useState<string>("");
+
+  const [discordUser, setDiscordUser] = useState<DiscordUser | null>(null);
+  const [discordActivity] = useState(() => new DiscordActivity());
+  const [isDiscordMode, setIsDiscordMode] = useState(false);
 
   const clientRef = useRef<Colyseus.Client | null>(null);
   const roomRef = useRef<Colyseus.Room<GameRoomState> | null>(null);
@@ -133,11 +138,54 @@ export const SimpleGameClient: React.FC = () => {
 
   // Auto-connect on mount
   useEffect(() => {
-    connect();
+    /**
+     * Initializes the app, attempting Discord SDK integration if running in an iframe.
+     * In development, DiscordActivity may use a mock implementation.
+     * In production, failures are logged and the app falls back to standalone mode.
+     * This ensures no silent failures and makes the intended behavior explicit.
+     */
+    const initializeApp = async () => {
+      try {
+        // Only attempt Discord integration if embedded (e.g., in Discord Activity iframe)
+        if (window.parent !== window) {
+          updateStatus("Initializing Discord...");
+          const user = await discordActivity.initialize();
+          setDiscordUser(user);
+          setIsDiscordMode(true);
+          updateStatus(`Discord connected: ${user.username}`);
+        }
+      } catch (error) {
+        // Explicitly log and surface Discord SDK errors to avoid silent failures
+        console.error("Discord initialization failed:", error);
+        updateStatus(
+          "Running in standalone mode (Discord not available)",
+          true
+        );
+      }
+
+      // Always connect to the game server, regardless of Discord integration outcome
+      await connect();
+    };
+
+    initializeApp();
+
     return () => {
+      // Clean up Discord SDK (real or mock) and disconnect from server
+      discordActivity.close();
       disconnect();
     };
   }, []);
+
+  // Update Discord activity when game state changes
+  useEffect(() => {
+    if (discordUser && playerId && isDiscordMode) {
+      const playerCount = Object.keys(players).length;
+      discordActivity.setActivity(
+        `Playing RuneRogue`,
+        `${playerCount} player${playerCount !== 1 ? "s" : ""} in room`
+      );
+    }
+  }, [discordUser, playerId, players, isDiscordMode]);
 
   return (
     <div
@@ -152,6 +200,23 @@ export const SimpleGameClient: React.FC = () => {
       }}
     >
       <h1>RuneRogue - Simple Client</h1>
+
+      {discordUser && isDiscordMode && (
+        <div
+          style={{
+            margin: "10px 0",
+            padding: "10px",
+            background: "#5865F2",
+            borderRadius: "5px",
+            color: "white",
+          }}
+        >
+          <h3>
+            Discord User: {discordUser.global_name || discordUser.username}
+          </h3>
+          <small>Playing via Discord Activity</small>
+        </div>
+      )}
 
       <div
         style={{

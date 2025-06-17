@@ -54,7 +54,7 @@ importers:
   client:
     dependencies:
       '@discord/embedded-app-sdk':
-        specifier: ^1.2.0
+        specifier: ^1.9.0
         version: 1.9.0
       '@runerogue/shared':
         specifier: workspace:*
@@ -1789,6 +1789,9 @@ packages:
   '@types/jsonfile@6.1.4':
     resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
 
+  '@types/jsonwebtoken@9.0.10':
+    resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
+
   '@types/jsonwebtoken@9.0.9':
     resolution: {integrity: sha512-uoe+GxEuHbvy12OUQct2X9JenKM3qAscquYymuQN4fMWG9DBQtykrQEFcAbVACF7qaLw9BePSodUL0kquqBJpQ==}
 
@@ -1815,6 +1818,9 @@ packages:
 
   '@types/node@22.15.30':
     resolution: {integrity: sha512-6Q7lr06bEHdlfplU6YRbgG1SFBdlsfNC4/lX+SkhiTs0cpJkOElmWls8PxDFv4yY/xKb8Y6SO0OmSX4wgqTZbA==}
+
+  '@types/node@22.15.32':
+    resolution: {integrity: sha512-3jigKqgSjsH6gYZv2nEsqdXfZqIFGAV36XYYjf9KGZ3PSG+IhLecqPnI310RvjutyMwifE2hhhNEklOUrvx/wA==}
 
   '@types/pg@8.15.4':
     resolution: {integrity: sha512-I6UNVBAoYbvuWkkU3oosC8yxqH21f4/Jc4DK71JLG3dT2mdlGe1z+ep/LQGXaKaOgcvUrsQoPRqfgtMcvZiJhg==}
@@ -5299,7 +5305,7 @@ snapshots:
   '@colyseus/auth@0.16.6(@colyseus/core@0.16.18(@colyseus/schema@3.0.39))(express@5.1.0)':
     dependencies:
       '@colyseus/core': 0.16.18(@colyseus/schema@3.0.39)
-      '@types/jsonwebtoken': 9.0.9
+      '@types/jsonwebtoken': 9.0.10
       connect-redis: 7.1.1(express-session@1.18.1)
       express: 5.1.0
       express-jwt: 8.5.1
@@ -6403,6 +6409,11 @@ snapshots:
     dependencies:
       '@types/node': 22.15.30
 
+  '@types/jsonwebtoken@9.0.10':
+    dependencies:
+      '@types/ms': 2.1.0
+      '@types/node': 22.15.32
+
   '@types/jsonwebtoken@9.0.9':
     dependencies:
       '@types/ms': 2.1.0
@@ -6430,6 +6441,10 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/node@22.15.30':
+    dependencies:
+      undici-types: 6.21.0
+
+  '@types/node@22.15.32':
     dependencies:
       undici-types: 6.21.0
 
@@ -7619,7 +7634,7 @@ snapshots:
 
   express-jwt@8.5.1:
     dependencies:
-      '@types/jsonwebtoken': 9.0.9
+      '@types/jsonwebtoken': 9.0.10
       express-unless: 2.1.3
       jsonwebtoken: 9.0.2
 
