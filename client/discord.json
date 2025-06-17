@@ -1,0 +1,26 @@
+{
+  "client_id": "YOUR_DISCORD_CLIENT_ID",
+  "commands": [],
+  "supported_platforms": ["web"],
+  "activity": {
+    "name": "RuneRogue",
+    "description": "An OSRS-inspired multiplayer survival game for Discord",
+    "type": "embedded",
+    "instance_limit": 20,
+    "tags": ["game", "multiplayer", "survival", "rpg"],
+    "supported_platforms": ["web"],
+    "assets": {
+      "small_image": "logo_small",
+      "large_image": "logo_large"
+    },
+    "activity_url_mappings": [
+      {
+        "key": "game",
+        "value": "/"
+      }
+    ]
+  },
+  "permissions": {
+    "guilds_connections_verify": true
+  }
+}

@@ -53,9 +53,15 @@ importers:
 
   client:
     dependencies:
+      '@discord/embedded-app-sdk':
+        specifier: ^1.2.0
+        version: 1.9.0
       '@runerogue/shared':
         specifier: workspace:*
         version: link:../packages/shared
+      colyseus.js:
+        specifier: ^0.15.0
+        version: 0.15.28
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -83,13 +89,13 @@ importers:
         version: 9.28.0
       jest:
         specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3))
+        version: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
       jest-environment-jsdom:
         specifier: ^30.0.0
         version: 30.0.0(canvas@2.11.2(encoding@0.1.13))
       ts-jest:
         specifier: ^29.4.0
-        version: 29.4.0(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@30.0.0)(babel-jest@29.7.0(@babel/core@7.27.4))(jest-util@30.0.0)(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3)))(typescript@5.8.3)
+        version: 29.4.0(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@30.0.0)(babel-jest@29.7.0(@babel/core@7.27.4))(jest-util@30.0.0)(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: ^5.2.2
         version: 5.8.3
@@ -507,13 +513,13 @@ importers:
         version: 9.28.0
       jest:
         specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3))
+        version: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
       ts-jest:
         specifier: ^29.1.1
-        version: 29.3.4(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3)))(typescript@5.8.3)
+        version: 29.3.4(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: ^5.2.2
         version: 5.8.3
@@ -742,6 +748,10 @@ packages:
   '@colyseus/redis-presence@0.16.3':
     resolution: {integrity: sha512-1kowU+3yzU8iSWLi6cM5xLx3ynQXd7bmPS8iw/XU4TDLlYTToXS0PAyqcZQbozsNJnQPQCIYwgtWYDo1t4zzTw==}
 
+  '@colyseus/schema@2.0.37':
+    resolution: {integrity: sha512-+WXEux9DMSaTz9hZKabl6LBuzsxzt9EvOwhXJ/G4rPCaaVkJ+iLxRsq8VbL2ZCx18E/uQH6nLaNIQVqH9wEt8w==}
+    hasBin: true
+
   '@colyseus/schema@3.0.39':
     resolution: {integrity: sha512-7vev9opycSkyw+Upf/6vJMxj7OV7OlkfsJeVzfOBQYbsCMkFBv5XIFouRLtArYstNP0h3y4wpZqgGyjxd3rSPA==}
     hasBin: true
@@ -808,6 +818,9 @@ packages:
 
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
+
+  '@discord/embedded-app-sdk@1.9.0':
+    resolution: {integrity: sha512-aesQGKyhQgcxuY4/iJoylFfFaynZeU70Y5nqDtFNQ6Hs11LH+Xly7CfD6AhkTNssIyLljEkxG5ZYLU6Bj6n1kw==}
 
   '@discord/embedded-app-sdk@2.0.0':
     resolution: {integrity: sha512-84XSrJdCLBvOiH8lb0kUjWpiNZlPVU0FBIjbCrndoEFB26z2Xki7Mv9Dh+gLh21NzE9ExkN9PxeInV0R4XD0Kg==}
@@ -2297,6 +2310,10 @@ packages:
 
   colorspace@1.1.4:
     resolution: {integrity: sha512-BgvKJiuVu1igBUF2kEjRCZXol6wiiGbY5ipL/oVPwm0BL9sIpMIzM8IK7vwuxIIzOXMV3Ey5w+vxhm0rR/TN8w==}
+
+  colyseus.js@0.15.28:
+    resolution: {integrity: sha512-fJx/EcK4fQsugNviXpTD78bVXySutLprViAWy5qMuyhcU0MfeUuHfrlvUqI18dQUStGckvLggTC7EexmIyI+3g==}
+    engines: {node: '>= 12.x'}
 
   colyseus.js@0.16.19:
     resolution: {integrity: sha512-48cVPt5+21R79itIHpcJplMFt7HEks5chxPXtM9l+AvmFjfXO8UykIV4j+fYyKaJu6EB14AbBH0AnTvpQqnAEg==}
@@ -5333,6 +5350,8 @@ snapshots:
       - '@colyseus/schema'
       - supports-color
 
+  '@colyseus/schema@2.0.37': {}
+
   '@colyseus/schema@3.0.39': {}
 
   '@colyseus/testing@0.16.3(@colyseus/core@0.16.18(@colyseus/schema@3.0.39))(@colyseus/tools@0.16.9(@colyseus/core@0.16.18(@colyseus/schema@3.0.39))(@colyseus/ws-transport@0.16.5(@colyseus/core@0.16.18(@colyseus/schema@3.0.39))))(colyseus.js@0.16.19)':
@@ -5403,6 +5422,17 @@ snapshots:
       colorspace: 1.1.4
       enabled: 2.0.0
       kuler: 2.0.0
+
+  '@discord/embedded-app-sdk@1.9.0':
+    dependencies:
+      '@types/lodash.transform': 4.6.9
+      '@types/uuid': 10.0.0
+      big-integer: 1.6.52
+      decimal.js-light: 2.5.1
+      eventemitter3: 5.0.1
+      lodash.transform: 4.6.0
+      uuid: 10.0.0
+      zod: 3.25.56
 
   '@discord/embedded-app-sdk@2.0.0':
     dependencies:
@@ -6975,6 +7005,16 @@ snapshots:
       color: 3.2.1
       text-hex: 1.0.0
 
+  colyseus.js@0.15.28:
+    dependencies:
+      '@colyseus/schema': 2.0.37
+      httpie: 2.0.0-next.13
+      tslib: 2.8.1
+      ws: 8.18.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   colyseus.js@0.16.19:
     dependencies:
       '@colyseus/httpie': 2.0.1
@@ -7064,6 +7104,21 @@ snapshots:
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-config: 29.7.0(@types/node@20.19.1)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+      jest-util: 29.7.0
+      prompts: 2.4.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
+  create-jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)):
+    dependencies:
+      '@jest/types': 29.6.3
+      chalk: 4.1.2
+      exit: 0.1.2
+      graceful-fs: 4.2.11
+      jest-config: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
       jest-util: 29.7.0
       prompts: 2.4.2
     transitivePeerDependencies:
@@ -8226,6 +8281,25 @@ snapshots:
       - supports-color
       - ts-node
 
+  jest-cli@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)):
+    dependencies:
+      '@jest/core': 29.7.0(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+      '@jest/test-result': 29.7.0
+      '@jest/types': 29.6.3
+      chalk: 4.1.2
+      create-jest: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+      exit: 0.1.2
+      import-local: 3.2.0
+      jest-config: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
   jest-cli@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3)):
     dependencies:
       '@jest/core': 29.7.0(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3))
@@ -8633,6 +8707,18 @@ snapshots:
       '@jest/types': 29.6.3
       import-local: 3.2.0
       jest-cli: 29.7.0(@types/node@20.19.1)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
+  jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)):
+    dependencies:
+      '@jest/core': 29.7.0(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+      '@jest/types': 29.6.3
+      import-local: 3.2.0
+      jest-cli: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -9854,6 +9940,26 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
+  ts-jest@29.3.4(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)))(typescript@5.8.3):
+    dependencies:
+      bs-logger: 0.2.6
+      ejs: 3.1.10
+      fast-json-stable-stringify: 2.1.0
+      jest: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
+      jest-util: 29.7.0
+      json5: 2.2.3
+      lodash.memoize: 4.1.2
+      make-error: 1.3.6
+      semver: 7.7.2
+      type-fest: 4.41.0
+      typescript: 5.8.3
+      yargs-parser: 21.1.1
+    optionalDependencies:
+      '@babel/core': 7.27.4
+      '@jest/transform': 29.7.0
+      '@jest/types': 29.6.3
+      babel-jest: 29.7.0(@babel/core@7.27.4)
+
   ts-jest@29.3.4(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3)))(typescript@5.8.3):
     dependencies:
       bs-logger: 0.2.6
@@ -9894,12 +10000,12 @@ snapshots:
       babel-jest: 29.7.0(@babel/core@7.27.4)
       jest-util: 30.0.0
 
-  ts-jest@29.4.0(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@30.0.0)(babel-jest@29.7.0(@babel/core@7.27.4))(jest-util@30.0.0)(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3)))(typescript@5.8.3):
+  ts-jest@29.4.0(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@30.0.0)(babel-jest@29.7.0(@babel/core@7.27.4))(jest-util@30.0.0)(jest@29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)))(typescript@5.8.3):
     dependencies:
       bs-logger: 0.2.6
       ejs: 3.1.10
       fast-json-stable-stringify: 2.1.0
-      jest: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@22.15.30)(typescript@5.8.3))
+      jest: 29.7.0(@types/node@22.15.30)(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3))
       json5: 2.2.3
       lodash.memoize: 4.1.2
       make-error: 1.3.6

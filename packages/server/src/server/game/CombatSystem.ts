@@ -632,7 +632,7 @@ export class CombatSystem {
     }
 
     // Find the attacker
-    const attacker = this.state.players.get?.(playerId) || this.state.players[playerId];
+    const attacker = this.state.players.get(playerId);
     if (!attacker) {
       return null;
     }
@@ -642,9 +642,8 @@ export class CombatSystem {
       return null;
     }
 
-    const targetPlayer =
-      this.state.players.get?.(action.targetId) || this.state.players[action.targetId];
-    const targetNPC = this.state.npcs.get?.(action.targetId) || this.state.npcs[action.targetId];
+    const targetPlayer = this.state.players.get(action.targetId);
+    const targetNPC = this.state.npcs.get(action.targetId);
     const target = targetPlayer || targetNPC;
 
     if (!target) {
@@ -727,7 +726,8 @@ export class CombatSystem {
    * Calculate effective strength level (OSRS formula)
    */
   static getEffectiveStrengthLevel(player: Player | NPC, combatStyle: CombatStyle): number {
-    const baseLevel = 'skills' in player ? player.skills.strength.level : player.strength || 1;
+    const baseLevel =
+      'skills' in player ? player.skills.strength.level : (player as NPC).attack || 1;
     const styleBonus = this.getCombatStyleBonus(combatStyle, 'strength');
     const prayerBonus = this.getPrayerStrengthBonus(player);
     return baseLevel + styleBonus + prayerBonus + 8;
@@ -931,17 +931,22 @@ export class CombatSystem {
       };
 
       // Sort by level required (highest first) and take the first one
-      activeStrengthPrayers.sort((a, b) => prayerLevels[b] - prayerLevels[a]);
+      activeStrengthPrayers.sort(
+        (a, b) =>
+          (prayerLevels as Record<string, number>)[b] - (prayerLevels as Record<string, number>)[a]
+      );
 
       // Create filtered prayer list with only the highest prayer
       const filteredPrayers = player.activePrayers.filter(id => !strengthPrayers.includes(id));
       filteredPrayers.push(activeStrengthPrayers[0]);
 
       // Temporarily override activePrayers for calculation
-      const originalPrayers = [...player.activePrayers];
-      player.activePrayers = filteredPrayers;
+      const originalPrayers = Array.from(player.activePrayers);
+      player.activePrayers.clear();
+      filteredPrayers.forEach(prayer => player.activePrayers.push(prayer));
       const bonus = tempPrayerSystem.getStrengthBonus();
-      player.activePrayers = originalPrayers;
+      player.activePrayers.clear();
+      originalPrayers.forEach(prayer => player.activePrayers.push(prayer));
       tempPrayerSystem.destroy();
       return bonus;
     }
@@ -1012,7 +1017,8 @@ export class CombatSystem {
    */
   static getCombatStats(player: Player | NPC): CombatStats {
     const baseAttack = 'skills' in player ? player.skills.attack.level : player.attack || 1;
-    const baseStrength = 'skills' in player ? player.skills.strength.level : player.strength || 1;
+    const baseStrength =
+      'skills' in player ? player.skills.strength.level : (player as NPC).attack || 1;
     const baseDefence = 'skills' in player ? player.skills.defence.level : player.defense || 1;
 
     // Calculate prayer bonuses

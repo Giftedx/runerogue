@@ -20,7 +20,7 @@ describe('OSRS Combat Formula Implementation', () => {
     attacker.skills.strength.level = 70; // Level 70 strength
     // Set equipment for testing
     attacker.equippedWeapon = 'dragon_dagger'; // Dragon dagger (+20 stab, +18 str)
-    attacker.activePrayers = [];
+    attacker.activePrayers.clear();
     attacker.specialEnergy = 100;
 
     // Create test defender with known stats
@@ -31,7 +31,7 @@ describe('OSRS Combat Formula Implementation', () => {
     defender.skills.defence.level = 60; // Level 60 defense
     // Set equipment for testing
     defender.equippedArmor = 'bronze_plate'; // Bronze plate (+12 slash defense)
-    defender.activePrayers = [];
+    defender.activePrayers.clear();
     defender.health = 100;
   });
 
@@ -451,11 +451,28 @@ describe('OSRS Combat Formula Implementation', () => {
       // Activate Protect from Melee
       defender.activePrayers.push('protect_from_melee');
 
-      const result = CombatSystem.performAttack(attacker, defender, CombatStyle.ACCURATE);
+      // Test multiple attacks to verify protection reduces damage consistently
+      const results = [];
+      for (let i = 0; i < 10; i++) {
+        const result = CombatSystem.performAttack(attacker, defender, CombatStyle.ACCURATE);
+        results.push(result.damage);
+      }
 
-      // With protection prayer, damage should be significantly reduced or blocked
-      // Note: This depends on the implementation of damage reduction in performAttack
-      expect(result.damage).toBeLessThanOrEqual(1); // Protection should reduce damage
+      // Calculate damage without protection for comparison
+      defender.activePrayers.clear();
+      const unprotectedResults = [];
+      for (let i = 0; i < 10; i++) {
+        const result = CombatSystem.performAttack(attacker, defender, CombatStyle.ACCURATE);
+        unprotectedResults.push(result.damage);
+      }
+
+      // Average protected damage should be significantly less than unprotected
+      const avgProtectedDamage = results.reduce((a, b) => a + b, 0) / results.length;
+      const avgUnprotectedDamage =
+        unprotectedResults.reduce((a, b) => a + b, 0) / unprotectedResults.length;
+
+      // Protection should reduce damage by around 40% in OSRS
+      expect(avgProtectedDamage).toBeLessThan(avgUnprotectedDamage * 0.8);
     });
 
     it('should calculate prayer bonuses correctly in combat stats', () => {

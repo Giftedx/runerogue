@@ -10,6 +10,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { createServer } from 'http';
+import fetch from 'node-fetch';
+import { URLSearchParams } from 'url';
 import { CleanGameRoom } from './rooms/CleanGameRoom';
 import { SimpleGameRoom } from './rooms/SimpleGameRoom';
 import { MinimalGameRoom } from './rooms/MinimalGameRoom';
@@ -67,6 +69,74 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     environment: NODE_ENV,
   });
+});
+
+// Discord Activity token exchange endpoint
+// @ts-expect-error - Express route handler typing issue
+app.post('/api/discord/token', async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ error: 'Authorization code is required' });
+    }
+
+    // Discord OAuth2 configuration
+    const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+    const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+
+    if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) {
+      console.warn('Discord credentials not configured');
+      return res.status(500).json({
+        error: 'Discord credentials not configured',
+        message: 'Set DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET environment variables',
+      });
+    }
+
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: DISCORD_CLIENT_ID,
+        client_secret: DISCORD_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        code: code,
+      }).toString(),
+    });
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error('Discord token exchange failed:', errorText);
+      return res.status(400).json({
+        error: 'Failed to exchange authorization code',
+        details: errorText,
+      });
+    }
+
+    const tokenData = (await tokenResponse.json()) as {
+      access_token: string;
+      token_type: string;
+      expires_in: number;
+      scope: string;
+    };
+
+    // Return the access token to the client
+    return res.json({
+      access_token: tokenData.access_token,
+      token_type: tokenData.token_type,
+      expires_in: tokenData.expires_in,
+      scope: tokenData.scope,
+    });
+  } catch (error) {
+    console.error('Discord token endpoint error:', error);
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
 });
 
 // API endpoint for room info
