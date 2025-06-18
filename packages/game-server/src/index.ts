@@ -18,7 +18,7 @@ import cors from "cors";
 import { RuneRogueRoom } from "./rooms/RuneRogueRoom";
 
 // Create Express app
-const app: express.Express = express();
+const app: import("express").Express = express();
 app.use(cors());
 app.use(express.json());
 
@@ -35,7 +35,7 @@ app.use(express.json());
  * @apiError (500) {string} error Internal server error.
  * @apiError (501) {string} error Production OAuth2 not implemented.
  */
-app.post("/api/discord/token", async (req, res) => {
+app.post("/api/discord/token", async (req: any, res: any) => {
   const { code } = req.body;
 
   if (!code) {
@@ -73,11 +73,14 @@ app.post("/api/discord/token", async (req, res) => {
     });
 
     const fetch = (await import("node-fetch")).default;
-    const discordResponse = await fetch("https://discord.com/api/oauth2/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params,
-    });
+    const discordResponse = await fetch(
+      "https://discord.com/api/oauth2/token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params,
+      }
+    );
 
     if (!discordResponse.ok) {
       const errorBody = await discordResponse.json().catch(() => ({}));

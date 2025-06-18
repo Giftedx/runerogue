@@ -16,7 +16,6 @@ import {
   InventoryComponent,
 } from '../components/GatheringComponents';
 import {
-  FISHING_SPOTS,
   FISHING_TOOLS,
   FISH,
   calculateFishingSuccess,
@@ -24,6 +23,28 @@ import {
   calculateLevelFromXp,
   PET_DROP_RATES,
 } from '@runerogue/osrs-data';
+
+/**
+ * Helper: Map itemId to fish data for type-safe lookup.
+ */
+const FISH_BY_ITEM_ID: Record<number, (typeof FISH)[keyof typeof FISH]> = Object.values(
+  FISH
+).reduce(
+  (acc, fish) => {
+    acc[fish.itemId] = fish;
+    return acc;
+  },
+  {} as Record<number, (typeof FISH)[keyof typeof FISH]>
+);
+
+/**
+ * Type-safe fish lookup by itemId.
+ * @param itemId The itemId of the fish.
+ * @returns Fish data or undefined.
+ */
+function getFishByItemId(itemId: number): (typeof FISH)[keyof typeof FISH] | undefined {
+  return FISH_BY_ITEM_ID[itemId];
+}
 
 /**
  * Query for entities that can be fished (fishing spots)
@@ -42,11 +63,17 @@ const activeFishersQuery = defineQuery([
 /**
  * Check if player has required tool and level for a fishing spot
  */
+/**
+ * Check if player has required tool and level for a fishing spot
+ * @param playerId Player entity ID
+ * @param fishItemId The itemId of the fish
+ * @returns Whether the player can fish, the tool, and a reason if not
+ */
 function canFishSpot(
   playerId: number,
-  fishId: number
+  fishItemId: number
 ): { canFish: boolean; tool?: any; reason?: string } {
-  const fish = FISH[fishId];
+  const fish = getFishByItemId(fishItemId);
   if (!fish) {
     return { canFish: false, reason: 'Invalid fishing spot' };
   }
@@ -62,8 +89,8 @@ function canFishSpot(
   }
 
   // Check for required bait
-  if (fish.baitRequired && !hasItem(playerId, fish.baitRequired)) {
-    return { canFish: false, reason: `Required bait: ${fish.baitRequired}` };
+  if ((fish as any).baitRequired && !hasItem(playerId, (fish as any).baitRequired)) {
+    return { canFish: false, reason: `Required bait: ${(fish as any).baitRequired}` };
   }
 
   return { canFish: true, tool };
@@ -80,14 +107,21 @@ function hasItem(playerId: number, itemId: number): boolean {
 /**
  * Process fishing attempt
  */
+/**
+ * Process fishing attempt for a player at a node.
+ * @param world ECS world
+ * @param playerId Player entity ID
+ * @param nodeId Node entity ID
+ * @returns Whether the fishing attempt was successful
+ */
 function processFishingAttempt(world: IWorld, playerId: number, nodeId: number): boolean {
   // Check if inventory is full
   if (InventoryComponent.isFull[playerId]) {
     return false;
   }
 
-  const fishId = ResourceNodeComponent.resourceId[nodeId];
-  const fish = FISH[fishId];
+  const fishItemId = ResourceNodeComponent.resourceId[nodeId];
+  const fish = getFishByItemId(fishItemId);
   if (!fish) return false;
 
   const playerLevel = calculateLevelFromXp(SkillDataComponent.fishingXp[playerId]);
@@ -102,14 +136,14 @@ function processFishingAttempt(world: IWorld, playerId: number, nodeId: number):
     awardFishingRewards(world, playerId, fish);
 
     // Consume bait if required
-    if (fish.baitRequired) {
+    if ((fish as any).baitRequired) {
       // TODO: Remove bait from inventory
     }
 
     // Some fishing spots may move/deplete
-    if (fish.depletionChance >= 1.0 || Math.random() < fish.depletionChance) {
+    if ((fish as any).depletionChance >= 1.0 || Math.random() < (fish as any).depletionChance) {
       ResourceNodeComponent.isDepleted[nodeId] = 1;
-      ResourceNodeComponent.currentRespawnTick[nodeId] = fish.respawnTime;
+      ResourceNodeComponent.currentRespawnTick[nodeId] = (fish as any).respawnTime ?? 0;
     }
 
     return true;

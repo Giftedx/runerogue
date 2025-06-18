@@ -53,5 +53,10 @@
     "colyseus"
   ],
   "author": "RuneRogue Development Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@colyseus/ecs": "0.4.0-alpha.4",
+    "@types/node-fetch": "^2.6.12",
+    "node-fetch": "^2.7.0"
+  }
 }

@@ -4,7 +4,7 @@
  * @author Your Name
  */
 
-import { System } from "@colyseus/ecs";
+import { System, World } from "@colyseus/ecs";
 import { GameState } from "../../schemas/GameState";
 
 const RESPAWN_TIME = 5000; // 5 seconds
@@ -18,8 +18,8 @@ export class DeathSystem extends System {
   private state: GameState;
   private room: any; // Replace with your GameRoom type
 
-  constructor(state: GameState, room: any) {
-    super();
+  constructor(world: World, state: GameState, room: any) {
+    super(world);
     this.state = state;
     this.room = room;
   }

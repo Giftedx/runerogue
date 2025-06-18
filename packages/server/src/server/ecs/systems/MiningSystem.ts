@@ -24,8 +24,8 @@ import {
   getEffectiveTool,
   calculateMiningSuccess,
   ROCK_GOLEM_PET_DROP_RATES,
-  rollGemTable,
 } from '@runerogue/osrs-data/src/skills/gathering-data';
+import { rollGemTable } from '@runerogue/osrs-data/src/skills/gem-table';
 
 // Infer the Rock type from the ROCKS constant
 type Rock = (typeof ROCKS)[keyof typeof ROCKS];
