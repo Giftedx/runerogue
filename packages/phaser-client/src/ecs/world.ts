@@ -4,7 +4,8 @@
 import { createWorld, pipe } from "bitecs";
 import { createMovementSystem } from "./systems/movement";
 import { createRenderingSystem } from "./systems/rendering";
-import { meleeCombatSystem } from "./systems/combat";
+import { createDamageSplatSystem } from "./systems/damageSplatSystem";
+import { createHealthBarSystem } from "./systems/healthBarSystem";
 import GameScene from "@/scenes/GameScene";
 
 /**
@@ -21,8 +22,9 @@ export const world = createWorld();
  */
 export const createMainPipeline = (scene: GameScene) =>
   pipe(
-    meleeCombatSystem,
     createMovementSystem(scene),
-    createRenderingSystem(scene)
+    createRenderingSystem(scene),
+    createDamageSplatSystem(scene),
+    createHealthBarSystem(scene)
     // Other systems will be added here
   );

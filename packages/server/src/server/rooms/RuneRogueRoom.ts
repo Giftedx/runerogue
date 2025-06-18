@@ -2,6 +2,7 @@ import { Room, Client } from 'colyseus';
 import { IWorld, createWorld } from 'bitecs';
 import { GameRoomState, PlayerSchema } from '@runerogue/shared';
 import { MovementSystem, createPlayer } from '../ecs';
+import { processAttack } from '../systems/combat';
 
 export class RuneRogueRoom extends Room<GameRoomState> {
   private world: IWorld;
@@ -12,6 +13,14 @@ export class RuneRogueRoom extends Room<GameRoomState> {
 
     // Register systems - using proper ECS systems
     this.systems.push(MovementSystem);
+
+    this.onMessage('attack', (client, message: { targetId: number }) => {
+      const attackerEid = this.state.players.get(client.sessionId)?.eid;
+      if (attackerEid === undefined) {
+        return;
+      }
+      processAttack(this.world, attackerEid, message.targetId);
+    });
 
     this.setSimulationInterval(deltaTime => this.update(deltaTime));
 

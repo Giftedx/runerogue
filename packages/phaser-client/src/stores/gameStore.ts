@@ -49,7 +49,7 @@ export interface GameStore {
   messages: ChatMessage[];
 
   // Actions
-  setHealth: (health: number) => void;
+  setHealth: (health: number, maxHealth: number) => void;
   setPrayer: (prayer: number) => void;
   setRunEnergy: (energy: number) => void;
   setSkill: (skill: string, level: number, xp: number) => void;
@@ -88,7 +88,7 @@ export const useGameStore = create<GameStore>((set) => ({
   messages: [],
 
   // Actions
-  setHealth: (health) => set({ health }),
+  setHealth: (health, maxHealth) => set({ health, maxHealth }),
   setPrayer: (prayer) => set({ prayer }),
   setRunEnergy: (energy) => set({ runEnergy: energy }),
   setSkill: (skill, level, xp) =>

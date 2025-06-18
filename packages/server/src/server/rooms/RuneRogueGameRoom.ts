@@ -12,6 +12,8 @@
 
 import { Client, Room } from '@colyseus/core';
 import { GameRoomState, Player, Enemy } from '../game/EntitySchemas';
+import { EnemyAISystem } from '../../../../game-server/src/ecs/systems/EnemyAISystem';
+import { DeathSystem } from '../../../../game-server/src/ecs/systems/DeathSystem';
 
 /**
  * Message types for client-server communication
@@ -26,19 +28,32 @@ interface PlayerAttackMessage {
   targetType: 'enemy' | 'player';
 }
 
+interface RoomOptions {
+  username?: string;
+}
+
 export class RuneRogueGameRoom extends Room<GameRoomState> {
   private gameLoopInterval?: NodeJS.Timeout;
   private waveSpawnInterval?: NodeJS.Timeout;
   private readonly TICK_RATE = 50; // 20 TPS
   private readonly WAVE_SPAWN_INTERVAL = 30000; // 30 seconds
 
+  // ECS Systems
+  private enemyAISystem: EnemyAISystem;
+  private deathSystem: DeathSystem;
+
   /**
    * Initialize the game room
    */
-  async onCreate(options: any) {
-    console.log('🎮 Creating RuneRogue game room...');
+  async onCreate(_options: RoomOptions) {
+    this.setState(new GameRoomState());
 
-    this.state = new GameRoomState();
+    // Initialize ECS Systems
+    // Cast to `any` is a temporary workaround for schema incompatibility between packages.
+    // TODO: Unify GameState and GameRoomState schemas.
+    this.enemyAISystem = new EnemyAISystem(this.state as any);
+    this.deathSystem = new DeathSystem(this.state as any, this);
+
     this.setupMessageHandlers();
     this.startGameLoop();
     this.startWaveSpawning();
@@ -50,32 +65,23 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
   /**
    * Handle player joining the game
    */
-  async onJoin(client: Client, options: any) {
-    console.log(`🚀 Player ${client.sessionId} joining...`);
-
+  async onJoin(client: Client, options: RoomOptions) {
     const username = options.username || `Player${Math.floor(Math.random() * 1000)}`;
     const player = this.state.addPlayer(client.sessionId, username);
 
     // Set random starting position
     player.position.x = Math.random() * 800 + 100;
     player.position.y = Math.random() * 600 + 100;
-
-    console.log(
-      `✅ Player ${username} (${client.sessionId}) joined at (${player.position.x}, ${player.position.y})`
-    );
   }
 
   /**
    * Handle player leaving the game
    */
-  async onLeave(client: Client, consented: boolean) {
-    console.log(`👋 Player ${client.sessionId} leaving (consented: ${consented})`);
-
+  async onLeave(client: Client, _consented: boolean) {
     this.state.removePlayer(client.sessionId);
 
     // If no players left, end the game
     if (this.state.players.size === 0) {
-      console.log('🛑 No players remaining, ending game...');
       this.disconnect();
     }
   }
@@ -84,8 +90,6 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    * Handle room disposal
    */
   onDispose() {
-    console.log('🧹 Disposing RuneRogue game room...');
-
     if (this.gameLoopInterval) {
       clearInterval(this.gameLoopInterval);
     }
@@ -123,7 +127,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
       attacker.lastAttackTime = now;
     });
 
-    this.onMessage('ping', (client, message) => {
+    this.onMessage('ping', (client, _message) => {
       client.send('pong', { timestamp: Date.now() });
     });
   }
@@ -133,8 +137,13 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    */
   private startGameLoop(): void {
     this.gameLoopInterval = setInterval(() => {
+      const delta = this.TICK_RATE;
       this.updatePlayerMovement();
-      this.updateCombat();
+
+      // Execute ECS systems
+      this.enemyAISystem.execute(delta);
+      this.deathSystem.execute(delta);
+
       this.updateWaveProgress();
     }, this.TICK_RATE);
   }
@@ -171,23 +180,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    * Update combat and AI
    */
   private updateCombat(): void {
-    // Simple enemy AI - attack nearest player
-    this.state.enemies.forEach(enemy => {
-      if (!enemy.isAlive) return;
-
-      const nearestPlayer = this.findNearestPlayer(enemy);
-      if (nearestPlayer) {
-        const distance = this.getDistance(enemy.position, nearestPlayer.position);
-
-        if (distance < 50) {
-          // In attack range
-          this.handleEnemyAttack(enemy, nearestPlayer);
-        } else if (distance < 200) {
-          // Move towards player
-          this.moveEnemyTowards(enemy, nearestPlayer);
-        }
-      }
-    });
+    // This logic is now handled by EnemyAISystem and player attack messages.
   }
 
   /**
@@ -202,32 +195,18 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
       const maxHit = this.calculateMaxHit(attacker);
       const damage = Math.floor(Math.random() * (maxHit + 1));
 
-      const died = enemy.takeDamage(damage);
-
-      console.log(`⚔️ ${attacker.username} attacks ${enemy.name} for ${damage} damage`);
-
-      if (died) {
-        console.log(`💀 ${enemy.name} has been defeated!`);
-        this.state.removeEnemy(targetId);
-      }
+      enemy.takeDamage(damage);
     }
   }
 
   /**
    * Handle enemy attacking a player
    */
-  private handleEnemyAttack(enemy: Enemy, target: Player): void {
+  public handleEnemyAttack(enemy: Enemy, target: Player): void {
     const maxHit = enemy.stats.strength; // Simple calculation
     const damage = Math.floor(Math.random() * (maxHit + 1));
 
-    const died = target.takeDamage(damage);
-
-    console.log(`🗡️ ${enemy.name} attacks ${target.username} for ${damage} damage`);
-
-    if (died) {
-      console.log(`💀 ${target.username} has been defeated!`);
-      // In a real game, handle respawn logic here
-    }
+    target.takeDamage(damage);
   }
 
   /**
@@ -266,8 +245,6 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
 
     const enemyCount = Math.min(10, 2 + wave.currentWave);
 
-    console.log(`🌊 Spawning wave ${wave.currentWave} with ${enemyCount} enemies`);
-
     for (let i = 0; i < enemyCount; i++) {
       const enemyId = `enemy_${wave.currentWave}_${i}`;
       const enemy = new Enemy(enemyId, `Goblin ${i + 1}`, wave.currentWave);
@@ -285,15 +262,14 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
    */
   private updateWaveProgress(): void {
     if (this.state.wave.enemiesRemaining === 0) {
-      // Note: WaveSchema doesn't have isActive property
-      console.log(`✅ Wave ${this.state.wave.currentWave} completed!`);
+      // Wave complete logic can go here
     }
   }
 
   /**
    * Utility functions
    */
-  private findNearestPlayer(enemy: Enemy): Player | null {
+  public findNearestPlayer(enemy: Enemy): Player | null {
     let nearest: Player | null = null;
     let minDistance = Infinity;
 
@@ -316,7 +292,7 @@ export class RuneRogueGameRoom extends Room<GameRoomState> {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  private moveEnemyTowards(enemy: Enemy, target: Player): void {
+  public moveEnemyTowards(enemy: Enemy, target: Player): void {
     const dx = target.position.x - enemy.position.x;
     const dy = target.position.y - enemy.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);

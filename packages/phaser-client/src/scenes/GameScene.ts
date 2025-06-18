@@ -19,6 +19,8 @@ import {
 import { createMainPipeline, world } from "@/ecs/world";
 import type { Player, Enemy } from "@/types";
 
+const ATTACK_COOLDOWN_MS = 2400; // 4 ticks * 600ms
+
 /**
  * The main game scene where the action happens.
  */
@@ -27,6 +29,7 @@ export default class GameScene extends Phaser.Scene {
   private eidToSprite: Map<number, Phaser.GameObjects.Sprite> = new Map();
   private sessionIdToEid: Map<string, number> = new Map();
   private enemyIdToEid: Map<string, number> = new Map();
+  private lastAttackTime: number = 0;
 
   constructor() {
     super({ key: "GameScene" });
@@ -52,31 +55,33 @@ export default class GameScene extends Phaser.Scene {
     graphics.generateTexture("player_placeholder", 32, 32);
     graphics.destroy();
 
+    const room = colyseusService.room;
+    if (!room) {
+      console.error("Colyseus room not available in GameScene");
+      return;
+    }
+
     // Simple input listener for testing combat
     this.input.keyboard?.on("keydown-SPACE", () => {
+      const now = Date.now();
+      if (now - this.lastAttackTime < ATTACK_COOLDOWN_MS) {
+        return; // Client-side cooldown
+      }
+
       const playerEid = this.sessionIdToEid.get(room.sessionId);
       if (playerEid === undefined) return;
 
       // Find the closest enemy to attack
       const closestEnemy = this.findClosestEnemy(playerEid);
       if (closestEnemy) {
-        addComponent(world, MeleeAttack, playerEid);
-        addComponent(world, Target, playerEid);
-        Target.eid[playerEid] = closestEnemy.eid;
-        console.log(
-          `Player ${playerEid} is attacking enemy ${closestEnemy.eid}`
-        );
+        this.lastAttackTime = now;
+        room.send("attack", { targetId: closestEnemy.eid });
+        console.log(`Sent attack request for target ${closestEnemy.eid}`);
       }
     });
 
     this.cameras.main.setBackgroundColor("#2d2d2d");
     this.pipeline = createMainPipeline(this);
-
-    const room = colyseusService.room;
-    if (!room) {
-      console.error("Colyseus room not available in GameScene");
-      return;
-    }
 
     // Initial player setup
     room.state.players.forEach((player, sessionId) => {
