@@ -246,6 +246,7 @@ export const ResourceNode = defineComponent({
   type: Types.ui16, // index into resource type table
   depleted: Types.ui8,
   respawnTimer: Types.ui16,
+  resourceId: Types.ui32, // OSRS resource id (e.g., rock id, tree id)
 });
 
 /**

@@ -140,6 +140,8 @@ export const ROCKS = {
     oreId: 436,
     respawnTicks: 4,
     depletionChance: 1.0, // Always depletes
+    baseTicks: 5,
+    minTicks: 2,
   },
   TIN: {
     id: 2001,
@@ -149,6 +151,8 @@ export const ROCKS = {
     oreId: 438,
     respawnTicks: 4,
     depletionChance: 1.0,
+    baseTicks: 5,
+    minTicks: 2,
   },
   IRON: {
     id: 2002,
@@ -158,6 +162,8 @@ export const ROCKS = {
     oreId: 440,
     respawnTicks: 9,
     depletionChance: 1.0,
+    baseTicks: 5,
+    minTicks: 2,
   },
   SILVER: {
     id: 2003,
@@ -167,6 +173,8 @@ export const ROCKS = {
     oreId: 442,
     respawnTicks: 17,
     depletionChance: 1.0,
+    baseTicks: 7,
+    minTicks: 3,
   },
   COAL: {
     id: 2004,
@@ -176,6 +184,8 @@ export const ROCKS = {
     oreId: 453,
     respawnTicks: 30,
     depletionChance: 1.0,
+    baseTicks: 7,
+    minTicks: 3,
   },
   GOLD: {
     id: 2005,
@@ -185,6 +195,8 @@ export const ROCKS = {
     oreId: 444,
     respawnTicks: 100,
     depletionChance: 1.0,
+    baseTicks: 9,
+    minTicks: 3,
   },
 } as const;
 
@@ -810,6 +822,9 @@ export const TINDERBOX_ID = 590;
 
 // Rocky pet drop rate (thieving)
 export const ROCKY_PET_DROP_RATE = 149389;
+
+// Export gem table logic for mining gem drops
+export { rollGemTable } from "./gem-table";
 
 /**
  * Calculate success chance for any gathering skill

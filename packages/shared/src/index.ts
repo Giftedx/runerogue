@@ -12,5 +12,8 @@ export * from "./types/osrs";
 // Re-export all schemas for client/server use
 export * from "./schemas/GameRoomState";
 
+// Export Result and GameError types for strict error handling
+export * from "./result";
+
 // Version info
 export const SHARED_VERSION = "1.0.0";
