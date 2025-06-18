@@ -3,6 +3,7 @@ import { Client, Room } from "colyseus.js";
 import { GameState, Player } from "@/types";
 import { useGameStore } from "@/stores/gameStore";
 import { useDiscord } from "./DiscordActivityProvider";
+import { colyseusService } from "@/colyseus";
 
 /**
  * @file Provides a React context and provider for managing the Colyseus game room connection.
@@ -59,6 +60,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
         roomInstance = joinedRoom;
         setRoom(joinedRoom);
         setState(joinedRoom.state);
+        colyseusService.room = joinedRoom; // Share room with Phaser
 
         const updateCurrentPlayer = (currentState: GameState) => {
           const player = currentState.players.get(joinedRoom.sessionId);
@@ -83,6 +85,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
 
     return () => {
       roomInstance?.leave();
+      colyseusService.room = null; // Clean up shared room
     };
   }, [user, setPlayerState, addChatMessage]);
 

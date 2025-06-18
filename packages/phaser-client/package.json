@@ -11,7 +11,9 @@
     "lint": "echo 'No linting setup yet'"
   },
   "dependencies": {
+    "@runerogue/osrs-data": "workspace:*",
     "@discord/embedded-app-sdk": "^1.2.0",
+    "bitecs": "^0.3.40",
     "clsx": "^2.1.1",
     "colyseus.js": "^0.15.0",
     "phaser": "^3.90.0",

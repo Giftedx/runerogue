@@ -272,6 +272,12 @@ importers:
       '@discord/embedded-app-sdk':
         specifier: ^1.2.0
         version: 1.9.0
+      '@runerogue/osrs-data':
+        specifier: workspace:*
+        version: link:../osrs-data
+      bitecs:
+        specifier: ^0.3.40
+        version: 0.3.40
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
