@@ -18,8 +18,9 @@
 import { Room } from '@colyseus/core';
 
 import testSafeLogger from '../utils/test-safe-logger';
+import { loadInitialEnemies } from '../../../../osrs-data/src/enemies';
 import { CombatSystem } from './CombatSystem';
-import { NPC, Player, WorldState } from './EntitySchemas';
+import { Player, WorldState, createEnemy } from './EntitySchemas';
 import { ItemManager } from './ItemManager';
 import { PrayerSystem } from './PrayerSystem';
 import { ProceduralGenerator } from './ProceduralGenerator';
@@ -49,7 +50,7 @@ export interface WaveEnemyType {
 export interface WaveSpecialEvent {
   type: 'boss_spawn' | 'double_enemies' | 'prayer_drain' | 'health_boost' | 'weapon_enchant';
   trigger: 'wave_start' | 'wave_middle' | 'wave_end' | 'enemy_count';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface WaveReward {
@@ -192,64 +193,42 @@ export class SurvivorWaveSystem {
     difficultyMultiplier: number,
     totalEnemies: number
   ): WaveEnemyType[] {
-    const baseEnemies = [
-      {
-        npcId: 'goblin',
-        name: 'Goblin',
-        level: Math.floor(1 * difficultyMultiplier),
-        hitpoints: Math.floor(5 * difficultyMultiplier),
-        attack: Math.floor(1 * difficultyMultiplier),
-        strength: Math.floor(1 * difficultyMultiplier),
-        defense: Math.floor(1 * difficultyMultiplier),
-        spawnWeight: 40,
-        spawnCount: Math.floor(totalEnemies * 0.4),
-      },
-      {
-        npcId: 'skeleton',
-        name: 'Skeleton',
-        level: Math.floor(3 * difficultyMultiplier),
-        hitpoints: Math.floor(10 * difficultyMultiplier),
-        attack: Math.floor(3 * difficultyMultiplier),
-        strength: Math.floor(3 * difficultyMultiplier),
-        defense: Math.floor(2 * difficultyMultiplier),
-        spawnWeight: 30,
-        spawnCount: Math.floor(totalEnemies * 0.3),
-      },
-    ];
-
-    // Add stronger enemies for higher waves
-    if (waveNumber >= 3) {
-      baseEnemies.push({
-        npcId: 'orc',
-        name: 'Orc Warrior',
-        level: Math.floor(8 * difficultyMultiplier),
-        hitpoints: Math.floor(20 * difficultyMultiplier),
-        attack: Math.floor(8 * difficultyMultiplier),
-        strength: Math.floor(8 * difficultyMultiplier),
-        defense: Math.floor(5 * difficultyMultiplier),
-        spawnWeight: 20,
-        spawnCount: Math.floor(totalEnemies * 0.2),
+    // Use OSRS-authentic initial enemies for early waves
+    const osrsEnemies = loadInitialEnemies();
+    const initialEnemyIds = Object.keys(osrsEnemies);
+    const baseEnemyTypes: WaveEnemyType[] = [];
+    // Distribute spawn counts proportionally for available enemies
+    const weights = [0.4, 0.2, 0.2, 0.1, 0.1]; // For 5 initial enemies
+    let assigned = 0;
+    initialEnemyIds.forEach((id, idx) => {
+      const data = osrsEnemies[id];
+      if (!data) return;
+      const spawnCount =
+        idx < weights.length
+          ? Math.floor(totalEnemies * weights[idx])
+          : Math.floor(totalEnemies * (1 / initialEnemyIds.length));
+      assigned += spawnCount;
+      baseEnemyTypes.push({
+        npcId: data.id,
+        name: data.name,
+        level: data.combatLevel,
+        hitpoints: data.hitpoints,
+        attack: data.stats.attack,
+        strength: data.stats.strength,
+        defense: data.stats.defence,
+        spawnWeight: Math.max(10, 40 - idx * 7),
+        spawnCount,
       });
+    });
+    // If rounding left some enemies unassigned, add to first
+    if (assigned < totalEnemies && baseEnemyTypes.length > 0) {
+      baseEnemyTypes[0].spawnCount += totalEnemies - assigned;
     }
 
-    if (waveNumber >= 5) {
-      baseEnemies.push({
-        npcId: 'troll',
-        name: 'Hill Troll',
-        level: Math.floor(15 * difficultyMultiplier),
-        hitpoints: Math.floor(50 * difficultyMultiplier),
-        attack: Math.floor(15 * difficultyMultiplier),
-        strength: Math.floor(15 * difficultyMultiplier),
-        defense: Math.floor(10 * difficultyMultiplier),
-        spawnWeight: 10,
-        spawnCount: Math.floor(totalEnemies * 0.1),
-      });
-    }
-
-    // Boss enemies for every 5th wave
+    // Add custom/boss enemies for higher waves
     if (waveNumber % 5 === 0) {
-      baseEnemies.push({
-        npcId: 'wave_boss',
+      baseEnemyTypes.push({
+        npcId: `wave_boss_${waveNumber}`,
         name: `Wave ${waveNumber} Boss`,
         level: Math.floor(20 * difficultyMultiplier),
         hitpoints: Math.floor(100 * difficultyMultiplier),
@@ -261,7 +240,7 @@ export class SurvivorWaveSystem {
       });
     }
 
-    return baseEnemies;
+    return baseEnemyTypes;
   }
 
   /**
@@ -406,35 +385,34 @@ export class SurvivorWaveSystem {
   }
 
   /**
-   * Spawn an enemy at a random valid location
-   */ private spawnEnemy(enemyType: WaveEnemyType, difficultyMultiplier: number): void {
+   * Spawn an enemy at a random valid location using the Enemy schema
+   */
+  private spawnEnemy(enemyType: WaveEnemyType, difficultyMultiplier: number): void {
     const spawnLocation = this.findValidSpawnLocation();
     const enemyId = `wave_enemy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const enemy = new NPC(
+    // Use createEnemy to instantiate an Enemy with OSRS-style stats
+    const enemy = createEnemy(
       enemyId,
-      enemyType.name,
-      spawnLocation.x,
-      spawnLocation.y,
-      'wave_enemy',
-      [] // Empty loot table for now
+      enemyType.npcId,
+      Math.floor(enemyType.attack * difficultyMultiplier),
+      Math.floor(enemyType.strength * difficultyMultiplier),
+      Math.floor(enemyType.defense * difficultyMultiplier)
     );
-    // Set stats
-    enemy.health = enemyType.hitpoints;
-    enemy.maxHealth = enemyType.hitpoints;
-    enemy.attack = enemyType.attack;
-    // enemy.strength = enemyType.strength; // Not available in NPC schema
-    enemy.defense = enemyType.defense;
-    // enemy.combatLevel = Math.floor(enemyType.level * difficultyMultiplier); // Not available in NPC schema
-    // enemy.isAggressive = true; // Not available in NPC schema
-    enemy.aggroRange = 10; // Aggressive enemies in survival mode
+    enemy.name = enemyType.name;
+    enemy.x = spawnLocation.x;
+    enemy.y = spawnLocation.y;
+    enemy.maxHealth = Math.floor(enemyType.hitpoints * difficultyMultiplier);
+    enemy.health = enemy.maxHealth;
+    enemy.combatLevel = Math.floor(enemyType.level * difficultyMultiplier);
+    enemy.isAggressive = true;
 
-    // Add to game state
-    this.room.state.npcs.set(enemy.id, enemy);
+    // Add to game state (enemies map)
+    this.room.state.enemies.set(enemy.id, enemy);
 
-    this.activeEnemies.add(enemy.id); // Debug logging (automatically handled by test-safe logger)
+    this.activeEnemies.add(enemy.id);
     testSafeLogger.debug(
-      `👹 Spawned ${enemy.name} (Level ${enemy.attack}) at (${enemy.x}, ${enemy.y})`
+      `👹 Spawned ${enemy.name} (Level ${enemy.combatLevel}) at (${enemy.x}, ${enemy.y})`
     );
 
     // Broadcast enemy spawn
@@ -442,9 +420,14 @@ export class SurvivorWaveSystem {
       enemyId: enemy.id,
       enemyType: enemyType.npcId,
       name: enemy.name,
-      level: enemy.attack,
+      level: enemy.combatLevel,
       x: enemy.x,
       y: enemy.y,
+      attack: enemy.attack,
+      strength: enemy.strength,
+      defence: enemy.defence,
+      maxHealth: enemy.maxHealth,
+      health: enemy.health,
     });
   }
 
@@ -482,26 +465,20 @@ export class SurvivorWaveSystem {
   }
 
   /**
-   * Handle enemy death
-   */ public onEnemyDeath(enemyId: string): void {
+   * Handle enemy death for Enemy schema
+   */
+  public onEnemyDeath(enemyId: string): void {
     if (this.activeEnemies.has(enemyId)) {
       this.activeEnemies.delete(enemyId);
 
       testSafeLogger.debug(`💀 Enemy ${enemyId} defeated. Remaining: ${this.activeEnemies.size}`);
 
+      // Remove from enemies map
+      this.room.state.enemies.delete(enemyId);
+
       // Check if wave is complete
       if (this.activeEnemies.size === 0 && this.waveState === WaveState.ACTIVE) {
         this.completeWave();
-      }
-
-      // All enemies are dead, wave is cleared
-      if (this.room.state.npcs.size === 0) {
-        this.endWave();
-      } else {
-        const enemyId = this.enemies.find(id => !this.room.state.npcs.has(id));
-        if (enemyId && this.room.state.npcs.has(enemyId)) {
-          this.room.state.npcs.delete(enemyId);
-        }
       }
 
       // Broadcast enemy death
@@ -563,11 +540,12 @@ export class SurvivorWaveSystem {
           `📈 ${player.username} gained ${reward.value} ${reward.skillType} experience`
         );
         break;
-      case 'prayer_points':
+      case 'prayer_points': {
         const maxPrayer = player.skills.prayer?.level || 1;
         player.prayerPoints = Math.min(maxPrayer, player.prayerPoints + reward.value);
         testSafeLogger.debug(`🙏 ${player.username} restored ${reward.value} prayer points`);
         break;
+      }
       case 'health_restore':
         player.health = Math.min(player.maxHealth, player.health + reward.value);
         testSafeLogger.debug(`❤️ ${player.username} restored ${reward.value} health`);
@@ -609,7 +587,7 @@ export class SurvivorWaveSystem {
   /**
    * Apply prayer drain special event
    */
-  private applyPrayerDrainEvent(parameters: any): void {
+  private applyPrayerDrainEvent(parameters: Record<string, unknown>): void {
     this.room.broadcast('special_event', {
       type: 'prayer_drain',
       message: 'The air grows heavy with dark magic, draining your prayer!',
@@ -626,7 +604,7 @@ export class SurvivorWaveSystem {
   /**
    * Apply double enemies special event
    */
-  private applyDoubleEnemiesEvent(parameters: any): void {
+  private applyDoubleEnemiesEvent(parameters: Record<string, unknown>): void {
     this.room.broadcast('special_event', {
       type: 'double_enemies',
       message: 'The enemy forces multiply before your eyes!',
@@ -638,7 +616,7 @@ export class SurvivorWaveSystem {
   /**
    * Apply health boost special event
    */
-  private applyHealthBoostEvent(parameters: any): void {
+  private applyHealthBoostEvent(parameters: Record<string, unknown>): void {
     this.room.broadcast('special_event', {
       type: 'health_boost',
       message: 'Ancient magic heals your wounds!',
@@ -654,7 +632,7 @@ export class SurvivorWaveSystem {
   /**
    * Apply weapon enchant special event
    */
-  private applyWeaponEnchantEvent(parameters: any): void {
+  private applyWeaponEnchantEvent(parameters: Record<string, unknown>): void {
     this.room.broadcast('special_event', {
       type: 'weapon_enchant',
       message: 'Your weapons glow with magical power!',

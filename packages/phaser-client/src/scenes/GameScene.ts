@@ -282,11 +282,11 @@ export default class GameScene extends Phaser.Scene {
     Health.current[eid] = enemy.health;
     Health.max[eid] = enemy.health; // Assuming max health is the initial health
 
-    // TODO: Get stats from server for enemies
+    // Use real stats from server for enemies
     addComponent(world, Stats, eid);
-    Stats.attack[eid] = 3; // Placeholder
-    Stats.strength[eid] = 3; // Placeholder
-    Stats.defence[eid] = 3; // Placeholder
+    Stats.attack[eid] = enemy.attack;
+    Stats.strength[eid] = enemy.strength;
+    Stats.defence[eid] = enemy.defence;
 
     const sprite = this.add.sprite(enemy.x, enemy.y, "enemy_placeholder");
     this.eidToSprite.set(eid, sprite);

@@ -60,6 +60,16 @@ const App: React.FC = () => {
             </li>
           ))}
         </ul>
+        <h2 className="text-xl mt-6 mb-2">Enemies (Debug/Info):</h2>
+        <ul className="list-disc list-inside">
+          {Object.values(state.enemies).map((e) => (
+            <li key={e.id}>
+              {e.id} — {e.health}/{e.maxHealth} HP — ATK: {e.attack} STR:{" "}
+              {e.strength} DEF: {e.defence} — ({e.x.toFixed(0)},{" "}
+              {e.y.toFixed(0)})
+            </li>
+          ))}
+        </ul>
       </footer>
     </div>
   );

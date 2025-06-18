@@ -424,6 +424,7 @@ export class LootDrop extends Schema {
 /**
  * Enemy schema (for wave-based gameplay)
  */
+
 export class Enemy extends Schema {
   @type('string') public id: string = '';
   @type('string') public type: string = '';
@@ -433,6 +434,9 @@ export class Enemy extends Schema {
   @type('number') public health: number = 10;
   @type('number') public maxHealth: number = 10;
   @type('number') public combatLevel: number = 1;
+  @type('number') public attack: number = 1;
+  @type('number') public strength: number = 1;
+  @type('number') public defence: number = 1;
   @type('boolean') public isAggressive: boolean = true;
   @type('string') public targetId: string = '';
   @type('string') public lastAction: string = '';
@@ -787,10 +791,24 @@ export function createNPC(id: string, name: string, type: string = 'monster'): N
   return npc;
 }
 
-export function createEnemy(id: string, type: string): Enemy {
+/**
+ * Creates an Enemy entity with OSRS-style combat stats.
+ * TODO: Fetch real stats from OSRS data package.
+ */
+export function createEnemy(
+  id: string,
+  type: string,
+  attack: number = 1,
+  strength: number = 1,
+  defence: number = 1
+): Enemy {
   const enemy = new Enemy();
   enemy.id = id;
   enemy.type = type;
+  enemy.attack = attack;
+  enemy.strength = strength;
+  enemy.defence = defence;
+  // TODO: Fetch and set real stats from OSRS data
   return enemy;
 }
 
