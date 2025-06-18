@@ -1,0 +1,10 @@
+{
+  "name": "rune-rogue-activity",
+  "version": "1.0.0",
+  "activity": {
+    "sdk_version": "1.2.0",
+    "client_id": "YOUR_DISCORD_APP_ID",
+    "auth_routes": ["https://localhost:3000/auth/discord/callback"],
+    "redirect_uri": "https://localhost:3000/auth/discord/callback"
+  }
+}

@@ -1,0 +1,11 @@
+/* Tailwind v4 imports */
+@import "tailwindcss/preflight";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* Fullscreen container styles */
+#phaser-game,
+#root {
+  position: absolute;
+  inset: 0;
+}

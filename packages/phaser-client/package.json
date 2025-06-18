@@ -4,13 +4,30 @@
   "description": "Phaser 3 game clients for RuneRogue",
   "main": "enhanced-phaser-client.js",
   "scripts": {
-    "build": "echo 'No build step needed for static files'",
-    "dev": "echo 'Serve from parent server'",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo 'No tests yet'",
     "lint": "echo 'No linting setup yet'"
   },
   "dependencies": {
-    "phaser": "^3.90.0"
+    "phaser": "^3.90.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "colyseus.js": "^0.14.36",
+    "@discord/embedded-app-sdk": "^1.2.0",
+    "zustand": "^4.3.8"
+  },
+  "devDependencies": {
+    "vite": "^4.0.0",
+    "@vitejs/plugin-react": "^3.1.0",
+    "@vitejs/plugin-basic-ssl": "^0.5.0",
+    "tailwindcss": "^3.0.0",
+    "postcss": "^8.4.5",
+    "autoprefixer": "^10.4.0",
+    "typescript": "^5.1.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0"
   },
   "keywords": [
     "runescape",
