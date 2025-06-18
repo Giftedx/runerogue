@@ -5,7 +5,8 @@
 
 import { createECSWorld, createPlayer, createResource } from '../world';
 import { startWoodcutting, stopWoodcutting } from '../systems/WoodcuttingSystem';
-import { SkillLevels, SkillXP, Transform, Inventory, Resource } from '../components';
+import { SkillLevels, SkillXP, Transform, Resource } from '../components';
+import { InventoryComponent as Inventory } from '../components/GatheringComponents';
 import { IWorld } from 'bitecs';
 
 describe('Gathering Skills Integration', () => {
@@ -27,7 +28,7 @@ describe('Gathering Skills Integration', () => {
     expect(SkillLevels.woodcutting[playerId]).toBe(1);
 
     // Start woodcutting
-    const result = startWoodcutting(world, playerId, treeId);
+    const result = startWoodcutting(playerId, treeId);
 
     // Should succeed
     expect(result).toBe(true);
@@ -38,14 +39,14 @@ describe('Gathering Skills Integration', () => {
     const initialXP = SkillXP.woodcutting[playerId] || 0;
 
     // Start woodcutting
-    startWoodcutting(world, playerId, treeId);
+    startWoodcutting(playerId, treeId);
 
     // Simulate some time passing (woodcutting takes time)
     // Note: In a real test, we'd need to run the WoodcuttingSystem
     // For now, just verify the system can be started
 
     // Stop woodcutting
-    stopWoodcutting(world, playerId);
+    stopWoodcutting(playerId);
 
     // Initial test passes if no errors thrown
     expect(true).toBe(true);
@@ -53,10 +54,10 @@ describe('Gathering Skills Integration', () => {
 
   test('should add logs to player inventory when successful', () => {
     // Check initial inventory is empty
-    expect(Inventory.items[playerId]).toBeUndefined();
+    expect(Inventory.itemCount[playerId]).toBe(0);
 
     // Start woodcutting
-    startWoodcutting(world, playerId, treeId);
+    startWoodcutting(playerId, treeId);
 
     // Note: In a full integration test, we'd run the systems and check
     // that logs appear in inventory. For now, verify no errors.
@@ -66,11 +67,11 @@ describe('Gathering Skills Integration', () => {
 
   test('should stop woodcutting when tree is depleted', () => {
     // Start woodcutting
-    const result = startWoodcutting(world, playerId, treeId);
+    const result = startWoodcutting(playerId, treeId);
     expect(result).toBe(true);
 
     // Stop woodcutting
-    stopWoodcutting(world, playerId);
+    stopWoodcutting(playerId);
 
     // Should complete without errors
     expect(true).toBe(true);

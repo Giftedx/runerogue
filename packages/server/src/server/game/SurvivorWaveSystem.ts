@@ -494,6 +494,16 @@ export class SurvivorWaveSystem {
         this.completeWave();
       }
 
+      // All enemies are dead, wave is cleared
+      if (this.room.state.npcs.size === 0) {
+        this.endWave();
+      } else {
+        const enemyId = this.enemies.find(id => !this.room.state.npcs.has(id));
+        if (enemyId && this.room.state.npcs.has(enemyId)) {
+          this.room.state.npcs.delete(enemyId);
+        }
+      }
+
       // Broadcast enemy death
       this.room.broadcast('enemy_defeated', {
         enemyId,

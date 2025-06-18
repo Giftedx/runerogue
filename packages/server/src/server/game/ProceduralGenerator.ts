@@ -5,7 +5,6 @@
  */
 
 import { createNoise2D } from 'simplex-noise';
-import { MapBlueprint } from './MapBlueprintSchema';
 
 // OSRS Biome Types
 export enum BiomeType {
@@ -50,6 +49,20 @@ export interface LootSpawnConfig {
   minQuantity: number;
   maxQuantity: number;
   preferredTerrain: TerrainType[];
+}
+
+// Add this new interface
+export interface GeneratedMapData {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  biome: BiomeType;
+  collisionMap: boolean[][];
+  terrain: TerrainType[][];
+  monsters: Array<{ x: number; y: number; npcId: string; level: number }>;
+  loot: Array<{ x: number; y: number; itemId: string; quantity: number }>;
+  resources: Array<{ x: number; y: number; itemId: string; quantity: number }>;
 }
 
 // Biome configuration
@@ -254,7 +267,7 @@ export class ProceduralGenerator {
     height: number,
     biomeType: BiomeType,
     seed?: number
-  ): MapBlueprint {
+  ): GeneratedMapData {
     // Set seed for deterministic generation
     if (seed !== undefined) {
       // Re-create noise with seed (simplex-noise doesn't support runtime seeding)
@@ -290,8 +303,10 @@ export class ProceduralGenerator {
       collisionMap: processedTerrain.map(row =>
         row.map(cell => cell === TerrainType.WATER || cell === TerrainType.ROCK)
       ),
-      // Note: terrain data removed as it's not part of MapBlueprint schema
-      // Additional data like monsters, loot, resources should be handled separately
+      terrain: processedTerrain,
+      monsters,
+      loot,
+      resources,
     };
   }
 

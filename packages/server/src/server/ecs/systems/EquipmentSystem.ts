@@ -7,16 +7,7 @@
  */
 
 import { defineSystem, defineQuery, hasComponent, IWorld, addComponent } from 'bitecs';
-import {
-  Transform,
-  SkillLevels,
-  SkillXP,
-  Equipment,
-  EquipmentBonuses,
-  Player,
-  Inventory,
-  Item,
-} from '../components';
+import { SkillLevels, Equipment, EquipmentBonuses, Player, Inventory, Item } from '../components';
 
 // Item data interface
 export interface ItemData {
@@ -218,13 +209,24 @@ function getItemData(itemId: number): ItemData | undefined {
  * Check if player meets equipment requirements
  */
 function meetsRequirements(entityId: number, item: ItemData): boolean {
-  const skills = SkillLevels[entityId];
-
-  if (item.attackRequirement && (skills.attack || 1) < item.attackRequirement) return false;
-  if (item.defenceRequirement && (skills.defence || 1) < item.defenceRequirement) return false;
-  if (item.strengthRequirement && (skills.strength || 1) < item.strengthRequirement) return false;
-  if (item.rangedRequirement && (skills.ranged || 1) < item.rangedRequirement) return false;
-  if (item.magicRequirement && (skills.magic || 1) < item.magicRequirement) return false;
+  if (item.attackRequirement && (SkillLevels.attack[entityId] || 0) < item.attackRequirement) {
+    return false;
+  }
+  if (item.defenceRequirement && (SkillLevels.defence[entityId] || 0) < item.defenceRequirement) {
+    return false;
+  }
+  if (
+    item.strengthRequirement &&
+    (SkillLevels.strength[entityId] || 0) < item.strengthRequirement
+  ) {
+    return false;
+  }
+  if (item.rangedRequirement && (SkillLevels.ranged[entityId] || 0) < item.rangedRequirement) {
+    return false;
+  }
+  if (item.magicRequirement && (SkillLevels.magic[entityId] || 0) < item.magicRequirement) {
+    return false;
+  }
 
   return true;
 }
@@ -233,24 +235,21 @@ function meetsRequirements(entityId: number, item: ItemData): boolean {
  * Calculate and update equipment bonuses
  */
 function updateEquipmentBonuses(world: IWorld, entityId: number): void {
-  const equipment = Equipment[entityId];
-  const bonuses = EquipmentBonuses[entityId];
-
   // Reset all bonuses
-  bonuses.attackStab = 0;
-  bonuses.attackSlash = 0;
-  bonuses.attackCrush = 0;
-  bonuses.attackMagic = 0;
-  bonuses.attackRanged = 0;
-  bonuses.defenceStab = 0;
-  bonuses.defenceSlash = 0;
-  bonuses.defenceCrush = 0;
-  bonuses.defenceMagic = 0;
-  bonuses.defenceRanged = 0;
-  bonuses.meleeStrength = 0;
-  bonuses.rangedStrength = 0;
-  bonuses.magicDamage = 0;
-  bonuses.prayer = 0;
+  EquipmentBonuses.attackStab[entityId] = 0;
+  EquipmentBonuses.attackSlash[entityId] = 0;
+  EquipmentBonuses.attackCrush[entityId] = 0;
+  EquipmentBonuses.attackMagic[entityId] = 0;
+  EquipmentBonuses.attackRanged[entityId] = 0;
+  EquipmentBonuses.defenceStab[entityId] = 0;
+  EquipmentBonuses.defenceSlash[entityId] = 0;
+  EquipmentBonuses.defenceCrush[entityId] = 0;
+  EquipmentBonuses.defenceMagic[entityId] = 0;
+  EquipmentBonuses.defenceRanged[entityId] = 0;
+  EquipmentBonuses.meleeStrength[entityId] = 0;
+  EquipmentBonuses.rangedStrength[entityId] = 0;
+  EquipmentBonuses.magicDamage[entityId] = 0;
+  EquipmentBonuses.prayer[entityId] = 0;
 
   // Sum bonuses from all equipped items
   const slots = [
@@ -266,26 +265,25 @@ function updateEquipmentBonuses(world: IWorld, entityId: number): void {
   ] as const;
 
   for (const slot of slots) {
-    const itemEntityId = equipment[slot];
+    const itemEntityId = (Equipment as any)[slot][entityId];
     if (itemEntityId && hasComponent(world, Item, itemEntityId)) {
-      const item = Item[itemEntityId];
-      const itemData = getItemData(item.itemId);
+      const itemData = getItemData(Item.itemId[itemEntityId]);
 
       if (itemData) {
-        bonuses.attackStab += itemData.attackStab || 0;
-        bonuses.attackSlash += itemData.attackSlash || 0;
-        bonuses.attackCrush += itemData.attackCrush || 0;
-        bonuses.attackMagic += itemData.attackMagic || 0;
-        bonuses.attackRanged += itemData.attackRanged || 0;
-        bonuses.defenceStab += itemData.defenceStab || 0;
-        bonuses.defenceSlash += itemData.defenceSlash || 0;
-        bonuses.defenceCrush += itemData.defenceCrush || 0;
-        bonuses.defenceMagic += itemData.defenceMagic || 0;
-        bonuses.defenceRanged += itemData.defenceRanged || 0;
-        bonuses.meleeStrength += itemData.meleeStrength || 0;
-        bonuses.rangedStrength += itemData.rangedStrength || 0;
-        bonuses.magicDamage += itemData.magicDamage || 0;
-        bonuses.prayer += itemData.prayer || 0;
+        EquipmentBonuses.attackStab[entityId] += itemData.attackStab || 0;
+        EquipmentBonuses.attackSlash[entityId] += itemData.attackSlash || 0;
+        EquipmentBonuses.attackCrush[entityId] += itemData.attackCrush || 0;
+        EquipmentBonuses.attackMagic[entityId] += itemData.attackMagic || 0;
+        EquipmentBonuses.attackRanged[entityId] += itemData.attackRanged || 0;
+        EquipmentBonuses.defenceStab[entityId] += itemData.defenceStab || 0;
+        EquipmentBonuses.defenceSlash[entityId] += itemData.defenceSlash || 0;
+        EquipmentBonuses.defenceCrush[entityId] += itemData.defenceCrush || 0;
+        EquipmentBonuses.defenceMagic[entityId] += itemData.defenceMagic || 0;
+        EquipmentBonuses.defenceRanged[entityId] += itemData.defenceRanged || 0;
+        EquipmentBonuses.meleeStrength[entityId] += itemData.meleeStrength || 0;
+        EquipmentBonuses.rangedStrength[entityId] += itemData.rangedStrength || 0;
+        EquipmentBonuses.magicDamage[entityId] += itemData.magicDamage || 0;
+        EquipmentBonuses.prayer[entityId] += itemData.prayer || 0;
       }
     }
   }
@@ -325,20 +323,22 @@ function findEmptySlot(entityId: number): number {
     'slot26',
     'slot27',
   ] as const;
+
   for (let i = 0; i < slots.length; i++) {
     const slotName = slots[i];
-    if (Inventory[slotName][entityId] === 0) {
+    if ((Inventory as any)[slotName][entityId] === 0) {
+      // Assuming 0 is an empty item ID
       return i;
     }
   }
 
-  return -1; // Inventory full
+  return -1; // No empty slot
 }
 
 /**
- * Get inventory slot name by index
+ * Find item in inventory by item ID
  */
-function getSlotName(index: number): keyof typeof Inventory {
+function findItemInInventory(entityId: number, itemId: number): number {
   const slots = [
     'slot0',
     'slot1',
@@ -370,7 +370,15 @@ function getSlotName(index: number): keyof typeof Inventory {
     'slot27',
   ] as const;
 
-  return slots[index];
+  for (let i = 0; i < slots.length; i++) {
+    const slotName = slots[i];
+    const itemEntityId = (Inventory as any)[slotName][entityId];
+    if (itemEntityId && Item.itemId[itemEntityId] === itemId) {
+      return i;
+    }
+  }
+
+  return -1;
 }
 
 /**
@@ -380,74 +388,63 @@ export function addItemToInventory(
   world: WorldWithEquipmentEvents,
   entityId: number,
   itemId: number,
-  quantity: number = 1
+  quantity: number
 ): boolean {
-  if (!hasComponent(world, Inventory, entityId)) {
+  if (!world.itemCreator) {
+    console.error('addItemToInventory: itemCreator system not available on world');
     return false;
   }
 
-  const inventory = Inventory[entityId];
   const itemData = getItemData(itemId);
-
   if (!itemData) return false;
 
-  // Check for stackable items
+  // If stackable, try to add to an existing stack
   if (itemData.stackable) {
-    // Find existing stack
-    const slots = [
-      'slot0',
-      'slot1',
-      'slot2',
-      'slot3',
-      'slot4',
-      'slot5',
-      'slot6',
-      'slot7',
-      'slot8',
-      'slot9',
-      'slot10',
-      'slot11',
-      'slot12',
-      'slot13',
-      'slot14',
-      'slot15',
-      'slot16',
-      'slot17',
-      'slot18',
-      'slot19',
-      'slot20',
-      'slot21',
-      'slot22',
-      'slot23',
-      'slot24',
-      'slot25',
-      'slot26',
-      'slot27',
-    ] as const;
-
-    for (const slotName of slots) {
-      const itemEntityId = inventory[slotName];
-      if (itemEntityId && hasComponent(world, Item, itemEntityId)) {
-        const item = Item[itemEntityId];
-        if (item.itemId === itemId) {
-          // Add to existing stack
-          item.quantity += quantity;
-          return true;
-        }
-      }
+    const slotIndex = findItemInInventory(entityId, itemId);
+    if (slotIndex !== -1) {
+      const slotName = `slot${slotIndex}` as const;
+      const itemEntityId = (Inventory as any)[slotName][entityId];
+      Item.quantity[itemEntityId] += quantity;
+      return true;
     }
   }
-  // Find empty slot for new item
+
+  // Otherwise, find an empty slot
   const emptySlot = findEmptySlot(entityId);
-  if (emptySlot === -1) {
-    return false; // Inventory full
+  if (emptySlot !== -1) {
+    const slotName = `slot${emptySlot}` as const;
+    const newItemEid = world.itemCreator.createItem(itemId, quantity);
+    (Inventory as any)[slotName][entityId] = newItemEid;
+    return true;
   }
 
-  // Create new item entity
-  if (world.itemCreator) {
-    const itemEntityId = world.itemCreator.createItem(itemId, quantity);
-    const slotName = getSlotName(emptySlot);
-    inventory[slotName] = itemEntityId;
+  if (world.messageSystem) {
+    world.messageSystem.sendMessage(entityId, 'Your inventory is full.');
+  }
+  return false;
+}
+
+/**
+ * Remove item from inventory
+ */
+export function removeItemFromInventory(
+  world: IWorld,
+  entityId: number,
+  slotIndex: number,
+  quantity: number
+): boolean {
+  if (slotIndex < 0 || slotIndex > 27) return false;
+
+  const slotName = `slot${slotIndex}` as const;
+  const itemEntityId = (Inventory as any)[slotName][entityId];
+
+  if (itemEntityId && hasComponent(world, Item, itemEntityId)) {
+    if (Item.quantity[itemEntityId] > quantity) {
+      Item.quantity[itemEntityId] -= quantity;
+    } else {
+      // TODO: This should remove the entity from the world
+      (Inventory as any)[slotName][entityId] = 0; // Remove item
+    }
     return true;
   }
 
@@ -455,214 +452,75 @@ export function addItemToInventory(
 }
 
 /**
- * Remove item from inventory
+ * Equip an item from inventory
  */
-function removeItemFromInventory(
-  world: IWorld,
-  entityId: number,
-  itemId: number,
-  quantity: number = 1
-): boolean {
-  if (!hasComponent(world, Inventory, entityId)) {
-    return false;
-  }
-
-  const inventory = Inventory[entityId];
-  const slots = [
-    'slot0',
-    'slot1',
-    'slot2',
-    'slot3',
-    'slot4',
-    'slot5',
-    'slot6',
-    'slot7',
-    'slot8',
-    'slot9',
-    'slot10',
-    'slot11',
-    'slot12',
-    'slot13',
-    'slot14',
-    'slot15',
-    'slot16',
-    'slot17',
-    'slot18',
-    'slot19',
-    'slot20',
-    'slot21',
-    'slot22',
-    'slot23',
-    'slot24',
-    'slot25',
-    'slot26',
-    'slot27',
-  ] as const;
-
-  for (const slotName of slots) {
-    const itemEntityId = inventory[slotName];
-    if (itemEntityId && hasComponent(world, Item, itemEntityId)) {
-      const item = Item[itemEntityId];
-      if (item.itemId === itemId) {
-        if (item.quantity >= quantity) {
-          item.quantity -= quantity;
-          if (item.quantity === 0) {
-            inventory[slotName] = 0; // Clear slot
-          }
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
-/**
- * Equip item from inventory
- */
-function equipItemFromInventory(
+export function equipItem(
   world: WorldWithEquipmentEvents,
   entityId: number,
   inventorySlot: number
-): boolean {
-  if (!hasComponent(world, Inventory, entityId) || !hasComponent(world, Equipment, entityId)) {
-    return false;
-  }
+): void {
+  if (inventorySlot < 0 || inventorySlot > 27) return;
 
-  const inventory = Inventory[entityId];
-  const equipment = Equipment[entityId];
-  const slotName = getSlotName(inventorySlot);
-  const itemEntityId = inventory[slotName];
+  const fromSlotName = `slot${inventorySlot}` as const;
+  const itemToEquipEid = (Inventory as any)[fromSlotName][entityId];
 
-  if (!itemEntityId || !hasComponent(world, Item, itemEntityId)) {
-    return false;
-  }
+  if (!itemToEquipEid || !hasComponent(world, Item, itemToEquipEid)) return;
 
-  const item = Item[itemEntityId];
-  const itemData = getItemData(item.itemId);
-
+  const itemData = getItemData(Item.itemId[itemToEquipEid]);
   if (!itemData || !itemData.equipSlot) {
     if (world.messageSystem) {
-      world.messageSystem.sendMessage(entityId, "You can't equip that item.");
+      world.messageSystem.sendMessage(entityId, "You can't equip that.");
     }
-    return false;
+    return;
   }
 
-  // Check requirements
   if (!meetsRequirements(entityId, itemData)) {
     if (world.messageSystem) {
-      world.messageSystem.sendMessage(
-        entityId,
-        "You don't meet the requirements to equip this item."
-      );
+      world.messageSystem.sendMessage(entityId, "You don't have the required level to equip that.");
     }
-    return false;
+    return;
   }
 
-  // Unequip current item in that slot
-  const currentItemId = equipment[itemData.equipSlot];
-  if (currentItemId) {
-    const emptySlot = findEmptySlot(entityId);
-    if (emptySlot === -1) {
-      if (world.messageSystem) {
-        world.messageSystem.sendMessage(entityId, 'Your inventory is full.');
-      }
-      return false;
-    }
+  const equipSlot = itemData.equipSlot;
+  const currentEquippedEid = (Equipment as any)[equipSlot][entityId];
 
-    // Move current item to inventory
-    const emptySlotName = getSlotName(emptySlot);
-    inventory[emptySlotName] = currentItemId;
+  // Swap with equipped item
+  (Equipment as any)[equipSlot][entityId] = itemToEquipEid;
+
+  if (currentEquippedEid) {
+    (Inventory as any)[fromSlotName][entityId] = currentEquippedEid;
+  } else {
+    (Inventory as any)[fromSlotName][entityId] = 0; // Clear inventory slot
   }
 
-  // Equip new item
-  equipment[itemData.equipSlot] = itemEntityId;
-  inventory[slotName] = 0;
-
-  // Update equipment bonuses
   updateEquipmentBonuses(world, entityId);
-
-  if (world.messageSystem) {
-    world.messageSystem.sendMessage(entityId, `You equip the ${itemData.name}.`);
-  }
-
-  return true;
 }
 
 /**
- * Equip an item to the appropriate equipment slot
+ * Unequip an item to inventory
  */
-export function equipItem(world: IWorld, playerId: number, itemEntityId: number): boolean {
-  if (!hasComponent(world, Item, itemEntityId)) {
-    return false;
-  }
+export function unequipItem(
+  world: WorldWithEquipmentEvents,
+  entityId: number,
+  equipmentSlot: EquipmentSlot
+): void {
+  const itemToUnequipEid = (Equipment as any)[equipmentSlot][entityId];
 
-  const itemData = Item[itemEntityId];
-  const item = ITEM_DATABASE[itemData.itemId];
+  if (!itemToUnequipEid) return; // Nothing in slot
 
-  if (!item || !item.equipSlot) {
-    return false; // Item cannot be equipped
-  }
-
-  // Check level requirements
-  if (item.attackRequirement && hasComponent(world, SkillLevels, playerId)) {
-    if (SkillLevels.attack[playerId] < item.attackRequirement) {
-      return false; // Insufficient attack level
+  const emptySlot = findEmptySlot(entityId);
+  if (emptySlot === -1) {
+    if (world.messageSystem) {
+      world.messageSystem.sendMessage(entityId, 'Your inventory is full.');
     }
+    return;
   }
 
-  // Add equipment components if not present
-  if (!hasComponent(world, Equipment, playerId)) {
-    addComponent(world, Equipment, playerId);
-  }
-  if (!hasComponent(world, EquipmentBonuses, playerId)) {
-    addComponent(world, EquipmentBonuses, playerId);
-  }
+  const toSlotName = `slot${emptySlot}` as const;
+  (Inventory as any)[toSlotName][entityId] = itemToUnequipEid;
+  (Equipment as any)[equipmentSlot][entityId] = 0; // Clear equipment slot
 
-  // Unequip current item in slot if any
-  const currentItemId = Equipment[item.equipSlot as keyof typeof Equipment][playerId];
-  if (currentItemId !== 0) {
-    unequipItem(world, playerId, item.equipSlot as EquipmentSlot);
-  }
-
-  // Equip the new item
-  Equipment[item.equipSlot as keyof typeof Equipment][playerId] = itemEntityId;
-
-  // Recalculate equipment bonuses
-  calculateBonuses(world, playerId);
-
-  return true;
-}
-
-/**
- * Unequip an item from equipment slot
- */
-export function unequipItem(world: IWorld, playerId: number, slot: EquipmentSlot): boolean {
-  if (!hasComponent(world, Equipment, playerId)) {
-    return false;
-  }
-
-  const currentItemId = Equipment[slot][playerId];
-  if (currentItemId === 0) {
-    return false; // No item equipped
-  }
-
-  // Move item to inventory
-  if (hasComponent(world, Inventory, playerId)) {
-    const success = addItemToInventory(world, playerId, currentItemId);
-    if (!success) {
-      return false; // Inventory full
-    }
-  }
-
-  // Clear equipment slot
-  Equipment[slot][playerId] = 0;
-
-  // Recalculate bonuses
-  calculateBonuses(world, playerId);
-
-  return true;
+  updateEquipmentBonuses(world, entityId);
 }
 
 /**
@@ -706,10 +564,10 @@ export function calculateBonuses(world: IWorld, playerId: number): void {
   ];
 
   for (const slot of slots) {
-    const itemEntityId = Equipment[slot][playerId];
+    const itemEntityId = (Equipment as any)[slot][playerId];
     if (itemEntityId !== 0 && hasComponent(world, Item, itemEntityId)) {
-      const itemData = Item[itemEntityId];
-      const item = ITEM_DATABASE[itemData.itemId];
+      const itemId = Item.itemId[itemEntityId];
+      const item = ITEM_DATABASE[itemId];
 
       if (item) {
         EquipmentBonuses.attackStab[playerId] += item.attackStab || 0;
@@ -797,9 +655,8 @@ export function initializeEquipmentAndInventory(world: IWorld, entityId: number)
     'slot27',
   ] as const;
 
-  const inventory = Inventory[entityId];
   for (const slot of slots) {
-    inventory[slot] = 0;
+    (Inventory as any)[slot][entityId] = 0;
   }
 
   // Initialize empty bonuses
@@ -824,9 +681,13 @@ export function removeItem(
   itemId: number,
   quantity: number = 1
 ): boolean {
-  return removeItemFromInventory(world, entityId, itemId, quantity);
+  const slotIndex = findItemInInventory(entityId, itemId);
+  if (slotIndex === -1) {
+    return false;
+  }
+  return removeItemFromInventory(world, entityId, slotIndex, quantity);
 }
 
-export function equipItemFromSlot(world: IWorld, entityId: number, slot: number): boolean {
-  return equipItem(world as WorldWithEquipmentEvents, entityId, slot);
+export function equipItemFromSlot(world: IWorld, entityId: number, slot: number): void {
+  equipItem(world as WorldWithEquipmentEvents, entityId, slot);
 }

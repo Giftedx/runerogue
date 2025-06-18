@@ -3,6 +3,7 @@
  */
 import { ColyseusTestServer, boot } from '@colyseus/testing';
 import appConfig from '../../app.config';
+import { InventoryItem } from '../../game/EntitySchemas';
 
 // Mock economy integration with Jest hoisting-safe approach
 jest.mock('../../economy-integration', () => ({
@@ -12,12 +13,14 @@ jest.mock('../../economy-integration', () => ({
       id: 'test_profile_id',
       username: 'TestPlayer',
     }),
-    getPlayerInventory: jest.fn().mockImplementation(async playerId => {
-      console.log('🔍 MOCK: getPlayerInventory called with playerId:', playerId);
-      const result = [];
-      console.log('🔍 MOCK: returning empty array:', result);
-      return result;
-    }),
+    getPlayerInventory: jest
+      .fn()
+      .mockImplementation(async (playerId: string): Promise<InventoryItem[]> => {
+        console.log('🔍 MOCK: getPlayerInventory called with playerId:', playerId);
+        const result: InventoryItem[] = [];
+        console.log('🔍 MOCK: returning empty array:', result);
+        return result;
+      }),
     addItemToInventory: jest.fn().mockResolvedValue({ success: true }),
     removeItemFromInventory: jest.fn().mockResolvedValue({ success: true }),
     isReady: jest.fn().mockResolvedValue(true),
@@ -67,7 +70,7 @@ describe('GameRoom Inventory Debug', () => {
     if (player?.inventory?.length && player.inventory.length > 0) {
       console.log(
         '🔍 DEBUG: First few items:',
-        player.inventory.slice(0, 5).map(item => ({
+        player.inventory.slice(0, 5).map((item: InventoryItem) => ({
           itemId: item.itemId,
           name: item.name,
           quantity: item.quantity,
@@ -88,6 +91,6 @@ describe('GameRoom Inventory Debug', () => {
     expect(player).toBeDefined();
     expect(player?.inventory?.length).toBeLessThan(100); // Should definitely not be 894!
 
-    await colyseus.disconnectClient(client);
+    await client.leave();
   });
 });

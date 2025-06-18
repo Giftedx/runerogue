@@ -26,7 +26,24 @@ import {
 } from '../components';
 import { addSkillXP } from './SkillSystem';
 import { addItemToInventory } from './EquipmentSystem';
-import { OSRS_RESOURCE_DATA } from '../../data/osrs-resource-data';
+import { OSRS_RESOURCES_BY_ID } from '../../data/osrs-resource-data';
+import { SkillType as GatheringSkillType } from '@runerogue/osrs-data/dist/skills/gathering-data';
+import { SkillType as ECSSkillType } from './SkillSystem';
+
+// Helper to map between the numeric gathering skill enum and the string-based ECS skill enum
+function mapGatheringSkillToECSSkill(skill: GatheringSkillType): ECSSkillType | null {
+  switch (skill) {
+    case GatheringSkillType.WOODCUTTING:
+      return ECSSkillType.WOODCUTTING;
+    case GatheringSkillType.MINING:
+      return ECSSkillType.MINING;
+    case GatheringSkillType.FISHING:
+      return ECSSkillType.FISHING;
+    // Add other mappings as needed
+    default:
+      return null;
+  }
+}
 
 /**
  * ResourceNode component - attach to all resource nodes (trees, rocks, fishing spots, etc.)
@@ -53,7 +70,7 @@ export const ResourceNodeSystem = defineSystem((world: IWorld) => {
   const nodes = defineQuery([ResourceNode])(world);
   for (const nodeId of nodes) {
     const nodeType = ResourceNode.type[nodeId];
-    const nodeData = OSRS_RESOURCE_DATA[nodeType];
+    const nodeData = OSRS_RESOURCES_BY_ID[nodeType];
     if (!nodeData) continue;
     if (ResourceNode.depleted[nodeId]) {
       // Handle respawn
@@ -67,7 +84,87 @@ export const ResourceNodeSystem = defineSystem((world: IWorld) => {
     const gatherers = defineQuery([Player, Gathering])(world);
     for (const playerId of gatherers) {
       if (Gathering.target[playerId] !== nodeId) continue; // Check requirements
-      const skillLevel = SkillLevels[nodeData.skill][playerId] ?? 1;
+
+      const ecsSkill = mapGatheringSkillToECSSkill(nodeData.skill);
+      if (!ecsSkill) continue; // Skip if no valid skill mapping
+
+      const skillName = ecsSkill.toLowerCase();
+      let skillLevel = 1;
+
+      // NOTE: bitecs components do not support dynamic property access (e.g., SkillLevels[skillName]).
+      // A switch or lookup is required for type-safe access to the underlying skill data.
+      switch (skillName) {
+        case 'attack':
+          skillLevel = SkillLevels.attack[playerId];
+          break;
+        case 'defence':
+          skillLevel = SkillLevels.defence[playerId];
+          break;
+        case 'strength':
+          skillLevel = SkillLevels.strength[playerId];
+          break;
+        case 'hitpoints':
+          skillLevel = SkillLevels.hitpoints[playerId];
+          break;
+        case 'ranged':
+          skillLevel = SkillLevels.ranged[playerId];
+          break;
+        case 'prayer':
+          skillLevel = SkillLevels.prayer[playerId];
+          break;
+        case 'magic':
+          skillLevel = SkillLevels.magic[playerId];
+          break;
+        case 'cooking':
+          skillLevel = SkillLevels.cooking[playerId];
+          break;
+        case 'woodcutting':
+          skillLevel = SkillLevels.woodcutting[playerId];
+          break;
+        case 'fletching':
+          skillLevel = SkillLevels.fletching[playerId];
+          break;
+        case 'fishing':
+          skillLevel = SkillLevels.fishing[playerId];
+          break;
+        case 'firemaking':
+          skillLevel = SkillLevels.firemaking[playerId];
+          break;
+        case 'crafting':
+          skillLevel = SkillLevels.crafting[playerId];
+          break;
+        case 'smithing':
+          skillLevel = SkillLevels.smithing[playerId];
+          break;
+        case 'mining':
+          skillLevel = SkillLevels.mining[playerId];
+          break;
+        case 'herblore':
+          skillLevel = SkillLevels.herblore[playerId];
+          break;
+        case 'agility':
+          skillLevel = SkillLevels.agility[playerId];
+          break;
+        case 'thieving':
+          skillLevel = SkillLevels.thieving[playerId];
+          break;
+        case 'slayer':
+          skillLevel = SkillLevels.slayer[playerId];
+          break;
+        case 'farming':
+          skillLevel = SkillLevels.farming[playerId];
+          break;
+        case 'runecraft':
+          skillLevel = SkillLevels.runecraft[playerId];
+          break;
+        case 'hunter':
+          skillLevel = SkillLevels.hunter[playerId];
+          break;
+        case 'construction':
+          skillLevel = SkillLevels.construction[playerId];
+          break;
+      }
+
       if (skillLevel < nodeData.requiredLevel) continue;
 
       // Check for tool in inventory (simplified check)
@@ -79,7 +176,7 @@ export const ResourceNodeSystem = defineSystem((world: IWorld) => {
       if (Math.random() < successChance) {
         // Award item and XP
         addItemToInventory(world, playerId, nodeData.itemId, 1);
-        addSkillXP(world, playerId, nodeData.skill, nodeData.xp);
+        addSkillXP(world, playerId, ecsSkill, nodeData.xp);
         // Chance to deplete node
         if (Math.random() < nodeData.depletionChance) {
           ResourceNode.depleted[nodeId] = 1;

@@ -18,6 +18,8 @@ import {
 } from "@/ecs/components";
 import { createMainPipeline, world } from "@/ecs/world";
 import type { Player, Enemy } from "@/types";
+import { AudioManager } from "@/managers/AudioManager";
+import { createAnimationSystem } from "@/systems/AnimationSystem";
 
 const ATTACK_COOLDOWN_MS = 2400; // 4 ticks * 600ms
 
@@ -30,6 +32,7 @@ export default class GameScene extends Phaser.Scene {
   private sessionIdToEid: Map<string, number> = new Map();
   private enemyIdToEid: Map<string, number> = new Map();
   private lastAttackTime: number = 0;
+  private audioManager!: AudioManager;
 
   constructor() {
     super({ key: "GameScene" });
@@ -39,6 +42,8 @@ export default class GameScene extends Phaser.Scene {
    * Preload assets for the scene.
    */
   preload(): void {
+    this.audioManager = new AudioManager(this);
+    this.audioManager.preload();
     // TODO: Replace with actual OSRS-style assets
     this.load.image("player_placeholder", "assets/player_placeholder.png");
     this.load.image("enemy_placeholder", "assets/enemy_placeholder.png");
@@ -48,6 +53,7 @@ export default class GameScene extends Phaser.Scene {
    * Create game objects and set up event listeners.
    */
   create(): void {
+    this.audioManager.create();
     // Generate a placeholder texture
     const graphics = this.add.graphics();
     graphics.fillStyle(0xff0000, 1); // Red square
@@ -83,6 +89,14 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#2d2d2d");
     this.pipeline = createMainPipeline(this);
 
+    const animationSystem = createAnimationSystem(this, this.eidToSprite);
+
+    const originalPipeline = this.pipeline;
+    this.pipeline = (world) => {
+      originalPipeline(world);
+      animationSystem(world, colyseusService.room.state);
+    };
+
     // Initial player setup
     room.state.players.forEach((player, sessionId) => {
       this.addPlayer(player, sessionId);
@@ -95,11 +109,27 @@ export default class GameScene extends Phaser.Scene {
 
     // Listen for players leaving
     room.state.players.onRemove((_, sessionId) => {
+      const eid = this.sessionIdToEid.get(sessionId);
+      if (eid !== undefined) {
+        const player = colyseusService.room.state.players.get(sessionId);
+        if (player?.isDead) {
+          this.audioManager.play("player-death");
+        }
+      }
       this.removePlayer(sessionId);
     });
 
     // Listen for player state changes
     room.state.players.onChange((player, sessionId) => {
+      const eid = this.sessionIdToEid.get(sessionId);
+      if (eid === undefined) return;
+
+      const oldHealth = Health.current[eid];
+      if (oldHealth > player.health) {
+        this.audioManager.play("hit-splat");
+        this.showDamageSplat(eid, oldHealth - player.health, false);
+      }
+
       this.updatePlayer(player, sessionId);
     });
 
@@ -115,12 +145,39 @@ export default class GameScene extends Phaser.Scene {
 
     // Listen for enemies leaving
     room.state.enemies.onRemove((_, enemyId) => {
+      const eid = this.enemyIdToEid.get(enemyId);
+      if (eid !== undefined) {
+        // The server now removes enemies after a delay, so we can play the sound here.
+        this.audioManager.play("enemy-death");
+      }
       this.removeEnemy(enemyId);
     });
 
     // Listen for enemy state changes
     room.state.enemies.onChange((enemy, enemyId) => {
+      const eid = this.enemyIdToEid.get(enemyId);
+      if (eid === undefined) return;
+
+      const oldHealth = Health.current[eid];
+      if (oldHealth > enemy.health) {
+        this.audioManager.play("hit-splat");
+        this.showDamageSplat(eid, oldHealth - enemy.health, true); // Assuming enemy damage is from player
+      }
+
       this.updateEnemy(enemy, enemyId);
+    });
+
+    room.onMessage("player_attack", (message) => {
+      this.audioManager.play("attack-swoosh");
+    });
+
+    room.onMessage("damage", (message) => {
+      const { targetId, damage, isPlayerSource } = message;
+      const targetSprite = this.eidToSprite.get(targetId);
+      if (targetSprite) {
+        this.audioManager.play("hit-splat");
+        this.showDamageSplat(targetId, damage, isPlayerSource);
+      }
     });
   }
 
@@ -269,6 +326,43 @@ export default class GameScene extends Phaser.Scene {
     if (health !== enemy.health) {
       Health.current[eid] = enemy.health;
     }
+  }
+
+  private showDamageSplat(
+    entityId: number,
+    damage: number,
+    isPlayerSource: boolean
+  ) {
+    const targetSprite = this.eidToSprite.get(entityId);
+    if (!targetSprite) return;
+
+    const x = targetSprite.x;
+    const y = targetSprite.y - 20; // Offset above the sprite
+
+    let color = "#ff0000"; // Red for damage to player/from enemy
+    if (isPlayerSource) {
+      color = damage > 0 ? "#0000ff" : "#ffffff"; // Blue for damage dealt by player, white for a miss
+    }
+
+    const text = this.add.text(x, y, damage.toString(), {
+      fontFamily: "'RuneScape UF'",
+      fontSize: "16px",
+      color: color,
+      stroke: "#000000",
+      strokeThickness: 2,
+    });
+    text.setOrigin(0.5, 0.5);
+
+    this.tweens.add({
+      targets: text,
+      y: y - 30,
+      alpha: 0,
+      duration: 1000,
+      ease: "Power1",
+      onComplete: () => {
+        text.destroy();
+      },
+    });
   }
 
   private findClosestEnemy(

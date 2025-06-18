@@ -25,6 +25,17 @@ import {
   BEAVER_PET_DROP_RATES,
 } from '@runerogue/osrs-data';
 
+// Infer the Tree type from the TREES constant
+type Tree = (typeof TREES)[keyof typeof TREES];
+
+const treesById: Record<number, Tree> = Object.values(TREES).reduce(
+  (acc, tree) => {
+    acc[tree.id] = tree;
+    return acc;
+  },
+  {} as Record<number, Tree>
+);
+
 /**
  * Query for entities that can be woodcut (trees)
  */
@@ -46,7 +57,7 @@ function canWoodcutTree(
   playerId: number,
   treeId: number
 ): { canCut: boolean; tool?: any; reason?: string } {
-  const tree = TREES[treeId];
+  const tree = treesById[treeId];
   if (!tree) {
     return { canCut: false, reason: 'Invalid tree' };
   }
@@ -74,7 +85,7 @@ function processWoodcuttingAttempt(world: IWorld, playerId: number, nodeId: numb
   }
 
   const treeId = ResourceNodeComponent.resourceId[nodeId];
-  const tree = TREES[treeId];
+  const tree = treesById[treeId];
   if (!tree) return false;
 
   const playerLevel = calculateLevelFromXp(SkillDataComponent.woodcuttingXp[playerId]);
@@ -92,7 +103,7 @@ function processWoodcuttingAttempt(world: IWorld, playerId: number, nodeId: numb
     // Check for tree depletion
     if (Math.random() < tree.depletionChance) {
       ResourceNodeComponent.isDepleted[nodeId] = 1;
-      ResourceNodeComponent.currentRespawnTick[nodeId] = tree.respawnTime;
+      ResourceNodeComponent.currentRespawnTick[nodeId] = tree.respawnTicks;
     }
 
     return true;
@@ -104,7 +115,7 @@ function processWoodcuttingAttempt(world: IWorld, playerId: number, nodeId: numb
 /**
  * Award woodcutting rewards (logs, XP, rare drops)
  */
-function awardWoodcuttingRewards(world: IWorld, playerId: number, tree: any): void {
+function awardWoodcuttingRewards(world: IWorld, playerId: number, tree: Tree): void {
   // Award logs (implement inventory system integration)
   // InventorySystem.addItem(playerId, tree.logId, 1);
 
@@ -117,7 +128,8 @@ function awardWoodcuttingRewards(world: IWorld, playerId: number, tree: any): vo
   }
 
   // Check for beaver pet drop
-  const petDropRate = BEAVER_PET_DROP_RATES[tree.id] || BEAVER_PET_DROP_RATES.default;
+  const petDropRate =
+    (BEAVER_PET_DROP_RATES as Record<number, number>)[tree.id] || BEAVER_PET_DROP_RATES.default;
   if (Math.random() < 1 / petDropRate) {
     // InventorySystem.addItem(playerId, 13322, 1); // Beaver pet
   }

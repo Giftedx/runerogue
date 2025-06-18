@@ -4,7 +4,7 @@
  */
 
 import { Room } from '@colyseus/core';
-import { NPC, Player, PlayerSkills, WorldState } from '../../game/EntitySchemas';
+import { NPC, Player, WorldState } from '../../game/EntitySchemas';
 import { SurvivorWaveSystem, WaveState } from '../../game/SurvivorWaveSystem';
 
 // Mock the Room class
@@ -47,26 +47,21 @@ describe('SurvivorWaveSystem', () => {
     testPlayer.y = 50;
     testPlayer.health = 100;
     testPlayer.maxHealth = 100;
-    testPlayer.prayerPoints = 50;
 
     // Initialize skills
-    testPlayer.skills = new PlayerSkills();
     testPlayer.skills.attack.level = 10;
-    testPlayer.skills.attack.experience = 1000;
     testPlayer.skills.strength.level = 10;
-    testPlayer.skills.strength.experience = 1000;
     testPlayer.skills.defence.level = 10;
-    testPlayer.skills.defence.experience = 1000;
     testPlayer.skills.hitpoints.level = 10;
-    testPlayer.skills.hitpoints.experience = 1000;
-    testPlayer.skills.prayer.level = 10;
-    testPlayer.skills.prayer.experience = 1000;
+    testPlayer.skills.prayer.level = 50;
     testPlayer.skills.ranged.level = 1;
-    testPlayer.skills.ranged.experience = 0;
     testPlayer.skills.magic.level = 1;
-    testPlayer.skills.magic.experience = 0;
 
-    mockRoom.state.players[testPlayer.id] = testPlayer;
+    // Update max prayer points based on level and set current points
+    testPlayer.updateMaxPrayerPoints();
+    testPlayer.prayerPoints = 50;
+
+    mockRoom.state.players.set(testPlayer.id, testPlayer);
   });
 
   afterEach(() => {
@@ -347,8 +342,10 @@ describe('SurvivorWaveSystem', () => {
       // Add some test enemies manually
       const enemy1 = new NPC();
       enemy1.id = 'test-enemy-1';
-      enemy1.name = 'Test Goblin';
-      mockRoom.state.npcs[enemy1.id] = enemy1;
+      enemy1.npcId = 'goblin';
+      enemy1.x = 10;
+      enemy1.y = 10;
+      mockRoom.state.npcs.set(enemy1.id, enemy1);
       (waveSystem as any).activeEnemies.add(enemy1.id);
 
       const initialEnemyCount = waveSystem.getWaveStatus().activeEnemies;
@@ -394,7 +391,7 @@ describe('SurvivorWaveSystem', () => {
 
   describe('Player Survival Checking', () => {
     test('should return true when players are alive', () => {
-      testPlayer.hitpoints = 50;
+      testPlayer.health = 50;
       const result = waveSystem.checkPlayerSurvival();
       expect(result).toBe(true);
     });
@@ -403,7 +400,7 @@ describe('SurvivorWaveSystem', () => {
       const endSurvivalSpy = jest.spyOn(waveSystem, 'endSurvivalMode');
 
       // Kill all players
-      testPlayer.hitpoints = 0;
+      testPlayer.health = 0;
       (waveSystem as any).waveState = WaveState.ACTIVE;
 
       const result = waveSystem.checkPlayerSurvival();
@@ -415,7 +412,7 @@ describe('SurvivorWaveSystem', () => {
     test('should not end survival mode if not in active state', () => {
       const endSurvivalSpy = jest.spyOn(waveSystem, 'endSurvivalMode');
 
-      testPlayer.hitpoints = 0;
+      testPlayer.health = 0;
       (waveSystem as any).waveState = WaveState.PREPARING;
 
       waveSystem.checkPlayerSurvival();
@@ -438,8 +435,10 @@ describe('SurvivorWaveSystem', () => {
       expect(testPlayer).toBeDefined();
     });
     test('should restore prayer points correctly', () => {
+      testPlayer.skills.prayer.level = 50;
+      testPlayer.updateMaxPrayerPoints();
       testPlayer.prayerPoints = 20;
-      testPlayer.skills.prayer.level = 50; // Ensure max prayer is higher than 35
+
       const reward = {
         type: 'prayer_points' as const,
         value: 15,
@@ -450,8 +449,10 @@ describe('SurvivorWaveSystem', () => {
       expect(testPlayer.prayerPoints).toBe(35);
     });
     test('should not exceed maximum prayer points', () => {
-      testPlayer.prayerPoints = 8;
       testPlayer.skills.prayer.level = 10;
+      testPlayer.updateMaxPrayerPoints();
+      testPlayer.prayerPoints = 8;
+
       const reward = {
         type: 'prayer_points' as const,
         value: 15,
@@ -491,7 +492,7 @@ describe('SurvivorWaveSystem', () => {
       const deadPlayer = new Player();
       deadPlayer.id = 'dead-player';
       deadPlayer.health = 0;
-      mockRoom.state.players[deadPlayer.id] = deadPlayer;
+      mockRoom.state.players.set(deadPlayer.id, deadPlayer);
 
       const rewards = [{ type: 'experience' as const, value: 100, skillType: 'combat' }];
 
@@ -506,7 +507,7 @@ describe('SurvivorWaveSystem', () => {
     test('should apply prayer drain event', () => {
       testPlayer.prayerPoints = 50;
 
-      const parameters = { drainRate: 2.0, duration: 30000 };
+      const parameters = { drainRate: 0.5, duration: 30000 }; // Drain 50% over 30s
       (waveSystem as any).applyPrayerDrainEvent(parameters);
 
       // Should drain 50% of prayer points
@@ -573,8 +574,8 @@ describe('SurvivorWaveSystem', () => {
       // Add some test enemies
       (waveSystem as any).activeEnemies.add('enemy-1');
       (waveSystem as any).activeEnemies.add('enemy-2');
-      mockRoom.state.npcs['enemy-1'] = new NPC('enemy-1', 'Test Enemy 1', 0, 0, 'goblin');
-      mockRoom.state.npcs['enemy-2'] = new NPC('enemy-2', 'Test Enemy 2', 0, 0, 'goblin');
+      mockRoom.state.npcs.set('enemy-1', new NPC('enemy-1', 'Test Enemy 1', 0, 0, 'goblin'));
+      mockRoom.state.npcs.set('enemy-2', new NPC('enemy-2', 'Test Enemy 2', 0, 0, 'goblin'));
 
       waveSystem.endSurvivalMode('admin_stop');
 

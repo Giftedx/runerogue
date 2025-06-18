@@ -215,7 +215,7 @@ describe('GameRoom', () => {
   });
 
   describe('Player Management', () => {
-    let client: Client;
+    let client: any;
 
     beforeEach(async () => {
       client = await colyseus.connectTo(room, { name: 'TestPlayer' });
@@ -261,7 +261,7 @@ describe('GameRoom', () => {
   });
 
   describe('Player Disconnection', () => {
-    let client: Client;
+    let client: any;
 
     beforeEach(async () => {
       client = await colyseus.connectTo(room, { name: 'TestPlayer' });
@@ -341,8 +341,8 @@ describe('GameRoom', () => {
   });
 
   describe('Trade Management', () => {
-    let client1: Client;
-    let client2: Client;
+    let client1: any;
+    let client2: any;
     let player1: Player;
     let player2: Player;
 
@@ -358,10 +358,10 @@ describe('GameRoom', () => {
       player2 = room.state.players.get(client2.sessionId)!;
 
       // Clear any previous mock calls for economyIntegration
-      (economyIntegration.getOrCreatePlayerProfile as jest.Mock).mockClear();
-      (economyIntegration.getPlayerInventory as jest.Mock).mockClear();
-      (economyIntegration.addItemToInventory as jest.Mock).mockClear();
-      (economyIntegration.removeItemFromInventory as jest.Mock).mockClear();
+      (economyIntegration!.getOrCreatePlayerProfile as jest.Mock).mockClear();
+      (economyIntegration!.getPlayerInventory as jest.Mock).mockClear();
+      (economyIntegration!.addItemToInventory as jest.Mock).mockClear();
+      (economyIntegration!.removeItemFromInventory as jest.Mock).mockClear();
     });
 
     it('should handle a trade request successfully', async () => {
@@ -493,7 +493,7 @@ describe('GameRoom', () => {
       expect(player1.inventory.find(item => item.itemId === 'bronze_sword')?.quantity).toBe(3);
 
       // Expect economyIntegration.removeItemFromInventory to be called
-      expect(economyIntegration.removeItemFromInventory).toHaveBeenCalledWith(
+      expect(economyIntegration!.removeItemFromInventory).toHaveBeenCalledWith(
         'mockEconomyId',
         'bronze_sword',
         2
@@ -534,7 +534,7 @@ describe('GameRoom', () => {
       expect(client1.send).toHaveBeenCalledWith('trade_error', {
         message: 'Not enough Bronze Sword in inventory.',
       });
-      expect(economyIntegration.removeItemFromInventory).not.toHaveBeenCalled();
+      expect(economyIntegration!.removeItemFromInventory).not.toHaveBeenCalled();
     });
 
     it('should clear previous offer when new offer is made', async () => {
@@ -605,22 +605,22 @@ describe('GameRoom', () => {
         expect(player2.inventory.find(item => item.itemId === 'bronze_sword')?.quantity).toBe(1);
 
         // Expect economyIntegration to be called for item transfers
-        expect(economyIntegration.addItemToInventory).toHaveBeenCalledWith(
+        expect(economyIntegration!.addItemToInventory).toHaveBeenCalledWith(
           'mockEconomyId',
           'health_potion',
           1
         );
-        expect(economyIntegration.removeItemFromInventory).toHaveBeenCalledWith(
+        expect(economyIntegration!.removeItemFromInventory).toHaveBeenCalledWith(
           'mockEconomyId',
           'bronze_sword',
           1
         );
-        expect(economyIntegration.addItemToInventory).toHaveBeenCalledWith(
+        expect(economyIntegration!.addItemToInventory).toHaveBeenCalledWith(
           'mockEconomyId',
           'bronze_sword',
           1
         );
-        expect(economyIntegration.removeItemFromInventory).toHaveBeenCalledWith(
+        expect(economyIntegration!.removeItemFromInventory).toHaveBeenCalledWith(
           'mockEconomyId',
           'health_potion',
           1
@@ -656,7 +656,7 @@ describe('GameRoom', () => {
       expect(player1.inventory.find(item => item.itemId === 'bronze_sword')?.quantity).toBe(5);
 
       // Expect economyIntegration.addItemToInventory to be called for item restoration
-      expect(economyIntegration.addItemToInventory).toHaveBeenCalledWith(
+      expect(economyIntegration!.addItemToInventory).toHaveBeenCalledWith(
         'mockEconomyId',
         'bronze_sword',
         1
@@ -708,7 +708,7 @@ describe('GameRoom', () => {
   });
 
   describe('Item Management', () => {
-    let client: Client;
+    let client: any;
 
     beforeEach(async () => {
       client = await colyseus.connectTo(room, { name: 'TestPlayer' });

@@ -14,15 +14,28 @@ import {
   SkillDataComponent,
   GatheringActionComponent,
   InventoryComponent,
-} from '../components/GatheringComponents';
+  SkillLevels,
+} from '../components';
+import { ROCKS, TOOLS } from '@runerogue/osrs-data';
 import {
-  ROCKS,
-  MINING_TOOLS,
-  calculateMiningSuccess,
   getEffectiveTool,
-  calculateLevelFromXp,
-  ROCK_GOLEM_PET_DROP_RATES,
+  rollForDepletion,
+  calculateMiningSuccess,
+  rollGemTable,
 } from '@runerogue/osrs-data';
+
+// Infer the Rock type from the ROCKS constant
+type Rock = (typeof ROCKS)[keyof typeof ROCKS];
+
+const rocksById: Record<number, Rock> = Object.values(ROCKS).reduce(
+  (acc, rock) => {
+    acc[rock.id] = rock;
+    return acc;
+  },
+  {} as Record<number, Rock>
+);
+
+const GEM_DROP_CHANCE = 0.01; // 1% chance to drop a gem
 
 /**
  * Query for entities that can be mined (rocks)
@@ -45,7 +58,7 @@ function canMineRock(
   playerId: number,
   rockId: number
 ): { canMine: boolean; tool?: any; reason?: string } {
-  const rock = ROCKS[rockId];
+  const rock = rocksById[rockId];
   if (!rock) {
     return { canMine: false, reason: 'Invalid rock' };
   }
@@ -73,7 +86,7 @@ function processMiningAttempt(world: IWorld, playerId: number, nodeId: number): 
   }
 
   const rockId = ResourceNodeComponent.resourceId[nodeId];
-  const rock = ROCKS[rockId];
+  const rock = rocksById[rockId];
   if (!rock) return false;
 
   const playerLevel = calculateLevelFromXp(SkillDataComponent.miningXp[playerId]);
@@ -91,7 +104,7 @@ function processMiningAttempt(world: IWorld, playerId: number, nodeId: number): 
     // Most rocks deplete after mining (except some special ones)
     if (rock.depletionChance >= 1.0 || Math.random() < rock.depletionChance) {
       ResourceNodeComponent.isDepleted[nodeId] = 1;
-      ResourceNodeComponent.currentRespawnTick[nodeId] = rock.respawnTime;
+      ResourceNodeComponent.currentRespawnTick[nodeId] = rock.respawnTicks;
     }
 
     return true;
@@ -103,7 +116,7 @@ function processMiningAttempt(world: IWorld, playerId: number, nodeId: number): 
 /**
  * Award mining rewards (ore, XP, rare drops)
  */
-function awardMiningRewards(world: IWorld, playerId: number, rock: any): void {
+function awardMiningRewards(world: IWorld, playerId: number, rock: Rock): void {
   // Award ore (implement inventory system integration)
   // InventorySystem.addItem(playerId, rock.oreId, 1);
 
@@ -111,7 +124,9 @@ function awardMiningRewards(world: IWorld, playerId: number, rock: any): void {
   SkillDataComponent.miningXp[playerId] += rock.xp * 10; // Store as int * 10 for decimals
 
   // Check for rock golem pet drop
-  const petDropRate = ROCK_GOLEM_PET_DROP_RATES[rock.id] || ROCK_GOLEM_PET_DROP_RATES.default;
+  const petDropRate =
+    (ROCK_GOLEM_PET_DROP_RATES as Record<number, number>)[rock.id] ||
+    ROCK_GOLEM_PET_DROP_RATES.default;
   if (Math.random() < 1 / petDropRate) {
     // InventorySystem.addItem(playerId, 13321, 1); // Rock golem pet
   }
@@ -121,6 +136,15 @@ function awardMiningRewards(world: IWorld, playerId: number, rock: any): void {
     const gems = [1623, 1621, 1619, 1617]; // Sapphire, emerald, ruby, diamond
     const randomGem = gems[Math.floor(Math.random() * gems.length)];
     // InventorySystem.addItem(playerId, randomGem, 1);
+  }
+
+  // Gem drop check (if applicable)
+  const playerMiningLevel = SkillLevels.mining[playerId];
+  if (Math.random() < GEM_DROP_CHANCE) {
+    const gem = rollGemTable(playerMiningLevel);
+    if (gem) {
+      // InventorySystem.addItem(playerId, gem, 1);
+    }
   }
 }
 

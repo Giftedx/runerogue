@@ -6,7 +6,7 @@ import { startCombat } from '../systems/CombatSystem';
 import { setMovementTarget } from '../systems/MovementSystem';
 import { activatePlayerPrayer } from '../systems/PrayerSystem';
 import { addSkillXP, getLevelForXP } from '../systems/SkillSystem';
-import { Transform, Health, Skills, SkillExperience, PrayerFlag } from '../components';
+import { Transform, Health, Skills, SkillExperience } from '../components';
 
 describe('ECS Integration Tests', () => {
   let world: any;
@@ -81,7 +81,7 @@ describe('ECS Integration Tests', () => {
     Skills.prayer[playerId] = 10;
 
     // Activate a prayer
-    const activated = activatePlayerPrayer(world, playerId, PrayerFlag.THICK_SKIN);
+    const activated = activatePlayerPrayer(world, playerId, 'THICK_SKIN');
     expect(activated).toBe(true);
 
     // Run prayer system for 60 seconds
@@ -117,7 +117,7 @@ describe('ECS Integration Tests', () => {
     Skills.prayer[playerId] = 20;
 
     // Activate prayer
-    activatePlayerPrayer(world, playerId, PrayerFlag.BURST_OF_STRENGTH);
+    activatePlayerPrayer(world, playerId, 'BURST_OF_STRENGTH');
 
     // Move towards NPC
     setMovementTarget(world, playerId, 5, 5);
