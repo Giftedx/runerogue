@@ -9,3 +9,15 @@
   position: absolute;
   inset: 0;
 }
+
+/* Player marker positioning */
+.player-marker-position {
+  left: var(--player-x-pos);
+  top: var(--player-y-pos);
+  transform: translate(-50%, -50%);
+}
+
+/* Chat sender name color */
+.chat-sender-name {
+  color: var(--sender-color, white);
+}

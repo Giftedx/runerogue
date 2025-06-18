@@ -1,15 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Client, Room } from "colyseus.js";
-import { GameState } from "@/types";
+import { GameState, Player } from "@/types";
+import { useGameStore } from "@/stores/gameStore";
+import { useDiscord } from "./DiscordActivityProvider";
+
+/**
+ * @file Provides a React context and provider for managing the Colyseus game room connection.
+ * It handles joining the game room, listening for state changes, and updating the Zustand
+ * store with the current player's state.
+ * @author Your Name
+ */
 
 /**
  * Context for Colyseus game room and state
  */
-interface GameRoomContext {
+interface GameRoomContextValue {
   room: Room<GameState>;
   state: GameState;
+  currentPlayer: Player | null;
+  sendMessage: (message: string) => void;
 }
-const GameRoomContext = createContext<GameRoomContext | null>(null);
+const GameRoomContext = createContext<GameRoomContextValue | null>(null);
 
 /**
  * Provider that connects to Colyseus server and provides room & state.
@@ -19,27 +30,61 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [room, setRoom] = useState<Room<GameState> | null>(null);
   const [state, setState] = useState<GameState | null>(null);
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const { user } = useDiscord();
+  const setPlayerState = useGameStore((s) => s.setPlayerState);
+  const addChatMessage = useGameStore((s) => s.addChatMessage);
+
+  const sendMessage = (message: string) => {
+    if (room) {
+      room.send("message", message);
+    } else {
+      console.error("Cannot send message, room not connected");
+    }
+  };
 
   useEffect(() => {
     const url = import.meta.env.VITE_GAME_SERVER_URL;
-    if (!url) {
-      console.error("VITE_GAME_SERVER_URL is not defined");
+    if (!url || !user) {
+      console.error("VITE_GAME_SERVER_URL or Discord user is not available");
       return;
     }
+
     const client = new Client(url);
+    let roomInstance: Room<GameState>;
+
     client
-      .joinOrCreate<GameState>("game")
+      .joinOrCreate<GameState>("game", { accessToken: user.id })
       .then((joinedRoom) => {
+        roomInstance = joinedRoom;
         setRoom(joinedRoom);
         setState(joinedRoom.state);
-        joinedRoom.onStateChange((newState) => setState(newState));
+
+        const updateCurrentPlayer = (currentState: GameState) => {
+          const player = currentState.players.get(joinedRoom.sessionId);
+          if (player) {
+            setCurrentPlayer(player);
+            setPlayerState(player);
+          }
+        };
+
+        updateCurrentPlayer(joinedRoom.state);
+
+        joinedRoom.onStateChange((newState) => {
+          setState(newState);
+          updateCurrentPlayer(newState);
+        });
+
+        joinedRoom.onMessage("message", (message) => {
+          addChatMessage(message);
+        });
       })
       .catch((err) => console.error("Colyseus connection error", err));
 
     return () => {
-      room?.leave();
+      roomInstance?.leave();
     };
-  }, []);
+  }, [user, setPlayerState, addChatMessage]);
 
   if (!room || !state) {
     return (
@@ -50,7 +95,9 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   return (
-    <GameRoomContext.Provider value={{ room, state }}>
+    <GameRoomContext.Provider
+      value={{ room, state, currentPlayer, sendMessage }}
+    >
       {children}
     </GameRoomContext.Provider>
   );
@@ -59,7 +106,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
 /**
  * Hook to access game room and state
  */
-export function useGameRoom(): GameRoomContext {
+export function useGameRoom(): GameRoomContextValue {
   const context = useContext(GameRoomContext);
   if (!context) {
     throw new Error("useGameRoom must be used within GameRoomProvider");
