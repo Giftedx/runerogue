@@ -5,7 +5,8 @@
  */
 
 import { System, World } from "@colyseus/ecs";
-import { GameState } from "../../schemas/GameState";
+import { GameState, Player, Enemy } from "../../schemas/GameState";
+import { RuneRogueRoom } from "../../rooms/RuneRogueRoom";
 
 const RESPAWN_TIME = 5000; // 5 seconds
 const ENEMY_REMOVAL_DELAY = 1000; // 1 second for death animation
@@ -16,9 +17,9 @@ const ENEMY_REMOVAL_DELAY = 1000; // 1 second for death animation
  */
 export class DeathSystem extends System {
   private state: GameState;
-  private room: any; // Replace with your GameRoom type
+  private room: RuneRogueRoom;
 
-  constructor(world: World, state: GameState, room: any) {
+  constructor(world: World, state: GameState, room: RuneRogueRoom) {
     super(world);
     this.state = state;
     this.room = room;
@@ -26,9 +27,9 @@ export class DeathSystem extends System {
 
   /**
    * Executes the system logic for each entity on every game tick.
-   * @param {number} delta - The time elapsed since the last update.
+   * @param {number} _delta - The time elapsed since the last update (unused).
    */
-  execute(delta: number): void {
+  execute(_delta: number): void {
     if (!this.state.gameStarted) return;
 
     // Check for dead players
@@ -50,7 +51,7 @@ export class DeathSystem extends System {
    * Handles the death of a player entity.
    * @param {Player} player - The player entity that has died.
    */
-  private handlePlayerDeath(player: any): void {
+  private handlePlayerDeath(player: Player): void {
     player.isDead = true;
     this.room.broadcast("entityDied", { entityId: player.id, isPlayer: true });
 
@@ -70,7 +71,7 @@ export class DeathSystem extends System {
    * Handles the death of an enemy entity.
    * @param {Enemy} enemy - The enemy entity that has died.
    */
-  private handleEnemyDeath(enemy: any): void {
+  private handleEnemyDeath(enemy: Enemy): void {
     enemy.alive = false;
     this.room.broadcast("entityDied", { entityId: enemy.id, isPlayer: false });
 

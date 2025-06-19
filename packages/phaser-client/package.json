@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "echo 'No tests yet'",
-    "lint": "echo 'No linting setup yet'"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@runerogue/osrs-data": "workspace:*",

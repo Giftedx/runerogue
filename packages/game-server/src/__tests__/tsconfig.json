@@ -1,0 +1,16 @@
+{
+    "extends": "../../../../tsconfig.json",
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "../../../../dist/packages/game-server/src/__tests__",
+        "rootDir": "."
+    },
+    "include": [
+        "./**/*.ts"
+    ],
+    "references": [
+        {
+            "path": "../../.."
+        }
+    ]
+}

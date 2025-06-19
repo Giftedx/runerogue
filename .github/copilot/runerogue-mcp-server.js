@@ -35,7 +35,7 @@ function runTests(params) {
   command += " --color=yes";
 
   try {
-    const output = execSync(command, {
+    execSync(command, {
       cwd: PROJECT_ROOT,
       encoding: "utf8",
       stdio: "pipe",
@@ -43,7 +43,6 @@ function runTests(params) {
 
     return {
       success: true,
-      output,
       command,
     };
   } catch (error) {
@@ -129,13 +128,13 @@ function generateDocs(params) {
   const moduleName = path.basename(modulePath, ".py");
   const outputFile = path.join(
     outputDir,
-    `${moduleName}.${format === "rst" ? "rst" : "md"}`,
+    `${moduleName}.${format === "rst" ? "rst" : "md"}`
   );
 
   let command = `python -m pydoc-markdown -I ${modulePath} -O ${outputFile} --renderer ${format}`;
 
   try {
-    const output = execSync(command, {
+    execSync(command, {
       cwd: PROJECT_ROOT,
       encoding: "utf8",
       stdio: "pipe",
@@ -178,7 +177,7 @@ function createIssue(params) {
     const scriptPath = path.join(
       PROJECT_ROOT,
       "scripts",
-      "create_agent_issue.py",
+      "create_agent_issue.py"
     );
 
     // Escape special characters in the parameters
@@ -257,7 +256,7 @@ const server = http.createServer((req, res) => {
           JSON.stringify({
             success: false,
             error: error.message,
-          }),
+          })
         );
       }
     });
@@ -267,7 +266,7 @@ const server = http.createServer((req, res) => {
       JSON.stringify({
         success: false,
         error: "Method not allowed",
-      }),
+      })
     );
   }
 });

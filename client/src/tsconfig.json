@@ -9,12 +9,12 @@
         "./main.tsx",
         "./setupTests.ts",
         "**/*.ts",
-        "**/*.tsx",
-        "**/*.d.ts"
+        "**/*.tsx"
     ],
     "exclude": [
         "**/*.test.ts",
         "**/*.test.tsx",
-        "node_modules"
+        "node_modules",
+        "**/*.d.ts"
     ]
 }

@@ -1,4 +1,4 @@
-/* globals window */
+/* global DiscordSDK */
 
 /**
  * Discord Activity Validation Script
@@ -57,3 +57,66 @@ if (window.location.protocol !== "https:") {
 console.log("3. Test the client by clicking Connect → Join Room");
 console.log("4. Check Discord presence updates");
 console.log("=====================================");
+
+/**
+ * Represents the authentication credentials.
+ * @typedef {object} Auth
+ * @property {string} access_token - The access token.
+ */
+
+/**
+ * Represents the authenticated user.
+ * @typedef {object} AuthenticatedUser
+ * @property {string} id - The user's ID.
+ * @property {string} username - The user's username.
+ * @property {string} discriminator - The user's discriminator.
+ * @property {string} avatar - The user's avatar hash.
+ */
+
+let auth;
+
+// We can instantiate the SDK with the client ID and it will handle the rest.
+const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+
+setupDiscordSdk().then(() => {
+  console.log("Discord SDK is ready");
+});
+
+/**
+ * Sets up the Discord SDK and authenticates the user.
+ * @returns {Promise<void>}
+ */
+async function setupDiscordSdk() {
+  await discordSdk.ready();
+  console.log("Discord SDK is ready");
+
+  // Authorize with Discord client
+  const { code } = await discordSdk.commands.authorize({
+    client_id: discordSdk.clientId,
+    response_type: "code",
+    state: "",
+    prompt: "none",
+    scope: ["identify", "guilds"],
+  });
+
+  // Retrieve an access token from your embedded app's server
+  const response = await fetch("/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      code,
+    }),
+  });
+  const { access_token } = await response.json();
+
+  // Authenticate with Discord client (using the access token)
+  auth = await discordSdk.commands.authenticate({
+    access_token,
+  });
+
+  if (auth == null) {
+    throw new Error("Authenticate command failed");
+  }
+}

@@ -11,7 +11,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "jest",
-    "lint": "eslint . \"**/*.ts\" \"**/*.tsx\""
+    "lint": "eslint ."
   },
   "dependencies": {
     "@discord/embedded-app-sdk": "^1.9.0",
