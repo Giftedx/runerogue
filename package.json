@@ -61,6 +61,6 @@
   "dependencies": {
     "@colyseus/ecs": "0.4.0-alpha.4",
     "@types/node-fetch": "^2.6.12",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^3.3.2"
   }
 }

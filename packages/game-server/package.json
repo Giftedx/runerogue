@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@colyseus/monitor": "^0.16.7",
-    "@colyseus/schema": "^3.0.39",
+    "@colyseus/schema": "^3.0.41",
     "bcryptjs": "^3.0.2",
     "colyseus": "^0.16.4",
     "compression": "^1.7.4",
@@ -29,7 +29,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "p-limit": "^6.2.0",
-    "pg": "^8.11.3",
+    "pg": "^8.16.1",
     "redis": "^5.5.6",
     "winston": "^3.10.0"
   },
