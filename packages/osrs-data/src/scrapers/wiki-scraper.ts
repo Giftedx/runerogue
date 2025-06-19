@@ -42,7 +42,7 @@ export async function scrapeEnemyData(enemyId: string): Promise<OSRSEnemy> {
   // - mcp_osrs_search_npctypes
 
   throw new Error(
-    `Wiki scraping not yet implemented for ${enemyId} - agent/osrs-data task pending`
+    `Wiki scraping not yet implemented for ${enemyId} - agent/osrs-data task pending`,
   );
 }
 
@@ -74,7 +74,7 @@ export async function scrapeCombatFormulas(): Promise<any> {
   // - https://oldschool.runescape.wiki/w/Damage_per_second/Melee
 
   throw new Error(
-    "Combat formula scraping not yet implemented - agent/osrs-data task pending"
+    "Combat formula scraping not yet implemented - agent/osrs-data task pending",
   );
 }
 
@@ -84,7 +84,7 @@ export async function scrapeCombatFormulas(): Promise<any> {
 export function validateScrapedData(data: any): boolean {
   // TODO: Implement validation against known OSRS examples
   console.warn(
-    "Data validation not yet implemented - agent/osrs-data task pending"
+    "Data validation not yet implemented - agent/osrs-data task pending",
   );
   return false;
 }

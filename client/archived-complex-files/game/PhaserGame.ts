@@ -3,7 +3,11 @@ import { BootScene } from "./scenes/BootScene";
 import { GameScene } from "./scenes/GameScene";
 import { UIScene } from "./scenes/UIScene";
 import type { GameClient } from "./GameClient";
-import type { GameRoomState, PlayerSchema, EnemySchema } from "@runerogue/shared";
+import type {
+  GameRoomState,
+  PlayerSchema,
+  EnemySchema,
+} from "@runerogue/shared";
 
 /**
  * Phaser 3 game engine configuration for RuneRogue.

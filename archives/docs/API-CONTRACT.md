@@ -2,8 +2,6 @@
 
 **NOTE:** The primary authentication mechanism for the RuneRogue TypeScript Game Server is currently Discord OAuth2. This document describes a more generic authentication service that may represent a future planned service or an outdated specification. Please refer to the TypeScript Game Server's `src/server/routes/auth.ts` for the current authentication implementation.
 
-
-
 ## Authentication Service API
 
 Base URL: `https://auth.runerogue.com` (production) or `http://localhost:3001` (development)

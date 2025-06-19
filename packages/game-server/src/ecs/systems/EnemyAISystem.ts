@@ -61,7 +61,7 @@ export class EnemyAISystem extends System {
     this.state.players.forEach((player: Player) => {
       if (player.isDead) return;
       const distance = Math.sqrt(
-        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
       );
       if (distance < AGGRESSION_RADIUS && distance < minDistance) {
         minDistance = distance;
@@ -88,7 +88,7 @@ export class EnemyAISystem extends System {
       return;
     }
     const distance = Math.sqrt(
-      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2)
+      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2),
     );
     // Move towards target if not in melee range
     if (distance > MELEE_RANGE) {

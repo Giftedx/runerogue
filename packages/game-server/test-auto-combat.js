@@ -15,7 +15,7 @@ async function testAutoCombat() {
     room.onMessage("damage_dealt", (data) => {
       if (data.hitSuccess) {
         console.log(
-          `💥 AUTO-COMBAT HIT! ${data.damage} damage (${data.accuracy}% accuracy)`
+          `💥 AUTO-COMBAT HIT! ${data.damage} damage (${data.accuracy}% accuracy)`,
         );
         console.log(`   Target: ${data.targetId} health: ${data.targetHealth}`);
       } else {
@@ -37,7 +37,7 @@ async function testAutoCombat() {
 
     console.log("⏱️ Waiting for auto-combat to engage enemies...");
     console.log(
-      "(Players automatically attack nearby enemies every 2.4 seconds)"
+      "(Players automatically attack nearby enemies every 2.4 seconds)",
     );
 
     // Auto-disconnect after 20 seconds

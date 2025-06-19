@@ -14,15 +14,15 @@ spec:
         app: auth-service
     spec:
       containers:
-      - name: auth-service
-        image: runerogueprime-auth-service:latest
-        ports:
-        - containerPort: 3002
-        env:
-        - name: PORT
-          value: "3002"
-        - name: JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: runerogueprime-secrets
-              key: JWT_SECRET
+        - name: auth-service
+          image: runerogueprime-auth-service:latest
+          ports:
+            - containerPort: 3002
+          env:
+            - name: PORT
+              value: "3002"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: runerogueprime-secrets
+                  key: JWT_SECRET

@@ -65,10 +65,10 @@ Fix the cSpell configuration and clean up any potentially unrecognized Jest sett
 ```
 
 The key changes:
+
 1. Replaced `cSpell.enabledFileTypes` with `cSpell.enabledLanguageIds` which is the correct property name
 2. Added `"jsonc"` to the language list to support JSON with comments
 
 The Jest configuration warnings might be due to extension version differences, but the settings should still work correctly. If you continue to see warnings about unknown Jest settings, you may need to update the Jest extension or check its documentation for the correct property names.
 
 ---
-

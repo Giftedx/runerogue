@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef } from "react";
 import * as Colyseus from "colyseus.js";
 import type { GameRoomState, PlayerSchema } from "@runerogue/shared";
 import { DiscordActivity, type DiscordUser } from "../discord/DiscordActivity";
+import "./SimpleGameClient.css";
 
 interface PlayerDisplay {
   id: string;
@@ -30,14 +31,18 @@ export const SimpleGameClient: React.FC = () => {
   const roomRef = useRef<Colyseus.Room<GameRoomState> | null>(null);
   const gameAreaRef = useRef<HTMLDivElement>(null);
 
-  const updateStatus = (message: string, error = false, connected = false) => {
+  const updateStatus = (
+    message: string,
+    error = false,
+    connected = false,
+  ): void => {
     setConnectionStatus(message);
     setIsError(error);
     setIsConnected(connected);
     console.log(message);
   };
 
-  const connect = async () => {
+  const connect = async (): Promise<void> => {
     try {
       updateStatus("Connecting to game server...");
       const serverUrl =
@@ -51,7 +56,7 @@ export const SimpleGameClient: React.FC = () => {
     }
   };
 
-  const joinRoom = async () => {
+  const joinRoom = async (): Promise<void> => {
     if (!clientRef.current) {
       updateStatus("Please connect first!", true);
       return;
@@ -63,7 +68,7 @@ export const SimpleGameClient: React.FC = () => {
         "runerogue",
         {
           playerName: "TestPlayer_" + Math.floor(Math.random() * 1000),
-        }
+        },
       );
 
       roomRef.current = room;
@@ -94,7 +99,7 @@ export const SimpleGameClient: React.FC = () => {
       updateStatus(`Failed to join room: ${errorMessage}`, true);
     }
   };
-  const updateGameState = (state: GameRoomState) => {
+  const updateGameState = (state: GameRoomState): void => {
     const newPlayers: Record<string, PlayerDisplay> = {};
 
     // Convert MapSchema to regular object for React state
@@ -110,7 +115,9 @@ export const SimpleGameClient: React.FC = () => {
     setPlayers(newPlayers);
   };
 
-  const handleGameAreaClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleGameAreaClick = (
+    event: React.MouseEvent<HTMLDivElement>,
+  ): void => {
     if (!roomRef.current || !gameAreaRef.current) return;
 
     const rect = gameAreaRef.current.getBoundingClientRect();
@@ -120,14 +127,14 @@ export const SimpleGameClient: React.FC = () => {
     roomRef.current.send("move", { x, y });
   };
 
-  const leaveRoom = () => {
+  const leaveRoom = (): void => {
     if (roomRef.current) {
       roomRef.current.leave();
       roomRef.current = null;
     }
   };
 
-  const disconnect = () => {
+  const disconnect = (): void => {
     leaveRoom();
     if (clientRef.current) {
       clientRef.current = null;
@@ -144,7 +151,7 @@ export const SimpleGameClient: React.FC = () => {
      * In production, failures are logged and the app falls back to standalone mode.
      * This ensures no silent failures and makes the intended behavior explicit.
      */
-    const initializeApp = async () => {
+    const initializeApp = async (): Promise<void> => {
       try {
         // Only attempt Discord integration if embedded (e.g., in Discord Activity iframe)
         if (window.parent !== window) {
@@ -159,7 +166,7 @@ export const SimpleGameClient: React.FC = () => {
         console.error("Discord initialization failed:", error);
         updateStatus(
           "Running in standalone mode (Discord not available)",
-          true
+          true,
         );
       }
 
@@ -169,7 +176,7 @@ export const SimpleGameClient: React.FC = () => {
 
     initializeApp();
 
-    return () => {
+    return (): void => {
       // Clean up Discord SDK (real or mock) and disconnect from server
       discordActivity.close();
       disconnect();
@@ -182,35 +189,17 @@ export const SimpleGameClient: React.FC = () => {
       const playerCount = Object.keys(players).length;
       discordActivity.setActivity(
         `Playing RuneRogue`,
-        `${playerCount} player${playerCount !== 1 ? "s" : ""} in room`
+        `${playerCount} player${playerCount !== 1 ? "s" : ""} in room`,
       );
     }
-  }, [discordUser, playerId, players, isDiscordMode]);
+  }, [discordUser, playerId, players, isDiscordMode, discordActivity]);
 
   return (
-    <div
-      style={{
-        fontFamily: "Arial, sans-serif",
-        maxWidth: "800px",
-        margin: "0 auto",
-        padding: "20px",
-        background: "#2c3e50",
-        color: "white",
-        minHeight: "100vh",
-      }}
-    >
+    <div className="container">
       <h1>RuneRogue - Simple Client</h1>
 
       {discordUser && isDiscordMode && (
-        <div
-          style={{
-            margin: "10px 0",
-            padding: "10px",
-            background: "#5865F2",
-            borderRadius: "5px",
-            color: "white",
-          }}
-        >
+        <div className="discord-user-banner">
           <h3>
             Discord User: {discordUser.global_name || discordUser.username}
           </h3>
@@ -219,48 +208,22 @@ export const SimpleGameClient: React.FC = () => {
       )}
 
       <div
-        style={{
-          padding: "10px",
-          margin: "10px 0",
-          borderRadius: "5px",
-          background:
-            isError ? "#e74c3c"
-            : isConnected ? "#27ae60"
-            : "#34495e",
-        }}
+        className={`status-bar ${
+          isError ? "error" : isConnected ? "connected" : ""
+        }`}
       >
         Status: {connectionStatus}
       </div>
 
-      <div style={{ margin: "20px 0" }}>
-        <button
-          onClick={connect}
-          disabled={isConnected}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            background: isConnected ? "#7f8c8d" : "#3498db",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: isConnected ? "not-allowed" : "pointer",
-          }}
-        >
+      <div className="controls">
+        <button onClick={connect} disabled={isConnected} className="button">
           Connect
         </button>
 
         <button
           onClick={joinRoom}
           disabled={!isConnected || !!playerId}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            background: !isConnected || !!playerId ? "#7f8c8d" : "#2ecc71",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: !isConnected || !!playerId ? "not-allowed" : "pointer",
-          }}
+          className="button"
         >
           Join Room
         </button>
@@ -268,37 +231,18 @@ export const SimpleGameClient: React.FC = () => {
         <button
           onClick={leaveRoom}
           disabled={!playerId}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            background: !playerId ? "#7f8c8d" : "#f39c12",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: !playerId ? "not-allowed" : "pointer",
-          }}
+          className="button danger"
         >
           Leave Room
         </button>
 
-        <button
-          onClick={disconnect}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            background: "#e74c3c",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={disconnect} className="button danger">
           Disconnect
         </button>
       </div>
 
       {playerId && (
-        <div style={{ margin: "20px 0" }}>
+        <div className="player-info">
           <h3>Your Player ID: {playerId}</h3>
           <p>Click on the game area below to move your player</p>
         </div>
@@ -307,57 +251,37 @@ export const SimpleGameClient: React.FC = () => {
       <div
         ref={gameAreaRef}
         onClick={handleGameAreaClick}
-        style={{
-          width: "600px",
-          height: "400px",
-          background: "#1a252f",
-          border: "2px solid #34495e",
-          margin: "20px 0",
-          position: "relative",
-          cursor: playerId ? "crosshair" : "default",
-        }}
+        className="game-area"
       >
         {Object.values(players).map((player) => (
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           <div
             key={player.id}
+            className={`player ${player.id === playerId ? "current-player" : ""}`}
             style={{
-              width: "20px",
-              height: "20px",
-              background: player.id === playerId ? "#e74c3c" : "#3498db",
-              borderRadius: "50%",
-              position: "absolute",
               left: `${player.x}px`,
               top: `${player.y}px`,
-              transform: "translate(-50%, -50%)",
-              border: "2px solid white",
-              zIndex: 10,
             }}
             title={`Player: ${player.name || player.id}`}
-          />
+          >
+            <div className="player-name">{player.name || player.id}</div>
+          </div>
         ))}
 
         {Object.keys(players).length === 0 && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              color: "#7f8c8d",
-              fontSize: "18px",
-            }}
-          >
-            {playerId ?
-              "Click to move your player"
-            : "Join a room to start playing"}
+          <div className="game-area-message">
+            {playerId
+              ? "Click to move your player"
+              : "Join a room to start playing"}
           </div>
         )}
       </div>
 
-      <div style={{ margin: "20px 0" }}>
+      <div className="player-list">
         <h3>Players ({Object.keys(players).length})</h3>
         {Object.values(players).map((player) => (
-          <div key={player.id} style={{ margin: "5px 0" }}>
+          <div key={player.id} className="player-list-item">
             <strong>
               {player.id === playerId ? "You" : player.name || player.id}
             </strong>
@@ -369,3 +293,5 @@ export const SimpleGameClient: React.FC = () => {
     </div>
   );
 };
+
+export default SimpleGameClient;

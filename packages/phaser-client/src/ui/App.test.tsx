@@ -49,7 +49,7 @@ describe("App enemy stats display", () => {
     render(
       <GameRoomProvider>
         <App />
-      </GameRoomProvider>
+      </GameRoomProvider>,
     );
     expect(screen.getByText(/enemy1/i)).toBeInTheDocument();
     expect(screen.getByText(/12\/15 HP/i)).toBeInTheDocument();

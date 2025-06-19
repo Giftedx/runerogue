@@ -39,7 +39,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
   const [state, setState] = useState<GameState | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<string>(
-    "Connecting to game server..."
+    "Connecting to game server...",
   );
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0);
   const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
@@ -63,14 +63,14 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
       const url = import.meta.env.VITE_GAME_SERVER_URL;
       if (!url || !user) {
         setConnectionStatus(
-          "VITE_GAME_SERVER_URL or Discord user is not available"
+          "VITE_GAME_SERVER_URL or Discord user is not available",
         );
         return;
       }
       setConnectionStatus(
-        attempt === 0 ?
-          "Connecting to game server..."
-        : `Reconnecting... (attempt ${attempt + 1}/5)`
+        attempt === 0
+          ? "Connecting to game server..."
+          : `Reconnecting... (attempt ${attempt + 1}/5)`,
       );
       setIsReconnecting(attempt > 0);
       setReconnectAttempts(attempt);
@@ -112,7 +112,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
               // Exponential backoff: 1s, 2s, 4s, 8s, 16s
               const delay = Math.pow(2, attempt) * 1000;
               setConnectionStatus(
-                `Disconnected. Attempting to reconnect in ${delay / 1000}s...`
+                `Disconnected. Attempting to reconnect in ${delay / 1000}s...`,
               );
               reconnectTimeout.current = setTimeout(() => {
                 connectToRoom(attempt + 1);
@@ -120,7 +120,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
             } else {
               setReconnectFailed(true);
               setConnectionStatus(
-                "Failed to reconnect. Please refresh the page."
+                "Failed to reconnect. Please refresh the page.",
               );
             }
           });
@@ -130,7 +130,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
           if (attempt < 5) {
             const delay = Math.pow(2, attempt) * 1000;
             setConnectionStatus(
-              `Connection failed. Retrying in ${delay / 1000}s...`
+              `Connection failed. Retrying in ${delay / 1000}s...`,
             );
             reconnectTimeout.current = setTimeout(() => {
               connectToRoom(attempt + 1);
@@ -138,7 +138,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
           } else {
             setReconnectFailed(true);
             setConnectionStatus(
-              "Failed to connect to game server. Please refresh the page."
+              "Failed to connect to game server. Please refresh the page.",
             );
           }
         });
@@ -148,7 +148,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
         if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
       };
     },
-    [user, setPlayerState, addChatMessage]
+    [user, setPlayerState, addChatMessage],
   );
 
   useEffect(() => {

@@ -1,31 +1,38 @@
 # 🚨 AGENT BLOCKERS & ISSUES
 
 **Purpose:** Track blockers that prevent agent progress  
-**Action Required:** Master Orchestrator intervention when blockers appear  
+**Action Required:** Master Orchestrator intervention when blockers appear
 
 ---
 
 ## 🔴 CRITICAL BLOCKERS
-*Issues that completely stop progress*
+
+_Issues that completely stop progress_
 
 ### agent/osrs-data
+
 - **None reported**
 
-### agent/backend-infra  
+### agent/backend-infra
+
 - **None reported**
 
 ### agent/qa-tester
+
 - **Status:** Waiting for osrs-data implementation (expected, not a blocker)
 
 ---
 
 ## 🟡 WARNINGS
-*Issues that slow progress but don't stop it*
+
+_Issues that slow progress but don't stop it_
 
 ### agent/osrs-data
+
 - **None reported**
 
 ### agent/backend-infra
+
 - **None reported**
 
 ---
@@ -47,9 +54,11 @@ When reporting a blocker, use this format:
 ---
 
 ## 🔧 RESOLVED BLOCKERS
-*For tracking what was fixed and how*
+
+_For tracking what was fixed and how_
 
 ### Example Format:
+
 ```
 **Blocker:** [Description]
 **Resolution:** [How it was fixed]
@@ -60,4 +69,4 @@ When reporting a blocker, use this format:
 ---
 
 **Master Orchestrator Monitoring:** Active  
-**Response Time Target:** < 1 hour for critical blockers 
+**Response Time Target:** < 1 hour for critical blockers

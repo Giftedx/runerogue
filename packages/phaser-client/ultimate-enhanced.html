@@ -9,7 +9,7 @@
         margin: 0;
         padding: 0;
         background: #0d1b0d;
-        font-family: 'Arial', sans-serif;
+        font-family: "Arial", sans-serif;
         overflow: hidden;
       }
 
@@ -95,7 +95,9 @@
   <body>
     <div class="ultimate-loading" id="ultimate-loading">
       <h1>🛡️ RuneRogue</h1>
-      <div class="subtitle">Ultimate Enhanced Edition<br />Phase 3 Visual Enhancement Complete</div>
+      <div class="subtitle">
+        Ultimate Enhanced Edition<br />Phase 3 Visual Enhancement Complete
+      </div>
 
       <div class="features">
         <div>✨ Advanced Sprite Animations</div>
@@ -127,24 +129,25 @@
       // Enhanced loading sequence
       let progress = 0;
       const loadingSteps = [
-        'Loading core systems...',
-        'Generating OSRS-style sprites...',
-        'Initializing animation manager...',
-        'Setting up UI components...',
-        'Connecting to multiplayer server...',
-        'Finalizing enhanced experience...',
-        'Ready to play!',
+        "Loading core systems...",
+        "Generating OSRS-style sprites...",
+        "Initializing animation manager...",
+        "Setting up UI components...",
+        "Connecting to multiplayer server...",
+        "Finalizing enhanced experience...",
+        "Ready to play!",
       ];
 
       function updateLoadingProgress() {
         progress += Math.random() * 15 + 5;
         if (progress > 100) progress = 100;
 
-        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById("progress-bar").style.width = progress + "%";
 
         const stepIndex = Math.floor((progress / 100) * loadingSteps.length);
         if (stepIndex < loadingSteps.length) {
-          document.getElementById('loading-text').textContent = loadingSteps[stepIndex];
+          document.getElementById("loading-text").textContent =
+            loadingSteps[stepIndex];
         }
 
         if (progress < 100) {
@@ -152,10 +155,10 @@
         } else {
           // Hide loading screen
           setTimeout(() => {
-            const loadingDiv = document.getElementById('ultimate-loading');
-            loadingDiv.style.opacity = '0';
+            const loadingDiv = document.getElementById("ultimate-loading");
+            loadingDiv.style.opacity = "0";
             setTimeout(() => {
-              loadingDiv.style.display = 'none';
+              loadingDiv.style.display = "none";
             }, 500);
           }, 1000);
         }

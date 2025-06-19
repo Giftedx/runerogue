@@ -79,7 +79,7 @@ app.post("/api/discord/token", async (req: any, res: any) => {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params,
-      }
+      },
     );
 
     if (!discordResponse.ok) {

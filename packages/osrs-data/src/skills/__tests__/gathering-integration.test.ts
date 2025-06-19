@@ -31,7 +31,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const woodcuttingSuccess = calculateWoodcuttingSuccess(
         playerLevel,
         normalTree.level,
-        bronzeAxe!.effectiveness
+        bronzeAxe!.effectiveness,
       );
       expect(woodcuttingSuccess).toBeGreaterThanOrEqual(0.5); // Should have decent success rate
 
@@ -43,7 +43,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const miningSuccess = calculateMiningSuccess(
         playerLevel,
         copperRock.level,
-        bronzePickaxe!.effectiveness
+        bronzePickaxe!.effectiveness,
       );
       expect(miningSuccess).toBeGreaterThanOrEqual(0.4);
 
@@ -51,7 +51,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const netFishing = FISHING_SPOTS.NET_BAIT.options.NET;
       const fishingSuccess = calculateFishingSuccess(
         playerLevel,
-        netFishing.level
+        netFishing.level,
       );
       expect(fishingSuccess).toBeGreaterThan(0.25); // Fishing is harder at low levels
 
@@ -62,7 +62,7 @@ describe("OSRS Gathering Skills Integration", () => {
         shrimps.level,
         shrimps.burnStopLevel,
         false, // cooking on fire
-        false // no cooking gauntlets
+        false, // no cooking gauntlets
       );
       expect(burnChance).toBeGreaterThanOrEqual(0.5); // High burn chance at level 1
     });
@@ -80,7 +80,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const woodcuttingSuccess = calculateWoodcuttingSuccess(
         playerLevel,
         willowTree.level,
-        mithrilAxe!.effectiveness
+        mithrilAxe!.effectiveness,
       );
       expect(woodcuttingSuccess).toBeGreaterThan(0.55); // Better success at higher level      // Level 30 mining - Coal
       const coalRock = ROCKS.COAL;
@@ -89,7 +89,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const miningSuccess = calculateMiningSuccess(
         playerLevel,
         coalRock.level,
-        mithrilPickaxe!.effectiveness
+        mithrilPickaxe!.effectiveness,
       );
       expect(miningSuccess).toBeGreaterThanOrEqual(0.55); // Exact threshold may vary slightly      // Level 30 cooking - Trout (should rarely burn)
       const trout = COOKABLE_ITEMS.TROUT;
@@ -97,7 +97,7 @@ describe("OSRS Gathering Skills Integration", () => {
         playerLevel,
         trout.level,
         trout.burnStopLevel,
-        false // cooking on fire
+        false, // cooking on fire
       );
       expect(burnChance).toBeLessThan(0.7); // Reasonable burn chance improvement
     });
@@ -114,7 +114,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const woodcuttingSuccess = calculateWoodcuttingSuccess(
         playerLevel,
         mapleTree.level,
-        runeAxe!.effectiveness
+        runeAxe!.effectiveness,
       );
       expect(woodcuttingSuccess).toBeGreaterThan(0.7);
 
@@ -125,7 +125,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const miningSuccess = calculateMiningSuccess(
         playerLevel,
         goldRock.level,
-        adamantPickaxe!.effectiveness
+        adamantPickaxe!.effectiveness,
       );
       expect(miningSuccess).toBeGreaterThan(0.6);
 
@@ -133,7 +133,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const lobsterFishing = FISHING_SPOTS.CAGE_HARPOON.options.CAGE;
       const fishingSuccess = calculateFishingSuccess(
         playerLevel,
-        lobsterFishing.level
+        lobsterFishing.level,
       );
       expect(fishingSuccess).toBeGreaterThan(0.45); // Better at higher level but lobsters are still challenging      // Level 50 cooking - Most foods don't burn
       const tuna = COOKABLE_ITEMS.TUNA;
@@ -141,7 +141,7 @@ describe("OSRS Gathering Skills Integration", () => {
         playerLevel,
         tuna.level,
         tuna.burnStopLevel,
-        true // cooking on range
+        true, // cooking on range
       );
       expect(burnChance).toBeLessThan(0.5); // Should have reasonable success rate with proper level
     });
@@ -163,7 +163,7 @@ describe("OSRS Gathering Skills Integration", () => {
       const adamantPickaxe = MINING_TOOLS.ADAMANT_PICKAXE;
 
       expect(adamantPickaxe.effectiveness).toBeGreaterThan(
-        bronzePickaxe.effectiveness
+        bronzePickaxe.effectiveness,
       );
       expect(adamantPickaxe.speed).toBeLessThan(bronzePickaxe.speed);
     });

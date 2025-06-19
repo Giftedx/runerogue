@@ -10,7 +10,6 @@ create a prompt for the next chat to carry out all the next steps
 
 _**Assistant**_
 
-I'll analyze the current state of the RuneRogue project and create a comprehensive prompt for the next development session. Let me first gather information about the current project status. 
+I'll analyze the current state of the RuneRogue project and create a comprehensive prompt for the next development session. Let me first gather information about the current project status.
 
 ---
-

@@ -57,7 +57,7 @@ export class GameScene extends Phaser.Scene {
   private showDamageNumber(
     targetId: string,
     damage: number,
-    hitType: "hit" | "max" | "miss"
+    hitType: "hit" | "max" | "miss",
   ): void {
     // Look up in players first, then enemies
     let sprite = this.players.get(targetId);
@@ -78,9 +78,7 @@ export class GameScene extends Phaser.Scene {
     textObj.setPosition(sprite.x, sprite.y - 32);
     textObj.setAlpha(1);
     textObj.setColor(
-      hitType === "max" ? "#ff0"
-      : hitType === "miss" ? "#aaa"
-      : "#f00"
+      hitType === "max" ? "#ff0" : hitType === "miss" ? "#aaa" : "#f00",
     );
     textObj.setVisible(true);
     this.activeDamageTexts.add(textObj);
@@ -120,7 +118,7 @@ export class GameScene extends Phaser.Scene {
           const bufferIdx = this.predictionBuffer.findIndex(
             (p) =>
               Math.abs(p.x - serverPlayer.position.x) < 1 &&
-              Math.abs(p.y - serverPlayer.position.y) < 1
+              Math.abs(p.y - serverPlayer.position.y) < 1,
           );
           if (bufferIdx >= 0) {
             this.predictionBuffer.splice(0, bufferIdx + 1);
@@ -169,7 +167,7 @@ export class GameScene extends Phaser.Scene {
       const sprite = this.add.sprite(
         player.position.x,
         player.position.y,
-        "player"
+        "player",
       );
       this.players.set(key, sprite);
     }
@@ -185,7 +183,7 @@ export class GameScene extends Phaser.Scene {
       const sprite = this.add.sprite(
         enemy.position.x,
         enemy.position.y,
-        "enemy"
+        "enemy",
       );
       this.enemies.set(key, sprite);
     }
@@ -206,7 +204,7 @@ export class GameScene extends Phaser.Scene {
         if (!this.gameClient) return;
         try {
           const worldPoint = pointer.positionToCamera(
-            this.cameras.main
+            this.cameras.main,
           ) as Phaser.Math.Vector2;
           this.moveTarget = { x: worldPoint.x, y: worldPoint.y };
           this.gameClient.sendMoveCommand(this.moveTarget);

@@ -3,23 +3,23 @@ name: Documentation & Memory Hygiene
 on:
   pull_request:
     paths:
-      - 'src/**'
-      - 'agents/**'
-      - 'economy/**'
-      - 'economy_api/**'
-      - 'tests/**'
-      - '!docs/ROADMAP.md'
-      - '!docs/MEMORIES.md'
+      - "src/**"
+      - "agents/**"
+      - "economy/**"
+      - "economy_api/**"
+      - "tests/**"
+      - "!docs/ROADMAP.md"
+      - "!docs/MEMORIES.md"
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
-      - 'src/**'
-      - 'agents/**'
-      - 'economy/**'
-      - 'economy_api/**'
-      - 'tests/**'
-      - '!docs/ROADMAP.md'
-      - '!docs/MEMORIES.md'
+      - "src/**"
+      - "agents/**"
+      - "economy/**"
+      - "economy_api/**"
+      - "tests/**"
+      - "!docs/ROADMAP.md"
+      - "!docs/MEMORIES.md"
 
 jobs:
   doc-memory-hygiene:

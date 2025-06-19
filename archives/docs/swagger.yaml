@@ -17,9 +17,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InventorySyncPayload'
+              $ref: "#/components/schemas/InventorySyncPayload"
       responses:
-        '200':
+        "200":
           description: Successful inventory sync
           content:
             application/json:

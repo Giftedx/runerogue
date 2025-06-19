@@ -21,6 +21,7 @@ Once you provide it, I can help you:
 5. **Technical requirements** - Align with your project's coding standards and architecture patterns
 
 Given that this is for the RuneRogue project, I'll also make sure any suggestions align with:
+
 - OSRS authenticity requirements
 - TypeScript and ECS architecture patterns
 - Multiplayer performance standards
@@ -108,6 +109,7 @@ TASKS:
 // CURRENT: Multiple contradictory status documents
 
 TASKS:
+
 1. Update RUNEROGUE_PROJECT_STRUCTURE.md to reflect server-ts architecture
 2. Consolidate and correct all status documents
 3. Create realistic roadmap based on actual implementation
@@ -123,7 +125,7 @@ TASKS:
 // FOUNDATION: ECS Automation Manager provides stable base
 
 TASKS:
-1. Implement client-server movement synchronization  
+1. Implement client-server movement synchronization
 2. Add basic enemy spawning and auto-combat
 3. Create wave progression system
 4. Test multiplayer scenarios (2-4 players)
@@ -176,6 +178,7 @@ TASKS:
 
    ```markdown
    # Update core documents to reflect reality:
+
    - RUNEROGUE_PROJECT_STRUCTURE.md (server-ts architecture)
    - ORCHESTRATION_STATUS.md (correct current status)
    - PHASE_1_DEVELOPMENT_PROMPT.md (realistic goals)
@@ -217,6 +220,7 @@ TASKS:
 ## 🚀 **PROJECT COMPETITIVE ADVANTAGE**
 
 **Our Unique Strength:**
+
 > **"OSRS × Vampire Survivors on Discord with Production-Ready ECS Automation"**
 
 **vs. Competing Projects:**
@@ -261,16 +265,18 @@ TASKS:
 ## 🎯 **NEXT CHAT STARTING POINT**
 
 ```markdown
-PROMPT: "Continue RuneRogue development focusing on ECS performance optimization and multiplayer prototype completion. 
+PROMPT: "Continue RuneRogue development focusing on ECS performance optimization and multiplayer prototype completion.
 
 Current Status:
+
 - ECS Automation Manager: 88.5% test success, 38 FPS (production-ready base)
 - GameRoom: Working player lifecycle with ECS integration
 - Target: 95%+ tests passing, 45+ FPS, 2-4 player multiplayer prototype
 
 Priority Tasks:
+
 1. Investigate and fix ECS performance bottlenecks
-2. Stabilize remaining test failures  
+2. Stabilize remaining test failures
 3. Implement basic multiplayer movement synchronization
 4. Add enemy spawning with wave progression
 
@@ -281,7 +287,6 @@ Foundation is strong - build the gameplay loop!"
 
 **🎉 CONCLUSION: RuneRogue has a surprisingly strong technical foundation with the ECS Automation Manager. The project is much further along than documentation suggests, but needs focused development on core gameplay and performance optimization to achieve its multiplayer prototype goals.**
 
-
 ---
 
 _**Assistant**_
@@ -291,10 +296,12 @@ This is an excellent, comprehensive prompt that shows deep analysis of your Rune
 ## 🚀 **Prompt Improvements**
 
 ### **1. Add Specific Context Headers**
+
 ```markdown
 # 🚀 RuneRogue: OPTIMAL CONTINUATION PROMPT
 
 ## Agent Context
+
 **Session Type:** Development Continuation
 **Focus Mode:** Technical Implementation
 **Time Investment:** 4-6 hours (Phase 1)
@@ -302,43 +309,51 @@ This is an excellent, comprehensive prompt that shows deep analysis of your Rune
 ```
 
 ### **2. Enhance Priority Structure**
+
 Your priorities are good, but make them more actionable:
 
 ```markdown
 ### **IMMEDIATE PRIORITY MATRIX (Next 2 Hours)**
 
 **P0 - CRITICAL (Must Complete):**
+
 - [ ] Run full diagnostic on ECS performance (target: identify bottleneck source)
 - [ ] Fix 3 failing tests to achieve >95% pass rate
 - [ ] Document actual vs planned architecture discrepancies
 
 **P1 - HIGH (Should Complete):**
+
 - [ ] Optimize FPS from 38 to 45+ in test environment
 - [ ] Validate multiplayer GameRoom stability with 2+ concurrent players
 - [ ] Update RUNEROGUE_PROJECT_STRUCTURE.md with server-ts reality
 
 **P2 - MEDIUM (Time Permitting):**
+
 - [ ] Begin basic movement synchronization implementation
 - [ ] Research Godot-Colyseus integration patterns
 ```
 
 ### **3. Add Technical Constraints Section**
+
 ```markdown
 ## 🔧 **TECHNICAL CONSTRAINTS & REQUIREMENTS**
 
 **Performance Targets:**
+
 - ECS Systems: 60 FPS (currently 38 FPS)
 - Test Coverage: >95% (currently 88.5%)
 - Memory Usage: <200MB per room
 - Network Latency: <100ms client-server
 
 **Technology Stack Constraints:**
+
 - Server: Node.js + TypeScript + Colyseus + bitECS
 - Client: Godot (NOT Phaser 3 as originally planned)
 - Database: Current implementation status unclear
 - Testing: Jest framework with existing 26 tests
 
 **OSRS Authenticity Requirements:**
+
 - Combat calculations must match OSRS Wiki exactly
 - XP rates and skill progression authentic
 - Prayer system drain rates precise
@@ -346,59 +361,70 @@ Your priorities are good, but make them more actionable:
 ```
 
 ### **4. Add Debugging Context**
+
 ```markdown
 ## 🐛 **KNOWN ISSUES & DEBUGGING CONTEXT**
 
 **Current Test Failures (3/26):**
+
 - Specific test names needed for targeted fixes
 - Performance bottleneck location unknown
 - ECS system execution order may need optimization
 
 **Architecture Misalignment:**
+
 - Documentation claims Phaser 3 + React client
 - Actual implementation uses Godot client
 - Monorepo structure doesn't match server-ts reality
 
 **Performance Concerns:**
+
 - 38 FPS in test environment (62% of 60 FPS target)
 - Unknown if testing overhead or actual performance issue
 - Production environment performance untested
 ```
 
 ### **5. Improve Success Criteria**
+
 Make them more measurable:
 
 ```markdown
 ## ✅ **SESSION SUCCESS CRITERIA (SMART Goals)**
 
 **Foundation Stability (Must Achieve):**
+
 - [ ] Test suite: 25/26 tests passing (96.1% success rate)
 - [ ] ECS Performance: Sustained 45+ FPS for 60+ seconds
 - [ ] Zero memory leaks during 10-minute test run
 - [ ] GameRoom handles 4 players joining/leaving without crashes
 
 **Documentation Alignment (Should Achieve):**
+
 - [ ] RUNEROGUE_PROJECT_STRUCTURE.md reflects actual server-ts structure
 - [ ] Phase status documents show consistent completion percentages
 - [ ] Architecture decisions documented with rationale
 
 **Gameplay Progress (Stretch Goals):**
+
 - [ ] 2 players can move simultaneously without desync
 - [ ] Enemy spawning triggers on wave start events
 - [ ] Basic combat actions register with XP feedback
 ```
 
 ### **6. Add Resource Links**
+
 ```markdown
 ## 📚 **ESSENTIAL RESOURCES & REFERENCES**
 
 **Critical Files to Review:**
+
 - `server-ts/src/server/ecs/` - ECS system implementations
 - `server-ts/tests/` - Current test suite and failures
 - `RUNEROGUE_PROJECT_STRUCTURE.md` - Architecture documentation
 - `ORCHESTRATION_STATUS.md` - Project status tracking
 
 **External References:**
+
 - [OSRS Wiki Combat Formulas](https://oldschool.runescape.wiki/w/Combat)
 - [bitECS Documentation](https://github.com/NateTheGreatt/bitECS)
 - [Colyseus Multiplayer Framework](https://docs.colyseus.io/)
@@ -406,18 +432,21 @@ Make them more measurable:
 ```
 
 ### **7. Strengthen the Ending**
+
 ```markdown
 ## 🎯 **AGENT EXECUTION DIRECTIVE**
 
 **Primary Objective:** Transform RuneRogue from "promising foundation" to "playable multiplayer prototype"
 
 **Execution Strategy:**
+
 1. **Diagnose First** - Identify exact performance bottlenecks and test failures
 2. **Fix Foundation** - Achieve stable 45+ FPS and >95% test coverage
 3. **Build Incrementally** - Add one multiplayer feature at a time
 4. **Validate Continuously** - Test each change against OSRS authenticity requirements
 
 **Expected Deliverables:**
+
 - Performance analysis report with specific bottleneck identification
 - Updated test suite with 25/26 tests passing
 - Working 2-player movement synchronization demo
@@ -457,6 +486,7 @@ _**Assistant**_
 # 🚀 RuneRogue: OPTIMAL CONTINUATION PROMPT
 
 ## Agent Context
+
 **Session Type:** Development Continuation
 **Focus Mode:** Technical Implementation
 **Time Investment:** 4-6 hours (Phase 1)
@@ -515,18 +545,21 @@ _**Assistant**_
 ## 🔧 **TECHNICAL CONSTRAINTS & REQUIREMENTS**
 
 **Performance Targets:**
+
 - ECS Systems: 60 FPS (currently 38 FPS)
 - Test Coverage: >95% (currently 88.5%)
 - Memory Usage: <200MB per room
 - Network Latency: <100ms client-server
 
 **Technology Stack Constraints:**
+
 - Server: Node.js + TypeScript + Colyseus + bitECS
 - Client: Godot (NOT Phaser 3 as originally planned)
 - Database: Current implementation status unclear
 - Testing: Jest framework with existing 26 tests
 
 **OSRS Authenticity Requirements:**
+
 - Combat calculations must match OSRS Wiki exactly
 - XP rates and skill progression authentic
 - Prayer system drain rates precise
@@ -537,16 +570,19 @@ _**Assistant**_
 ## 🐛 **KNOWN ISSUES & DEBUGGING CONTEXT**
 
 **Current Test Failures (3/26):**
+
 - Specific test names needed for targeted fixes
 - Performance bottleneck location unknown
 - ECS system execution order may need optimization
 
 **Architecture Misalignment:**
+
 - Documentation claims Phaser 3 + React client
 - Actual implementation uses Godot client
 - Monorepo structure doesn't match server-ts reality
 
 **Performance Concerns:**
+
 - 38 FPS in test environment (62% of 60 FPS target)
 - Unknown if testing overhead or actual performance issue
 - Production environment performance untested
@@ -558,16 +594,19 @@ _**Assistant**_
 ### **IMMEDIATE PRIORITY MATRIX (Next 2 Hours)**
 
 **P0 - CRITICAL (Must Complete):**
+
 - [ ] Run full diagnostic on ECS performance (target: identify bottleneck source)
 - [ ] Fix 3 failing tests to achieve >95% pass rate
 - [ ] Document actual vs planned architecture discrepancies
 
 **P1 - HIGH (Should Complete):**
+
 - [ ] Optimize FPS from 38 to 45+ in test environment
 - [ ] Validate multiplayer GameRoom stability with 2+ concurrent players
 - [ ] Update RUNEROGUE_PROJECT_STRUCTURE.md with server-ts reality
 
 **P2 - MEDIUM (Time Permitting):**
+
 - [ ] Begin basic movement synchronization implementation
 - [ ] Research Godot-Colyseus integration patterns
 
@@ -593,6 +632,7 @@ TASKS:
 // CURRENT: Multiple contradictory status documents
 
 TASKS:
+
 1. Update RUNEROGUE_PROJECT_STRUCTURE.md to reflect server-ts architecture
 2. Consolidate and correct all status documents
 3. Create realistic roadmap based on actual implementation
@@ -608,7 +648,7 @@ TASKS:
 // FOUNDATION: ECS Automation Manager provides stable base
 
 TASKS:
-1. Implement client-server movement synchronization  
+1. Implement client-server movement synchronization
 2. Add basic enemy spawning and auto-combat
 3. Create wave progression system
 4. Test multiplayer scenarios (2-4 players)
@@ -661,6 +701,7 @@ TASKS:
 
    ```markdown
    # Update core documents to reflect reality:
+
    - RUNEROGUE_PROJECT_STRUCTURE.md (server-ts architecture)
    - ORCHESTRATION_STATUS.md (correct current status)
    - PHASE_1_DEVELOPMENT_PROMPT.md (realistic goals)
@@ -679,17 +720,20 @@ TASKS:
 ## ✅ **SESSION SUCCESS CRITERIA (SMART Goals)**
 
 **Foundation Stability (Must Achieve):**
+
 - [ ] Test suite: 25/26 tests passing (96.1% success rate)
 - [ ] ECS Performance: Sustained 45+ FPS for 60+ seconds
 - [ ] Zero memory leaks during 10-minute test run
 - [ ] GameRoom handles 4 players joining/leaving without crashes
 
 **Documentation Alignment (Should Achieve):**
+
 - [ ] RUNEROGUE_PROJECT_STRUCTURE.md reflects actual server-ts structure
 - [ ] Phase status documents show consistent completion percentages
 - [ ] Architecture decisions documented with rationale
 
 **Gameplay Progress (Stretch Goals):**
+
 - [ ] 2 players can move simultaneously without desync
 - [ ] Enemy spawning triggers on wave start events
 - [ ] Basic combat actions register with XP feedback
@@ -699,12 +743,14 @@ TASKS:
 ## 📚 **ESSENTIAL RESOURCES & REFERENCES**
 
 **Critical Files to Review:**
+
 - `server-ts/src/server/ecs/` - ECS system implementations
 - `server-ts/tests/` - Current test suite and failures
 - `RUNEROGUE_PROJECT_STRUCTURE.md` - Architecture documentation
 - `ORCHESTRATION_STATUS.md` - Project status tracking
 
 **External References:**
+
 - [OSRS Wiki Combat Formulas](https://oldschool.runescape.wiki/w/Combat)
 - [bitECS Documentation](https://github.com/NateTheGreatt/bitECS)
 - [Colyseus Multiplayer Framework](https://docs.colyseus.io/)
@@ -715,6 +761,7 @@ TASKS:
 ## 🚀 **PROJECT COMPETITIVE ADVANTAGE**
 
 **Our Unique Strength:**
+
 > **"OSRS × Vampire Survivors on Discord with Production-Ready ECS Automation"**
 
 **vs. Competing Projects:**
@@ -761,12 +808,14 @@ TASKS:
 **Primary Objective:** Transform RuneRogue from "promising foundation" to "playable multiplayer prototype"
 
 **Execution Strategy:**
+
 1. **Diagnose First** - Identify exact performance bottlenecks and test failures
 2. **Fix Foundation** - Achieve stable 45+ FPS and >95% test coverage
 3. **Build Incrementally** - Add one multiplayer feature at a time
 4. **Validate Continuously** - Test each change against OSRS authenticity requirements
 
 **Expected Deliverables:**
+
 - Performance analysis report with specific bottleneck identification
 - Updated test suite with 25/26 tests passing
 - Working 2-player movement synchronization demo
@@ -782,4 +831,3 @@ TASKS:
 ````
 
 ---
-

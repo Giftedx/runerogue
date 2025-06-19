@@ -23,11 +23,7 @@ const mockPush = jest.fn();
 });
 
 const renderWithAuth = (component: React.ReactElement) => {
-  return render(
-    <AuthProvider>
-      {component}
-    </AuthProvider>
-  );
+  return render(<AuthProvider>{component}</AuthProvider>);
 };
 
 describe('LoginPage', () => {
@@ -37,7 +33,7 @@ describe('LoginPage', () => {
 
   it('renders login form', () => {
     renderWithAuth(<LoginPage />);
-    
+
     expect(screen.getByText('Sign in to RuneRogue')).toBeInTheDocument();
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
@@ -46,7 +42,7 @@ describe('LoginPage', () => {
 
   it('shows link to register page', () => {
     renderWithAuth(<LoginPage />);
-    
+
     const registerLink = screen.getByText('create a new account');
     expect(registerLink).toBeInTheDocument();
     expect(registerLink.closest('a')).toHaveAttribute('href', '/auth/register');
@@ -54,12 +50,12 @@ describe('LoginPage', () => {
 
   it('validates required fields', async () => {
     renderWithAuth(<LoginPage />);
-    
+
     const submitButton = screen.getByRole('button', { name: /sign in/i });
-    
+
     // Try to submit without filling fields
     submitButton.click();
-    
+
     // Should show validation errors (this would need more specific testing with user events)
     expect(submitButton).toBeInTheDocument();
   });

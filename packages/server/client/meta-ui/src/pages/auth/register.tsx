@@ -45,7 +45,10 @@ const RegisterPage: React.FC = () => {
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or{' '}
-              <Link href="/auth/login" className="font-medium text-primary-600 hover:text-primary-500">
+              <Link
+                href="/auth/login"
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
                 sign in to your account
               </Link>
             </p>
@@ -56,7 +59,7 @@ const RegisterPage: React.FC = () => {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
-            
+
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="form-label">
@@ -139,8 +142,7 @@ const RegisterPage: React.FC = () => {
                 <input
                   {...register('confirmPassword', {
                     required: 'Please confirm your password',
-                    validate: (value) =>
-                      value === password || 'Passwords do not match',
+                    validate: value => value === password || 'Passwords do not match',
                   })}
                   type="password"
                   autoComplete="new-password"

@@ -35,7 +35,8 @@
       "env": {
         "TAVILY_API_KEY": "${TAVILY_API_KEY}"
       }
-    },    "browser-tools": {
+    },
+    "browser-tools": {
       "command": "node",
       "args": ["dist/index.js"],
       "cwd": "external-repos/mcp-repos/browser-tools-mcp",
@@ -46,7 +47,8 @@
       "args": ["server.js"],
       "cwd": "external-repos/mcp-repos/mcpso",
       "env": {}
-    },    "mcp-obsidian": {
+    },
+    "mcp-obsidian": {
       "command": "node",
       "args": ["dist/index.js"],
       "cwd": "external-repos/mcp-repos/mcp-obsidian",
@@ -93,7 +95,8 @@
       "args": ["dist/index.js"],
       "cwd": "external-repos/mcp-repos/nerve",
       "env": {}
-    },    "5ire": {
+    },
+    "5ire": {
       "command": "node",
       "args": ["server.js"],
       "cwd": "external-repos/mcp-repos/5ire",
@@ -339,4 +342,4 @@
       }
     }
   }
-} 
+}

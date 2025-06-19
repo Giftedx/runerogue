@@ -193,9 +193,9 @@ on:
   workflow_dispatch:
     inputs:
       output_format:
-        description: 'Documentation format (markdown or rst)'
+        description: "Documentation format (markdown or rst)"
         required: true
-        default: 'markdown'
+        default: "markdown"
         type: choice
         options:
           - markdown

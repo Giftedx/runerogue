@@ -1,116 +1,116 @@
 {
-    "folders": [
-        {
-            "name": "runerogue",
-            "path": "."
-        },
-        {
-            "name": "browser-tools-mcp",
-            "path": "mcp-repos/browser-tools-mcp"
-        },
-        {
-            "name": "mcpso",
-            "path": "mcp-repos/mcpso"
-        },
-        {
-            "name": "mcp-obsidian",
-            "path": "mcp-repos/mcp-obsidian"
-        },
-        {
-            "name": "blender-mcp",
-            "path": "mcp-repos/blender-mcp"
-        },
-        {
-            "name": "open-mcp-client",
-            "path": "mcp-repos/open-mcp-client"
-        },
-        {
-            "name": "mcp",
-            "path": "mcp-repos/mcp"
-        },
-        {
-            "name": "magic-mcp",
-            "path": "mcp-repos/magic-mcp"
-        },
-        {
-            "name": "learn-agentic-ai",
-            "path": "mcp-repos/learn-agentic-ai"
-        },
-        {
-            "name": "agentscope",
-            "path": "mcp-repos/agentscope"
-        },
-        {
-            "name": "nerve",
-            "path": "mcp-repos/nerve"
-        },
-        {
-            "name": "5ire",
-            "path": "mcp-repos/5ire"
-        },
-        {
-            "name": "fast-agent",
-            "path": "mcp-repos/fast-agent"
-        },
-        {
-            "name": "supergateway",
-            "path": "mcp-repos/supergateway"
-        },
-        {
-            "name": "shippie",
-            "path": "mcp-repos/shippie"
-        },
-        {
-            "name": "kubb",
-            "path": "mcp-repos/kubb"
-        },
-        {
-            "name": "mcp-for-beginners",
-            "path": "mcp-repos/mcp-for-beginners"
-        },
-        {
-            "name": "ai-engineering-hub",
-            "path": "mcp-repos/ai-engineering-hub"
-        },
-        {
-            "name": "awesome-mcp-servers",
-            "path": "mcp-repos/awesome-mcp-servers"
-        },
-        {
-            "name": "inspector",
-            "path": "mcp-repos/inspector"
-        },
-        {
-            "name": "Upsonic",
-            "path": "mcp-repos/Upsonic"
-        },
-        {
-            "name": "langchain-mcp-adapters",
-            "path": "mcp-repos/langchain-mcp-adapters"
-        },
-        {
-            "name": "cognee-starter",
-            "path": "mcp-repos/cognee-starter"
-        }
-    ],
-    "settings": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-        },
-        "files.exclude": {
-            "**/.git": true,
-            "**/node_modules": true
-        }
+  "folders": [
+    {
+      "name": "runerogue",
+      "path": ".",
     },
-    "extensions": {
-        "recommendations": [
-            "dbaeumer.vscode-eslint",
-            "esbenp.prettier-vscode",
-            "ms-vscode.vscode-typescript-next",
-            "ms-python.python",
-            "ms-python.vscode-pylance"
-        ]
-    }
-} 
+    {
+      "name": "browser-tools-mcp",
+      "path": "mcp-repos/browser-tools-mcp",
+    },
+    {
+      "name": "mcpso",
+      "path": "mcp-repos/mcpso",
+    },
+    {
+      "name": "mcp-obsidian",
+      "path": "mcp-repos/mcp-obsidian",
+    },
+    {
+      "name": "blender-mcp",
+      "path": "mcp-repos/blender-mcp",
+    },
+    {
+      "name": "open-mcp-client",
+      "path": "mcp-repos/open-mcp-client",
+    },
+    {
+      "name": "mcp",
+      "path": "mcp-repos/mcp",
+    },
+    {
+      "name": "magic-mcp",
+      "path": "mcp-repos/magic-mcp",
+    },
+    {
+      "name": "learn-agentic-ai",
+      "path": "mcp-repos/learn-agentic-ai",
+    },
+    {
+      "name": "agentscope",
+      "path": "mcp-repos/agentscope",
+    },
+    {
+      "name": "nerve",
+      "path": "mcp-repos/nerve",
+    },
+    {
+      "name": "5ire",
+      "path": "mcp-repos/5ire",
+    },
+    {
+      "name": "fast-agent",
+      "path": "mcp-repos/fast-agent",
+    },
+    {
+      "name": "supergateway",
+      "path": "mcp-repos/supergateway",
+    },
+    {
+      "name": "shippie",
+      "path": "mcp-repos/shippie",
+    },
+    {
+      "name": "kubb",
+      "path": "mcp-repos/kubb",
+    },
+    {
+      "name": "mcp-for-beginners",
+      "path": "mcp-repos/mcp-for-beginners",
+    },
+    {
+      "name": "ai-engineering-hub",
+      "path": "mcp-repos/ai-engineering-hub",
+    },
+    {
+      "name": "awesome-mcp-servers",
+      "path": "mcp-repos/awesome-mcp-servers",
+    },
+    {
+      "name": "inspector",
+      "path": "mcp-repos/inspector",
+    },
+    {
+      "name": "Upsonic",
+      "path": "mcp-repos/Upsonic",
+    },
+    {
+      "name": "langchain-mcp-adapters",
+      "path": "mcp-repos/langchain-mcp-adapters",
+    },
+    {
+      "name": "cognee-starter",
+      "path": "mcp-repos/cognee-starter",
+    },
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
+    "files.exclude": {
+      "**/.git": true,
+      "**/node_modules": true,
+    },
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-typescript-next",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+    ],
+  },
+}

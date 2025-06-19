@@ -170,13 +170,13 @@ class CombatEffectsManager {
     toX,
     toY,
     projectileType = "bronze_arrow",
-    onComplete = null
+    onComplete = null,
   ) {
     // Create projectile sprite
     const projectile = this.scene.add.image(
       fromX,
       fromY,
-      `projectile_${projectileType}`
+      `projectile_${projectileType}`,
     );
     projectile.setOrigin(0.5, 0.5);
 
@@ -203,7 +203,7 @@ class CombatEffectsManager {
 
     this.projectiles.push(projectile);
     console.log(
-      `🏹 Projectile fired: ${projectileType} from (${fromX}, ${fromY}) to (${toX}, ${toY})`
+      `🏹 Projectile fired: ${projectileType} from (${fromX}, ${fromY}) to (${toX}, ${toY})`,
     );
   }
 
@@ -220,7 +220,7 @@ class CombatEffectsManager {
     target,
     damage,
     attackType = "melee",
-    weaponType = "bronze_arrow"
+    weaponType = "bronze_arrow",
   ) {
     if (attackType === "ranged") {
       // Fire projectile then show damage
@@ -233,7 +233,7 @@ class CombatEffectsManager {
         () => {
           // Show damage when projectile hits
           this.showDamageEffect(target.x, target.y, damage, "damage");
-        }
+        },
       );
     } else {
       // Immediate damage for melee
@@ -260,7 +260,7 @@ class CombatEffectsManager {
           effectData.fromY,
           x,
           y,
-          projectileType
+          projectileType,
         );
         break;
 
@@ -270,7 +270,7 @@ class CombatEffectsManager {
           { x, y },
           amount,
           effectData.attackType,
-          projectileType
+          projectileType,
         );
         break;
     }
@@ -318,7 +318,7 @@ class GameScene extends Phaser.Scene {
         pointer.x,
         pointer.y,
         Math.floor(Math.random() * 20) + 1,
-        "damage"
+        "damage",
       );
     });
 

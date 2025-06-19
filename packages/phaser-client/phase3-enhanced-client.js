@@ -139,7 +139,7 @@ class XPCounter extends Phaser.GameObjects.Container {
         color: "#00ffff",
         stroke: "#000000",
         strokeThickness: 2,
-      }
+      },
     );
 
     xpDrop.setOrigin(0.5, 0.5);
@@ -265,7 +265,7 @@ class GameUI {
         fontFamily: "Arial",
         fontSize: "12px",
         color: "#00ff00",
-      }
+      },
     );
     this.fpsText.setDepth(1000);
     this.fpsText.setScrollFactor(0);
@@ -322,11 +322,11 @@ class EnhancedGameScene extends Phaser.Scene {
     // Load basic sprites (colored rectangles for now)
     this.load.image(
       "player",
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gIeFzAY4kUhgwAAACVJREFUCNdjYGBg+M+ABzAxMILEGBlQgP///0kzFNMUqBdAggIAbRAGC+xH+VMAAAAASUVORK5CYII="
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gIeFzAY4kUhgwAAACVJREFUCNdjYGBg+M+ABzAxMILEGBlQgP///0kzFNMUqBdAggIAbRAGC+xH+VMAAAAASUVORK5CYII=",
     );
     this.load.image(
       "enemy",
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gIeFzELxlFbtQAAACVJREFUCNdjYGBg+A+EJBmKaQrUCyBBAQAAAP//+/8HAADF7CY/1QgwwwAAAABJRU5ErkJggg=="
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gIeFzELxlFbtQAAACVJREFUCNdjYGBg+A+EJBmKaQrUCyBBAQAAAP//+/8HAADF7CY/1QgwwwAAAABJRU5ErkJggg==",
     );
   }
 
@@ -478,7 +478,7 @@ class EnhancedGameScene extends Phaser.Scene {
         targetX,
         targetY,
         data.damage,
-        data.effectType || (data.damage === 0 ? "zero" : "damage")
+        data.effectType || (data.damage === 0 ? "zero" : "damage"),
       );
 
       // Update health bar if it's a player
@@ -489,7 +489,7 @@ class EnhancedGameScene extends Phaser.Scene {
         if (data.targetId === this.localPlayerId) {
           this.ui.healthOrb.updateHealth(
             data.targetHealth,
-            data.targetMaxHealth || player.maxHealth
+            data.targetMaxHealth || player.maxHealth,
           );
         }
       }
@@ -513,7 +513,7 @@ class EnhancedGameScene extends Phaser.Scene {
         data.position.x * 32,
         data.position.y * 32,
         "DEAD",
-        "heal" // Use green for death effect
+        "heal", // Use green for death effect
       );
     } else if (this.room.state.enemies.has(data.enemyId)) {
       const enemy = this.room.state.enemies.get(data.enemyId);
@@ -521,7 +521,7 @@ class EnhancedGameScene extends Phaser.Scene {
         enemy.x * 32,
         enemy.y * 32,
         "DEAD",
-        "heal"
+        "heal",
       );
     }
   }
@@ -533,7 +533,7 @@ class EnhancedGameScene extends Phaser.Scene {
       player.y * 32,
       24,
       24,
-      sessionId === this.localPlayerId ? 0x00ff00 : 0x0066ff
+      sessionId === this.localPlayerId ? 0x00ff00 : 0x0066ff,
     );
     sprite.setStrokeStyle(2, 0x000000);
 
@@ -547,7 +547,7 @@ class EnhancedGameScene extends Phaser.Scene {
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 1,
-      }
+      },
     );
     nameText.setOrigin(0.5, 0.5);
 
@@ -608,7 +608,7 @@ class EnhancedGameScene extends Phaser.Scene {
       enemy.y * 32,
       20,
       20,
-      0xff4444
+      0xff4444,
     );
     sprite.setStrokeStyle(2, 0x000000);
 
@@ -689,7 +689,7 @@ class EnhancedGameScene extends Phaser.Scene {
     });
 
     console.log(
-      "✅ Offline demo ready! Combat effects will appear automatically"
+      "✅ Offline demo ready! Combat effects will appear automatically",
     );
   }
 
@@ -728,21 +728,21 @@ class EnhancedGameScene extends Phaser.Scene {
           enemy.x,
           enemy.y - 20,
           damage,
-          "heal"
+          "heal",
         );
       } else if (isPoison) {
         this.combatEffects.showDamageSplat(
           enemy.x,
           enemy.y - 20,
           damage,
-          "poison"
+          "poison",
         );
       } else {
         this.combatEffects.showDamageSplat(
           enemy.x,
           enemy.y - 20,
           damage,
-          "damage"
+          "damage",
         );
       }
 
@@ -752,7 +752,7 @@ class EnhancedGameScene extends Phaser.Scene {
         this.localPlayer.x,
         this.localPlayer.y - 30,
         xpGain,
-        "Attack"
+        "Attack",
       );
     }
 
@@ -769,10 +769,8 @@ class EnhancedGameScene extends Phaser.Scene {
 
     console.log(
       `⚔️ Demo combat! Damage: ${damage}, Type: ${
-        isHeal ? "heal"
-        : isPoison ? "poison"
-        : "normal"
-      }`
+        isHeal ? "heal" : isPoison ? "poison" : "normal"
+      }`,
     );
   }
 

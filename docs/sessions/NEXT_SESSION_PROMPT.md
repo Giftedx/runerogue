@@ -232,7 +232,7 @@ export class CombatSystem implements System {
       attackerCombat.strengthLevel,
       attackerCombat.weapon,
       targetCombat.defenceLevel,
-      targetCombat.armor
+      targetCombat.armor,
     );
 
     // Apply damage

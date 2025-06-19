@@ -12,9 +12,5 @@
     "**/*.spec.ts",
     "**/*.spec.tsx"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+  "exclude": ["node_modules", "dist", "build"]
 }

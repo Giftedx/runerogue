@@ -1,7 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { HomeIcon, TrophyIcon, CogIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import {
+  HomeIcon,
+  TrophyIcon,
+  CogIcon,
+  ArrowRightOnRectangleIcon,
+} from '@heroicons/react/24/outline';
 
 const Navbar: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();

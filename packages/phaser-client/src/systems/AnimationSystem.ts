@@ -22,7 +22,7 @@ export const createAnimationSystem = (
   scene: Phaser.Scene,
   eidToSprite: Map<number, Phaser.GameObjects.Sprite>,
   sessionIdToEid: Map<string, number>,
-  enemyIdToEid: Map<string, number>
+  enemyIdToEid: Map<string, number>,
 ) => {
   return (world: IWorld, gameState: GameState) => {
     // Animate players

@@ -49,7 +49,7 @@ When implementing OSRS mechanics:
 function calculateMaxHit(level: number, bonus: number): number {
   // OSRS uses floor operations for rounding
   const effectiveLevel = level + bonus;
-  return Math.floor(0.5 + effectiveLevel * (effectiveLevel + 64) / 640);
+  return Math.floor(0.5 + (effectiveLevel * (effectiveLevel + 64)) / 640);
 }
 
 // Test against known OSRS values

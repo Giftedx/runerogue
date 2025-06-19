@@ -9,6 +9,7 @@ This document outlines the completed implementation of an enhanced real-time mul
 ### 1. Enhanced Movement System (`EnhancedMovementSystem.ts`)
 
 **Key Features:**
+
 - **OSRS-Authentic Movement**: Walking (0.6s/tile) and Running (0.3s/tile) speeds
 - **Smooth Interpolation**: Sub-pixel movement with proper velocity tracking
 - **Movement Validation**: Anti-teleportation and distance checking
@@ -16,16 +17,18 @@ This document outlines the completed implementation of an enhanced real-time mul
 - **Progress Tracking**: Real-time movement progress calculation
 
 **Key Functions:**
+
 ```typescript
-setMovementTarget(world, entityId, x, y)     // Server-authoritative movement
-setOSRSMovementSpeed(world, entityId, isRunning)  // OSRS speed setting
-predictPosition(world, entityId, deltaTime)       // Client prediction
-applyPositionCorrection(world, entityId, serverX, serverY)  // Reconciliation
+setMovementTarget(world, entityId, x, y); // Server-authoritative movement
+setOSRSMovementSpeed(world, entityId, isRunning); // OSRS speed setting
+predictPosition(world, entityId, deltaTime); // Client prediction
+applyPositionCorrection(world, entityId, serverX, serverY); // Reconciliation
 ```
 
 ### 2. Enhanced Network Sync System (`EnhancedNetworkSyncSystem.ts`)
 
 **Key Features:**
+
 - **Priority-Based Updates**: High priority (20 TPS) for moving players, normal (10 TPS) for stationary
 - **Delta Compression**: Only sends position changes above threshold (0.01 tiles)
 - **Lag Compensation**: Historical position tracking for rollback
@@ -33,16 +36,18 @@ applyPositionCorrection(world, entityId, serverX, serverY)  // Reconciliation
 - **Comprehensive Data**: Velocity, target position, ETA, and progress included
 
 **Message Types:**
+
 ```typescript
-'position_sync_realtime' // High-priority moving entities (50ms)
-'position_sync'          // Normal priority state updates (100ms) 
-'health_sync'           // Health changes
-'position_sync_force'   // Immediate sync for critical events
+"position_sync_realtime"; // High-priority moving entities (50ms)
+"position_sync"; // Normal priority state updates (100ms)
+"health_sync"; // Health changes
+"position_sync_force"; // Immediate sync for critical events
 ```
 
 ### 3. Enhanced Movement Handler (`EnhancedMovementHandler.ts`)
 
 **Key Features:**
+
 - **Advanced Anti-Cheat**: Rate limiting, distance validation, timestamp checking
 - **Client Prediction**: Reconciliation with server position
 - **Movement Tracking**: Comprehensive logging for analysis
@@ -50,6 +55,7 @@ applyPositionCorrection(world, entityId, serverX, serverY)  // Reconciliation
 - **Performance Monitoring**: Real-time statistics and metrics
 
 **Validation Rules:**
+
 - Max 15 tiles per movement
 - Max 20 movements per second
 - Timestamp validation (±5 second tolerance)
@@ -58,6 +64,7 @@ applyPositionCorrection(world, entityId, serverX, serverY)  // Reconciliation
 ## Message Flow Architecture
 
 ### Client → Server (Movement Request)
+
 ```typescript
 {
   type: 'player_movement',
@@ -71,6 +78,7 @@ applyPositionCorrection(world, entityId, serverX, serverY)  // Reconciliation
 ```
 
 ### Server → Client (Movement Confirmation)
+
 ```typescript
 {
   type: 'move_confirmed',
@@ -88,6 +96,7 @@ applyPositionCorrection(world, entityId, serverX, serverY)  // Reconciliation
 ```
 
 ### Server → All Clients (Position Sync)
+
 ```typescript
 {
   type: 'position_sync_realtime',
@@ -121,14 +130,14 @@ Replace the existing player_movement handler:
 
 ```typescript
 // Import the enhanced handler
-import { movementHandler } from './EnhancedMovementHandler';
+import { movementHandler } from "./EnhancedMovementHandler";
 
 // In GameRoom onCreate()
-this.onMessage('player_movement', (client, message) => {
+this.onMessage("player_movement", (client, message) => {
   movementHandler.handlePlayerMovement(this, client, message);
 });
 
-this.onMessage('cancel_movement', (client, message) => {
+this.onMessage("cancel_movement", (client, message) => {
   movementHandler.handleMovementCancel(this, client);
 });
 ```
@@ -153,7 +162,7 @@ private initializeSystems() {
 
 ```typescript
 // In GameRoom onCreate(), replace existing broadcaster
-import { setNetworkBroadcaster } from '../ecs/systems/EnhancedNetworkSyncSystem';
+import { setNetworkBroadcaster } from "../ecs/systems/EnhancedNetworkSyncSystem";
 
 const ecsWorld = this.ecsAutomationManager.getECSIntegration().getWorld();
 setNetworkBroadcaster(ecsWorld, (type: string, data: any) => {
@@ -167,20 +176,20 @@ setNetworkBroadcaster(ecsWorld, (type: string, data: any) => {
 
 ```typescript
 // Handle movement confirmations
-room.onMessage('move_confirmed', (data) => {
+room.onMessage("move_confirmed", (data) => {
   const { targetX, targetY, estimatedDuration, movementId } = data;
   startLocalMovement(targetX, targetY, estimatedDuration, movementId);
 });
 
 // Handle position sync
-room.onMessage('position_sync_realtime', (data) => {
-  data.updates.forEach(update => {
+room.onMessage("position_sync_realtime", (data) => {
+  data.updates.forEach((update) => {
     updatePlayerPosition(update);
   });
 });
 
 // Handle position corrections
-room.onMessage('position_correction', (data) => {
+room.onMessage("position_correction", (data) => {
   applyServerCorrection(data.serverX, data.serverY, data.error);
 });
 ```
@@ -188,22 +197,26 @@ room.onMessage('position_correction', (data) => {
 ### 2. Client Prediction
 
 ```typescript
-function sendMovementRequest(targetX: number, targetY: number, isRunning: boolean) {
+function sendMovementRequest(
+  targetX: number,
+  targetY: number,
+  isRunning: boolean,
+) {
   const timestamp = Date.now();
-  
+
   // Predict position locally
   const predictedX = calculatePredictedX(targetX, currentX, speed);
   const predictedY = calculatePredictedY(targetY, currentY, speed);
-  
-  room.send('player_movement', {
+
+  room.send("player_movement", {
     targetX,
     targetY,
     timestamp,
     clientPredictedX: predictedX,
     clientPredictedY: predictedY,
-    isRunning
+    isRunning,
   });
-  
+
   // Start local movement immediately for responsiveness
   startPredictedMovement(targetX, targetY, isRunning);
 }
@@ -215,14 +228,14 @@ function sendMovementRequest(targetX: number, targetY: number, isRunning: boolea
 function updatePlayerPosition(update) {
   const player = players.get(update.entityId);
   if (!player) return;
-  
+
   if (update.movementData?.isMoving) {
     // Smooth interpolation to target
     interpolateToPosition(
       player,
       update.targetX,
       update.targetY,
-      update.movementData.estimatedArrival
+      update.movementData.estimatedArrival,
     );
   } else {
     // Snap to final position
@@ -235,16 +248,19 @@ function updatePlayerPosition(update) {
 ## Performance Characteristics
 
 ### Network Traffic (4 Players)
+
 - **High Priority Updates**: 20 TPS × 4 players × ~200 bytes = 16 KB/s
 - **Normal Priority Updates**: 10 TPS × 4 players × ~150 bytes = 6 KB/s
 - **Total Bandwidth**: ~22 KB/s for position sync (very efficient)
 
 ### Server Performance
+
 - **ECS Systems**: 60 FPS processing with sub-millisecond execution
 - **Network Sync**: Rate-limited to prevent overload
 - **Memory Usage**: Minimal with efficient component storage
 
 ### Latency Handling
+
 - **Client Prediction**: Immediate visual feedback (0ms perceived latency)
 - **Server Reconciliation**: Smooth correction without jarring snaps
 - **Lag Compensation**: Historical position tracking for fair gameplay
@@ -254,6 +270,7 @@ function updatePlayerPosition(update) {
 ### 1. Multiplayer Sync Test
 
 The enhanced system handles:
+
 - ✅ 2-4 players moving simultaneously
 - ✅ Real-time position broadcasting
 - ✅ Client prediction and reconciliation
@@ -278,17 +295,20 @@ The enhanced system handles:
 ## Anti-Cheat Features
 
 ### 1. Movement Validation
+
 - **Distance Limits**: Max 15 tiles per movement
 - **Rate Limiting**: Max 20 movements per second
 - **Timestamp Validation**: ±5 second tolerance
 - **Collision Detection**: Server-side collision checking
 
 ### 2. Speed Validation
+
 - **OSRS Enforcement**: Exact walking/running speeds
 - **Teleportation Prevention**: Distance-based validation
 - **Progress Tracking**: Expected vs actual position
 
 ### 3. Client Trust Model
+
 - **Server Authoritative**: All positions validated server-side
 - **Client Prediction**: For responsiveness only
 - **Rollback System**: Server corrections when needed
@@ -296,21 +316,25 @@ The enhanced system handles:
 ## Next Development Steps
 
 ### Phase 1: Client Integration
+
 1. Implement client-side message handlers
 2. Add smooth interpolation rendering
 3. Test with 2+ clients
 
 ### Phase 2: Enhanced Features
+
 1. Path-finding for multi-tile movement
 2. Animation sync with movement
 3. Click-to-move pathfinding
 
 ### Phase 3: Combat Integration
+
 1. Movement interruption during combat
 2. Target tracking during movement
 3. Attack range validation
 
 ### Phase 4: Advanced Features
+
 1. Movement abilities (teleports, dashes)
 2. Environmental effects (slow zones)
 3. Group movement coordination

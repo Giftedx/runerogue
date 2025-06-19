@@ -5,5 +5,5 @@ import { App } from "./components/SimpleApp";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

@@ -301,7 +301,7 @@ export class GameRenderer {
   interpolateMovement(
     entity: Entity,
     serverPos: Position,
-    clientPos: Position
+    clientPos: Position,
   ) {
     // Smooth interpolation between server updates
     // Client-side prediction for local player

@@ -7,7 +7,7 @@
 
 class GameScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'GameScene' });
+    super({ key: "GameScene" });
     this.client = null;
     this.room = null;
     this.playerSprites = new Map();
@@ -18,10 +18,10 @@ class GameScene extends Phaser.Scene {
   }
 
   async create() {
-    console.log('🎮 GameScene created');
+    console.log("🎮 GameScene created");
 
     // Set background
-    this.cameras.main.setBackgroundColor('#2d5a27');
+    this.cameras.main.setBackgroundColor("#2d5a27");
 
     // Initialize Colyseus connection
     await this.initializeConnection();
@@ -32,34 +32,34 @@ class GameScene extends Phaser.Scene {
 
   async initializeConnection() {
     try {
-      this.client = new Colyseus.Client('ws://localhost:3001');
-      console.log('🔌 Connecting to RuneRogue server...');
+      this.client = new Colyseus.Client("ws://localhost:3001");
+      console.log("🔌 Connecting to RuneRogue server...");
 
       // Update status
-      const statusElement = document.getElementById('status-text');
-      if (statusElement) statusElement.textContent = 'Connecting...';
+      const statusElement = document.getElementById("status-text");
+      if (statusElement) statusElement.textContent = "Connecting...";
 
       // Join the room
-      this.room = await this.client.joinOrCreate('runerogue', {
+      this.room = await this.client.joinOrCreate("runerogue", {
         username: `Player_${Math.floor(Math.random() * 1000)}`,
       });
 
       this.localPlayerId = this.room.sessionId;
-      console.log('✅ Connected! Player ID:', this.localPlayerId);
+      console.log("✅ Connected! Player ID:", this.localPlayerId);
 
       // Update status
       if (statusElement) {
-        statusElement.textContent = 'Connected';
-        statusElement.className = 'connected';
+        statusElement.textContent = "Connected";
+        statusElement.className = "connected";
       }
 
       this.setupRoomHandlers();
     } catch (error) {
-      console.error('❌ Connection failed:', error);
-      const statusElement = document.getElementById('status-text');
+      console.error("❌ Connection failed:", error);
+      const statusElement = document.getElementById("status-text");
       if (statusElement) {
-        statusElement.textContent = 'Connection Failed';
-        statusElement.className = 'disconnected';
+        statusElement.textContent = "Connection Failed";
+        statusElement.className = "disconnected";
       }
     }
   }
@@ -67,12 +67,12 @@ class GameScene extends Phaser.Scene {
   setupRoomHandlers() {
     // Player state changes
     this.room.state.players.onAdd((player, playerId) => {
-      console.log('👤 Player joined:', playerId, player);
+      console.log("👤 Player joined:", playerId, player);
       this.createPlayerSprite(playerId, player);
     });
 
     this.room.state.players.onRemove((player, playerId) => {
-      console.log('👋 Player left:', playerId);
+      console.log("👋 Player left:", playerId);
       this.removePlayerSprite(playerId);
     });
 
@@ -82,12 +82,12 @@ class GameScene extends Phaser.Scene {
 
     // Enemy state changes
     this.room.state.enemies.onAdd((enemy, enemyId) => {
-      console.log('👹 Enemy spawned:', enemyId, enemy);
+      console.log("👹 Enemy spawned:", enemyId, enemy);
       this.createEnemySprite(enemyId, enemy);
     });
 
     this.room.state.enemies.onRemove((enemy, enemyId) => {
-      console.log('💀 Enemy removed:', enemyId);
+      console.log("💀 Enemy removed:", enemyId);
       this.removeEnemySprite(enemyId);
     });
 
@@ -96,13 +96,13 @@ class GameScene extends Phaser.Scene {
     });
 
     // Room messages
-    this.room.onMessage('playerAttack', data => {
-      console.log('⚔️ Player attack:', data);
+    this.room.onMessage("playerAttack", (data) => {
+      console.log("⚔️ Player attack:", data);
       this.showDamageNumber(data.targetId, data.damage);
     });
 
-    this.room.onMessage('enemyAttack', data => {
-      console.log('💥 Enemy attack:', data);
+    this.room.onMessage("enemyAttack", (data) => {
+      console.log("💥 Enemy attack:", data);
       this.showDamageNumber(data.targetId, data.damage);
     });
   }
@@ -117,12 +117,17 @@ class GameScene extends Phaser.Scene {
     this.playerSprites.set(playerId, sprite);
 
     // Add name text
-    const nameText = this.add.text(x, y - 25, player.username || `Player${playerId.substr(0, 4)}`, {
-      fontSize: '12px',
-      color: '#ffffff',
-      backgroundColor: '#000000',
-      padding: { x: 4, y: 2 },
-    });
+    const nameText = this.add.text(
+      x,
+      y - 25,
+      player.username || `Player${playerId.substr(0, 4)}`,
+      {
+        fontSize: "12px",
+        color: "#ffffff",
+        backgroundColor: "#000000",
+        padding: { x: 4, y: 2 },
+      },
+    );
     nameText.setOrigin(0.5, 0.5);
     this.nameTexts.set(playerId, nameText);
 
@@ -203,7 +208,8 @@ class GameScene extends Phaser.Scene {
     const healthBar = this.healthBars.get(entityId);
     if (!healthBar) return;
 
-    const sprite = this.playerSprites.get(entityId) || this.enemySprites.get(entityId);
+    const sprite =
+      this.playerSprites.get(entityId) || this.enemySprites.get(entityId);
     if (!sprite) return;
 
     const x = sprite.x - 15;
@@ -219,19 +225,25 @@ class GameScene extends Phaser.Scene {
 
     // Health
     const healthPercent = health / maxHealth;
-    const healthColor = healthPercent > 0.6 ? 0x00ff00 : healthPercent > 0.3 ? 0xffff00 : 0xff0000;
+    const healthColor =
+      healthPercent > 0.6
+        ? 0x00ff00
+        : healthPercent > 0.3
+          ? 0xffff00
+          : 0xff0000;
     healthBar.fillStyle(healthColor);
     healthBar.fillRect(x, y, width * healthPercent, height);
   }
 
   showDamageNumber(targetId, damage) {
-    const sprite = this.playerSprites.get(targetId) || this.enemySprites.get(targetId);
+    const sprite =
+      this.playerSprites.get(targetId) || this.enemySprites.get(targetId);
     if (!sprite) return;
 
     const damageText = this.add.text(sprite.x, sprite.y - 10, `-${damage}`, {
-      fontSize: '14px',
-      color: '#ff0000',
-      fontStyle: 'bold',
+      fontSize: "14px",
+      color: "#ff0000",
+      fontStyle: "bold",
     });
     damageText.setOrigin(0.5, 0.5);
 
@@ -247,21 +259,21 @@ class GameScene extends Phaser.Scene {
 
   setupInput() {
     // Click to move
-    this.input.on('pointerdown', pointer => {
+    this.input.on("pointerdown", (pointer) => {
       if (!this.room) return;
 
       const worldX = Math.floor((pointer.worldX - 400) / 32);
       const worldY = Math.floor((pointer.worldY - 300) / 32);
 
-      console.log('🚶 Moving to:', worldX, worldY);
-      this.room.send('movePlayer', { x: worldX, y: worldY });
+      console.log("🚶 Moving to:", worldX, worldY);
+      this.room.send("movePlayer", { x: worldX, y: worldY });
     });
 
     // Keyboard controls
     let lastMoveTime = 0;
     const moveDelay = 200; // Prevent spam
 
-    this.input.keyboard.on('keydown', event => {
+    this.input.keyboard.on("keydown", (event) => {
       if (!this.room || Date.now() - lastMoveTime < moveDelay) return;
 
       const player = this.room.state.players.get(this.localPlayerId);
@@ -271,25 +283,25 @@ class GameScene extends Phaser.Scene {
         dy = 0;
 
       switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
+        case "ArrowUp":
+        case "KeyW":
           dy = -1;
           break;
-        case 'ArrowDown':
-        case 'KeyS':
+        case "ArrowDown":
+        case "KeyS":
           dy = 1;
           break;
-        case 'ArrowLeft':
-        case 'KeyA':
+        case "ArrowLeft":
+        case "KeyA":
           dx = -1;
           break;
-        case 'ArrowRight':
-        case 'KeyD':
+        case "ArrowRight":
+        case "KeyD":
           dx = 1;
           break;
-        case 'Space':
+        case "Space":
           // Attack nearest enemy
-          this.room.send('attackNearestEnemy');
+          this.room.send("attackNearestEnemy");
           lastMoveTime = Date.now();
           return;
       }
@@ -297,7 +309,7 @@ class GameScene extends Phaser.Scene {
       if (dx !== 0 || dy !== 0) {
         const newX = player.x + dx;
         const newY = player.y + dy;
-        this.room.send('movePlayer', { x: newX, y: newY });
+        this.room.send("movePlayer", { x: newX, y: newY });
         lastMoveTime = Date.now();
       }
     });
@@ -309,11 +321,11 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  parent: 'phaser-game',
-  backgroundColor: '#2d5a27',
+  parent: "phaser-game",
+  backgroundColor: "#2d5a27",
   scene: GameScene,
   physics: {
-    default: 'arcade',
+    default: "arcade",
     arcade: {
       debug: false,
     },
@@ -321,15 +333,15 @@ const config = {
 };
 
 // Initialize the game when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🎮 Starting RuneRogue Phaser Client...');
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🎮 Starting RuneRogue Phaser Client...");
 
   // Create UI elements
-  const gameContainer = document.getElementById('phaser-game') || document.body;
+  const gameContainer = document.getElementById("phaser-game") || document.body;
 
   // Add connection status
-  const statusDiv = document.createElement('div');
-  statusDiv.id = 'connection-status';
+  const statusDiv = document.createElement("div");
+  statusDiv.id = "connection-status";
   statusDiv.innerHTML = `
     <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-family: Arial; z-index: 1000;">
       <h3>🎮 RuneRogue Multiplayer</h3>

@@ -4,23 +4,24 @@ This directory contains all the GitHub Actions workflows for the RuneRogue proje
 
 ## Active Workflows
 
--   **`ci.yml`**: The main Continuous Integration (CI) pipeline. It runs on every push and pull request to the `main` and `develop` branches. Its jobs include:
-    -   `lint`: Lints and formats the code.
-    -   `test`: Runs the full test suite.
-    -   `build`: Builds the application packages.
-    -   `godot-build`: Builds the Godot client.
-    -   `deploy-staging` / `deploy-production`: Placeholder deployment jobs.
-    -   `notification`: Reports the status of the pipeline.
+- **`ci.yml`**: The main Continuous Integration (CI) pipeline. It runs on every push and pull request to the `main` and `develop` branches. Its jobs include:
 
--   **`copilot-agent-tasks.yml`**: A workflow for managing tasks assigned to the AI agent.
+  - `lint`: Lints and formats the code.
+  - `test`: Runs the full test suite.
+  - `build`: Builds the application packages.
+  - `godot-build`: Builds the Godot client.
+  - `deploy-staging` / `deploy-production`: Placeholder deployment jobs.
+  - `notification`: Reports the status of the pipeline.
 
--   **`auto-assign-copilot.yml`**: Automatically assigns the `github-copilot[bot]` to issues with specific labels.
+- **`copilot-agent-tasks.yml`**: A workflow for managing tasks assigned to the AI agent.
 
--   **`create-copilot-task.yml`**: A workflow for creating a new Copilot agent task.
+- **`auto-assign-copilot.yml`**: Automatically assigns the `github-copilot[bot]` to issues with specific labels.
 
--   **`mcp-server-ci.yml`**: A CI pipeline specifically for MCP (Model Context Protocol) servers.
+- **`create-copilot-task.yml`**: A workflow for creating a new Copilot agent task.
 
--   **`doc-memory-hygiene.yml`**: A workflow for maintaining the hygiene of documentation and memory files.
+- **`mcp-server-ci.yml`**: A CI pipeline specifically for MCP (Model Context Protocol) servers.
+
+- **`doc-memory-hygiene.yml`**: A workflow for maintaining the hygiene of documentation and memory files.
 
 ## Legacy & Archived Workflows
 

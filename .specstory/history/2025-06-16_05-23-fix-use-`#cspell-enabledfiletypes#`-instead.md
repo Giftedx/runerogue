@@ -50,17 +50,16 @@ Update the cSpell configuration to use the correct property name.
     "analytics",
     "XP",
     "TPS",
-    "FPS"
+    "FPS",
   ],
   "cSpell.enabledFileTypes": [
     "markdown",
     "typescript",
     "javascript",
     "json",
-    "jsonc"
-  ]
+    "jsonc",
+  ],
 }
 ```
 
 ---
-

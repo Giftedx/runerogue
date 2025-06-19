@@ -48,7 +48,6 @@ Workspace context:
 The main focus is on the ECS systems and their integration, but all surfaced errors and test failures should be addressed.
 See the attached MiningSystem.ts for a reference of the current ECS system implementation style.
 
-
 ---
 
 _**Assistant**_
@@ -56,6 +55,7 @@ _**Assistant**_
 Based on your request to systematically stabilize and improve type-safety across the RuneRogue project, with a focus on ECS systems and their integration, here is a comprehensive list of all code in your workspace that is relevant to your goals. This includes ECS system files, related test files, and key cross-package/shared type definitions and utilities. The MiningSystem.ts you provided serves as a reference for the desired implementation style.
 
 **1. ECS System Files (Primary Focus)**
+
 - `packages/server/src/server/ecs/systems/EquipmentSystem.ts`
 - `packages/server/src/server/ecs/systems/WoodcuttingSystem.ts`
 - `packages/game-server/src/ecs/systems/DeathSystem.ts`
@@ -68,6 +68,7 @@ Based on your request to systematically stabilize and improve type-safety across
 - `packages/osrs-data/src/calculators/combat.ts`
 
 **2. Test Files for ECS Systems and Integration**
+
 - `packages/server/src/server/__tests__/game/CombatSystemAction.test.ts`
 - `packages/server/src/server/__tests__/loot-inventory-sync.test.ts`
 - `packages/server/src/server/__tests__/economy-integration.test.ts`
@@ -75,6 +76,7 @@ Based on your request to systematically stabilize and improve type-safety across
 - (Other test files in `packages/server/src/server/__tests__/` and `packages/server/src/server/ecs/systems/__tests__/`)
 
 **3. Shared Types, Utilities, and Cross-Package Imports**
+
 - `packages/shared/src/index.ts` (exports Result, GameError, and other shared types)
 - `packages/shared/package.json` (ensures workspace dependency)
 - `packages/server/tsconfig.json` (path mappings for shared and osrs-data)
@@ -87,17 +89,20 @@ Based on your request to systematically stabilize and improve type-safety across
 - `packages/server/src/server/rooms/JsonGameRoom_fixed.ts` (same as above)
 
 **4. Economy Integration and Related Systems**
+
 - `packages/server/src/server/game/ItemManager.ts` (uses economyIntegration, surfaced TS errors)
 - `packages/server/src/server/game/GameRoom.ts` (uses economyIntegration, surfaced TS errors)
 - `packages/server/src/server/__tests__/loot-inventory-sync.test.ts` (mocks economyIntegration)
 - `packages/server/src/server/__tests__/economy-integration.test.ts` (mocks EconomyClient)
 
 **5. TypeScript Error and Test Failure References**
+
 - `test-results.log` (contains TypeScript errors and test failures, especially for ECS and economy integration)
 - `packages/server/build_status.txt`, `build_status_2.txt`, `build-output.txt` (TypeScript build errors, especially for ECS systems)
 - `pnpm-lock.yaml`, `tsconfig.json`, `tsconfig.test.json` (ensure correct module resolution and strict settings)
 
 **6. Documentation and JSDoc**
+
 - `.github/instructions/core-standards.instructions.md` (TypeScript, error handling, and OSRS authenticity standards)
 - `.github/instructions/test.instructions.md` (test coverage, Result type, and JSDoc requirements)
 - `.github/instructions/architecture.instructions.md` (ECS, Colyseus, and cross-package architecture)
@@ -105,10 +110,12 @@ Based on your request to systematically stabilize and improve type-safety across
 - `docs/map-system.md`, `docs/PROJECT_STRUCTURE.md`, `docs/TYPESCRIPT_ERROR_RESOLUTION_GUIDE.md` (project and type safety documentation)
 
 **7. Additional ECS/Component Definitions**
+
 - `packages/server/src/server/components/` (all ECS component definitions used in systems)
 - `packages/shared/src/types/` (shared type definitions for ECS, Result, GameError, etc.)
 
 **8. Other ECS System Files (for completeness)**
+
 - `packages/server/src/server/ecs/systems/MiningSystem.ts` (reference implementation)
 - `packages/server/src/server/ecs/systems/AutoCombatSystem.ts`
 - `packages/server/src/server/ecs/systems/CookingSystem.ts`
@@ -126,6 +133,7 @@ Based on your request to systematically stabilize and improve type-safety across
 ---
 
 **Summary of Next Steps:**
+
 - Review and update all ECS system files and their tests for strict type safety, correct imports, and OSRS authenticity.
 - Fix all surfaced TypeScript errors, especially those related to ECS component property access and cross-package imports.
 - Update or mock economy integration in both implementation and tests for type safety and reliability.
@@ -138,33 +146,40 @@ Based on your request to systematically stabilize and improve type-safety across
 If you need the contents of any specific file or want to see the TypeScript errors/test failures in detail, let me know which files or error logs you want to review next.Here’s a systematic plan to stabilize and improve type-safety in the RuneRogue project, following your requirements. I’ll proceed step by step, running TypeScript checks and tests, and fixing issues as they arise, with a focus on ECS systems and cross-package type safety.
 
 **Step 1: Run TypeScript Check**
+
 - I’ll run pnpm -r exec tsc --noEmit to surface all type errors across packages.
 
 **Step 2: Systematic Error Resolution**
+
 - For each error, I’ll:
   - Fix strict type issues, missing/incorrect imports, and dynamic property access.
   - Ensure ECS component property usage is type-safe and matches definitions.
   - Update or add JSDoc comments for public APIs and systems.
 
 **Step 3: Test Suite Stabilization**
+
 - I’ll run pnpm test -- --testPathIgnorePatterns=archived to identify failing tests.
 - For each failure, I’ll:
   - Update tests or implementation for Colyseus/ECS/OSRS compatibility.
   - Mock or update dependencies for type safety and reliability.
 
 **Step 4: Module Resolution and Cross-Package Imports**
+
 - I’ll fix any issues with imports/exports for shared types and utilities.
 
 **Step 5: Economy and Integration Robustness**
+
 - I’ll update or mock economy integration for robust, type-safe operation.
 - Ensure all economy actions are OSRS-authentic and error-handled.
 
 **Step 6: Performance and Code Quality**
+
 - I’ll optimize ECS queries and system execution order.
 - Ensure async operations have error handling.
 - Maintain code readability and add/maintain JSDoc.
 
 **Step 7: Final Validation**
+
 - Re-run TypeScript and tests to confirm zero errors and all tests passing.
 
 I’ll begin by running the TypeScript check to gather the current list of errors. Here’s a summary of the current TypeScript errors and the next actions to resolve them:
@@ -172,18 +187,22 @@ I’ll begin by running the TypeScript check to gather the current list of error
 ### Errors and Fixes
 
 1. **`DeathSystem.ts` & EnemyAISystem.ts:**
+
    - `super()` is called with no arguments, but the ECS System base class expects a `world` argument.
    - **Fix:** Pass the required `world` argument to `super()` in both system constructors.
 
 2. **EnemyAISystem.ts:**
+
    - Cannot find module `../../../../../packages/shared/src/constants`.
    - **Fix:** Update the import to the correct path, likely `@runerogue/shared/src/constants/game` or re-export from `@runerogue/shared`.
 
 3. **EnemyAISystem.ts:**
+
    - Property 'id' does not exist on type 'never' (in `closestPlayer.id`).
    - **Fix:** Type inference issue—ensure `closestPlayer` is typed as `Player | null`.
 
 4. **index.ts:**
+
    - Express route handler type mismatch for `app.post("/api/discord/token", ...)`.
    - **Fix:** Ensure the handler matches the expected Express signature.
 
@@ -194,31 +213,37 @@ I’ll begin by running the TypeScript check to gather the current list of error
 ---
 
 I will now:
+
 - Fix the ECS system constructors.
 - Correct the constants import in `EnemyAISystem.ts`.
 - Fix the type for `closestPlayer`.
 - Add `node-fetch` to dependencies.
 - Update the Express handler type if needed.
 
-Let’s start with the ECS system fixes and the constants import. 
-```
+Let’s start with the ECS system fixes and the constants import.
 
 ```
 
 ```
 
 ```
+
+```
+
 Here’s what remains to be fixed:
 
 1. **DeathSystem & EnemyAISystem:**
+
    - `Property 'world' is private in type ... but not in type 'System<Entity>'`
      - **Fix:** Remove the `private world: World;` property or make it `protected`/`public` to match the base class, or just use the base class's `world` property if available.
 
 2. **EnemyAISystem:**
+
    - Cannot find module `@runerogue/shared/src/constants/game`
      - **Fix:** Use a relative import path to `../../../shared/src/constants/game` or ensure the shared package exports these constants.
 
 3. **EnemyAISystem:**
+
    - Property 'id' does not exist on type 'never' (in `closestPlayer.id`)
      - **Fix:** Ensure the type of `closestPlayer` is always `Player | null` and that the callback in `forEach` is correctly typed.
 
@@ -226,8 +251,7 @@ Here’s what remains to be fixed:
    - Express route handler type mismatch.
      - **Fix:** Explicitly type the handler parameters as `Request` and `Response` from Express.
 
-I will now apply these fixes. 
-```
+I will now apply these fixes.
 
 ```
 
@@ -238,9 +262,13 @@ I will now apply these fixes.
 ```
 
 ```
+
+```
+
 The `EnemyAISystem.ts` file is now severely broken due to a patching error (likely a misplaced or missing class/method boundary). The class structure and method boundaries must be restored to valid TypeScript.
 
-**Next step:**  
+**Next step:**
+
 - Restore the correct class and method structure for `EnemyAISystem.ts` (constructor, methods, and property declarations).
 - Ensure all methods and properties are inside the class, and the file is syntactically valid.
 
@@ -259,7 +287,10 @@ This will restore the file to a working state and resolve the TypeScript errors.
 
 import { System, World } from "@colyseus/ecs";
 import { GameState, Enemy, Player } from "../../schemas/GameState";
-import { OSRS_TICK_MS, WEAPON_SPEEDS } from "../../../../../shared/src/constants/game";
+import {
+  OSRS_TICK_MS,
+  WEAPON_SPEEDS,
+} from "../../../../../shared/src/constants/game";
 
 const AGGRESSION_RADIUS = 4; // tiles
 const MELEE_RANGE = 1; // tiles
@@ -311,7 +342,7 @@ export class EnemyAISystem extends System {
     this.state.players.forEach((player: Player) => {
       if (player.isDead) return;
       const distance = Math.sqrt(
-        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
       );
       if (distance < AGGRESSION_RADIUS && distance < minDistance) {
         minDistance = distance;
@@ -337,7 +368,7 @@ export class EnemyAISystem extends System {
       return;
     }
     const distance = Math.sqrt(
-      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2)
+      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2),
     );
     // Move towards target if not in melee range
     if (distance > MELEE_RANGE) {
@@ -371,32 +402,33 @@ PS C:\Users\aggis\GitHub\runerogue> pnpm -r exec tsc --noEmit
 src/ecs/systems/EnemyAISystem.ts:12:8 - error TS2307: Cannot find module '../../../../../shared/src/constants/game' or its corresponding type declarations.
 
 12 } from "../../../../../shared/src/constants/game";
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+```
 
 src/ecs/systems/EnemyAISystem.ts:72:38 - error TS2339: Property 'id' does not exist on type 'never'.
 
-72       enemy.targetId = closestPlayer.id;
-                                        ~~
+72 enemy.targetId = closestPlayer.id;
+~~
 
 src/index.ts:38:32 - error TS2769: No overload matches this call.
-  The last overload gave the following error.
-    Argument of type '(req: Request, res: Response) => Promise<express.Response<any, Record<string, any>> | undefined>' is not assignable to parameter of type 'Application<Record<string, any>>'.
-      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+The last overload gave the following error.
+Argument of type '(req: Request, res: Response) => Promise<express.Response<any, Record<string, any>> | undefined>' is not assignable to parameter of type 'Application<Record<string, any>>'.
+Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
 
 38 app.post("/api/discord/token", async (req: Request, res: Response) => {
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  ../../node_modules/.pnpm/@types+express-serve-static-core@5.0.6/node_modules/@types/express-serve-static-core/index.d.ts:168:5
-    168     (path: PathParams, subApplication: Application): T;
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    The last overload is declared here.
+../../node_modules/.pnpm/@types+express-serve-static-core@5.0.6/node_modules/@types/express-serve-static-core/index.d.ts:168:5
+168 (path: PathParams, subApplication: Application): T;
+```
 
+The last overload is declared here.
 
 Found 3 errors in 2 files.
 
-Errors  Files
-     2  src/ecs/systems/EnemyAISystem.ts:12
-     1  src/index.ts:38
+Errors Files
+2 src/ecs/systems/EnemyAISystem.ts:12
+1 src/index.ts:38
 C:\Users\aggis\GitHub\runerogue\packages\game-server:
  ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 2: tsc --noEmit
 
@@ -404,10 +436,10 @@ C:\Users\aggis\GitHub\runerogue\packages\game-server:
 
 _**Assistant**_
 
-
 ```
 
 ```
+
 The TypeScript errors in `EnemyAISystem.ts` are now fully resolved and the file is type-safe and production-ready. However, the test suite reveals additional strict type issues and missing index signatures in other ECS systems and integration tests, especially:
 
 - **FishingSystem.ts**: Index signature errors when accessing FISH by number.
@@ -417,6 +449,7 @@ The TypeScript errors in `EnemyAISystem.ts` are now fully resolved and the file 
 - **Colyseus/testing and schema usage**: Some test utilities are used incorrectly or with outdated APIs.
 
 **Next steps:**
+
 1. Systematically address index signature/type errors in ECS systems (e.g., FishingSystem, GameRoom, SurvivorWaveSystem).
 2. Update or mock economy integration for type safety in both implementation and tests.
 3. Refactor test files to match the latest APIs and schema definitions.
@@ -434,13 +467,14 @@ continue
 
 _**Assistant**_
 
-
 ```
 
 ```
+
 The type-safety and lookup logic for fish data in `FishingSystem.ts` is now correct and robust, using a type-safe mapping from `itemId` to fish data. However, the file has Windows-style line endings (`\r\n`), which are causing lint/compile errors due to the project's expected line ending style (likely LF, `\n`). There is also a minor unused import warning for `FISHING_SPOTS`.
 
 **Next steps:**
+
 - Normalize all line endings in this file to LF (`\n`).
 - Remove the unused `FISHING_SPOTS` import.
 - Re-check for any remaining errors after these fixes.
@@ -467,13 +501,8 @@ At every stage, prioritize intelligent decision-making. Before making changes, c
 
 If a planned change leads to a suboptimal or unstable solution, pause and reconsider. Rethink the approach, understand the root cause of the problem, devise a better plan, and then generate a robust fix. Once resolved, resume the cycle from the beginning: think → analyze → plan → generate.
 
-
-
 ---
 
 _**Assistant**_
 
-
-
 ---
-

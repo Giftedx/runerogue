@@ -177,7 +177,7 @@ export class DiscordActivity {
 
   constructor() {
     this.discordSdk = new DiscordSDK(
-      import.meta.env.VITE_DISCORD_CLIENT_ID || "development_client_id"
+      import.meta.env.VITE_DISCORD_CLIENT_ID || "development_client_id",
     );
   }
 

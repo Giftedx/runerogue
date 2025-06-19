@@ -7,7 +7,7 @@ You are to operate in a **continuous loop** of thinking, analyzing, planning, an
 ### **DEVELOPMENT LOOP PATTERN:**
 
 1. **THINK** → Analyze current progress and identify next priority
-2. **ANALYZE** → Examine actual files, dependencies, and system context  
+2. **ANALYZE** → Examine actual files, dependencies, and system context
 3. **PLAN** → Determine specific actions, file modifications, and implementation approach
 4. **GENERATE** → Produce high-quality, stable, maintainable code
 5. **REPEAT** → Immediately restart the cycle with fresh analysis
@@ -48,7 +48,7 @@ A **multiplayer OSRS-inspired roguelike survival game** designed as a Discord Ac
 
 - Server-authoritative movement validation
 - OSRS-accurate walking speed (1 tile per 0.6s, running 0.3s)
-- Client prediction with server reconciliation  
+- Client prediction with server reconciliation
 - Position broadcasting to all connected players
 - Anti-cheat validation (speed limits, boundary checks)
 
@@ -230,7 +230,7 @@ npm run profile
 ### **Quality Standards:**
 
 - Zero production TypeScript errors
-- >90% test coverage for multiplayer systems
+- > 90% test coverage for multiplayer systems
 - <100ms latency for critical game actions
 - Graceful error handling and recovery
 - Professional UI with clear feedback

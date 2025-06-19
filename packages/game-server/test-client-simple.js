@@ -33,7 +33,7 @@ async function testConnection() {
     room.onStateChange((state) => {
       console.log(
         "📊 State change - Game started:",
-        state.gameStarted || false
+        state.gameStarted || false,
       );
     });
 

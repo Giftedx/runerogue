@@ -4,704 +4,728 @@
 
 _**User**_
 
-PS C:\Users\aggis\GitHub\runerogue> cd "c:\Users\aggis\GitHub\runerogue\server-ts" && npm run build                             
+PS C:\Users\aggis\GitHub\runerogue> cd "c:\Users\aggis\GitHub\runerogue\server-ts" && npm run build
 
 > runerogue@0.1.0 build
 > tsc --project tsconfig.json
 
 src/assets/comprehensive-asset-coordinator.ts:118:48 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './osrs-cache-reader.js'?
 
-118       const { OSRSCacheReader } = await import('./osrs-cache-reader');
-                                                   ~~~~~~~~~~~~~~~~~~~~~
+118 const { OSRSCacheReader } = await import('./osrs-cache-reader');
+
+```
 
 src/assets/comprehensive-asset-coordinator.ts:411:5 - error TS2322: Type 'ComprehensiveAssetManifest' is not assignable to type 'void'.
 
-411     return manifest;
-        ~~~~~~
+411 return manifest;
+~~~~~~
 
 src/assets/comprehensive-extractor-script.ts:116:50 - error TS2339: Property 'id' does not exist on type 'unknown'.
 
-116                 id: `mcp_${search.type}_${result.id}`,
-                                                     ~~
+116 id: `mcp_${search.type}_${result.id}`,
+~~
 
 src/assets/comprehensive-extractor-script.ts:117:30 - error TS2339: Property 'value' does not exist on type 'unknown'.
 
-117                 name: result.value || `${search.type}_${result.id}`,
-                                 ~~~~~
+117 name: result.value || `${search.type}_${result.id}`,
+~~~~~
 
 src/assets/comprehensive-extractor-script.ts:117:64 - error TS2339: Property 'id' does not exist on type 'unknown'.
 
-117                 name: result.value || `${search.type}_${result.id}`,
-                                                                   ~~
+117 name: result.value || `${search.type}_${result.id}`,
+~~
 
 src/assets/comprehensive-extractor-script.ts:221:52 - error TS2339: Property 'title' does not exist on type 'unknown'.
 
-221               id: `search_${this.generateId(result.title || result.url)}`,
-                                                       ~~~~~
+221 id: `search_${this.generateId(result.title || result.url)}`,
+~~~~~
 
 src/assets/comprehensive-extractor-script.ts:221:68 - error TS2339: Property 'url' does not exist on type 'unknown'.
 
-221               id: `search_${this.generateId(result.title || result.url)}`,
-                                                                       ~~~
+221 id: `search_${this.generateId(result.title || result.url)}`,
+~~~
 
 src/assets/comprehensive-extractor-script.ts:222:28 - error TS2339: Property 'title' does not exist on type 'unknown'.
 
-222               name: result.title || 'Unknown Resource',
-                               ~~~~~
+222 name: result.title || 'Unknown Resource',
+~~~~~
 
 src/assets/comprehensive-extractor-script.ts:226:34 - error TS2339: Property 'url' does not exist on type 'unknown'.
 
-226                 download: result.url,
-                                     ~~~
+226 download: result.url,
+~~~
 
 src/assets/comprehensive-extractor-script.ts:304:13 - error TS2353: Object literal may only specify known properties, and 'altText' does not exist in type '{ extractedAt: string; searchTerm?: string; category?: string; }'.
 
-304             altText,
-                ~~~~~~~
+304 altText,
+~~~~~~~
 
-  src/assets/comprehensive-extractor-script.ts:23:3
-    23   metadata: {
-         ~~~~~~~~
-    The expected type comes from property 'metadata' which is declared here on type 'ExtractedAsset'
+src/assets/comprehensive-extractor-script.ts:23:3
+23 metadata: {
+~~~~~~~~
+The expected type comes from property 'metadata' which is declared here on type 'ExtractedAsset'
 
 src/assets/comprehensive-extractor-script.ts:340:13 - error TS2353: Object literal may only specify known properties, and 'formats' does not exist in type '{ extractedAt: string; searchTerm?: string; category?: string; }'.
 
-340             formats: ['GLTF', 'OBJ'],
-                ~~~~~~~
+340 formats: ['GLTF', 'OBJ'],
+~~~~~~~
 
-  src/assets/comprehensive-extractor-script.ts:23:3
-    23   metadata: {
-         ~~~~~~~~
-    The expected type comes from property 'metadata' which is declared here on type 'ExtractedAsset'
+src/assets/comprehensive-extractor-script.ts:23:3
+23 metadata: {
+~~~~~~~~
+The expected type comes from property 'metadata' which is declared here on type 'ExtractedAsset'
 
 src/assets/comprehensive-osrs-extractor.ts:260:16 - error TS2339: Property 'extractedCount' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
 
-260       logEntry.extractedCount = extractedCount;
-                   ~~~~~~~~~~~~~~
+260 logEntry.extractedCount = extractedCount;
+~~~~~~~~~~~~~~
 
 src/assets/comprehensive-osrs-extractor.ts:261:16 - error TS2339: Property 'duration' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
 
-261       logEntry.duration = Date.now() - startTime;
-                   ~~~~~~~~
+261 logEntry.duration = Date.now() - startTime;
+~~~~~~~~
 
 src/assets/comprehensive-osrs-extractor.ts:263:71 - error TS2339: Property 'duration' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
 
-263       console.log(`✅ Extracted ${extractedCount} assets in ${logEntry.duration}ms`);
-                                                                          ~~~~~~~~
+263 console.log(`✅ Extracted ${extractedCount} assets in ${logEntry.duration}ms`);
+~~~~~~~~
 
 src/assets/comprehensive-osrs-extractor.ts:266:16 - error TS2339: Property 'error' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
 
-266       logEntry.error = error.message;
-                   ~~~~~
+266 logEntry.error = error.message;
+~~~~~
 
 src/assets/comprehensive-osrs-extractor.ts:267:16 - error TS2339: Property 'duration' does not exist on type '{ task: AssetCategory; source: AssetSource; startTime: string; status: string; }'.
 
-267       logEntry.duration = Date.now() - startTime;
-                   ~~~~~~~~
+267 logEntry.duration = Date.now() - startTime;
+~~~~~~~~
 
 src/assets/demo-assets.ts:36:34 - error TS2339: Property 'hasAsset' does not exist on type 'OSRSAssetLoader'.
 
-36       const status = assetLoader.hasAsset(asset) ? '✅' : '❌';
-                                    ~~~~~~~~
+36 const status = assetLoader.hasAsset(asset) ? '✅' : '❌';
+~~~~~~~~
 
 src/assets/demo-assets.ts:54:34 - error TS2339: Property 'hasAsset' does not exist on type 'OSRSAssetLoader'.
 
-54       const status = assetLoader.hasAsset(asset) ? '✅' : '❌';
-                                    ~~~~~~~~
+54 const status = assetLoader.hasAsset(asset) ? '✅' : '❌';
+~~~~~~~~
 
 src/assets/osrs-cache-reader-fallback.ts:201:49 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './mcp-osrs-extractor.js'?
 
-201       const { searchOSRSAssets } = await import('./mcp-osrs-extractor');
-                                                    ~~~~~~~~~~~~~~~~~~~~~~
+201 const { searchOSRSAssets } = await import('./mcp-osrs-extractor');
+```
 
 src/assets/osrs-cache-reader-fallback.ts:227:51 - error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './osrs-asset-extractor.js'?
 
-227       const { OSRSAssetExtractor } = await import('./osrs-asset-extractor');
-                                                      ~~~~~~~~~~~~~~~~~~~~~~~~
+227 const { OSRSAssetExtractor } = await import('./osrs-asset-extractor');
+
+```
 
 src/assets/osrs-cache-reader-fallback.ts:234:29 - error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
 
-234         for (const asset of assets) {
-                                ~~~~~~
+234 for (const asset of assets) {
+~~~~~~
 
 src/assets/osrs-cache-reader-fallback.ts:471:35 - error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
 
 471 export { OSRSCacheReaderFallback, CacheAsset, CacheExtractionResult };
-                                      ~~~~~~~~~~
+~~~~~~~~~~
 
 src/assets/osrs-cache-reader-fallback.ts:471:47 - error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
 
 471 export { OSRSCacheReaderFallback, CacheAsset, CacheExtractionResult };
-                                                  ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 src/client/game/GameClient.ts:57:51 - error TS2339: Property 'id' does not exist on type 'Room<any>'.
 
-57       console.log('Connected to room:', this.room.id);
-                                                     ~~
+57 console.log('Connected to room:', this.room.id);
+~~
 
 src/client/game/GameClient.ts:71:35 - error TS2554: Expected 0 arguments, but got 1.
 
-71       this.audioManager.playMusic('main');
-                                     ~~~~~~
+71 this.audioManager.playMusic('main');
+~~~~~~
 
 src/client/game/GameClient.ts:225:23 - error TS2339: Property 'update' does not exist on type 'InputManager'.
 
-225     this.inputManager.update();
-                          ~~~~~~
+225 this.inputManager.update();
+~~~~~~
 
 src/client/game/InputManager.ts:57:27 - error TS2339: Property 'on' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
 
-57     this.discord.commands.on('attack', interaction => {
-                             ~~
+57 this.discord.commands.on('attack', interaction => {
+~~
 
 src/client/game/InputManager.ts:71:27 - error TS2339: Property 'on' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
 
-71     this.discord.commands.on('collect', interaction => {
-                             ~~
+71 this.discord.commands.on('collect', interaction => {
+~~
 
 src/client/game/UIManager.ts:204:27 - error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
 
-204     this.discord.commands.register({
-                              ~~~~~~~~
+204 this.discord.commands.register({
+~~~~~~~~
 
 src/client/game/UIManager.ts:209:27 - error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
 
-209     this.discord.commands.register({
-                              ~~~~~~~~
+209 this.discord.commands.register({
+~~~~~~~~
 
 src/client/game/UIManager.ts:214:27 - error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
 
-214     this.discord.commands.register({
-                              ~~~~~~~~
+214 this.discord.commands.register({
+~~~~~~~~
 
 src/client/game/UIManager.ts:219:27 - error TS2339: Property 'register' does not exist on type '{ authenticate: (args: { access_token?: string; }) => Promise<{ access_token: string; user: { username: string; discriminator: string; id: string; public_flags: number; avatar?: string; global_name?: string; }; scopes: (-1 | ... 45 more ... | "lobbies.write")[]; expires: string; application: { ...; }; }>; ... 21 mor...'.
 
-219     this.discord.commands.register({
-                              ~~~~~~~~
+219 this.discord.commands.register({
+~~~~~~~~
 
 src/client/index.ts:24:32 - error TS2339: Property 'user' does not exist on type 'DiscordSDK'.
 
-24     const user = await discord.user.fetch();
-                                  ~~~~
+24 const user = await discord.user.fetch();
+~~~~
 
 src/client/index.ts:72:39 - error TS2554: Expected 1 arguments, but got 2.
 
-72         gameClient.sendMoveCommand(x, y);
-                                         ~
+72 gameClient.sendMoveCommand(x, y);
+~
 
 src/client/index.ts:91:39 - error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
 
-91         gameClient.sendUseItemCommand(itemIndex);
-                                         ~~~~~~~~~
+91 gameClient.sendUseItemCommand(itemIndex);
+~~~~~~~~~
 
 src/client/index.ts:99:7 - error TS2345: Argument of type 'OSRSStyleRenderer' is not assignable to parameter of type 'GameRenderer'.
-  Type 'OSRSStyleRenderer' is missing the following properties from type 'GameRenderer': damageNumbers, skillPopups, healthBars, renderResources, and 14 more.
+Type 'OSRSStyleRenderer' is missing the following properties from type 'GameRenderer': damageNumbers, skillPopups, healthBars, renderResources, and 14 more.
 
-99       gameRenderer,
-         ~~~~~~~~~~~~
+99 gameRenderer,
+~~~~~~~~~~~~
 
 src/client/index.ts:333:11 - error TS2339: Property 'presence' does not exist on type 'DiscordSDK'.
 
-333   discord.presence
-              ~~~~~~~~
+333 discord.presence
+~~~~~~~~
 
 src/client/index.ts:335:42 - error TS2339: Property 'combatLevel' does not exist on type 'PlayerState'.
 
-335       details: `Level ${gameState.player.combatLevel} Player`,
-                                             ~~~~~~~~~~~
+335 details: `Level ${gameState.player.combatLevel} Player`,
+~~~~~~~~~~~
 
 src/client/index.ts:336:32 - error TS2339: Property 'roomId' does not exist on type 'GameState'.
 
-336       state: `Room ${gameState.roomId || 'Lobby'}`,
-                                   ~~~~~~
+336 state: `Room ${gameState.roomId || 'Lobby'}`,
+~~~~~~
 
 src/client/networking/CombatEventHandler.ts:11:35 - error TS2307: Cannot find module '../../../server/ecs/systems/DamageNumberSystem' or its corresponding type declarations.
 
 11 import { DamageNumberEvent } from '../../../server/ecs/systems/DamageNumberSystem';
-                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 src/client/networking/CombatEventHandler.ts:12:32 - error TS2307: Cannot find module '../../../server/ecs/systems/HealthBarSystem' or its corresponding type declarations.
 
 12 import { HealthBarEvent } from '../../../server/ecs/systems/HealthBarSystem';
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+```
 
 src/client/networking/CombatEventHandler.ts:13:50 - error TS2307: Cannot find module '../../../server/ecs/systems/XPNotificationSystem' or its corresponding type declarations.
 
 13 import { XPGainEvent as ServerXPGainEvent } from '../../../server/ecs/systems/XPNotificationSystem';
-                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 src/client/networking/CombatEventHandler.ts:14:10 - error TS2440: Import declaration conflicts with local declaration of 'XPNotificationManager'.
 
 14 import { XPNotificationManager } from '../ui/XPNotificationManager';
-            ~~~~~~~~~~~~~~~~~~~~~
+
+```
 
 src/client/networking/CombatEventHandler.ts:147:47 - error TS2339: Property 'handleXPGainEvents' does not exist on type 'XPNotificationManager'.
 
-147     this.visualManagers.xpNotificationManager.handleXPGainEvents(events);
-                                                  ~~~~~~~~~~~~~~~~~~
+147 this.visualManagers.xpNotificationManager.handleXPGainEvents(events);
+~~~~~~~~~~~~~~~~~~
 
 src/client/ui/DamageNumber.ts:11:35 - error TS2307: Cannot find module '../../../server/ecs/systems/DamageNumberSystem' or its corresponding type declarations.
 
 11 import { DamageNumberEvent } from '../../../server/ecs/systems/DamageNumberSystem';
-                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 src/client/ui/DamageNumber.ts:51:18 - error TS2503: Cannot find namespace 'Phaser'.
 
-51   private scene: Phaser.Scene;
-                    ~~~~~~
+51 private scene: Phaser.Scene;
+
+```
 
 src/client/ui/DamageNumber.ts:52:17 - error TS2503: Cannot find namespace 'Phaser'.
 
-52   private text: Phaser.GameObjects.Text;
-                   ~~~~~~
+52 private text: Phaser.GameObjects.Text;
+```
 
 src/client/ui/DamageNumber.ts:64:12 - error TS2503: Cannot find namespace 'Phaser'.
 
-64     scene: Phaser.Scene,
-              ~~~~~~
+64 scene: Phaser.Scene,
+
+```
 
 src/client/ui/DamageNumber.ts:146:24 - error TS2304: Cannot find name 'Phaser'.
 
-146       x: this.startX + Phaser.Math.Between(-2, 2),
-                           ~~~~~~
+146 x: this.startX + Phaser.Math.Between(-2, 2),
+```
 
 src/client/ui/DamageNumber.ts:159:20 - error TS2304: Cannot find name 'Phaser'.
 
-159     const driftX = Phaser.Math.Between(-10, 10);
-                       ~~~~~~
+159 const driftX = Phaser.Math.Between(-10, 10);
+
+```
 
 src/client/ui/DamageNumber.ts:252:18 - error TS2503: Cannot find namespace 'Phaser'.
 
-252   private scene: Phaser.Scene;
-                     ~~~~~~
+252 private scene: Phaser.Scene;
+```
 
 src/client/ui/DamageNumber.ts:260:22 - error TS2503: Cannot find namespace 'Phaser'.
 
-260   constructor(scene: Phaser.Scene, config: Partial<DamageNumberConfig> = {}) {
-                         ~~~~~~
+260 constructor(scene: Phaser.Scene, config: Partial<DamageNumberConfig> = {}) {
+
+```
 
 src/client/ui/HealthBar.ts:56:18 - error TS2503: Cannot find namespace 'Phaser'.
 
-56   private scene: Phaser.Scene;
-                    ~~~~~~
+56 private scene: Phaser.Scene;
+```
 
 src/client/ui/HealthBar.ts:61:22 - error TS2503: Cannot find namespace 'Phaser'.
 
-61   private container: Phaser.GameObjects.Container;
-                        ~~~~~~
+61 private container: Phaser.GameObjects.Container;
+
+```
 
 src/client/ui/HealthBar.ts:62:23 - error TS2503: Cannot find namespace 'Phaser'.
 
-62   private background: Phaser.GameObjects.Rectangle;
-                         ~~~~~~
+62 private background: Phaser.GameObjects.Rectangle;
+```
 
 src/client/ui/HealthBar.ts:63:20 - error TS2503: Cannot find namespace 'Phaser'.
 
-63   private border?: Phaser.GameObjects.Rectangle;
-                      ~~~~~~
+63 private border?: Phaser.GameObjects.Rectangle;
+
+```
 
 src/client/ui/HealthBar.ts:64:23 - error TS2503: Cannot find namespace 'Phaser'.
 
-64   private healthFill: Phaser.GameObjects.Rectangle;
-                         ~~~~~~
+64 private healthFill: Phaser.GameObjects.Rectangle;
+```
 
 src/client/ui/HealthBar.ts:65:24 - error TS2503: Cannot find namespace 'Phaser'.
 
-65   private healthText?: Phaser.GameObjects.Text;
-                          ~~~~~~
+65 private healthText?: Phaser.GameObjects.Text;
+
+```
 
 src/client/ui/HealthBar.ts:78:12 - error TS2503: Cannot find namespace 'Phaser'.
 
-78     scene: Phaser.Scene,
-              ~~~~~~
+78 scene: Phaser.Scene,
+```
 
 src/client/ui/HealthBar.ts:183:30 - error TS2304: Cannot find name 'Phaser'.
 
-183         const currentColor = Phaser.Display.Color.Interpolate.ColorWithColor(
-                                 ~~~~~~
+183 const currentColor = Phaser.Display.Color.Interpolate.ColorWithColor(
+
+```
 
 src/client/ui/HealthBar.ts:184:11 - error TS2304: Cannot find name 'Phaser'.
 
-184           Phaser.Display.Color.IntegerToColor(startColor),
-              ~~~~~~
+184 Phaser.Display.Color.IntegerToColor(startColor),
+```
 
 src/client/ui/HealthBar.ts:185:11 - error TS2304: Cannot find name 'Phaser'.
 
-185           Phaser.Display.Color.IntegerToColor(targetColor),
-              ~~~~~~
+185 Phaser.Display.Color.IntegerToColor(targetColor),
+
+```
 
 src/client/ui/HealthBar.ts:191:11 - error TS2304: Cannot find name 'Phaser'.
 
-191           Phaser.Display.Color.GetColor(currentColor.r, currentColor.g, currentColor.b)
-              ~~~~~~
+191 Phaser.Display.Color.GetColor(currentColor.r, currentColor.g, currentColor.b)
+```
 
 src/client/ui/HealthBarManager.ts:12:32 - error TS2307: Cannot find module '../../../server/ecs/systems/HealthBarSystem' or its corresponding type declarations.
 
 12 import { HealthBarEvent } from '../../../server/ecs/systems/HealthBarSystem';
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+```
 
 src/client/ui/HealthBarManager.ts:58:18 - error TS2503: Cannot find namespace 'Phaser'.
 
-58   private scene: Phaser.Scene;
-                    ~~~~~~
+58 private scene: Phaser.Scene;
+~~~~~~
 
 src/client/ui/HealthBarManager.ts:71:12 - error TS2503: Cannot find namespace 'Phaser'.
 
-71     scene: Phaser.Scene,
-              ~~~~~~
+71 scene: Phaser.Scene,
+~~~~~~
 
 src/client/ui/XPNotification.ts:18:18 - error TS2503: Cannot find namespace 'Phaser'.
 
-18   private scene: Phaser.Scene;
-                    ~~~~~~
+18 private scene: Phaser.Scene;
+~~~~~~
 
 src/client/ui/XPNotification.ts:19:22 - error TS2503: Cannot find namespace 'Phaser'.
 
-19   private container: Phaser.GameObjects.Container;
-                        ~~~~~~
+19 private container: Phaser.GameObjects.Container;
+~~~~~~
 
 src/client/ui/XPNotification.ts:20:17 - error TS2503: Cannot find namespace 'Phaser'.
 
-20   private text: Phaser.GameObjects.Text;
-                   ~~~~~~
+20 private text: Phaser.GameObjects.Text;
+~~~~~~
 
 src/client/ui/XPNotification.ts:21:23 - error TS2503: Cannot find namespace 'Phaser'.
 
-21   private levelText?: Phaser.GameObjects.Text;
-                         ~~~~~~
+21 private levelText?: Phaser.GameObjects.Text;
+~~~~~~
 
 src/client/ui/XPNotification.ts:25:22 - error TS2503: Cannot find namespace 'Phaser'.
 
-25   constructor(scene: Phaser.Scene, config: XPNotificationConfig) {
-                        ~~~~~~
+25 constructor(scene: Phaser.Scene, config: XPNotificationConfig) {
+~~~~~~
 
 src/client/ui/XPNotification.ts:27:5 - error TS2322: Type '{ x: number; y: number; skill: string; xpGained: number; newLevel?: number; duration: number; fontSize: number; color: string; }' is not assignable to type 'Required<XPNotificationConfig>'.
-  Property 'newLevel' is optional in type '{ x: number; y: number; skill: string; xpGained: number; newLevel?: number; duration: number; fontSize: number; color: string; }' but required in type 'Required<XPNotificationConfig>'.
+Property 'newLevel' is optional in type '{ x: number; y: number; skill: string; xpGained: number; newLevel?: number; duration: number; fontSize: number; color: string; }' but required in type 'Required<XPNotificationConfig>'.
 
-27     this.config = {
-       ~~~~~~~~~~~
+27 this.config = {
+~~~~~~~~~~~
 
 src/client/ui/XPNotificationManager.ts:18:18 - error TS2503: Cannot find namespace 'Phaser'.
 
-18   private scene: Phaser.Scene;
-                    ~~~~~~
+18 private scene: Phaser.Scene;
+~~~~~~
 
 src/client/ui/XPNotificationManager.ts:22:22 - error TS2503: Cannot find namespace 'Phaser'.
 
-22   constructor(scene: Phaser.Scene) {
-                        ~~~~~~
+22 constructor(scene: Phaser.Scene) {
+~~~~~~
 
 src/logger.ts:77:7 - error TS2345: Argument of type 'DailyRotateFile' is not assignable to parameter of type 'ConsoleTransportInstance'.
-  Type 'DailyRotateFile' is missing the following properties from type 'ConsoleTransportInstance': name, stderrLevels, eol
+Type 'DailyRotateFile' is missing the following properties from type 'ConsoleTransportInstance': name, stderrLevels, eol
 
- 77       new winston.transports.DailyRotateFile({
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 78         filename: path.join(logDir, 'application-%DATE%.log'),
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-... 
- 83         format: fileFormat,
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 84       }),
-    ~~~~~~~~
+77 new winston.transports.DailyRotateFile({
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+78 filename: path.join(logDir, 'application-%DATE%.log'),
+```
+
+...
+83 format: fileFormat,
+
+```
+84 }),
+~~~~~~~~
 
 src/schema-test.ts:2:31 - error TS2307: Cannot find module '../server/game/EntitySchemas' or its corresponding type declarations.
 
 2 import { InventoryItem } from '../server/game/EntitySchemas';
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 src/server/clean-server.ts:46:23 - error TS2339: Property 'presence' does not exist on type 'Server'.
 
-46     rooms: gameServer.presence?.channels?.size || 0,
-                         ~~~~~~~~
+46 rooms: gameServer.presence?.channels?.size || 0,
+
+```
 
 src/server/clean-server.ts:55:36 - error TS2339: Property 'presence' does not exist on type 'Server'.
 
-55     const rooms = await gameServer.presence.find({});
-                                      ~~~~~~~~
+55 const rooms = await gameServer.presence.find({});
+```
 
 src/server/economy-integration.ts:113:37 - error TS2339: Property 'getPlayerProfile' does not exist on type 'EconomyClient'.
 
-113       } else if (typeof this.client.getPlayerProfile === 'function') {
-                                        ~~~~~~~~~~~~~~~~
+113 } else if (typeof this.client.getPlayerProfile === 'function') {
+
+```
 
 src/server/economy-integration.ts:114:43 - error TS2339: Property 'getPlayerProfile' does not exist on type 'EconomyClient'.
 
-114         const profile = await this.client.getPlayerProfile(username);
-                                              ~~~~~~~~~~~~~~~~
+114 const profile = await this.client.getPlayerProfile(username);
+```
 
 src/server/game/EnhancedItemManager.ts:198:7 - error TS2353: Object literal may only specify known properties, and 'attackBonus' does not exist in type 'ItemDefinition'.
 
-198       attackBonus: osrsItem.attackBonus || 0,
-          ~~~~~~~~~~~
+198 attackBonus: osrsItem.attackBonus || 0,
+
+```
 
 src/server/game/GameRoom.ts:829:38 - error TS2339: Property 'removeItemFromInventory' does not exist on type 'EconomyIntegration'.
 
-829             await economyIntegration.removeItemFromInventory(
-                                         ~~~~~~~~~~~~~~~~~~~~~~~
+829 await economyIntegration.removeItemFromInventory(
+```
 
 src/server/game/GameRoom.ts:992:15 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
 
-992               itemDef.id,
-                  ~~~~~~~~~~
+992 itemDef.id,
+
+```
 
 src/server/game/GameRoom.ts:1021:15 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
 
-1021               itemDef.id,
-                   ~~~~~~~~~~
+1021 itemDef.id,
+```
 
 src/server/game/GameRoom.ts:1104:17 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
 
-1104                 itemDef.id,
-                     ~~~~~~~~~~
+1104 itemDef.id,
+
+```
 
 src/server/game/ItemManager.ts:111:39 - error TS2339: Property 'itemId' does not exist on type 'Item'.
 
-111         const cacheKey = `item:${item.itemId}`;
-                                          ~~~~~~
+111 const cacheKey = `item:${item.itemId}`;
+~~~~~~
 
 src/server/game/ItemManager.ts:121:41 - error TS2339: Property 'itemId' does not exist on type 'Item'.
 
-121           this.itemDefinitions.set(item.itemId, item);
-                                            ~~~~~~
+121 this.itemDefinitions.set(item.itemId, item);
+~~~~~~
 
 src/server/game/ItemManager.ts:121:49 - error TS2345: Argument of type 'Item' is not assignable to parameter of type 'ItemDefinition'.
-  Type 'Item' is missing the following properties from type 'ItemDefinition': itemId, attack, defense, isStackable, and 2 more.
+Type 'Item' is missing the following properties from type 'ItemDefinition': itemId, attack, defense, isStackable, and 2 more.
 
-121           this.itemDefinitions.set(item.itemId, item);
-                                                    ~~~~
+121 this.itemDefinitions.set(item.itemId, item);
+~~~~
 
 src/server/game/multiplayerSync.ts:62:10 - error TS2339: Property 'broadcast' does not exist on type 'Server'.
 
-62   server.broadcast('updatePlayerState', deltaUpdate);
-            ~~~~~~~~~
+62 server.broadcast('updatePlayerState', deltaUpdate);
+~~~~~~~~~
 
 src/server/game/multiplayerSync.ts:106:10 - error TS2339: Property 'broadcast' does not exist on type 'Server'.
 
-106   server.broadcast('syncSnapshot', {
-             ~~~~~~~~~
+106 server.broadcast('syncSnapshot', {
+~~~~~~~~~
 
 src/server/game/multiplayerSync.ts:195:10 - error TS2339: Property 'broadcast' does not exist on type 'Server'.
 
-195   server.broadcast('criticalUpdate', {
-             ~~~~~~~~~
+195 server.broadcast('criticalUpdate', {
+~~~~~~~~~
 
 src/server/game/ProceduralGenerator.clean.ts:288:7 - error TS2353: Object literal may only specify known properties, and 'terrain' does not exist in type '{ name?: string; id?: string; height?: number; width?: number; biome?: string; collisionMap?: boolean[][]; }'.
 
-288       terrain: processedTerrain,
-          ~~~~~~~
+288 terrain: processedTerrain,
+~~~~~~~
 
 src/server/game/ProceduralGenerator.ts:288:7 - error TS2353: Object literal may only specify known properties, and 'terrain' does not exist in type '{ name?: string; id?: string; height?: number; width?: number; biome?: string; collisionMap?: boolean[][]; }'.
 
-288       terrain: processedTerrain,
-          ~~~~~~~
+288 terrain: processedTerrain,
+~~~~~~~
 
 src/server/game/ProceduralMapGenerator.ts:62:16 - error TS2749: 'RNG' refers to a value, but is being used as a type here. Did you mean 'typeof RNG'?
 
-62   private rng: RNG;
-                  ~~~
+62 private rng: RNG;
+~~~
 
 src/server/game/ProceduralMapGenerator.ts:66:20 - error TS2351: This expression is not constructable.
-  Type 'RNG' has no construct signatures.
+Type 'RNG' has no construct signatures.
 
-66     this.rng = new RNG(seed);
-                      ~~~
+66 this.rng = new RNG(seed);
+~~~
 
 src/server/game/ProceduralMapGenerator.ts:258:29 - error TS2339: Property 'Maze' does not exist on type '{ Arena: typeof Arena; Uniform: typeof Uniform; Cellular: typeof Cellular; Digger: typeof Digger; EllerMaze: typeof EllerMaze; DividedMaze: typeof DividedMaze; IceyMaze: typeof IceyMaze; Rogue: typeof Rogue; }'.
 
-258     const maze = new ROTMap.Maze(width, height);
-                                ~~~~
+258 const maze = new ROTMap.Maze(width, height);
+~~~~
 
 src/server/game/SurvivorWaveSystem.ts:85:72 - error TS2345: Argument of type 'PrayerSystem' is not assignable to parameter of type 'import("C:/Users/aggis/GitHub/runerogue/server-ts/src/server/game/PrayerSystem").PrayerSystem'.
-  Type 'PrayerSystem' is missing the following properties from type 'PrayerSystem': player, prayers, drainInterval, DRAIN_TICK_MS, and 15 more.
+Type 'PrayerSystem' is missing the following properties from type 'PrayerSystem': player, prayers, drainInterval, DRAIN_TICK_MS, and 15 more.
 
-85     this.combatSystem = new CombatSystem(room.state, dummyItemManager, dummyPrayerSystem);
-                                                                          ~~~~~~~~~~~~~~~~~
+85 this.combatSystem = new CombatSystem(room.state, dummyItemManager, dummyPrayerSystem);
+```
 
 src/server/game/WaveManager.ts:458:11 - error TS2393: Duplicate function implementation.
 
-458   private completeWave(): void {
-              ~~~~~~~~~~~~
+458 private completeWave(): void {
+
+```
 
 src/server/game/WaveManager.ts:470:12 - error TS2339: Property 'distributeWaveRewards' does not exist on type 'WaveManager'.
 
-470       this.distributeWaveRewards(player, waveConfig.rewards, waveTime);
-               ~~~~~~~~~~~~~~~~~~~~~
+470 this.distributeWaveRewards(player, waveConfig.rewards, waveTime);
+```
 
 src/server/game/WaveManager.ts:516:17 - error TS2393: Duplicate function implementation.
 
-516   private async completeWave(): Promise<void> {
-                    ~~~~~~~~~~~~
+516 private async completeWave(): Promise<void> {
+
+```
 
 src/server/index.ts:39:3 - error TS2353: Object literal may only specify known properties, and 'transport' does not exist in type 'ServerOptions'.
 
-39   transport,
-     ~~~~~~~~~
+39 transport,
+~~~~~~~~~
 
 src/server/persistence/PlayerPersistence.ts:248:21 - error TS2769: No overload matches this call.
-  Overload 1 of 2, '(timeout: string | number | Timeout): void', gave the following error.
-    Argument of type 'Timer' is not assignable to parameter of type 'string | number | Timeout'.
-      Type 'Timer' is missing the following properties from type 'Timeout': close, _onTimeout, [Symbol.dispose]
-  Overload 2 of 2, '(id: number): void', gave the following error.
-    Argument of type 'Timer' is not assignable to parameter of type 'number'.
+Overload 1 of 2, '(timeout: string | number | Timeout): void', gave the following error.
+Argument of type 'Timer' is not assignable to parameter of type 'string | number | Timeout'.
+Type 'Timer' is missing the following properties from type 'Timeout': close, \_onTimeout, [Symbol.dispose]
+Overload 2 of 2, '(id: number): void', gave the following error.
+Argument of type 'Timer' is not assignable to parameter of type 'number'.
 
-248       clearInterval(interval);
-                        ~~~~~~~~
-
+248 clearInterval(interval);
+~~~~~~~~
 
 src/server/rooms/GameRoom.ts:70:39 - error TS2339: Property 'target' does not exist on type 'ClientMessage'.
-  Property 'target' does not exist on type '{ type: "attack"; targetId: string; }'.
+Property 'target' does not exist on type '{ type: "attack"; targetId: string; }'.
 
-70       this.handleMove(client, message.target)
-                                         ~~~~~~
+70 this.handleMove(client, message.target)
+~~~~~~
 
 src/server/rooms/GameRoom.ts:73:41 - error TS2339: Property 'targetId' does not exist on type 'ClientMessage'.
-  Property 'targetId' does not exist on type '{ type: "move"; target: Vector2; }'.
+Property 'targetId' does not exist on type '{ type: "move"; target: Vector2; }'.
 
-73       this.handleAttack(client, message.targetId)
-                                           ~~~~~~~~
+73 this.handleAttack(client, message.targetId)
+~~~~~~~~
 
 src/server/rooms/GameRoom.ts:77:41 - error TS2339: Property 'action' does not exist on type 'ClientMessage'.
-  Property 'action' does not exist on type '{ type: "move"; target: Vector2; }'.
+Property 'action' does not exist on type '{ type: "move"; target: Vector2; }'.
 
-77       this.handlePrayer(client, message.action, message.prayer)
-                                           ~~~~~~
+77 this.handlePrayer(client, message.action, message.prayer)
+~~~~~~
 
 src/server/rooms/GameRoom.ts:77:57 - error TS2339: Property 'prayer' does not exist on type 'ClientMessage'.
-  Property 'prayer' does not exist on type '{ type: "move"; target: Vector2; }'.
+Property 'prayer' does not exist on type '{ type: "move"; target: Vector2; }'.
 
-77       this.handlePrayer(client, message.action, message.prayer)
-                                                           ~~~~~~
+77 this.handlePrayer(client, message.action, message.prayer)
+~~~~~~
 
 src/server/rooms/GameRoom.ts:80:48 - error TS2339: Property 'targetId' does not exist on type 'ClientMessage'.
-  Property 'targetId' does not exist on type '{ type: "move"; target: Vector2; }'.
+Property 'targetId' does not exist on type '{ type: "move"; target: Vector2; }'.
 
-80       this.handleSpecialAttack(client, message.targetId)
-                                                  ~~~~~~~~
+80 this.handleSpecialAttack(client, message.targetId)
+~~~~~~~~
 
 src/server/rooms/GameRoom.ts:83:39 - error TS2339: Property 'message' does not exist on type 'ClientMessage'.
-  Property 'message' does not exist on type '{ type: "move"; target: Vector2; }'.
+Property 'message' does not exist on type '{ type: "move"; target: Vector2; }'.
 
-83       this.handleChat(client, message.message)
-                                         ~~~~~~~
+83 this.handleChat(client, message.message)
+~~~~~~~
 
 src/server/rooms/GameRoom.ts:185:37 - error TS2339: Property 'waveStartTime' does not exist on type 'GameRoomState'.
 
-185     this.waveStartTime = this.state.waveStartTime;
-                                        ~~~~~~~~~~~~~
+185 this.waveStartTime = this.state.waveStartTime;
+```
 
 src/server/rooms/GameRoom.ts:193:46 - error TS2769: No overload matches this call.
-  Overload 1 of 2, '(timeout: string | number | Timeout): void', gave the following error.
-    Argument of type 'Timer' is not assignable to parameter of type 'string | number | Timeout'.
-      Type 'Timer' is missing the following properties from type 'Timeout': close, _onTimeout, [Symbol.dispose]
-  Overload 2 of 2, '(id: number): void', gave the following error.
-    Argument of type 'Timer' is not assignable to parameter of type 'number'.
+Overload 1 of 2, '(timeout: string | number | Timeout): void', gave the following error.
+Argument of type 'Timer' is not assignable to parameter of type 'string | number | Timeout'.
+Type 'Timer' is missing the following properties from type 'Timeout': close, \_onTimeout, [Symbol.dispose]
+Overload 2 of 2, '(id: number): void', gave the following error.
+Argument of type 'Timer' is not assignable to parameter of type 'number'.
 
-193     if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
-                                                 ~~~~~~~~~~~~~~~~~~~~~
+193 if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 
+```
 
 src/server/rooms/GameRoom.ts:316:54 - error TS2339: Property 'clear' does not exist on type 'Timer'.
 
-316     if (this.gameLoopInterval) this.gameLoopInterval.clear();
-                                                         ~~~~~
+316 if (this.gameLoopInterval) this.gameLoopInterval.clear();
+~~~~~
 
 src/server/rooms/RuneRogueGameRoom.ts:264:10 - error TS2339: Property 'waveStartTime' does not exist on type '{ enemiesRemaining: number; currentWave: number; isActive: boolean; }'.
 
-264     wave.waveStartTime = Date.now();
-             ~~~~~~~~~~~~~
+264 wave.waveStartTime = Date.now();
+~~~~~~~~~~~~~
 
 src/server/schemas/GameRoomState.ts:89:21 - error TS2416: Property 'activePrayers' in type 'PrayerSchema' is not assignable to the same property in base type 'PrayerState'.
-  Type 'ArraySchema<string>' is not assignable to type 'string[]'.
-    The types returned by 'entries()' are incompatible between these types.
-      Type 'IterableIterator<[number, string]>' is missing the following properties from type 'ArrayIterator<[number, string]>': map, filter, take, drop, and 9 more.
+Type 'ArraySchema<string>' is not assignable to type 'string[]'.
+The types returned by 'entries()' are incompatible between these types.
+Type 'IterableIterator<[number, string]>' is missing the following properties from type 'ArrayIterator<[number, string]>': map, filter, take, drop, and 9 more.
 
-89   @type(['string']) activePrayers = new ArraySchema<string>();
-                       ~~~~~~~~~~~~~
+89 @type(['string']) activePrayers = new ArraySchema<string>();
+~~~~~~~~~~~~~
 
 src/server/systems/StateSyncSystem.ts:108:26 - error TS2352: Conversion of type 'number' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
 
-108       playerState.name = Components.Name.value[entity] as string;
-                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+108 playerState.name = Components.Name.value[entity] as string;
+```
 
 src/server/utils/early-metadata-init.ts:38:11 - error TS2352: Conversion of type 'Function' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  Index signature for type 'string' is missing in type 'Function'.
+Index signature for type 'string' is missing in type 'Function'.
 
-38     if (!(constructor as Record<string | symbol, unknown>)[metadataSymbol]) {
-             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+38 if (!(constructor as Record<string | symbol, unknown>)[metadataSymbol]) {
+
+```
 
 src/server/utils/early-metadata-init.ts:39:8 - error TS2352: Conversion of type 'Function' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  Index signature for type 'string' is missing in type 'Function'.
+Index signature for type 'string' is missing in type 'Function'.
 
-39       (constructor as Record<string | symbol, unknown>)[metadataSymbol] = null;
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+39 (constructor as Record<string | symbol, unknown>)[metadataSymbol] = null;
+```
 
 src/server/utils/reflect-metadata-init.ts:15:23 - error TS2540: Cannot assign to 'metadata' because it is a read-only property.
 
-15     globalThis.Symbol.metadata = (Symbol as any).metadata;
-                         ~~~~~~~~
+15 globalThis.Symbol.metadata = (Symbol as any).metadata;
+
+```
 
 src/server/utils/reflect-metadata-init.ts:19:19 - error TS2540: Cannot assign to 'metadata' because it is a read-only property.
 
-19     global.Symbol.metadata = (Symbol as any).metadata;
-                     ~~~~~~~~
+19 global.Symbol.metadata = (Symbol as any).metadata;
+```
 
 src/server/utils/reflect-metadata-init.ts:23:19 - error TS2540: Cannot assign to 'metadata' because it is a read-only property.
 
-23     window.Symbol.metadata = (Symbol as any).metadata;
-                     ~~~~~~~~
+23 window.Symbol.metadata = (Symbol as any).metadata;
+
+```
 
 src/services/economy-client.ts:144:11 - error TS2322: Type '(success: any, error: any) => void' is not assignable to type 'AxiosResponseInterceptorUse<AxiosResponse<any, any>>'.
-  Type 'void' is not assignable to type 'number'.
+Type 'void' is not assignable to type 'number'.
 
-144           use: (success: any, error: any) => {},
-              ~~~
+144 use: (success: any, error: any) => {},
+~~~
 
-  ../node_modules/.pnpm/axios@1.9.0/node_modules/axios/index.d.cts:502:5
-    502     use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
-            ~~~
-    The expected type comes from property 'use' which is declared here on type 'AxiosInterceptorManager<AxiosResponse<any, any>>'
-
+../node_modules/.pnpm/axios@1.9.0/node_modules/axios/index.d.cts:502:5
+502 use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
+~~~
+The expected type comes from property 'use' which is declared here on type 'AxiosInterceptorManager<AxiosResponse<any, any>>'
 
 Found 120 errors in 37 files.
 
-Errors  Files
-     2  src/assets/comprehensive-asset-coordinator.ts:118
-     9  src/assets/comprehensive-extractor-script.ts:116
-     5  src/assets/comprehensive-osrs-extractor.ts:260
-     2  src/assets/demo-assets.ts:36
-     5  src/assets/osrs-cache-reader-fallback.ts:201
-     3  src/client/game/GameClient.ts:57
-     2  src/client/game/InputManager.ts:57
-     4  src/client/game/UIManager.ts:204
-     7  src/client/index.ts:24
-     5  src/client/networking/CombatEventHandler.ts:11
-     8  src/client/ui/DamageNumber.ts:11
-    11  src/client/ui/HealthBar.ts:56
-     3  src/client/ui/HealthBarManager.ts:12
-     6  src/client/ui/XPNotification.ts:18
-     2  src/client/ui/XPNotificationManager.ts:18
-     1  src/logger.ts:77
-     1  src/schema-test.ts:2
-     2  src/server/clean-server.ts:46
-     2  src/server/economy-integration.ts:113
-     1  src/server/game/EnhancedItemManager.ts:198
-     4  src/server/game/GameRoom.ts:829
-     3  src/server/game/ItemManager.ts:111
-     3  src/server/game/multiplayerSync.ts:62
-     1  src/server/game/ProceduralGenerator.clean.ts:288
-     1  src/server/game/ProceduralGenerator.ts:288
-     3  src/server/game/ProceduralMapGenerator.ts:62
-     1  src/server/game/SurvivorWaveSystem.ts:85
-     3  src/server/game/WaveManager.ts:458
-     1  src/server/index.ts:39
-     1  src/server/persistence/PlayerPersistence.ts:248
-     9  src/server/rooms/GameRoom.ts:70
-     1  src/server/rooms/RuneRogueGameRoom.ts:264
-     1  src/server/schemas/GameRoomState.ts:89
-     1  src/server/systems/StateSyncSystem.ts:108
-     2  src/server/utils/early-metadata-init.ts:38
-     3  src/server/utils/reflect-metadata-init.ts:15
-     1  src/services/economy-client.ts:144
+Errors Files
+2 src/assets/comprehensive-asset-coordinator.ts:118
+9 src/assets/comprehensive-extractor-script.ts:116
+5 src/assets/comprehensive-osrs-extractor.ts:260
+2 src/assets/demo-assets.ts:36
+5 src/assets/osrs-cache-reader-fallback.ts:201
+3 src/client/game/GameClient.ts:57
+2 src/client/game/InputManager.ts:57
+4 src/client/game/UIManager.ts:204
+7 src/client/index.ts:24
+5 src/client/networking/CombatEventHandler.ts:11
+8 src/client/ui/DamageNumber.ts:11
+11 src/client/ui/HealthBar.ts:56
+3 src/client/ui/HealthBarManager.ts:12
+6 src/client/ui/XPNotification.ts:18
+2 src/client/ui/XPNotificationManager.ts:18
+1 src/logger.ts:77
+1 src/schema-test.ts:2
+2 src/server/clean-server.ts:46
+2 src/server/economy-integration.ts:113
+1 src/server/game/EnhancedItemManager.ts:198
+4 src/server/game/GameRoom.ts:829
+3 src/server/game/ItemManager.ts:111
+3 src/server/game/multiplayerSync.ts:62
+1 src/server/game/ProceduralGenerator.clean.ts:288
+1 src/server/game/ProceduralGenerator.ts:288
+3 src/server/game/ProceduralMapGenerator.ts:62
+1 src/server/game/SurvivorWaveSystem.ts:85
+3 src/server/game/WaveManager.ts:458
+1 src/server/index.ts:39
+1 src/server/persistence/PlayerPersistence.ts:248
+9 src/server/rooms/GameRoom.ts:70
+1 src/server/rooms/RuneRogueGameRoom.ts:264
+1 src/server/schemas/GameRoomState.ts:89
+1 src/server/systems/StateSyncSystem.ts:108
+2 src/server/utils/early-metadata-init.ts:38
+3 src/server/utils/reflect-metadata-init.ts:15
+1 src/services/economy-client.ts:144
 npm error Lifecycle script `build` failed with error:
 npm error code 2
 npm error path C:\Users\aggis\GitHub\runerogue\server-ts
@@ -714,8 +738,6 @@ npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc --project tsconfig.js
 
 _**Assistant**_
 
-
-
 ---
 
 _**User**_
@@ -727,7 +749,5 @@ EMFILE: too many open files, open 'c:\Users\aggis.vscode-insiders\extensions\git
 
 _**Assistant**_
 
-
-
 ---
-
+```

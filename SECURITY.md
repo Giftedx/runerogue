@@ -28,18 +28,21 @@ When reporting a vulnerability, please include:
 ## Security Measures
 
 ### Game Security
+
 - Server-authoritative game logic
 - Input validation and sanitization
 - Rate limiting for API endpoints
 - Anti-cheat validation for game mechanics
 
 ### Data Protection
+
 - Encrypted data transmission
 - Secure authentication tokens
 - Privacy-compliant data handling
 - Regular security audits
 
 ### Infrastructure
+
 - Secure deployment practices
 - Regular dependency updates
 - Monitoring and alerting

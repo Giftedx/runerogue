@@ -52,25 +52,25 @@ const initialGameState: GameTypes.GameState = {
 // Asset mapping for items and entities
 const assetColors: Record<string, string> = {
   // Items
-  'bronze_sword': '#cd7f32',
-  'wooden_shield': '#8b4513',
-  'logs': '#a0522d',
-  'oak_logs': '#8b4513',
-  'copper_ore': '#b87333',
-  'iron_ore': '#a19d94',
-  'raw_shrimp': '#ff6666',
-  'bones': '#f5f5dc',
-  
+  bronze_sword: '#cd7f32',
+  wooden_shield: '#8b4513',
+  logs: '#a0522d',
+  oak_logs: '#8b4513',
+  copper_ore: '#b87333',
+  iron_ore: '#a19d94',
+  raw_shrimp: '#ff6666',
+  bones: '#f5f5dc',
+
   // Monsters
-  'goblin': '#7cfc00',
-  'cow': '#8b4513',
-  'chicken': '#ffffff',
-  'guard': '#4682b4',
-  'thief': '#696969',
-  'rat': '#808080',
-  'skeleton': '#f5f5dc',
-  'spider': '#000000',
-  'demon': '#8b0000',
+  goblin: '#7cfc00',
+  cow: '#8b4513',
+  chicken: '#ffffff',
+  guard: '#4682b4',
+  thief: '#696969',
+  rat: '#808080',
+  skeleton: '#f5f5dc',
+  spider: '#000000',
+  demon: '#8b0000',
 };
 
 const GamePage: React.FC = () => {
@@ -80,7 +80,9 @@ const GamePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [username, setUsername] = useState(`Player_${Math.floor(Math.random() * 1000)}`);
-  const [lootDrops, setLootDrops] = useState<Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>>([]);
+  const [lootDrops, setLootDrops] = useState<
+    Array<{ id: string; type: GameTypes.ItemType; quantity: number; position: GameTypes.Position }>
+  >([]);
 
   // Connect to game server
   const connectToServer = useCallback(async () => {
@@ -107,24 +109,56 @@ const GamePage: React.FC = () => {
       setGameState(newState);
     };
 
-    const handleLootDropped = (message: { id: string; itemType: string; quantity: number; x: number; y: number }) => {
-      setLootDrops((prev: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => [...prev, {
-        id: message.id,
-        type: message.itemType as GameTypes.ItemType,
-        quantity: message.quantity,
-        position: { x: message.x, y: message.y }
-      }]);
+    const handleLootDropped = (message: {
+      id: string;
+      itemType: string;
+      quantity: number;
+      x: number;
+      y: number;
+    }) => {
+      setLootDrops(
+        (
+          prev: Array<{
+            id: string;
+            type: GameTypes.ItemType;
+            quantity: number;
+            position: GameTypes.Position;
+          }>
+        ) => [
+          ...prev,
+          {
+            id: message.id,
+            type: message.itemType as GameTypes.ItemType,
+            quantity: message.quantity,
+            position: { x: message.x, y: message.y },
+          },
+        ]
+      );
     };
 
     const handleLootCollected = (message: { lootId: string }) => {
-      setLootDrops((prev: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => 
-        prev.filter((loot: {id: string}) => loot.id !== message.lootId)
+      setLootDrops(
+        (
+          prev: Array<{
+            id: string;
+            type: GameTypes.ItemType;
+            quantity: number;
+            position: GameTypes.Position;
+          }>
+        ) => prev.filter((loot: { id: string }) => loot.id !== message.lootId)
       );
     };
 
     const handleLootExpired = (message: { ids: string[] }) => {
-      setLootDrops((prev: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => 
-        prev.filter((loot: {id: string}) => !message.ids.includes(loot.id))
+      setLootDrops(
+        (
+          prev: Array<{
+            id: string;
+            type: GameTypes.ItemType;
+            quantity: number;
+            position: GameTypes.Position;
+          }>
+        ) => prev.filter((loot: { id: string }) => !message.ids.includes(loot.id))
       );
     };
 
@@ -145,7 +179,7 @@ const GamePage: React.FC = () => {
       gameService.off('loot-dropped', handleLootDropped);
       gameService.off('loot-collected', handleLootCollected);
       gameService.off('loot-expired', handleLootExpired);
-      
+
       if (isConnected) {
         gameService.disconnect();
       }
@@ -175,7 +209,7 @@ const GamePage: React.FC = () => {
     // Game loop
     let animationFrameId: number;
     let lastTime = 0;
-    
+
     const gameLoop = (timestamp: number) => {
       const deltaTime = timestamp - lastTime;
       lastTime = timestamp;
@@ -211,7 +245,7 @@ const GamePage: React.FC = () => {
       .then(() => {
         setIsLoading(false);
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('Failed to load game assets:', err);
         setError('Failed to load game assets');
       });
@@ -225,7 +259,7 @@ const GamePage: React.FC = () => {
 
   const loadAssets = async (): Promise<void> => {
     // Load game assets here
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       // Simulate loading
       setTimeout(resolve, 1000);
     });
@@ -242,12 +276,12 @@ const GamePage: React.FC = () => {
 
     ctx.fillStyle = biomeColors[currentBiome] || '#000000';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Draw a grid for better spatial awareness
     const gridSize = 50;
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1;
-    
+
     // Draw vertical grid lines
     for (let x = 0; x < ctx.canvas.width; x += gridSize) {
       ctx.beginPath();
@@ -255,7 +289,7 @@ const GamePage: React.FC = () => {
       ctx.lineTo(x, ctx.canvas.height);
       ctx.stroke();
     }
-    
+
     // Draw horizontal grid lines
     for (let y = 0; y < ctx.canvas.height; y += gridSize) {
       ctx.beginPath();
@@ -288,7 +322,14 @@ const GamePage: React.FC = () => {
     ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
 
     // Draw stats
-    const drawStatBar = (x: number, y: number, label: string, value: number, max: number, color: string) => {
+    const drawStatBar = (
+      x: number,
+      y: number,
+      label: string,
+      value: number,
+      max: number,
+      color: string
+    ) => {
       const barWidth = 150;
       const barHeight = 12;
       const fillWidth = (value / max) * barWidth;
@@ -296,15 +337,15 @@ const GamePage: React.FC = () => {
       // Bar background
       ctx.fillStyle = '#1a1a1a';
       ctx.fillRect(x, y, barWidth, barHeight);
-      
+
       // Bar fill
       ctx.fillStyle = color;
       ctx.fillRect(x, y, fillWidth, barHeight);
-      
+
       // Border
       ctx.strokeStyle = '#5a3a2a';
       ctx.strokeRect(x, y, barWidth, barHeight);
-      
+
       // Text
       ctx.fillStyle = '#ffffff';
       ctx.font = '10px Arial';
@@ -357,24 +398,24 @@ const GamePage: React.FC = () => {
       for (let col = 0; col < 4; col++) {
         const x = startX + col * (slotSize + padding);
         const y = startY + row * (slotSize + padding);
-        
+
         // Slot background
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(x, y, slotSize, slotSize);
         ctx.strokeStyle = '#5a3a2a';
         ctx.strokeRect(x, y, slotSize, slotSize);
-        
+
         // Draw item if exists
         const index = row * 4 + col;
         const item = state.player.inventory[index];
-        
+
         if (item) {
           // Draw item icon (placeholder)
           ctx.fillStyle = '#ffffff';
           ctx.font = '20px Arial';
           ctx.textAlign = 'center';
           ctx.fillText('?', x + slotSize / 2, y + slotSize / 2 + 6);
-          
+
           // Draw item count if stackable
           if (item.quantity > 1) {
             ctx.fillStyle = '#ffffff';
@@ -413,7 +454,7 @@ const GamePage: React.FC = () => {
   // Draw player character
   const drawPlayer = (ctx: CanvasRenderingContext2D, player: GameTypes.PlayerState) => {
     const { position, inCombat } = player;
-    
+
     // Draw player circle
     ctx.fillStyle = inCombat ? '#ff0000' : '#0000ff';
     ctx.beginPath();
@@ -422,14 +463,14 @@ const GamePage: React.FC = () => {
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     // Draw equipment if equipped
     if (player.equipped.weapon) {
       const weaponColor = assetColors[player.equipped.weapon] || '#cccccc';
       ctx.fillStyle = weaponColor;
       ctx.fillRect(position.x + 15, position.y - 5, 15, 10);
     }
-    
+
     if (player.equipped.shield) {
       const shieldColor = assetColors[player.equipped.shield] || '#cccccc';
       ctx.fillStyle = shieldColor;
@@ -440,18 +481,18 @@ const GamePage: React.FC = () => {
       ctx.lineWidth = 1;
       ctx.stroke();
     }
-    
+
     // Draw player name
     ctx.fillStyle = '#ffffff';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(player.id, position.x, position.y - 30);
-    
+
     // Draw health bar
     const healthBarWidth = 40;
     const healthBarHeight = 5;
     const healthPercentage = player.hp / player.maxHp;
-    
+
     ctx.fillStyle = '#ff0000';
     ctx.fillRect(
       position.x - healthBarWidth / 2,
@@ -459,7 +500,7 @@ const GamePage: React.FC = () => {
       healthBarWidth * healthPercentage,
       healthBarHeight
     );
-    
+
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 1;
     ctx.strokeRect(
@@ -469,12 +510,20 @@ const GamePage: React.FC = () => {
       healthBarHeight
     );
   };
-  
+
   // Draw loot drops
-  const drawLootDrops = (ctx: CanvasRenderingContext2D, drops: Array<{id: string, type: GameTypes.ItemType, quantity: number, position: GameTypes.Position}>) => {
+  const drawLootDrops = (
+    ctx: CanvasRenderingContext2D,
+    drops: Array<{
+      id: string;
+      type: GameTypes.ItemType;
+      quantity: number;
+      position: GameTypes.Position;
+    }>
+  ) => {
     drops.forEach(drop => {
       const { position, type, quantity } = drop;
-      
+
       // Draw loot circle
       const itemColor = assetColors[type] || '#ffff00';
       ctx.fillStyle = itemColor;
@@ -484,11 +533,11 @@ const GamePage: React.FC = () => {
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 1;
       ctx.stroke();
-      
+
       // Draw sparkle effect
       const time = Date.now() / 1000;
       const sparkleSize = 3 + Math.sin(time * 5) * 2;
-      
+
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(
@@ -499,7 +548,7 @@ const GamePage: React.FC = () => {
         Math.PI * 2
       );
       ctx.fill();
-      
+
       // Draw quantity if more than 1
       if (quantity > 1) {
         ctx.fillStyle = '#ffffff';
@@ -507,7 +556,7 @@ const GamePage: React.FC = () => {
         ctx.textAlign = 'center';
         ctx.fillText(quantity.toString(), position.x, position.y + 25);
       }
-      
+
       // Draw item name
       ctx.fillStyle = '#ffffff';
       ctx.font = '10px Arial';
@@ -515,7 +564,7 @@ const GamePage: React.FC = () => {
       ctx.fillText(type.replace('_', ' '), position.x, position.y - 15);
     });
   };
-  
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     const canvas = canvasRef.current;
     if (!canvas || !isConnected) return;
@@ -525,7 +574,7 @@ const GamePage: React.FC = () => {
     const y = e.clientY - rect.top;
 
     // Check if clicked on a loot drop
-    const clickedLoot = lootDrops.find((loot: {id: string, position: GameTypes.Position}) => {
+    const clickedLoot = lootDrops.find((loot: { id: string; position: GameTypes.Position }) => {
       const dx = loot.position.x - x;
       const dy = loot.position.y - y;
       const distance = Math.sqrt(dx * dx + dy * dy);
@@ -540,7 +589,7 @@ const GamePage: React.FC = () => {
 
     // Move player to clicked position
     gameService.sendPlayerMove(x, y, 'walk', 'down');
-    
+
     // Update local state immediately for responsiveness
     setGameState((prevState: GameTypes.GameState) => ({
       ...prevState,
@@ -548,7 +597,7 @@ const GamePage: React.FC = () => {
         ...prevState.player,
         position: { x, y },
         isMoving: true,
-      }
+      },
     }));
   };
 
@@ -567,10 +616,10 @@ const GamePage: React.FC = () => {
         <h2>Error</h2>
         <p>{error}</p>
         <div>
-          <input 
-            type="text" 
-            value={username} 
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} 
+          <input
+            type="text"
+            value={username}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             placeholder="Enter username"
             className={styles.usernameInput}
           />
@@ -585,22 +634,20 @@ const GamePage: React.FC = () => {
   return (
     <div className={styles.gameContainer}>
       <div className={styles.gameWrapper}>
-        <canvas
-          ref={canvasRef}
-          className={styles.gameCanvas}
-          onClick={handleCanvasClick}
-        />
-        
+        <canvas ref={canvasRef} className={styles.gameCanvas} onClick={handleCanvasClick} />
+
         <div id="ui-overlay" className={styles.uiOverlay}>
           {/* UI elements will be drawn on canvas */}
         </div>
-        
+
         {/* Connection status indicator */}
         <div className={styles.connectionStatus as string}>
-          <div className={isConnected ? styles.connected as string : styles.disconnected as string}></div>
+          <div
+            className={isConnected ? (styles.connected as string) : (styles.disconnected as string)}
+          ></div>
           <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
         </div>
-        
+
         {/* Player count */}
         {isConnected && (
           <div className={styles.playerCount as string}>

@@ -41,7 +41,7 @@ const DashboardPage: React.FC = () => {
               <p className="text-lg text-gray-600 mb-8">
                 Your dashboard for managing your RuneRogue experience.
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 <div className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="p-5">
@@ -78,9 +78,7 @@ const DashboardPage: React.FC = () => {
                           <dt className="text-sm font-medium text-gray-500 truncate">
                             Leaderboard Rank
                           </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            Coming Soon
-                          </dd>
+                          <dd className="text-lg font-medium text-gray-900">Coming Soon</dd>
                         </dl>
                       </div>
                     </div>
@@ -97,12 +95,8 @@ const DashboardPage: React.FC = () => {
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            Session
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            Active
-                          </dd>
+                          <dt className="text-sm font-medium text-gray-500 truncate">Session</dt>
+                          <dd className="text-lg font-medium text-gray-900">Active</dd>
                         </dl>
                       </div>
                     </div>
@@ -113,16 +107,10 @@ const DashboardPage: React.FC = () => {
               <div className="mt-8 bg-white shadow rounded-lg p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={() => router.push('/leaderboard')}
-                    className="btn-primary"
-                  >
+                  <button onClick={() => router.push('/leaderboard')} className="btn-primary">
                     View Leaderboard
                   </button>
-                  <button
-                    onClick={() => router.push('/settings')}
-                    className="btn-secondary"
-                  >
+                  <button onClick={() => router.push('/settings')} className="btn-secondary">
                     Account Settings
                   </button>
                 </div>

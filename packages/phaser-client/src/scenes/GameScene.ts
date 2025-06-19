@@ -331,7 +331,7 @@ export default class GameScene extends Phaser.Scene {
   private showDamageSplat(
     entityId: number,
     damage: number,
-    isPlayerSource: boolean
+    isPlayerSource: boolean,
   ) {
     const targetSprite = this.eidToSprite.get(entityId);
     if (!targetSprite) return;
@@ -366,7 +366,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   private findClosestEnemy(
-    playerId: number
+    playerId: number,
   ): { eid: number; dist: number } | null {
     const playerX = Position.x[playerId];
     const playerY = Position.y[playerId];
@@ -383,7 +383,7 @@ export default class GameScene extends Phaser.Scene {
         playerX,
         playerY,
         enemyX,
-        enemyY
+        enemyY,
       );
 
       if (dist < closestDist) {

@@ -114,12 +114,12 @@
   .phaser-game-client {
     padding: 10px;
   }
-  
+
   .phaser-container {
     max-width: 100%;
     height: auto;
   }
-  
+
   .status-message {
     width: 100%;
     max-width: 800px;

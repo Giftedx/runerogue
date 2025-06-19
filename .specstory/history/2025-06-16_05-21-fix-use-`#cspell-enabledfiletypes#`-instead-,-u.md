@@ -52,16 +52,10 @@ Fix the deprecated cSpell setting name from `enableFiletypes` to `enabledFileTyp
     "analytics",
     "XP",
     "TPS",
-    "FPS"
+    "FPS",
   ],
-  "cSpell.enabledFileTypes": [
-    "markdown",
-    "typescript",
-    "javascript",
-    "json"
-  ]
+  "cSpell.enabledFileTypes": ["markdown", "typescript", "javascript", "json"],
 }
 ```
 
 ---
-

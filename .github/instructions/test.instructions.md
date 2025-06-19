@@ -162,7 +162,7 @@ export class ObjectPool<T extends Resettable> {
 
   constructor(
     private createFn: () => T,
-    private initialSize: number = 10
+    private initialSize: number = 10,
   ) {
     // Pre-allocate objects
     for (let i = 0; i < initialSize; i++) {
@@ -358,7 +358,7 @@ export class GameRoom extends Room<GameState> {
 
       // Validate movement
       const distance = Math.sqrt(
-        Math.pow(data.x - player.x, 2) + Math.pow(data.y - player.y, 2)
+        Math.pow(data.x - player.x, 2) + Math.pow(data.y - player.y, 2),
       );
 
       const deltaTime = Date.now() - player.lastMoveTime;
@@ -369,7 +369,7 @@ export class GameRoom extends Room<GameState> {
       if (distance > maxDistance * 1.1) {
         // 10% tolerance for lag
         console.warn(
-          `Player ${client.sessionId} moved too fast: ${distance} > ${maxDistance}`
+          `Player ${client.sessionId} moved too fast: ${distance} > ${maxDistance}`,
         );
         client.send("error", {
           code: "INVALID_MOVEMENT",
@@ -458,7 +458,7 @@ describe("Combat System Performance", () => {
 
     expect(duration).toBeLessThan(16); // 60fps frame budget
     console.log(
-      `Movement system processed 100 entities in ${duration.toFixed(2)}ms`
+      `Movement system processed 100 entities in ${duration.toFixed(2)}ms`,
     );
   });
 });
@@ -527,7 +527,7 @@ export class GameService {
 
   async processPlayerAction(
     playerId: string,
-    action: PlayerAction
+    action: PlayerAction,
   ): Promise<Result<void, GameError>> {
     const span = this.logger.startSpan("processPlayerAction", {
       playerId,
@@ -573,7 +573,7 @@ export class GameService {
 
   private async validateAction(
     playerId: string,
-    action: PlayerAction
+    action: PlayerAction,
   ): Promise<Result<void, GameError>> {
     // Example validation
     if (!action.type || typeof action.type !== "string") {
@@ -590,7 +590,7 @@ export class GameService {
 
   private async executeAction(
     playerId: string,
-    action: PlayerAction
+    action: PlayerAction,
   ): Promise<void> {
     // Execute the action based on type
     this.logger.info("Executing action", { playerId, actionType: action.type });

@@ -19,6 +19,7 @@ You are a testing specialist focused on ensuring RuneRogue meets the highest qua
 ## Testing Standards
 
 ### Code Coverage Requirements
+
 - **Game Logic**: 95% coverage minimum
 - **OSRS Calculations**: 100% coverage required
 - **API Endpoints**: 90% coverage minimum
@@ -27,9 +28,10 @@ You are a testing specialist focused on ensuring RuneRogue meets the highest qua
 ### Test Categories
 
 #### Unit Tests
+
 ```typescript
-describe('OSRS Combat Calculations', () => {
-  it('should calculate max hit correctly', () => {
+describe("OSRS Combat Calculations", () => {
+  it("should calculate max hit correctly", () => {
     // Test against verified OSRS Wiki values
     expect(calculateMaxHit(99, 15)).toBe(31);
     expect(calculateMaxHit(1, 0)).toBe(1);
@@ -39,16 +41,17 @@ describe('OSRS Combat Calculations', () => {
 ```
 
 #### Integration Tests
+
 ```typescript
-describe('Combat System Integration', () => {
-  it('should handle player vs enemy combat', async () => {
+describe("Combat System Integration", () => {
+  it("should handle player vs enemy combat", async () => {
     const world = createTestWorld();
     const player = createTestPlayer(world);
     const enemy = createTestEnemy(world);
-    
+
     // Execute combat round
     runCombatSystem(world);
-    
+
     // Verify state changes
     expect(getHealth(player)).toBeLessThan(initialPlayerHealth);
     expect(getCombatXp(player)).toBeGreaterThan(0);
@@ -57,12 +60,13 @@ describe('Combat System Integration', () => {
 ```
 
 #### Performance Tests
+
 ```typescript
-describe('Performance Requirements', () => {
-  it('should maintain 60fps with 4 players', async () => {
+describe("Performance Requirements", () => {
+  it("should maintain 60fps with 4 players", async () => {
     const room = createTestRoom();
     await addPlayersToRoom(room, 4);
-    
+
     const frameTime = measureAverageFrameTime(60);
     expect(frameTime).toBeLessThan(16.67); // 60fps = 16.67ms per frame
   });
@@ -72,12 +76,13 @@ describe('Performance Requirements', () => {
 ## Testing Best Practices
 
 ### OSRS Data Validation
+
 ```typescript
 // Test against known OSRS values
 const osrsTestCases = [
   { attack: 99, strength: 99, bonus: 154, expected: 51 },
   { attack: 75, strength: 75, bonus: 100, expected: 35 },
-  { attack: 1, strength: 1, bonus: 0, expected: 1 }
+  { attack: 1, strength: 1, bonus: 0, expected: 1 },
 ];
 
 osrsTestCases.forEach(({ attack, strength, bonus, expected }) => {
@@ -88,45 +93,49 @@ osrsTestCases.forEach(({ attack, strength, bonus, expected }) => {
 ```
 
 ### Mock Strategies
+
 ```typescript
 // Mock network communication for testing
 const mockColyseus = {
   send: jest.fn(),
   onMessage: jest.fn(),
-  state: new GameRoomState()
+  state: new GameRoomState(),
 };
 
 // Mock OSRS data API
-jest.mock('../osrs-data', () => ({
+jest.mock("../osrs-data", () => ({
   getItemStats: jest.fn().mockReturnValue({ attackBonus: 100 }),
-  getSpellDamage: jest.fn().mockReturnValue(25)
+  getSpellDamage: jest.fn().mockReturnValue(25),
 }));
 ```
 
 ### Test Data Management
+
 ```typescript
 // Reusable test fixtures
 export const testPlayers = {
   maxedPlayer: { attack: 99, strength: 99, defense: 99 },
   newPlayer: { attack: 1, strength: 1, defense: 1 },
-  midLevelPlayer: { attack: 75, strength: 75, defense: 75 }
+  midLevelPlayer: { attack: 75, strength: 75, defense: 75 },
 };
 
 export const testItems = {
   dragonScimitar: { attackBonus: 67, strengthBonus: 66 },
-  ironSword: { attackBonus: 10, strengthBonus: 9 }
+  ironSword: { attackBonus: 10, strengthBonus: 9 },
 };
 ```
 
 ## Quality Gates
 
 ### Pre-Commit Checks
+
 - All tests passing
 - TypeScript compilation successful
 - Lint rules satisfied
 - Code coverage thresholds met
 
 ### CI/CD Pipeline
+
 - Unit tests execution
 - Integration tests with test database
 - Performance benchmarks
@@ -134,13 +143,14 @@ export const testItems = {
 - Security scans
 
 ### Performance Monitoring
+
 ```typescript
 // Automated performance regression detection
-describe('Performance Regression Tests', () => {
-  it('should not regress from baseline performance', () => {
+describe("Performance Regression Tests", () => {
+  it("should not regress from baseline performance", () => {
     const baseline = 16.67; // 60fps target
     const current = measureCurrentPerformance();
-    
+
     expect(current).toBeLessThanOrEqual(baseline * 1.1); // 10% tolerance
   });
 });
@@ -149,12 +159,14 @@ describe('Performance Regression Tests', () => {
 ## Test Reporting
 
 ### Coverage Reports
+
 - Generate HTML coverage reports
 - Track coverage trends over time
 - Identify untested code paths
 - Ensure critical paths are covered
 
 ### Performance Reports
+
 - Frame time histograms
 - Memory usage tracking
 - Network latency measurements

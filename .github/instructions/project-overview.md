@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # RuneRogue Project Overview
@@ -25,6 +25,7 @@ RuneRogue is an OSRS-inspired multiplayer roguelike survival game designed as a 
 - **Vite** - Build tool and development server
 
 ### Backend
+
 - **Node.js + TypeScript** - Server runtime
 - **Colyseus** - Real-time multiplayer framework
 - **Express** - REST API server
@@ -62,8 +63,9 @@ runerogue/
 ## Development Phases
 
 ### ✅ Phase 0: Foundation (COMPLETE)
+
 - OSRS data pipeline with all combat formulas
-- Colyseus multiplayer server infrastructure  
+- Colyseus multiplayer server infrastructure
 
 - bitECS entity component system
 - Comprehensive test suite (13/13 tests passing)
@@ -116,14 +118,13 @@ runerogue/
 - **Test Coverage**: >90% coverage for all game logic
 - **Documentation**: JSDoc comments and architectural documentation
 
-
 ## Success Metrics
 
 ### Technical
 
 - 60fps sustained with 4 players + 20 enemies
 - <100ms server response time
-- >90% test coverage on game systems
+- > 90% test coverage on game systems
 - Zero production TypeScript errors
 
 ### Gameplay

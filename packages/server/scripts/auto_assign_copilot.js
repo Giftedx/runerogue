@@ -2,7 +2,7 @@
 // Place in scripts/auto_assign_copilot.js
 // Requires @octokit/rest (installed by workflow)
 
-const { Octokit } = require("@octokit/rest");
+const { Octokit } = require('@octokit/rest');
 
 const token = process.env.GITHUB_TOKEN;
 const owner = process.env.REPO_OWNER;
@@ -18,7 +18,9 @@ async function main() {
   let copilotAssignable = false;
   try {
     const { data: collaborators } = await octokit.rest.repos.listCollaborators({ owner, repo });
-    copilotAssignable = collaborators.some(user => user.login.toLowerCase() === copilotAssignee.toLowerCase());
+    copilotAssignable = collaborators.some(
+      user => user.login.toLowerCase() === copilotAssignee.toLowerCase()
+    );
   } catch (e) {
     console.error('Failed to list collaborators:', e.message);
     process.exit(1);
@@ -37,7 +39,7 @@ async function main() {
       state: 'open',
       labels: label,
       assignee: placeholderAssignee,
-      per_page: 100
+      per_page: 100,
     });
     issues = data;
   } catch (e) {
@@ -56,13 +58,13 @@ async function main() {
         owner,
         repo,
         issue_number: issue.number,
-        assignees: [copilotAssignee]
+        assignees: [copilotAssignee],
       });
       await octokit.rest.issues.removeAssignees({
         owner,
         repo,
         issue_number: issue.number,
-        assignees: [placeholderAssignee]
+        assignees: [placeholderAssignee],
       });
       console.log(`Reassigned issue #${issue.number} to Copilot.`);
     } catch (e) {

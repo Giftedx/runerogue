@@ -4,7 +4,7 @@
 
 _**User**_
 
-Giftedx: 
+Giftedx:
 read all plans and documentaion in the codebase be methodical and comprehensive, compare to reality of code in files and folders
 
 think and analyze our codebase to determin its current state and prioritize areas that are vital
@@ -21,16 +21,19 @@ GitHub Copilot: I'll analyze the RuneRogue codebase comprehensively to determine
 ### ✅ Working Components
 
 1. **OSRS Data Pipeline (packages/osrs-data)**
+
    - Combat formulas implemented
    - Express API serving data
    - Equipment and item data structures
 
 2. **Game Server Infrastructure (packages/game-server)**
+
    - Colyseus room setup
    - Basic schemas defined
    - Server architecture in place
 
 3. **Server Implementation (packages/server)**
+
    - ECS systems and components
    - Game logic structure
    - Integration with Colyseus
@@ -42,11 +45,13 @@ GitHub Copilot: I'll analyze the RuneRogue codebase comprehensively to determine
 ### ❌ Critical Issues
 
 1. **Test Suite Failing**
+
    - 27 passing, 79 failing tests
    - Many tests reference missing dependencies
    - Legacy/archived tests need cleanup
 
 2. **Client-Server Disconnection**
+
    - Phaser client has multiple demo implementations but unclear which works
    - No clear connection between clients and multiplayer server
    - Godot client exists but integration status unknown
@@ -59,21 +64,25 @@ GitHub Copilot: I'll analyze the RuneRogue codebase comprehensively to determine
 ## Priority Areas (Vital for MVP)
 
 ### 🔴 Priority 1: Fix Test Infrastructure
+
 - Clean up or remove failing legacy tests
 - Ensure core packages have working test coverage
 - Establish baseline for development
 
 ### 🔴 Priority 2: Client-Server Integration
+
 - Connect Phaser client to Colyseus server
 - Implement basic player join/leave
 - Test real-time state synchronization
 
 ### 🟡 Priority 3: Core Gameplay Loop
+
 - Player movement with multiplayer sync
 - Basic combat implementation
 - Simple enemy spawning
 
 ### 🟢 Priority 4: Polish & Features
+
 - UI improvements
 - Additional OSRS mechanics
 - Performance optimization
@@ -81,23 +90,27 @@ GitHub Copilot: I'll analyze the RuneRogue codebase comprehensively to determine
 ## Development Path
 
 ### Phase 1: Stabilization (1-2 days)
+
 1. Fix test suite by removing/updating legacy tests
 2. Verify all packages build correctly
 3. Document which client implementation to use
 
 ### Phase 2: Integration (2-3 days)
+
 1. Connect Phaser client to game server
 2. Implement player join/spawn
 3. Add basic movement synchronization
 4. Create simple debug UI
 
 ### Phase 3: Core Features (3-4 days)
+
 1. Implement combat system end-to-end
 2. Add enemy spawning and AI
 3. Connect OSRS data to gameplay
 4. Add health/prayer systems
 
 ### Phase 4: Multiplayer Polish (2-3 days)
+
 1. Client prediction for smooth movement
 2. Lag compensation
 3. Proper error handling
@@ -111,6 +124,7 @@ GitHub Copilot: I'll analyze the RuneRogue codebase comprehensively to determine
 You are tasked with implementing the core multiplayer functionality for RuneRogue, an OSRS-inspired multiplayer roguelike game. The codebase has the foundation but needs critical integration work.
 
 ## Current State
+
 - OSRS data pipeline: ✅ Working (packages/osrs-data)
 - Game server: ✅ Structure exists (packages/game-server, packages/server)
 - Clients: ❌ Not connected to server (packages/phaser-client, client/godot)
@@ -119,6 +133,7 @@ You are tasked with implementing the core multiplayer functionality for RuneRogu
 ## Your Tasks (in order)
 
 ### 1. Fix Test Infrastructure (CRITICAL)
+
 ```bash
 # First, assess the test situation
 pnpm test --listTests
@@ -130,6 +145,7 @@ cd packages/server && pnpm test
 ```
 
 **Actions:**
+
 - Remove or fix tests in `archived-tests-legacy/` and `archived-tests-debug/`
 - Ensure core package tests pass
 - Update jest configs if needed
@@ -138,169 +154,174 @@ cd packages/server && pnpm test
 ### 2. Connect Phaser Client to Server
 
 **Analyze existing implementations:**
+
 - `packages/phaser-client/public/working-client.html`
 - `packages/phaser-client/public/enhanced-client.html`
 - `packages/phaser-client/public/test-client.html`
 
 **Implement:**
-````typescript
+
+```typescript
 // In packages/phaser-client/src/scenes/GameScene.ts
-import * as Colyseus from 'colyseus.js';
+import * as Colyseus from "colyseus.js";
 
 export class GameScene extends Phaser.Scene {
-    private client: Colyseus.Client;
-    private room: Colyseus.Room;
-    
-    async create() {
-        // Connect to game server
-        this.client = new Colyseus.Client('ws://localhost:2567');
-        
-        try {
-            this.room = await this.client.joinOrCreate('game_room', {
-                playerName: 'Player1'
-            });
-            
-            // Listen for state changes
-            this.room.state.players.onAdd = (player, key) => {
-                this.addPlayer(key, player);
-            };
-            
-            this.room.state.players.onRemove = (player, key) => {
-                this.removePlayer(key);
-            };
-            
-            // Send player input
-            this.input.on('pointermove', (pointer) => {
-                this.room.send('move', {
-                    x: pointer.worldX,
-                    y: pointer.worldY
-                });
-            });
-            
-        } catch (e) {
-            console.error('Failed to join room:', e);
-        }
+  private client: Colyseus.Client;
+  private room: Colyseus.Room;
+
+  async create() {
+    // Connect to game server
+    this.client = new Colyseus.Client("ws://localhost:2567");
+
+    try {
+      this.room = await this.client.joinOrCreate("game_room", {
+        playerName: "Player1",
+      });
+
+      // Listen for state changes
+      this.room.state.players.onAdd = (player, key) => {
+        this.addPlayer(key, player);
+      };
+
+      this.room.state.players.onRemove = (player, key) => {
+        this.removePlayer(key);
+      };
+
+      // Send player input
+      this.input.on("pointermove", (pointer) => {
+        this.room.send("move", {
+          x: pointer.worldX,
+          y: pointer.worldY,
+        });
+      });
+    } catch (e) {
+      console.error("Failed to join room:", e);
     }
+  }
 }
+```
 ````
 
 ### 3. Implement Server-Side Player Movement
 
-````typescript
+```typescript
 // In packages/game-server/src/rooms/GameRoom.ts
-import { Room, Client } from 'colyseus';
-import { GameState } from '../schemas/GameState';
+import { Room, Client } from "colyseus";
+import { GameState } from "../schemas/GameState";
 
 export class GameRoom extends Room<GameState> {
-    onCreate(options: any) {
-        this.setState(new GameState());
-        
-        this.onMessage('move', (client, data) => {
-            const player = this.state.players.get(client.sessionId);
-            if (player) {
-                // Validate movement
-                const distance = Math.sqrt(
-                    Math.pow(data.x - player.x, 2) + 
-                    Math.pow(data.y - player.y, 2)
-                );
-                
-                // Prevent teleporting
-                if (distance < 100) {
-                    player.x = data.x;
-                    player.y = data.y;
-                }
-            }
-        });
-    }
-    
-    onJoin(client: Client, options: any) {
-        const player = new Player();
-        player.id = client.sessionId;
-        player.name = options.playerName || 'Player';
-        player.x = Math.random() * 800;
-        player.y = Math.random() * 600;
-        
-        this.state.players.set(client.sessionId, player);
-    }
-    
-    onLeave(client: Client) {
-        this.state.players.delete(client.sessionId);
-    }
+  onCreate(options: any) {
+    this.setState(new GameState());
+
+    this.onMessage("move", (client, data) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        // Validate movement
+        const distance = Math.sqrt(
+          Math.pow(data.x - player.x, 2) + Math.pow(data.y - player.y, 2),
+        );
+
+        // Prevent teleporting
+        if (distance < 100) {
+          player.x = data.x;
+          player.y = data.y;
+        }
+      }
+    });
+  }
+
+  onJoin(client: Client, options: any) {
+    const player = new Player();
+    player.id = client.sessionId;
+    player.name = options.playerName || "Player";
+    player.x = Math.random() * 800;
+    player.y = Math.random() * 600;
+
+    this.state.players.set(client.sessionId, player);
+  }
+
+  onLeave(client: Client) {
+    this.state.players.delete(client.sessionId);
+  }
 }
-````
+```
 
 ### 4. Create Unified Development Server
 
-````typescript
+```typescript
 // Create packages/server/src/index.ts
-import express from 'express';
-import { createServer } from 'http';
-import { Server } from 'colyseus';
-import { GameRoom } from '@runerogue/game-server';
-import { osrsDataRouter } from '@runerogue/osrs-data';
+import express from "express";
+import { createServer } from "http";
+import { Server } from "colyseus";
+import { GameRoom } from "@runerogue/game-server";
+import { osrsDataRouter } from "@runerogue/osrs-data";
 
 const app = express();
 const gameServer = new Server({
-    server: createServer(app)
+  server: createServer(app),
 });
 
 // Register game room
-gameServer.define('game_room', GameRoom);
+gameServer.define("game_room", GameRoom);
 
 // Serve OSRS data API
-app.use('/api/osrs', osrsDataRouter);
+app.use("/api/osrs", osrsDataRouter);
 
 // Serve Phaser client
-app.use(express.static('../phaser-client/dist'));
+app.use(express.static("../phaser-client/dist"));
 
 gameServer.listen(2567);
-console.log('Game server running on ws://localhost:2567');
-````
+console.log("Game server running on ws://localhost:2567");
+```
 
 ### 5. Add Basic Combat
 
-````typescript
+```typescript
 // In packages/server/src/systems/CombatSystem.ts
-import { CombatCalculator } from '@runerogue/osrs-data';
+import { CombatCalculator } from "@runerogue/osrs-data";
 
 export class CombatSystem {
-    update(world: World, deltaTime: number) {
-        // Query entities with combat components
-        const fighters = world.query([CombatComponent, PositionComponent]);
-        
-        for (const entity of fighters) {
-            const combat = entity.getComponent(CombatComponent);
-            const position = entity.getComponent(PositionComponent);
-            
-            // Find nearby enemies
-            const enemies = this.findEnemiesInRange(world, position, combat.attackRange);
-            
-            if (enemies.length > 0 && combat.canAttack()) {
-                const target = enemies[0];
-                const damage = CombatCalculator.calculateDamage(
-                    combat.stats,
-                    target.getComponent(CombatComponent).stats
-                );
-                
-                // Apply damage
-                target.getComponent(HealthComponent).current -= damage;
-                combat.lastAttackTime = Date.now();
-                
-                // Broadcast combat event
-                this.room.broadcast('combat', {
-                    attacker: entity.id,
-                    target: target.id,
-                    damage: damage
-                });
-            }
-        }
+  update(world: World, deltaTime: number) {
+    // Query entities with combat components
+    const fighters = world.query([CombatComponent, PositionComponent]);
+
+    for (const entity of fighters) {
+      const combat = entity.getComponent(CombatComponent);
+      const position = entity.getComponent(PositionComponent);
+
+      // Find nearby enemies
+      const enemies = this.findEnemiesInRange(
+        world,
+        position,
+        combat.attackRange,
+      );
+
+      if (enemies.length > 0 && combat.canAttack()) {
+        const target = enemies[0];
+        const damage = CombatCalculator.calculateDamage(
+          combat.stats,
+          target.getComponent(CombatComponent).stats,
+        );
+
+        // Apply damage
+        target.getComponent(HealthComponent).current -= damage;
+        combat.lastAttackTime = Date.now();
+
+        // Broadcast combat event
+        this.room.broadcast("combat", {
+          attacker: entity.id,
+          target: target.id,
+          damage: damage,
+        });
+      }
     }
+  }
 }
-````
+```
 
 ### 6. Create Development Scripts
 
-````json
+```json
 // In package.json
 {
   "scripts": {
@@ -311,7 +332,7 @@ export class CombatSystem {
     "clean:tests": "rm -rf packages/*/archived-tests-*"
   }
 }
-````
+```
 
 ## Testing Checklist
 
@@ -332,12 +353,14 @@ export class CombatSystem {
 5. **Document decisions**: Update README with architecture choices
 
 ## Resources
+
 - Colyseus docs: https://docs.colyseus.io/
 - OSRS Wiki: https://oldschool.runescape.wiki/
 - Existing implementations in codebase to reference
 
 Start with test cleanup, then focus on getting one player moving on screen. Build incrementally from there.
-````
+
+`````
 
 This prompt provides the next AI agent with:
 1. Clear understanding of current state
@@ -493,25 +516,25 @@ import * as Colyseus from 'colyseus.js';
 export class GameScene extends Phaser.Scene {
     private client: Colyseus.Client;
     private room: Colyseus.Room;
-    
+
     async create() {
         // Connect to game server
         this.client = new Colyseus.Client('ws://localhost:2567');
-        
+
         try {
             this.room = await this.client.joinOrCreate('game_room', {
                 playerName: 'Player1'
             });
-            
+
             // Listen for state changes
             this.room.state.players.onAdd = (player, key) => {
                 this.addPlayer(key, player);
             };
-            
+
             this.room.state.players.onRemove = (player, key) => {
                 this.removePlayer(key);
             };
-            
+
             // Send player input
             this.input.on('pointermove', (pointer) => {
                 this.room.send('move', {
@@ -519,131 +542,134 @@ export class GameScene extends Phaser.Scene {
                     y: pointer.worldY
                 });
             });
-            
+
         } catch (e) {
             console.error('Failed to join room:', e);
         }
     }
 }
-````
+`````
 
 ### 3. Implement Server-Side Player Movement
 
-````typescript
+```typescript
 // In packages/game-server/src/rooms/GameRoom.ts
-import { Room, Client } from 'colyseus';
-import { GameState } from '../schemas/GameState';
+import { Room, Client } from "colyseus";
+import { GameState } from "../schemas/GameState";
 
 export class GameRoom extends Room<GameState> {
-    onCreate(options: any) {
-        this.setState(new GameState());
-        
-        this.onMessage('move', (client, data) => {
-            const player = this.state.players.get(client.sessionId);
-            if (player) {
-                // Validate movement
-                const distance = Math.sqrt(
-                    Math.pow(data.x - player.x, 2) + 
-                    Math.pow(data.y - player.y, 2)
-                );
-                
-                // Prevent teleporting
-                if (distance < 100) {
-                    player.x = data.x;
-                    player.y = data.y;
-                }
-            }
-        });
-    }
-    
-    onJoin(client: Client, options: any) {
-        const player = new Player();
-        player.id = client.sessionId;
-        player.name = options.playerName || 'Player';
-        player.x = Math.random() * 800;
-        player.y = Math.random() * 600;
-        
-        this.state.players.set(client.sessionId, player);
-    }
-    
-    onLeave(client: Client) {
-        this.state.players.delete(client.sessionId);
-    }
+  onCreate(options: any) {
+    this.setState(new GameState());
+
+    this.onMessage("move", (client, data) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        // Validate movement
+        const distance = Math.sqrt(
+          Math.pow(data.x - player.x, 2) + Math.pow(data.y - player.y, 2),
+        );
+
+        // Prevent teleporting
+        if (distance < 100) {
+          player.x = data.x;
+          player.y = data.y;
+        }
+      }
+    });
+  }
+
+  onJoin(client: Client, options: any) {
+    const player = new Player();
+    player.id = client.sessionId;
+    player.name = options.playerName || "Player";
+    player.x = Math.random() * 800;
+    player.y = Math.random() * 600;
+
+    this.state.players.set(client.sessionId, player);
+  }
+
+  onLeave(client: Client) {
+    this.state.players.delete(client.sessionId);
+  }
 }
-````
+```
 
 ### 4. Create Unified Development Server
 
-````typescript
+```typescript
 // Create packages/server/src/index.ts
-import express from 'express';
-import { createServer } from 'http';
-import { Server } from 'colyseus';
-import { GameRoom } from '@runerogue/game-server';
-import { osrsDataRouter } from '@runerogue/osrs-data';
+import express from "express";
+import { createServer } from "http";
+import { Server } from "colyseus";
+import { GameRoom } from "@runerogue/game-server";
+import { osrsDataRouter } from "@runerogue/osrs-data";
 
 const app = express();
 const gameServer = new Server({
-    server: createServer(app)
+  server: createServer(app),
 });
 
 // Register game room
-gameServer.define('game_room', GameRoom);
+gameServer.define("game_room", GameRoom);
 
 // Serve OSRS data API
-app.use('/api/osrs', osrsDataRouter);
+app.use("/api/osrs", osrsDataRouter);
 
 // Serve Phaser client
-app.use(express.static('../phaser-client/dist'));
+app.use(express.static("../phaser-client/dist"));
 
 gameServer.listen(2567);
-console.log('Game server running on ws://localhost:2567');
-````
+console.log("Game server running on ws://localhost:2567");
+```
 
 ### 5. Add Basic Combat
 
-````typescript
+```typescript
 // In packages/server/src/systems/CombatSystem.ts
-import { CombatCalculator } from '@runerogue/osrs-data';
+import { CombatCalculator } from "@runerogue/osrs-data";
 
 export class CombatSystem {
-    update(world: World, deltaTime: number) {
-        // Query entities with combat components
-        const fighters = world.query([CombatComponent, PositionComponent]);
-        
-        for (const entity of fighters) {
-            const combat = entity.getComponent(CombatComponent);
-            const position = entity.getComponent(PositionComponent);
-            
-            // Find nearby enemies
-            const enemies = this.findEnemiesInRange(world, position, combat.attackRange);
-            
-            if (enemies.length > 0 && combat.canAttack()) {
-                const target = enemies[0];
-                const damage = CombatCalculator.calculateDamage(
-                    combat.stats,
-                    target.getComponent(CombatComponent).stats
-                );
-                
-                // Apply damage
-                target.getComponent(HealthComponent).current -= damage;
-                combat.lastAttackTime = Date.now();
-                
-                // Broadcast combat event
-                this.room.broadcast('combat', {
-                    attacker: entity.id,
-                    target: target.id,
-                    damage: damage
-                });
-            }
-        }
+  update(world: World, deltaTime: number) {
+    // Query entities with combat components
+    const fighters = world.query([CombatComponent, PositionComponent]);
+
+    for (const entity of fighters) {
+      const combat = entity.getComponent(CombatComponent);
+      const position = entity.getComponent(PositionComponent);
+
+      // Find nearby enemies
+      const enemies = this.findEnemiesInRange(
+        world,
+        position,
+        combat.attackRange,
+      );
+
+      if (enemies.length > 0 && combat.canAttack()) {
+        const target = enemies[0];
+        const damage = CombatCalculator.calculateDamage(
+          combat.stats,
+          target.getComponent(CombatComponent).stats,
+        );
+
+        // Apply damage
+        target.getComponent(HealthComponent).current -= damage;
+        combat.lastAttackTime = Date.now();
+
+        // Broadcast combat event
+        this.room.broadcast("combat", {
+          attacker: entity.id,
+          target: target.id,
+          damage: damage,
+        });
+      }
     }
+  }
 }
-````
+```
 
 ### 6. Create Development Scripts
 
-````json
+```json
 // In package.json
 {
   "scripts": {
@@ -654,7 +680,7 @@ export class CombatSystem {
     "clean:tests": "rm -rf packages/*/archived-tests-*"
   }
 }
-````
+```
 
 ## Testing Checklist
 
@@ -675,12 +701,14 @@ export class CombatSystem {
 5. **Document decisions**: Update README with architecture choices
 
 ## Resources
+
 - Colyseus docs: https://docs.colyseus.io/
 - OSRS Wiki: https://oldschool.runescape.wiki/
 - Existing implementations in codebase to reference
 
 Start with test cleanup, then focus on getting one player moving on screen. Build incrementally from there.
-````
+
+`````
 
 This prompt provides the next AI agent with:
 1. Clear understanding of current state
@@ -923,7 +951,7 @@ export class GameScene extends Phaser.Scene {
     // }
     // }
 }
-````
+`````
 
 ### 3. Implement Server-Side Player Join/Leave and Basic Movement Handling in `RuneRogueRoom`
 
@@ -931,124 +959,139 @@ export class GameScene extends Phaser.Scene {
 
 **Modify RuneRogueRoom.ts:**
 (It currently uses the legacy `GameState` from GameState.ts. This is acceptable for this step, but note the deprecation for future refactoring towards `@runerogue/shared` schemas.)
-````typescript
+
+```typescript
 // filepath: packages/game-server/src/rooms/RuneRogueRoom.ts
 // ...existing code...
-import { Room, Client } from 'colyseus';
-import { GameState, Player } from '../schemas/GameState'; // Using legacy schema
+import { Room, Client } from "colyseus";
+import { GameState, Player } from "../schemas/GameState"; // Using legacy schema
 
 export class RuneRogueRoom extends Room<GameState> {
-    onCreate(options: any) {
-        this.setState(new GameState());
-        console.log(`Room ${this.roomId} created!`);
+  onCreate(options: any) {
+    this.setState(new GameState());
+    console.log(`Room ${this.roomId} created!`);
 
-        // Example: Basic movement message handler
-        this.onMessage('move', (client, data) => {
-            const player = this.state.players.get(client.sessionId);
-            if (player) {
-                // Basic validation: prevent moving too far in one go (anti-cheat placeholder)
-                const MAX_MOVE_DISTANCE = 100; // Example value
-                const distance = Math.sqrt(
-                    Math.pow(data.x - player.x, 2) +
-                    Math.pow(data.y - player.y, 2)
-                );
+    // Example: Basic movement message handler
+    this.onMessage("move", (client, data) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        // Basic validation: prevent moving too far in one go (anti-cheat placeholder)
+        const MAX_MOVE_DISTANCE = 100; // Example value
+        const distance = Math.sqrt(
+          Math.pow(data.x - player.x, 2) + Math.pow(data.y - player.y, 2),
+        );
 
-                if (distance < MAX_MOVE_DISTANCE * 5 && Number.isFinite(data.x) && Number.isFinite(data.y)) { // Generous limit for now
-                    player.x = data.x;
-                    player.y = data.y;
-                    player.lastMoveTime = this.clock.currentTime;
-                    // console.log(`Player ${client.sessionId} moved to (${player.x}, ${player.y})`);
-                } else {
-                    console.warn(`Player ${client.sessionId} invalid move rejected: dist ${distance}, data:`, data);
-                }
-            }
-        });
-
-        // ... other onCreate logic like game loop if any ...
-        // this.setPatchRate(50); // Example: 20fps
-    }
-
-    onJoin(client: Client, options: any) {
-        console.log(`Player ${client.sessionId} joined! Name: ${options.playerName}`);
-        const player = new Player().assign({
-            id: client.sessionId,
-            name: options.playerName || 'Guest',
-            x: Math.floor(Math.random() * 800), // Initial spawn position
-            y: Math.floor(Math.random() * 600),
-            health: 10, // Default from schema
-            maxHealth: 10, // Default from schema
-            connected: true,
-            // Initialize other stats as needed from OSRS base stats
-            attackLevel: 1,
-            strengthLevel: 1,
-            defenceLevel: 1,
-            hitpointsLevel: 10,
-        });
-        this.state.players.set(client.sessionId, player);
-    }
-
-    async onLeave(client: Client, consented: boolean) {
-        const player = this.state.players.get(client.sessionId);
-        if (player) {
-            player.connected = false; // Mark as disconnected
-            console.log(`Player ${client.sessionId} left! Consented: ${consented}`);
+        if (
+          distance < MAX_MOVE_DISTANCE * 5 &&
+          Number.isFinite(data.x) &&
+          Number.isFinite(data.y)
+        ) {
+          // Generous limit for now
+          player.x = data.x;
+          player.y = data.y;
+          player.lastMoveTime = this.clock.currentTime;
+          // console.log(`Player ${client.sessionId} moved to (${player.x}, ${player.y})`);
+        } else {
+          console.warn(
+            `Player ${client.sessionId} invalid move rejected: dist ${distance}, data:`,
+            data,
+          );
         }
+      }
+    });
 
-        try {
-            if (consented) {
-                throw new Error("consented leave");
-            }
-            // Allow reconnection
-            await this.allowReconnection(client, 60); // Allow 60 seconds to reconnect
-            if (player) player.connected = true; // Mark as reconnected
-            console.log(`Player ${client.sessionId} reconnected!`);
-        } catch (e) {
-            if (player) {
-                this.state.players.delete(client.sessionId);
-                console.log(`Player ${client.sessionId} permanently removed.`);
-            }
-        }
+    // ... other onCreate logic like game loop if any ...
+    // this.setPatchRate(50); // Example: 20fps
+  }
+
+  onJoin(client: Client, options: any) {
+    console.log(
+      `Player ${client.sessionId} joined! Name: ${options.playerName}`,
+    );
+    const player = new Player().assign({
+      id: client.sessionId,
+      name: options.playerName || "Guest",
+      x: Math.floor(Math.random() * 800), // Initial spawn position
+      y: Math.floor(Math.random() * 600),
+      health: 10, // Default from schema
+      maxHealth: 10, // Default from schema
+      connected: true,
+      // Initialize other stats as needed from OSRS base stats
+      attackLevel: 1,
+      strengthLevel: 1,
+      defenceLevel: 1,
+      hitpointsLevel: 10,
+    });
+    this.state.players.set(client.sessionId, player);
+  }
+
+  async onLeave(client: Client, consented: boolean) {
+    const player = this.state.players.get(client.sessionId);
+    if (player) {
+      player.connected = false; // Mark as disconnected
+      console.log(`Player ${client.sessionId} left! Consented: ${consented}`);
     }
 
-    onDispose() {
-        console.log(`Room ${this.roomId} disposing.`);
+    try {
+      if (consented) {
+        throw new Error("consented leave");
+      }
+      // Allow reconnection
+      await this.allowReconnection(client, 60); // Allow 60 seconds to reconnect
+      if (player) player.connected = true; // Mark as reconnected
+      console.log(`Player ${client.sessionId} reconnected!`);
+    } catch (e) {
+      if (player) {
+        this.state.players.delete(client.sessionId);
+        console.log(`Player ${client.sessionId} permanently removed.`);
+      }
     }
+  }
+
+  onDispose() {
+    console.log(`Room ${this.roomId} disposing.`);
+  }
 }
-````
+```
 
 ### 4. Create/Update Unified Development Server
 
 **Goal:** Have a single server process that runs the Colyseus game server, serves the OSRS data API, and serves the Phaser client.
 **Suggestion:** Modify index.ts as it already has an Express app and Colyseus server.
-The `@runerogue/osrs-data` package currently starts its own server. For unification, it should ideally export its Express router *without* calling `app.listen()`. This might require a small refactor in server.ts.
+The `@runerogue/osrs-data` package currently starts its own server. For unification, it should ideally export its Express router _without_ calling `app.listen()`. This might require a small refactor in server.ts.
 
 **Modify index.ts:**
-````typescript
+
+```typescript
 // filepath: packages/game-server/src/index.ts
 // ... existing imports ...
-import { app as osrsDataAppRouter } from '@runerogue/osrs-data'; // Assuming osrs-data exports its app/router
-import path from 'path'; // For serving static files
+import { app as osrsDataAppRouter } from "@runerogue/osrs-data"; // Assuming osrs-data exports its app/router
+import path from "path"; // For serving static files
 
 // ... existing app, server, gameServer setup ...
 
 // Mount OSRS data API
 // IMPORTANT: Ensure osrs-data's app.listen() is not called if you mount it here.
 // It should export its router/app for this purpose.
-app.use('/api/osrs', osrsDataAppRouter);
+app.use("/api/osrs", osrsDataAppRouter);
 
 // Serve Phaser client static files
 // The path should be relative to this file's location after compilation (e.g., in dist/)
 // or use absolute paths.
-const phaserClientPath = path.join(__dirname, '../../../packages/phaser-client/public');
+const phaserClientPath = path.join(
+  __dirname,
+  "../../../packages/phaser-client/public",
+);
 console.log(`Serving Phaser client from: ${phaserClientPath}`);
 app.use(express.static(phaserClientPath));
 
-
 // ... existing gameServer.listen() ...
 // Ensure the port is consistent (e.g., 2567)
-````
+```
+
 **Refactor server.ts (Conceptual):**
-````typescript
+
+```typescript
 // filepath: packages/osrs-data/src/api/server.ts
 // ... existing imports ...
 const app = express(); // Keep this
@@ -1059,7 +1102,7 @@ const app = express(); // Keep this
 // export function startServer(): void { /* app.listen(...) */ }
 
 export { app }; // Ensure the app (or a router) is exported
-````
+```
 
 ### 5. Add Basic Combat (Server-Side Logic Placeholder)
 
@@ -1067,9 +1110,14 @@ export { app }; // Ensure the app (or a router) is exported
 **Location:** Likely within `packages/server/src/systems/CombatSystem.ts` (if using ECS) or directly in RuneRogueRoom.ts for a simpler MVP.
 
 **Example structure for `packages/server/src/systems/CombatSystem.ts`:**
-````typescript
+
+```typescript
 // filepath: packages/server/src/systems/CombatSystem.ts
-import { CombatCalculator, OSRSCombatStats, OSRSEquipmentBonuses } from '@runerogue/osrs-data';
+import {
+  CombatCalculator,
+  OSRSCombatStats,
+  OSRSEquipmentBonuses,
+} from "@runerogue/osrs-data";
 // import { World, Component } from 'bitecs'; // Or your ECS library
 // import { Room } from 'colyseus';
 // import { GameState } from '@runerogue/game-server/src/schemas/GameState'; // Or shared schema
@@ -1081,59 +1129,52 @@ import { CombatCalculator, OSRSCombatStats, OSRSEquipmentBonuses } from '@runero
 // type EntityId = number | string;
 
 export class CombatSystem {
-    // private room: Room<GameState>;
-    // constructor(room: Room<GameState>) { this.room = room; }
-
-    // update(world: World, deltaTime: number) {
-        // Query entities with CombatComponent, PositionComponent, HealthComponent
-        // const fighters = world.query([CombatComponent, PositionComponent]);
-
-        // for (const entityId of fighters) {
-            // const combat = world.getComponent(entityId, CombatComponent);
-            // const position = world.getComponent(entityId, PositionComponent);
-            // const health = world.getComponent(entityId, HealthComponent);
-
-            // if (combat.targetId && combat.canAttack()) {
-                // const targetEntity = world.getEntity(combat.targetId); // Example
-                // if (!targetEntity) continue;
-                // const targetHealth = world.getComponent(targetEntity, HealthComponent);
-                // const targetCombat = world.getComponent(targetEntity, CombatComponent);
-                // if (!targetHealth || !targetCombat) continue;
-
-                // const damage = CombatCalculator.calculateMaxHit( // Or a full damage calculation
-                // combat.stats,
-                // combat.stats, // Assuming equipment bonuses are part of stats for simplicity here
-                // 1.0, // prayerMultiplier
-                // 0 // styleBonus
-                // );
-
-                // targetHealth.current -= damage;
-                // combat.lastAttackTime = Date.now(); // Or use game time from room.clock
-
-                // console.log(`Entity ${entityId} hit ${combat.targetId} for ${damage} damage.`);
-
-                // Broadcast combat event to clients
-                // this.room.broadcast('combat_event', {
-                // attacker: entityId,
-                // target: combat.targetId,
-                // damage: damage,
-                // newHealth: targetHealth.current
-                // });
-
-                // if (targetHealth.current <= 0) {
-                // console.log(`Entity ${combat.targetId} defeated.`);
-                // Handle entity death (e.g., remove from world, broadcast)
-                // }
-            // }
-        // }
-    // }
+  // private room: Room<GameState>;
+  // constructor(room: Room<GameState>) { this.room = room; }
+  // update(world: World, deltaTime: number) {
+  // Query entities with CombatComponent, PositionComponent, HealthComponent
+  // const fighters = world.query([CombatComponent, PositionComponent]);
+  // for (const entityId of fighters) {
+  // const combat = world.getComponent(entityId, CombatComponent);
+  // const position = world.getComponent(entityId, PositionComponent);
+  // const health = world.getComponent(entityId, HealthComponent);
+  // if (combat.targetId && combat.canAttack()) {
+  // const targetEntity = world.getEntity(combat.targetId); // Example
+  // if (!targetEntity) continue;
+  // const targetHealth = world.getComponent(targetEntity, HealthComponent);
+  // const targetCombat = world.getComponent(targetEntity, CombatComponent);
+  // if (!targetHealth || !targetCombat) continue;
+  // const damage = CombatCalculator.calculateMaxHit( // Or a full damage calculation
+  // combat.stats,
+  // combat.stats, // Assuming equipment bonuses are part of stats for simplicity here
+  // 1.0, // prayerMultiplier
+  // 0 // styleBonus
+  // );
+  // targetHealth.current -= damage;
+  // combat.lastAttackTime = Date.now(); // Or use game time from room.clock
+  // console.log(`Entity ${entityId} hit ${combat.targetId} for ${damage} damage.`);
+  // Broadcast combat event to clients
+  // this.room.broadcast('combat_event', {
+  // attacker: entityId,
+  // target: combat.targetId,
+  // damage: damage,
+  // newHealth: targetHealth.current
+  // });
+  // if (targetHealth.current <= 0) {
+  // console.log(`Entity ${combat.targetId} defeated.`);
+  // Handle entity death (e.g., remove from world, broadcast)
+  // }
+  // }
+  // }
+  // }
 }
-````
+```
 
 ### 6. Update Development Scripts in root package.json
 
 **Goal:** Ensure `dev` and `test` scripts are effective.
-````json
+
+```json
 // filepath: package.json
 // ...existing code...
 "scripts": {
@@ -1148,9 +1189,10 @@ export class CombatSystem {
     // ... other scripts ...
   },
 // ...existing code...
-````
+```
 
 ## Testing Checklist
+
 - [ ] `@runerogue/game-server` tests pass.
 - [ ] Tests for `@runerogue/osrs-data` and `@runerogue/server` can run and key tests pass.
 - [ ] Phaser client connects to the `RuneRogueRoom` on `ws://localhost:2567` without errors.
@@ -1160,6 +1202,7 @@ export class CombatSystem {
 - [ ] Unified development server (`@runerogue/game-server`) starts, serves the Phaser client, and the OSRS API is accessible via it.
 
 ## Important Notes
+
 1.  **OSRS Data Usage**: Use formulas and types from `@runerogue/osrs-data`.
 2.  **Server Authority**: All game logic (movement validation, combat) must be server-side. Client sends input and renders state.
 3.  **Incremental Steps**: Fix tests first. Then establish basic client-server connection. Then add features.
@@ -1167,13 +1210,14 @@ export class CombatSystem {
 5.  **Documentation**: Briefly note any significant decisions or temporary workarounds.
 
 ## Resources
+
 - Colyseus Docs: https://docs.colyseus.io/
 - OSRS Wiki: https://oldschool.runescape.wiki/ (for game mechanics reference)
 - Phaser 3 Docs: https://phaser.io/phaser3
 - Existing codebase, especially RuneRogueRoom.ts and combat.ts.
 
 Start with fixing the test infrastructure, then proceed to client-server connection. Good luck!
- please double check the above again and output the final reviewed and corrected edit as a detailed instructions prompt with all proper relevent real context needed
+please double check the above again and output the final reviewed and corrected edit as a detailed instructions prompt with all proper relevent real context needed
 
 ---
 
@@ -1190,11 +1234,13 @@ You are tasked with stabilizing and integrating core multiplayer functionality f
 ### Working Components
 
 - **OSRS Data Pipeline (``)**
+
   - Combat formulas implemented (`src/calculators/combat.ts`)
   - Express API serving OSRS data (`src/api/server.ts`)
   - Equipment and item data structures (`src/data/items.ts`)
 
 - **Game Server Infrastructure (``)**
+
   - Colyseus room (`RuneRogueRoom`) defined (`src/rooms/RuneRogueRoom.ts`)
   - Basic schemas (`GameState`, `Player`) defined (`src/schemas/GameState.ts`)
 
@@ -1204,11 +1250,13 @@ You are tasked with stabilizing and integrating core multiplayer functionality f
 ### Critical Issues
 
 - **Test Suite Failures**
+
   - `@runerogue/game-server`: Jest configuration error (`p-limit` mock missing)
   - Archived legacy tests (`packages/server/archived-tests-*`) causing confusion and failures
   - Tests for `@runerogue/osrs-data` and `@runerogue/server` blocked by above issues
 
 - **Client-Server Disconnection**
+
   - Phaser client (``) has multiple static HTML demos; unclear canonical implementation
   - No working connection between Phaser client and Colyseus server
   - Godot client (``) integration status unknown (out of scope for immediate MVP)
@@ -1229,10 +1277,12 @@ You are tasked with stabilizing and integrating core multiplayer functionality f
 **Actions:**
 
 1. **Fix Jest Configuration Error (`@runerogue/game-server`)**
+
    - Error: `Could not locate module p-limit mapped as: packages/game-server/__mocks__/p-limit.js`
    - Solution: Either remove incorrect mock or correctly implement mock file.
 
 2. **Clean Archived Tests**
+
    - Remove or fix tests in:
      - ``
      - ``
@@ -1245,6 +1295,7 @@ You are tasked with stabilizing and integrating core multiplayer functionality f
      - `@runerogue/shared`
 
 **Commands:**
+
 ```bash
 # Run tests for specific package
 cd packages/game-server && pnpm test
@@ -1264,52 +1315,56 @@ pnpm test
 **Actions:**
 
 1. **Choose Canonical Phaser Client Implementation**
+
    - Recommended: `packages/phaser-client/public/enhanced-client.html` or create structured `GameScene.ts`
 
 2. **Implement Client Connection Logic**
+
    - File: `packages/phaser-client/src/scenes/GameScene.ts`
+
    ```typescript
-   import Phaser from 'phaser';
-   import * as Colyseus from 'colyseus.js';
+   import Phaser from "phaser";
+   import * as Colyseus from "colyseus.js";
 
    export class GameScene extends Phaser.Scene {
      private client!: Colyseus.Client;
      private room!: Colyseus.Room;
 
      async create() {
-       this.client = new Colyseus.Client('ws://localhost:2567');
+       this.client = new Colyseus.Client("ws://localhost:2567");
 
        try {
-         this.room = await this.client.joinOrCreate('runerogue', {
-           playerName: `Player_${Math.floor(Math.random() * 1000)}`
+         this.room = await this.client.joinOrCreate("runerogue", {
+           playerName: `Player_${Math.floor(Math.random() * 1000)}`,
          });
 
          this.room.onStateChange((state) => {
-           console.log('State updated:', state);
+           console.log("State updated:", state);
          });
 
-         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-           this.room.send('move', { x: pointer.worldX, y: pointer.worldY });
+         this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+           this.room.send("move", { x: pointer.worldX, y: pointer.worldY });
          });
-
        } catch (error) {
-         console.error('Connection error:', error);
+         console.error("Connection error:", error);
        }
      }
    }
    ```
 
 3. **Implement Server-Side Player Handling**
+
    - File: `RuneRogueRoom.ts`
+
    ```typescript
-   import { Room, Client } from 'colyseus';
-   import { GameState, Player } from '../schemas/GameState';
+   import { Room, Client } from "colyseus";
+   import { GameState, Player } from "../schemas/GameState";
 
    export class RuneRogueRoom extends Room<GameState> {
      onCreate() {
        this.setState(new GameState());
 
-       this.onMessage('move', (client, data) => {
+       this.onMessage("move", (client, data) => {
          const player = this.state.players.get(client.sessionId);
          if (player) {
            const distance = Math.hypot(data.x - player.x, data.y - player.y);
@@ -1328,7 +1383,7 @@ pnpm test
          x: Math.random() * 800,
          y: Math.random() * 600,
          health: 10,
-         maxHealth: 10
+         maxHealth: 10,
        });
        this.state.players.set(client.sessionId, player);
      }
@@ -1348,9 +1403,11 @@ pnpm test
 **Actions:**
 
 1. **Implement Basic Combat System**
+
    - File: `packages/server/src/systems/CombatSystem.ts`
+
    ```typescript
-   import { CombatCalculator } from '@runerogue/osrs-data';
+   import { CombatCalculator } from "@runerogue/osrs-data";
 
    export class CombatSystem {
      update(state: GameState) {
@@ -1358,7 +1415,10 @@ pnpm test
          state.enemies.forEach((enemy) => {
            const distance = Math.hypot(player.x - enemy.x, player.y - enemy.y);
            if (distance < player.attackRange && player.canAttack()) {
-             const damage = CombatCalculator.calculateDamage(player.stats, enemy.stats);
+             const damage = CombatCalculator.calculateDamage(
+               player.stats,
+               enemy.stats,
+             );
              enemy.health -= damage;
              player.lastAttackTime = Date.now();
            }
@@ -1404,7 +1464,7 @@ pnpm test
 - **Colyseus Documentation:** [https://docs.colyseus.io/](https://docs.colyseus.io/)
 - **Phaser 3 Documentation:** [https://phaser.io/phaser3](https://phaser.io/phaser3)
 - **OSRS Wiki (Combat Mechanics):** [https://oldschool.runescape.wiki/](https://oldschool.runescape.wiki/)
-- **Existing Codebase:** Refer to existing implementations in ``, ``, and ``.
+- **Existing Codebase:** Refer to existing implementations in `, `, and ``.
 
 ---
 
@@ -1442,16 +1502,19 @@ You're absolutely right - I apologize for not actually checking the codebase as 
 ### Working Components (VERIFIED)
 
 1. **OSRS Data Pipeline (``)**
+
    - ✅ Combat formulas exist in `/src/calculators/combat.ts`
    - ✅ Express API structure exists but **NOT fully implemented** (server.ts has TODO comments)
    - ✅ Basic setup exists but API endpoints are incomplete
 
 2. **Game Server Infrastructure (``)**
+
    - ✅ Colyseus `RuneRogueRoom` exists but marked as **@deprecated LEGACY**
    - ✅ Basic schemas exist but also marked as **@deprecated LEGACY**
    - ✅ Server runs on port 2567
 
 3. **Main Server Implementation (``)**
+
    - ✅ **ACTUAL main server** is in `index.ts`
    - ✅ Uses `JsonGameRoom` as the active room (not `RuneRogueRoom`)
    - ✅ Serves multiple client demos from `/static/` directory
@@ -1465,12 +1528,13 @@ You're absolutely right - I apologize for not actually checking the codebase as 
 ### Critical Issues (VERIFIED)
 
 1. **Test Infrastructure**
+
    - ✅ Jest config error confirmed: `p-limit` mock exists but path mapping incorrect
    - ✅ Only `@runerogue/shared` tests pass
    - ✅ Archived tests in `packages/server/archived-tests-*` causing confusion
 
 2. **Architecture Mismatch**
-   - ❌ **TWO SERVERS**: `` (port 2567) vs `` (port 3001)
+   - ❌ **TWO SERVERS**: `(port 2567) vs` (port 3001)
    - ❌ **LEGACY vs ACTIVE**: `` is marked deprecated
    - ❌ **ROOM MISMATCH**: Active server uses `JsonGameRoom`, not `RuneRogueRoom`
 
@@ -1484,8 +1548,8 @@ You are tasked with consolidating the RuneRogue server architecture and implemen
 
 ## ✅ **VERIFIED Current State**
 
-- **Active Server**: `` (port 3001) with `JsonGameRoom`
-- **Legacy Server**: `` (port 2567) with deprecated `RuneRogueRoom`
+- **Active Server**: ``(port 3001) with`JsonGameRoom`
+- **Legacy Server**: ``(port 2567) with deprecated`RuneRogueRoom`
 - **OSRS Data**: `` has structure but incomplete API endpoints
 - **Phaser Clients**: Multiple working HTML demos, no TypeScript structure
 - **Tests**: `@runerogue/game-server` fails due to Jest config, others blocked
@@ -1497,14 +1561,17 @@ You are tasked with consolidating the RuneRogue server architecture and implemen
 **Goal:** Single working server with passing tests.
 
 **Actions:**
+
 1. **Fix Jest Configuration in ``:**
+
    ```bash
    # The p-limit mock exists but moduleNameMapper path is incorrect
    # Fix packages/game-server/jest.config.js
    ```
 
 2. **Choose Active Server:**
-   - **Option A**: Use `` (currently active, port 3001, `JsonGameRoom`)
+
+   - **Option A**: Use ``(currently active, port 3001,`JsonGameRoom`)
    - **Option B**: Consolidate into `` (port 2567, needs room update)
    - **Recommended**: Consolidate everything into `` since it's more complete
 
@@ -1519,7 +1586,8 @@ You are tasked with consolidating the RuneRogue server architecture and implemen
 
 **Current Issue:** Two servers running different rooms on different ports.
 
-**Solution:** 
+**Solution:**
+
 ```typescript
 // Use packages/server as the main server (port 3001)
 // Import OSRS data capabilities
@@ -1528,21 +1596,24 @@ You are tasked with consolidating the RuneRogue server architecture and implemen
 ```
 
 **Verify Active Room:**
+
 - Current: `JsonGameRoom` in `JsonGameRoom.ts`
 - Legacy: `RuneRogueRoom` in `RuneRogueRoom.ts`
 
 ### 3. **Connect Phaser Client to Active Server**
 
 **Current Clients:**
+
 - `enhanced-client.html` (most complete)
 - `working-client.html`
 - `ultimate-enhanced.html`
 
 **Connection Fix:**
+
 ```javascript
 // In client JavaScript, connect to the ACTIVE server:
-const client = new Colyseus.Client('ws://localhost:3001'); // NOT 2567
-const room = await client.joinOrCreate('runerogue'); // Verify room name matches JsonGameRoom
+const client = new Colyseus.Client("ws://localhost:3001"); // NOT 2567
+const room = await client.joinOrCreate("runerogue"); // Verify room name matches JsonGameRoom
 ```
 
 ### 4. **Implement OSRS Data API Endpoints**
@@ -1550,17 +1621,23 @@ const room = await client.joinOrCreate('runerogue'); // Verify room name matches
 **Current State:** `server.ts` has TODO comments.
 
 **Required Endpoints:**
+
 ```typescript
 // Add to packages/osrs-data/src/api/server.ts
-app.get('/api/combat/max-hit', (req, res) => { /* implement */ });
-app.get('/api/combat/accuracy', (req, res) => { /* implement */ });
+app.get("/api/combat/max-hit", (req, res) => {
+  /* implement */
+});
+app.get("/api/combat/accuracy", (req, res) => {
+  /* implement */
+});
 ```
 
 **Integration:** Mount OSRS API in main server (``):
+
 ```typescript
 // In packages/server/src/server/index.ts
-import { app as osrsAPI } from '@runerogue/osrs-data';
-app.use('/api/osrs', osrsAPI);
+import { app as osrsAPI } from "@runerogue/osrs-data";
+app.use("/api/osrs", osrsAPI);
 ```
 
 ---
@@ -1579,10 +1656,12 @@ app.use('/api/osrs', osrsAPI);
 ## ⚠️ **Critical Architecture Decisions Needed**
 
 1. **Server Consolidation:**
-   - **Recommended**: Use `` (port 3001) as main, retire ``
+
+   - **Recommended**: Use `(port 3001) as main, retire`
    - **Alternative**: Consolidate everything into `` (port 2567)
 
 2. **Room Implementation:**
+
    - Current active: `JsonGameRoom`
    - Legacy: `RuneRogueRoom` (has more OSRS features but deprecated)
    - **Decision needed**: Which room to use as canonical
@@ -1638,7 +1717,4 @@ follow out all work the resulting next steps, highest priority first until compl
 
 _**Assistant**_
 
-
-
 ---
-

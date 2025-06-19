@@ -121,33 +121,33 @@
           // Load hitsplat assets
           this.scene.load.image(
             "hitsplat_damage",
-            "assets/osrs/effects/hitsplats/Damage_hitsplat.png"
+            "assets/osrs/effects/hitsplats/Damage_hitsplat.png",
           );
           this.scene.load.image(
             "hitsplat_zero",
-            "assets/osrs/effects/hitsplats/Zero_damage_hitsplat.png"
+            "assets/osrs/effects/hitsplats/Zero_damage_hitsplat.png",
           );
           this.scene.load.image(
             "hitsplat_heal",
-            "assets/osrs/effects/hitsplats/Heal_hitsplat.png"
+            "assets/osrs/effects/hitsplats/Heal_hitsplat.png",
           );
           this.scene.load.image(
             "hitsplat_poison",
-            "assets/osrs/effects/hitsplats/Poison_hitsplat.png"
+            "assets/osrs/effects/hitsplats/Poison_hitsplat.png",
           );
           this.scene.load.image(
             "hitsplat_venom",
-            "assets/osrs/effects/hitsplats/Venom_hitsplat.png"
+            "assets/osrs/effects/hitsplats/Venom_hitsplat.png",
           );
 
           // Load projectile assets
           this.scene.load.image(
             "projectile_bronze_arrow",
-            "assets/osrs/effects/projectiles/Bronze_arrow.png"
+            "assets/osrs/effects/projectiles/Bronze_arrow.png",
           );
           this.scene.load.image(
             "projectile_iron_arrow",
-            "assets/osrs/effects/projectiles/Iron_arrow.png"
+            "assets/osrs/effects/projectiles/Iron_arrow.png",
           );
 
           console.log("✅ Combat effects assets queued for loading");
@@ -169,7 +169,7 @@
           const hitsplat = this.scene.add.image(
             x,
             y - 20,
-            `hitsplat_${hitsplatKey}`
+            `hitsplat_${hitsplatKey}`,
           );
           hitsplat.setOrigin(0.5, 0.5);
           hitsplat.setScale(2); // Make it clearly visible
@@ -187,7 +187,7 @@
                 color: textColor,
                 stroke: "#000000",
                 strokeThickness: 3,
-              }
+              },
             );
             damageText.setOrigin(0.5, 0.5);
 
@@ -222,12 +222,12 @@
           toX,
           toY,
           projectileType = "bronze_arrow",
-          onComplete = null
+          onComplete = null,
         ) {
           const projectile = this.scene.add.image(
             fromX,
             fromY,
-            `projectile_${projectileType}`
+            `projectile_${projectileType}`,
           );
           projectile.setOrigin(0.5, 0.5);
           projectile.setScale(2);
@@ -267,7 +267,7 @@
         // Create a simple background
         this.load.image(
           "grass",
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
         );
       }
 
@@ -307,7 +307,7 @@
             pointer.x,
             pointer.y,
             randomAmount,
-            randomEffect
+            randomEffect,
           );
         });
       }
@@ -366,7 +366,7 @@
           () => {
             const damage = Math.floor(Math.random() * 15) + 5;
             combatEffects.showDamageEffect(toX, toY, damage, "damage");
-          }
+          },
         );
       }
 
@@ -385,7 +385,7 @@
           () => {
             const damage = Math.floor(Math.random() * 18) + 7;
             combatEffects.showDamageEffect(toX, toY, damage, "damage");
-          }
+          },
         );
       }
 

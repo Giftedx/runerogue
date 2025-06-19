@@ -27,7 +27,7 @@ process.chdir(clientDir);
 console.log("\n🔑 Generating certificates for localhost...");
 execSync(
   "mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1",
-  { stdio: "inherit" }
+  { stdio: "inherit" },
 );
 
 // Verify certificates exist

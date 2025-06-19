@@ -23,7 +23,7 @@ export function calculateMaxHit(
   stats: OSRSCombatStats,
   equipment: OSRSEquipmentBonuses,
   prayerMultiplier: number = 1.0,
-  styleBonus: number = 0
+  styleBonus: number = 0,
 ): number {
   // OSRS max hit formula
   // Effective strength = floor(strength * prayerMultiplier) + styleBonus + 8
@@ -32,7 +32,7 @@ export function calculateMaxHit(
   const effectiveStrength =
     Math.floor(stats.strength * prayerMultiplier) + styleBonus + 8;
   const maxHit = Math.floor(
-    0.5 + (effectiveStrength * (equipment.strengthBonus + 64)) / 640
+    0.5 + (effectiveStrength * (equipment.strengthBonus + 64)) / 640,
   );
 
   return maxHit;
@@ -60,7 +60,7 @@ export function calculateAccuracy(
   attackerPrayerMultiplier: number = 1.0,
   defenderPrayerMultiplier: number = 1.0,
   attackerStyleBonus: number = 0,
-  defenderStyleBonus: number = 0
+  defenderStyleBonus: number = 0,
 ): number {
   // OSRS accuracy formula
   // Effective attack = floor(attack * prayerMultiplier) + styleBonus + 8

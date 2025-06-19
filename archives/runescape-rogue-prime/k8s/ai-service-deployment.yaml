@@ -14,13 +14,13 @@ spec:
         app: ai-service
     spec:
       containers:
-      - name: ai-service
-        image: runerogueprime-ai-service:latest
-        ports:
-        - containerPort: 3003
-        env:
-        - name: GEMINI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: runerogueprime-secrets
-              key: GEMINI_API_KEY
+        - name: ai-service
+          image: runerogueprime-ai-service:latest
+          ports:
+            - containerPort: 3003
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: runerogueprime-secrets
+                  key: GEMINI_API_KEY

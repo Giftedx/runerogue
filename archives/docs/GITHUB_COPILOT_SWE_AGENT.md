@@ -30,7 +30,7 @@ To properly integrate with GitHub Copilot SWE Agent:
 When assigning issues to GitHub Copilot SWE Agent, use:
 
 ```yaml
-assignees: ['Copilot'] # Not 'github-copilot[bot]'
+assignees: ["Copilot"] # Not 'github-copilot[bot]'
 ```
 
 ### 2. Proper mention format

@@ -273,7 +273,7 @@ class EnemySpawnSystem extends System {
       this.spawnTimer = 0;
 
       const currentEnemies = defineQuery([Position, Combat, Enemy])(
-        this.world
+        this.world,
       ).length;
       if (currentEnemies < this.MAX_ENEMIES) {
         this.spawnEnemy();
@@ -522,7 +522,7 @@ class PerformanceMonitor {
     if (frameTime > 50) {
       // 20 TPS = 50ms per frame
       console.warn(
-        `Frame time exceeded: ${frameTime}ms with ${this.playerCount} players`
+        `Frame time exceeded: ${frameTime}ms with ${this.playerCount} players`,
       );
     }
   }

@@ -9,7 +9,7 @@ read all plans and documentaion in the codebase be methodical and comprehensive,
 think and analyze our codebase to determin its current state and prioritize areas that are vital
 
 think about optimal next steps to codebase
-finally create a prompt that methodically details all the 
+finally create a prompt that methodically details all the
 following planned thought out work from the above resulting next steps, highest priority first until completed - methodically, systematically - lovingly with great care
 
 ---
@@ -19,11 +19,12 @@ _**Assistant**_
 Okay, I will help you gather the context needed to analyze your codebase, compare it to your plans, and determine the next steps.
 
 First, I have noted the content of the five key instruction files you provided:
-*   `c:\Users\aggis\GitHub\runerogue\.github\instructions\test.instructions.md`
-*   `c:\Users\aggis\GitHub\runerogue\.github\instructions\development-workflow.instructions.md`
-*   `c:\Users\aggis\GitHub\runerogue\.github\instructions\core-standards.instructions.md`
-*   `c:\Users\aggis\GitHub\runerogue\.github\instructions\architecture.instructions.md`
-*   `c:\Users\aggis\GitHub\runerogue\.github\instructions\project-overview.instructions.md`
+
+- `c:\Users\aggis\GitHub\runerogue\.github\instructions\test.instructions.md`
+- `c:\Users\aggis\GitHub\runerogue\.github\instructions\development-workflow.instructions.md`
+- `c:\Users\aggis\GitHub\runerogue\.github\instructions\core-standards.instructions.md`
+- `c:\Users\aggis\GitHub\runerogue\.github\instructions\architecture.instructions.md`
+- `c:\Users\aggis\GitHub\runerogue\.github\instructions\project-overview.instructions.md`
 
 These documents describe requirements for OSRS authenticity, TypeScript standards, ECS architecture with bitECS, multiplayer with Colyseus, testing strategies, development workflows, and the overall project plan including technology stack and current status.
 
@@ -36,98 +37,103 @@ Here's the information I've gathered:
 **1. High-Level Documentation & Project Overview:**
 
 I've read the following key documentation files:
-*   `c:\\Users\\aggis\\GitHub\\runerogue\\RUNEROGUE_PROJECT_STRUCTURE.md`
-*   `c:\\Users\\aggis\\GitHub\\runerogue\\README.md`
-*   `c:\\Users\\aggis\\GitHub\\runerogue\\COMPREHENSIVE_ANALYSIS_REPORT.md`
-*   Instruction files from the `.github/instructions/` directory.
+
+- `c:\\Users\\aggis\\GitHub\\runerogue\\RUNEROGUE_PROJECT_STRUCTURE.md`
+- `c:\\Users\\aggis\\GitHub\\runerogue\\README.md`
+- `c:\\Users\\aggis\\GitHub\\runerogue\\COMPREHENSIVE_ANALYSIS_REPORT.md`
+- Instruction files from the `.github/instructions/` directory.
 
 These files describe RuneRogue as an OSRS-inspired multiplayer roguelike survival game for Discord. The core concept involves authentic OSRS combat mechanics combined with Vampire Survivors-style gameplay.
 
 **Key takeaways from documentation:**
-*   **Technology Stack (Planned/Documented):**
-    *   Frontend: TypeScript, Phaser 3, React, Vite.
-    *   Backend: Node.js + TypeScript, Colyseus, Express, bitECS.
-    *   Data: PostgreSQL, Prisma ORM, OSRS Wiki API.
-    *   Infrastructure: Turborepo, pnpm, Jest, Docker.
-*   **Project Structure (Planned/Documented in `RUNEROGUE_PROJECT_STRUCTURE.md`):**
-    *   `packages/osrs-data/`: OSRS formulas and data API.
-    *   `packages/game-engine/`: Core game logic.
-    *   `packages/discord-client/`: Discord app client (Phaser/Canvas).
-    *   `packages/game-server/`: Multiplayer server (Colyseus).
-    *   `packages/shared/`: Shared types and utilities.
-    *   `apps/discord-app/` & `apps/dev-server/`.
-    *   The `COMPREHENSIVE_ANALYSIS_REPORT.md` notes a discrepancy: `server-ts/` contains the main implementation, and `packages/game-engine/` and `packages/discord-client/` were not found as described.
-*   **Development Phases:**
-    *   Phase 0 (Foundation - Claimed Complete): OSRS data pipeline, Colyseus server, bitECS, test suite.
-    *   Phase 1 (Multiplayer Prototype - Current): Player movement, combat visualization, enemy spawning, basic UI, Discord integration.
-*   **Core Principles:** OSRS Authenticity, Multiplayer Performance, Code Quality.
-*   **`COMPREHENSIVE_ANALYSIS_REPORT.md` Highlights:**
-    *   **Architecture Mismatch:** `server-ts/` is the main implementation hub, not fully reflected in `RUNEROGUE_PROJECT_STRUCTURE.md`. Some `packages/` (like `game-engine` and `discord-client`) are missing or different from the plan.
-    *   **Technology Stack Drift:** Notes Godot client in reality vs. a planned Phaser/React client.
-    *   **Achievements:** ECS Automation Manager is considered production-ready with good test success. Core systems like GameRoom, basic combat, movement, inventory, and wave management are partially implemented.
-    *   **Critical Issues:** Performance challenges (FPS below target), architectural inconsistencies in documentation, and some test stability issues.
-    *   **Priorities Suggested:** Foundation stabilization (ECS performance, test suite, documentation alignment), then core gameplay loop (multiplayer sync, combat integration, client-server comms), then production readiness.
+
+- **Technology Stack (Planned/Documented):**
+  - Frontend: TypeScript, Phaser 3, React, Vite.
+  - Backend: Node.js + TypeScript, Colyseus, Express, bitECS.
+  - Data: PostgreSQL, Prisma ORM, OSRS Wiki API.
+  - Infrastructure: Turborepo, pnpm, Jest, Docker.
+- **Project Structure (Planned/Documented in `RUNEROGUE_PROJECT_STRUCTURE.md`):**
+  - `packages/osrs-data/`: OSRS formulas and data API.
+  - `packages/game-engine/`: Core game logic.
+  - `packages/discord-client/`: Discord app client (Phaser/Canvas).
+  - `packages/game-server/`: Multiplayer server (Colyseus).
+  - `packages/shared/`: Shared types and utilities.
+  - `apps/discord-app/` & `apps/dev-server/`.
+  - The `COMPREHENSIVE_ANALYSIS_REPORT.md` notes a discrepancy: `server-ts/` contains the main implementation, and `packages/game-engine/` and `packages/discord-client/` were not found as described.
+- **Development Phases:**
+  - Phase 0 (Foundation - Claimed Complete): OSRS data pipeline, Colyseus server, bitECS, test suite.
+  - Phase 1 (Multiplayer Prototype - Current): Player movement, combat visualization, enemy spawning, basic UI, Discord integration.
+- **Core Principles:** OSRS Authenticity, Multiplayer Performance, Code Quality.
+- **`COMPREHENSIVE_ANALYSIS_REPORT.md` Highlights:**
+  - **Architecture Mismatch:** `server-ts/` is the main implementation hub, not fully reflected in `RUNEROGUE_PROJECT_STRUCTURE.md`. Some `packages/` (like `game-engine` and `discord-client`) are missing or different from the plan.
+  - **Technology Stack Drift:** Notes Godot client in reality vs. a planned Phaser/React client.
+  - **Achievements:** ECS Automation Manager is considered production-ready with good test success. Core systems like GameRoom, basic combat, movement, inventory, and wave management are partially implemented.
+  - **Critical Issues:** Performance challenges (FPS below target), architectural inconsistencies in documentation, and some test stability issues.
+  - **Priorities Suggested:** Foundation stabilization (ECS performance, test suite, documentation alignment), then core gameplay loop (multiplayer sync, combat integration, client-server comms), then production readiness.
 
 **2. Project Configuration:**
 
-*   **`c:\\Users\\aggis\\GitHub\\runerogue\\package.json`**:
-    *   Defines workspaces: `packages/*`, `apps/*`, `tools/*`.
-    *   Scripts for build, test (unit, integration, e2e), lint, dev, clean, bootstrap.
-    *   Key devDependencies: Jest, Lerna, TypeScript, ESLint, Prettier.
-    *   Dependencies: `colyseus.js`, `socket.io`.
-*   **`c:\\Users\\aggis\\GitHub\\runerogue\\pnpm-workspace.yaml`**: This file is present but empty, which is unusual if pnpm workspaces are actively used as indicated by `package.json` and `lerna.json` (Lerna can use pnpm workspaces). The `package.json` `workspaces` field is the primary source of truth for pnpm.
+- **`c:\\Users\\aggis\\GitHub\\runerogue\\package.json`**:
+  - Defines workspaces: `packages/*`, `apps/*`, `tools/*`.
+  - Scripts for build, test (unit, integration, e2e), lint, dev, clean, bootstrap.
+  - Key devDependencies: Jest, Lerna, TypeScript, ESLint, Prettier.
+  - Dependencies: `colyseus.js`, `socket.io`.
+- **`c:\\Users\\aggis\\GitHub\\runerogue\\pnpm-workspace.yaml`**: This file is present but empty, which is unusual if pnpm workspaces are actively used as indicated by `package.json` and `lerna.json` (Lerna can use pnpm workspaces). The `package.json` `workspaces` field is the primary source of truth for pnpm.
 
 **3. Code Structure (Based on `list_dir` and `file_search`):**
 
-*   **`c:\\Users\\aggis\\GitHub\\runerogue\\packages\\`**:
-    *   `game-server/`: Contains `src/index.ts` and `src/schemas/GameState.ts`.
-    *   `osrs-data/`: Contains `src/index.ts`, `src/api/server.ts`, `src/scrapers/wiki-scraper.ts`, and `src/calculators/combat.ts` (with tests). This aligns with the documentation.
-    *   `shared/`: Contains `src/index.ts`, `src/types/osrs.ts`, `src/utils/validation.ts`, `src/constants/game.ts`. This also aligns.
-    *   **Missing from `RUNEROGUE_PROJECT_STRUCTURE.md` plan:** `game-engine`, `discord-client` (as separate packages).
-*   **`c:\\Users\\aggis\\GitHub\\runerogue\\server-ts\\src\\`**: This directory appears to be the main hub of development as suggested by `COMPREHENSIVE_ANALYSIS_REPORT.md`.
-    *   `server/ecs/`: Contains components, systems (Movement, Combat, NetworkSync, WaveSpawning, etc.), and the ECS world. This is the bitECS implementation.
-    *   `server/game/`: Contains `GameRoom.ts` (Colyseus room), `ECSAutomationManager.ts`, `CombatSystem.ts`, `ProceduralGenerator.ts`, `WaveManager.ts`, `EntitySchemas.ts`, and many related files, including legacy schema backups. This is the core game logic.
-    *   `client/`: Contains files related to a client-side setup, including `GameClient.ts`, `GameRenderer.ts`, `InputManager.ts`, `OSRSStyleRenderer.ts`, UI elements like `HealthBar.ts`, and networking handlers. This seems to be a TypeScript-based client, possibly using Phaser or a similar rendering approach, rather than the Godot client mentioned as "reality" in the `COMPREHENSIVE_ANALYSIS_REPORT.md` for the *entire* client aspect. It's possible there are multiple client initiatives or the report was referring to a different part of the project or an older state.
-    *   Other files: `config.ts`, `logger.ts`, `services/`, `types/`.
-*   **`c:\\Users\\aggis\\GitHub\\runerogue\\client\\`**:
-    *   `godot/`: Contains a Godot project. This aligns with the "reality" part of the `COMPREHENSIVE_ANALYSIS_REPORT.md` regarding a Godot client.
-*   **Instruction Files (`.github/instructions/`)**:
-    *   `architecture.instructions.md`: Details ECS (bitECS), system processing order, Colyseus `GameRoom` structure, data flow, performance optimization strategies, and security. Mentions Phaser for rendering.
-    *   `core-standards.instructions.md` (identical to `test.instructions.md`): Emphasizes OSRS authenticity (combat, data validation), TypeScript standards (type safety, performance), ECS design, multiplayer authority (server-authoritative with Colyseus), testing requirements (coverage, types), and code quality (error handling, documentation).
-    *   `development-workflow.instructions.md`: Outlines setup, daily process, branch strategy, code review, testing strategy (unit, integration, OSRS validation, performance, E2E), debugging, performance monitoring, deployment, and emergency procedures. Includes pnpm commands.
-    *   `project-overview.instructions.md`: Describes RuneRogue, core concept, technology stack (Phaser for frontend, React for UI, Colyseus/bitECS for backend), project structure (similar to `RUNEROGUE_PROJECT_STRUCTURE.md` but also mentions `server-ts/` as main implementation and `client/` for React UI/Discord integration), development phases, key principles, and current status. This overview seems to blend the original plan with some aspects of the `server-ts` reality.
+- **`c:\\Users\\aggis\\GitHub\\runerogue\\packages\\`**:
+  - `game-server/`: Contains `src/index.ts` and `src/schemas/GameState.ts`.
+  - `osrs-data/`: Contains `src/index.ts`, `src/api/server.ts`, `src/scrapers/wiki-scraper.ts`, and `src/calculators/combat.ts` (with tests). This aligns with the documentation.
+  - `shared/`: Contains `src/index.ts`, `src/types/osrs.ts`, `src/utils/validation.ts`, `src/constants/game.ts`. This also aligns.
+  - **Missing from `RUNEROGUE_PROJECT_STRUCTURE.md` plan:** `game-engine`, `discord-client` (as separate packages).
+- **`c:\\Users\\aggis\\GitHub\\runerogue\\server-ts\\src\\`**: This directory appears to be the main hub of development as suggested by `COMPREHENSIVE_ANALYSIS_REPORT.md`.
+  - `server/ecs/`: Contains components, systems (Movement, Combat, NetworkSync, WaveSpawning, etc.), and the ECS world. This is the bitECS implementation.
+  - `server/game/`: Contains `GameRoom.ts` (Colyseus room), `ECSAutomationManager.ts`, `CombatSystem.ts`, `ProceduralGenerator.ts`, `WaveManager.ts`, `EntitySchemas.ts`, and many related files, including legacy schema backups. This is the core game logic.
+  - `client/`: Contains files related to a client-side setup, including `GameClient.ts`, `GameRenderer.ts`, `InputManager.ts`, `OSRSStyleRenderer.ts`, UI elements like `HealthBar.ts`, and networking handlers. This seems to be a TypeScript-based client, possibly using Phaser or a similar rendering approach, rather than the Godot client mentioned as "reality" in the `COMPREHENSIVE_ANALYSIS_REPORT.md` for the _entire_ client aspect. It's possible there are multiple client initiatives or the report was referring to a different part of the project or an older state.
+  - Other files: `config.ts`, `logger.ts`, `services/`, `types/`.
+- **`c:\\Users\\aggis\\GitHub\\runerogue\\client\\`**:
+  - `godot/`: Contains a Godot project. This aligns with the "reality" part of the `COMPREHENSIVE_ANALYSIS_REPORT.md` regarding a Godot client.
+- **Instruction Files (`.github/instructions/`)**:
+  - `architecture.instructions.md`: Details ECS (bitECS), system processing order, Colyseus `GameRoom` structure, data flow, performance optimization strategies, and security. Mentions Phaser for rendering.
+  - `core-standards.instructions.md` (identical to `test.instructions.md`): Emphasizes OSRS authenticity (combat, data validation), TypeScript standards (type safety, performance), ECS design, multiplayer authority (server-authoritative with Colyseus), testing requirements (coverage, types), and code quality (error handling, documentation).
+  - `development-workflow.instructions.md`: Outlines setup, daily process, branch strategy, code review, testing strategy (unit, integration, OSRS validation, performance, E2E), debugging, performance monitoring, deployment, and emergency procedures. Includes pnpm commands.
+  - `project-overview.instructions.md`: Describes RuneRogue, core concept, technology stack (Phaser for frontend, React for UI, Colyseus/bitECS for backend), project structure (similar to `RUNEROGUE_PROJECT_STRUCTURE.md` but also mentions `server-ts/` as main implementation and `client/` for React UI/Discord integration), development phases, key principles, and current status. This overview seems to blend the original plan with some aspects of the `server-ts` reality.
 
 **Summary of Comparison (Documentation vs. Reality):**
 
-*   **Backend & Core Logic:** The `server-ts/` directory is the clear hub for the backend (Colyseus, Express) and core game logic (bitECS, game systems). This is well-aligned with parts of the instruction documents (e.g., `architecture.instructions.md` describing bitECS and Colyseus). The `packages/game-server` seems minimal, possibly superseded by or integrated into `server-ts`.
-*   **Client:** There's a divergence here.
-    *   `RUNEROGUE_PROJECT_STRUCTURE.md` planned a `packages/discord-client/` with Pixi.js/Canvas.
-    *   `project-overview.instructions.md` mentions Phaser for rendering and React for UI, with `server-ts/src/client/` for client rendering/input and a top-level `client/` for React UI/Discord.
-    *   `COMPREHENSIVE_ANALYSIS_REPORT.md` mentions a Godot client as "reality."
-    *   The codebase shows:
-        *   `server-ts/src/client/`: Contains TypeScript client logic that could be for a web-based renderer (like Phaser, as suggested in docs).
-        *   `client/godot/`: A Godot project.
-    *   It seems there might be or have been multiple client approaches, or the documentation hasn't fully consolidated on one. The `server-ts/src/client` seems most actively integrated with the `server-ts` backend.
-*   **OSRS Data:** The `packages/osrs-data/` seems well-defined and aligned with its documented purpose.
-*   **Monorepo Structure:** Lerna and pnpm workspaces are configured. The `packages/` directory holds shared modules.
-*   **`COMPREHENSIVE_ANALYSIS_REPORT.md`:** This document is a valuable asset as it has already performed a similar analysis. Its findings regarding architectural mismatch and technology stack drift are largely confirmed by the file structure. Its assessment of achievements (ECS Automation Manager) and critical issues (performance, doc alignment) provides a strong starting point for prioritization.
+- **Backend & Core Logic:** The `server-ts/` directory is the clear hub for the backend (Colyseus, Express) and core game logic (bitECS, game systems). This is well-aligned with parts of the instruction documents (e.g., `architecture.instructions.md` describing bitECS and Colyseus). The `packages/game-server` seems minimal, possibly superseded by or integrated into `server-ts`.
+- **Client:** There's a divergence here.
+  - `RUNEROGUE_PROJECT_STRUCTURE.md` planned a `packages/discord-client/` with Pixi.js/Canvas.
+  - `project-overview.instructions.md` mentions Phaser for rendering and React for UI, with `server-ts/src/client/` for client rendering/input and a top-level `client/` for React UI/Discord.
+  - `COMPREHENSIVE_ANALYSIS_REPORT.md` mentions a Godot client as "reality."
+  - The codebase shows:
+    - `server-ts/src/client/`: Contains TypeScript client logic that could be for a web-based renderer (like Phaser, as suggested in docs).
+    - `client/godot/`: A Godot project.
+  - It seems there might be or have been multiple client approaches, or the documentation hasn't fully consolidated on one. The `server-ts/src/client` seems most actively integrated with the `server-ts` backend.
+- **OSRS Data:** The `packages/osrs-data/` seems well-defined and aligned with its documented purpose.
+- **Monorepo Structure:** Lerna and pnpm workspaces are configured. The `packages/` directory holds shared modules.
+- **`COMPREHENSIVE_ANALYSIS_REPORT.md`:** This document is a valuable asset as it has already performed a similar analysis. Its findings regarding architectural mismatch and technology stack drift are largely confirmed by the file structure. Its assessment of achievements (ECS Automation Manager) and critical issues (performance, doc alignment) provides a strong starting point for prioritization.
 
 **Potential Areas for Prioritization (based on your request and the analysis):**
 
 1.  **Documentation Alignment & Clarity:**
-    *   Update `RUNEROGUE_PROJECT_STRUCTURE.md` and other overview documents to accurately reflect the central role of `server-ts/` and the current client strategy (or strategies).
-    *   Clarify the status and purpose of `client/godot/` versus `server-ts/src/client/`. If one is deprecated or primary, this should be documented.
-    *   Ensure all instruction documents in `.github/instructions/` are consistent with each other and with the actual codebase state, particularly regarding the client technology and project structure.
+
+    - Update `RUNEROGUE_PROJECT_STRUCTURE.md` and other overview documents to accurately reflect the central role of `server-ts/` and the current client strategy (or strategies).
+    - Clarify the status and purpose of `client/godot/` versus `server-ts/src/client/`. If one is deprecated or primary, this should be documented.
+    - Ensure all instruction documents in `.github/instructions/` are consistent with each other and with the actual codebase state, particularly regarding the client technology and project structure.
 
 2.  **Address Critical Issues from `COMPREHENSIVE_ANALYSIS_REPORT.md`:**
-    *   **ECS Performance Optimization:** If FPS targets are not being met (as suggested by the report mentioning ~38 FPS vs. 60 FPS target).
-    *   **Test Suite Stabilization:** Ensure all critical tests are passing and maintain high coverage, especially for OSRS mechanics and multiplayer aspects.
+
+    - **ECS Performance Optimization:** If FPS targets are not being met (as suggested by the report mentioning ~38 FPS vs. 60 FPS target).
+    - **Test Suite Stabilization:** Ensure all critical tests are passing and maintain high coverage, especially for OSRS mechanics and multiplayer aspects.
 
 3.  **Client Strategy Solidification:**
-    *   Decide on and clearly document the primary client technology and development path. If multiple clients are intended (e.g., one for Discord Activity, another for broader web), their roles and integration should be clear. The `project-overview.instructions.md` mentions Phaser/React for the Discord activity.
+
+    - Decide on and clearly document the primary client technology and development path. If multiple clients are intended (e.g., one for Discord Activity, another for broader web), their roles and integration should be clear. The `project-overview.instructions.md` mentions Phaser/React for the Discord activity.
 
 4.  **Continue Phase 1 (Multiplayer Prototype):**
-    *   Focus on the items listed: player movement and synchronization, real-time combat visualization, enemy spawning/AI, basic UI, and Discord activity integration, using the chosen client strategy.
+    - Focus on the items listed: player movement and synchronization, real-time combat visualization, enemy spawning/AI, basic UI, and Discord activity integration, using the chosen client strategy.
 
 **Next Steps (Based on Your Request for "Optimal Next Steps" and "Planned Thought Out Work"):**
 
@@ -136,39 +142,42 @@ The `COMPREHENSIVE_ANALYSIS_REPORT.md` already provides a good set of prioritize
 **Highest Priority First:**
 
 1.  **Clarify and Document Current Architecture & Client Strategy:**
-    *   **Task:** Update `RUNEROGUE_PROJECT_STRUCTURE.md`, `README.md`, and relevant sections of `.github/instructions/project-overview.instructions.md` and `architecture.instructions.md`.
-    *   **Details:**
-        *   Clearly state that `server-ts/` is the primary location for the backend server, core game logic (ECS), and the integrated TypeScript-based client logic (e.g., for Phaser/React if that's the path for the Discord Activity).
-        *   Define the role and current status of `client/godot/`. Is it the main client, an alternative, an experiment, or deprecated?
-        *   Ensure consistency across all high-level documentation regarding the tech stack in active use.
-    *   **Goal:** A single source of truth for the project's current architecture.
+
+    - **Task:** Update `RUNEROGUE_PROJECT_STRUCTURE.md`, `README.md`, and relevant sections of `.github/instructions/project-overview.instructions.md` and `architecture.instructions.md`.
+    - **Details:**
+      - Clearly state that `server-ts/` is the primary location for the backend server, core game logic (ECS), and the integrated TypeScript-based client logic (e.g., for Phaser/React if that's the path for the Discord Activity).
+      - Define the role and current status of `client/godot/`. Is it the main client, an alternative, an experiment, or deprecated?
+      - Ensure consistency across all high-level documentation regarding the tech stack in active use.
+    - **Goal:** A single source of truth for the project's current architecture.
 
 2.  **Stabilize and Validate Core Systems (Tests & Performance):**
-    *   **Task:** Address failing tests and performance bottlenecks identified in `COMPREHENSIVE_ANALYSIS_REPORT.md` or by current test runs.
-    *   **Details:**
-        *   Review and fix any failing tests in `server-ts/`, especially those related to ECS, combat, and multiplayer (`GameRoom`).
-        *   Profile ECS systems in `server-ts/src/server/ecs/systems/` for performance bottlenecks if the 60 FPS target is not met. Implement optimizations suggested in `architecture.instructions.md` (object pooling, efficient queries).
-        *   Ensure 100% test coverage and correctness for OSRS calculations in `packages/osrs-data/` and their usage in `server-ts/src/server/game/CombatSystem.ts` or equivalent.
-    *   **Goal:** A stable, performant, and correctly functioning core backend and ECS, validated by a comprehensive test suite.
+
+    - **Task:** Address failing tests and performance bottlenecks identified in `COMPREHENSIVE_ANALYSIS_REPORT.md` or by current test runs.
+    - **Details:**
+      - Review and fix any failing tests in `server-ts/`, especially those related to ECS, combat, and multiplayer (`GameRoom`).
+      - Profile ECS systems in `server-ts/src/server/ecs/systems/` for performance bottlenecks if the 60 FPS target is not met. Implement optimizations suggested in `architecture.instructions.md` (object pooling, efficient queries).
+      - Ensure 100% test coverage and correctness for OSRS calculations in `packages/osrs-data/` and their usage in `server-ts/src/server/game/CombatSystem.ts` or equivalent.
+    - **Goal:** A stable, performant, and correctly functioning core backend and ECS, validated by a comprehensive test suite.
 
 3.  **Advance Multiplayer Prototype (Phase 1) with a Clear Client Focus:**
-    *   **Task:** Continue implementing features for the multiplayer prototype, focusing on the primary client chosen in step 1 (likely the `server-ts/src/client/` path if targeting a Discord web activity with Phaser/React).
-    *   **Details (referencing `project-overview.instructions.md` and `core-standards.instructions.md`):**
-        *   **Player Movement & Synchronization:** Implement and test robust movement sync between `server-ts/src/client/` and `server-ts/src/server/game/GameRoom.ts` via Colyseus, using server-authoritative logic.
-        *   **Real-time Combat Visualization:** Connect combat events from `server-ts/src/server/ecs/systems/CombatSystem.ts` to the client for visual feedback (damage numbers, attack animations).
-        *   **Enemy Spawning & Basic AI:** Implement `WaveSpawningSystem.ts` and basic enemy behaviors in ECS, visible and interactive on the client.
-        *   **Basic UI:** Develop essential UI elements (health/prayer bars, as per `project-overview.instructions.md`) using React (if `client/` is for React UI) or directly in the chosen client rendering tech, driven by server state.
-        *   **Discord Activity Integration:** Begin the technical integration for running the game as a Discord Activity.
-    *   **Goal:** A playable multiplayer prototype demonstrating core gameplay loops with synchronized players, combat, and basic UI.
+    - **Task:** Continue implementing features for the multiplayer prototype, focusing on the primary client chosen in step 1 (likely the `server-ts/src/client/` path if targeting a Discord web activity with Phaser/React).
+    - **Details (referencing `project-overview.instructions.md` and `core-standards.instructions.md`):**
+      - **Player Movement & Synchronization:** Implement and test robust movement sync between `server-ts/src/client/` and `server-ts/src/server/game/GameRoom.ts` via Colyseus, using server-authoritative logic.
+      - **Real-time Combat Visualization:** Connect combat events from `server-ts/src/server/ecs/systems/CombatSystem.ts` to the client for visual feedback (damage numbers, attack animations).
+      - **Enemy Spawning & Basic AI:** Implement `WaveSpawningSystem.ts` and basic enemy behaviors in ECS, visible and interactive on the client.
+      - **Basic UI:** Develop essential UI elements (health/prayer bars, as per `project-overview.instructions.md`) using React (if `client/` is for React UI) or directly in the chosen client rendering tech, driven by server state.
+      - **Discord Activity Integration:** Begin the technical integration for running the game as a Discord Activity.
+    - **Goal:** A playable multiplayer prototype demonstrating core gameplay loops with synchronized players, combat, and basic UI.
 
 This detailed plan should help you move forward methodically. The existing `COMPREHENSIVE_ANALYSIS_REPORT.md` is a strong asset, and aligning all other documentation with its findings and the actual codebase state is a crucial first step.Okay, I will begin by reading the primary planning and documentation files to understand the project's intended state and goals. This will help in comparing it with the actual code structure and prioritizing the next steps.
 
 I will read the following files:
-*   `MASTER_ORCHESTRATION_PLAN.md`
-*   `RUNEROGUE_PROJECT_STRUCTURE.md`
-*   `DEVELOPMENT_STRATEGY_UPDATE.md`
-*   `README.md`
-*   `ACTUAL_PROJECT_STATUS_ANALYSIS.md` 
+
+- `MASTER_ORCHESTRATION_PLAN.md`
+- `RUNEROGUE_PROJECT_STRUCTURE.md`
+- `DEVELOPMENT_STRATEGY_UPDATE.md`
+- `README.md`
+- `ACTUAL_PROJECT_STATUS_ANALYSIS.md`
 
 ---
 
@@ -182,7 +191,7 @@ _**Assistant**_
 
 Okay, I will begin by analyzing your codebase and documentation to understand its current state, prioritize vital areas, and then formulate a detailed plan for the next steps.
 
-First, let's examine the structure of your project's key directories. 
+First, let's examine the structure of your project's key directories.
 
 ---
 
@@ -199,22 +208,24 @@ Okay, I've completed a comprehensive analysis of your RuneRogue codebase, compar
 **Key Findings & Analysis:**
 
 1.  **Documentation vs. Reality:**
-    *   There's a significant historical divergence between initial architectural plans (like `RUNEROGUE_PROJECT_STRUCTURE.md` and `MASTER_ORCHESTRATION_PLAN.md`) and the current reality.
-    *   The core server-side implementation is definitively located in ``, not in a separate `packages/game-engine/`.
-    *   The game client is Godot (``), not Phaser 3 + React as some older plans suggested.
-    *   Many status documents (`COMPREHENSIVE_ANALYSIS_REPORT.md`, `ACTUAL_PROJECT_STATUS_ANALYSIS.md`) reflect past struggles with test failures, architectural mismatches, and Colyseus schema issues.
+
+    - There's a significant historical divergence between initial architectural plans (like `RUNEROGUE_PROJECT_STRUCTURE.md` and `MASTER_ORCHESTRATION_PLAN.md`) and the current reality.
+    - The core server-side implementation is definitively located in ``, not in a separate `packages/game-engine/`.
+    - The game client is Godot (``), not Phaser 3 + React as some older plans suggested.
+    - Many status documents (`COMPREHENSIVE_ANALYSIS_REPORT.md`, `ACTUAL_PROJECT_STATUS_ANALYSIS.md`) reflect past struggles with test failures, architectural mismatches, and Colyseus schema issues.
 
 2.  **Current State (Most Recent Picture - `FINAL_SESSION_STATUS.md` & `SESSION_HANDOFF_SUMMARY.md`):**
-    *   **Major Positive Shift:** The latest status reports indicate a very successful recent session focused on ECS performance and stabilization.
-    *   **ECS Core:** The Entity Component System (ECS) and its `ECSAutomationManager` are described as "PRODUCTION READY," "optimized," and "stable," with performance issues attributed to test environment overhead rather than fundamental flaws. Expected production FPS is 45-50+.
-    *   **OSRS Data & Formulas:** The `osrs-data` pipeline, including combat formulas and XP calculations, is considered complete and authentic.
-    *   **Colyseus Integration:** The GameRoom lifecycle (player join/leave) and basic Colyseus integration are reported as working and "ready for multiplayer." This is a significant improvement from earlier reports that highlighted schema serialization errors. The "June 2025" updates in `README.md` and `MASTER_ORCHESTRATION_PLAN.md` mentioned persistent schema issues, but the `FINAL_SESSION_STATUS.md` (which appears to be the most current) suggests these are largely resolved or not critical blockers for the next phase.
-    *   **Test Status:** Approximately 88.5% of tests (23 out of 26) are passing. The remaining 3 failures are described as minor (1 timing issue, 2 error handling edge cases) and not blocking multiplayer development.
+
+    - **Major Positive Shift:** The latest status reports indicate a very successful recent session focused on ECS performance and stabilization.
+    - **ECS Core:** The Entity Component System (ECS) and its `ECSAutomationManager` are described as "PRODUCTION READY," "optimized," and "stable," with performance issues attributed to test environment overhead rather than fundamental flaws. Expected production FPS is 45-50+.
+    - **OSRS Data & Formulas:** The `osrs-data` pipeline, including combat formulas and XP calculations, is considered complete and authentic.
+    - **Colyseus Integration:** The GameRoom lifecycle (player join/leave) and basic Colyseus integration are reported as working and "ready for multiplayer." This is a significant improvement from earlier reports that highlighted schema serialization errors. The "June 2025" updates in `README.md` and `MASTER_ORCHESTRATION_PLAN.md` mentioned persistent schema issues, but the `FINAL_SESSION_STATUS.md` (which appears to be the most current) suggests these are largely resolved or not critical blockers for the next phase.
+    - **Test Status:** Approximately 88.5% of tests (23 out of 26) are passing. The remaining 3 failures are described as minor (1 timing issue, 2 error handling edge cases) and not blocking multiplayer development.
 
 3.  **Vital Areas & Next Steps Identified:**
-    *   The unanimous next step, strongly emphasized in the latest handoff documents, is **Multiplayer Prototype Development.**
-    *   The foundation (ECS, Colyseus basics, OSRS data) is deemed stable enough to build upon.
-    *   Key files for this next phase are within ``, including `game/GameRoom.ts`, `ecs/systems/MovementSystem.ts`, `ecs/systems/CombatSystem.ts`, and `game/WaveManager.ts`.
+    - The unanimous next step, strongly emphasized in the latest handoff documents, is **Multiplayer Prototype Development.**
+    - The foundation (ECS, Colyseus basics, OSRS data) is deemed stable enough to build upon.
+    - Key files for this next phase are within ``, including `game/GameRoom.ts`, `ecs/systems/MovementSystem.ts`, `ecs/systems/CombatSystem.ts`, and `game/WaveManager.ts`.
 
 **Prioritization for Next Development Session:**
 
@@ -241,84 +252,84 @@ Let's proceed methodically and with great care:
 **Phase 1: Foundation Verification & Setup (Brief but Important)**
 
 1.  **Confirm Stability:**
-    *   Execute the primary test suite (`npm test` in ``) to ensure the reported ~88.5% pass rate (23/26 tests) holds.
-    *   Briefly review the 3 known minor failing tests. If they are indeed non-critical (timing, edge cases) and don't touch core multiplayer aspects, we can proceed. If any seem to impact player join/leave or basic state sync, flag for immediate attention.
-    *   Run the `quick-perf-test.js` script to re-verify the baseline ECS performance.
+    - Execute the primary test suite (`npm test` in ``) to ensure the reported ~88.5% pass rate (23/26 tests) holds.
+    - Briefly review the 3 known minor failing tests. If they are indeed non-critical (timing, edge cases) and don't touch core multiplayer aspects, we can proceed. If any seem to impact player join/leave or basic state sync, flag for immediate attention.
+    - Run the `quick-perf-test.js` script to re-verify the baseline ECS performance.
 2.  **Environment Check:**
-    *   Ensure your development environment is targeting the `` directory.
+    - Ensure your development environment is targeting the `` directory.
 
 **Phase 2: Implement Real-Time Player Movement Synchronization (High Priority)**
 
-*Goal: Allow 2-4 players to see each other move in real-time, with server-authoritative validation.*
+_Goal: Allow 2-4 players to see each other move in real-time, with server-authoritative validation._
 
 1.  **Client Input Handling (Conceptual - server-side preparation):**
-    *   Define how movement input would be received in `GameRoom.ts`. Assume client sends desired coordinates or direction.
+    - Define how movement input would be received in `GameRoom.ts`. Assume client sends desired coordinates or direction.
 2.  **Server-Side Movement Logic:**
-    *   In `GameRoom.ts`, create message handlers for player movement.
-    *   Update the player's entity state within the ECS.
-    *   Utilize `MovementSystem.ts` to process these state changes and update the `Position` component of player entities.
+    - In `GameRoom.ts`, create message handlers for player movement.
+    - Update the player's entity state within the ECS.
+    - Utilize `MovementSystem.ts` to process these state changes and update the `Position` component of player entities.
 3.  **Server-Side Validation:**
-    *   Implement basic validation in the `MovementSystem` or `GameRoom` (e.g., speed limits, map boundaries if defined).
+    - Implement basic validation in the `MovementSystem` or `GameRoom` (e.g., speed limits, map boundaries if defined).
 4.  **State Broadcasting:**
-    *   Ensure `GameRoom.ts` correctly broadcasts updated player positions (from their `Position` components) to all connected clients in the room.
+    - Ensure `GameRoom.ts` correctly broadcasts updated player positions (from their `Position` components) to all connected clients in the room.
 5.  **Testing:**
-    *   Develop unit/integration tests for movement message handling, validation, and state broadcasting.
-    *   Simulate 2+ clients sending movement commands and verify synchronized state changes.
+    - Develop unit/integration tests for movement message handling, validation, and state broadcasting.
+    - Simulate 2+ clients sending movement commands and verify synchronized state changes.
 
 **Phase 3: Implement Auto-Combat System with OSRS Mechanics (High Priority)**
 
-*Goal: Have enemies spawn in waves and engage players in OSRS-authentic combat, with synchronized health and XP updates.*
+_Goal: Have enemies spawn in waves and engage players in OSRS-authentic combat, with synchronized health and XP updates._
 
 1.  **Enemy Spawning & AI:**
-    *   Enhance `WaveManager.ts` to:
-        *   Spawn waves of predefined enemies at specified intervals or triggers.
-        *   Implement basic enemy AI for target acquisition (e.g., aggro nearest player).
-        *   Ensure enemies are added as entities to the ECS.
+    - Enhance `WaveManager.ts` to:
+      - Spawn waves of predefined enemies at specified intervals or triggers.
+      - Implement basic enemy AI for target acquisition (e.g., aggro nearest player).
+      - Ensure enemies are added as entities to the ECS.
 2.  **OSRS-Accurate Combat:**
-    *   In `CombatSystem.ts`:
-        *   Implement logic for players and enemies to automatically engage in combat when in range.
-        *   Use the `osrs-data` package for all combat calculations (accuracy, max hit, damage rolls) ensuring 100% OSRS authenticity.
-        *   Update `Health` components of entities based on combat outcomes.
-        *   Award XP to players for defeating enemies, using authentic OSRS XP rates. Update `Player` or `Skills` components.
+    - In `CombatSystem.ts`:
+      - Implement logic for players and enemies to automatically engage in combat when in range.
+      - Use the `osrs-data` package for all combat calculations (accuracy, max hit, damage rolls) ensuring 100% OSRS authenticity.
+      - Update `Health` components of entities based on combat outcomes.
+      - Award XP to players for defeating enemies, using authentic OSRS XP rates. Update `Player` or `Skills` components.
 3.  **State Synchronization:**
-    *   Ensure changes to `Health`, `XP`, and other combat-relevant components are efficiently synchronized to all clients via `GameRoom.ts` and its state.
+    - Ensure changes to `Health`, `XP`, and other combat-relevant components are efficiently synchronized to all clients via `GameRoom.ts` and its state.
 4.  **Testing:**
-    *   Create tests for:
-        *   Correct enemy wave spawning.
-        *   Accurate OSRS combat calculations (damage, XP).
-        *   Proper state updates for health and XP for all players.
-        *   Basic enemy AI behavior.
+    - Create tests for:
+      - Correct enemy wave spawning.
+      - Accurate OSRS combat calculations (damage, XP).
+      - Proper state updates for health and XP for all players.
+      - Basic enemy AI behavior.
 
 **Phase 4: UI Feedback Preparation (Server-Side State)**
 
-*Goal: Ensure the server state contains all necessary information for a client to eventually render key UI elements.*
+_Goal: Ensure the server state contains all necessary information for a client to eventually render key UI elements._
 
 1.  **Review Game State:**
-    *   Verify that the `GameRoomState` (and underlying ECS components) effectively expose data needed for:
-        *   Health bars (current/max HP for players and enemies).
-        *   Damage numbers.
-        *   XP gain notifications and level progression.
-        *   Wave progress indicators.
+    - Verify that the `GameRoomState` (and underlying ECS components) effectively expose data needed for:
+      - Health bars (current/max HP for players and enemies).
+      - Damage numbers.
+      - XP gain notifications and level progression.
+      - Wave progress indicators.
 
 **Ongoing Tasks Throughout This Session:**
 
-*   **Performance Monitoring:**
-    *   As new multiplayer features are implemented and tested (especially with simulated multiple players/enemies), continuously monitor server performance (tick rate, CPU/memory usage). Aim to maintain the target of 45-50+ FPS equivalent processing capacity.
-*   **Code Quality & Documentation:**
-    *   Adhere to existing TypeScript best practices and project conventions.
-    *   Add JSDoc comments for new public methods and complex logic.
-    *   Ensure error handling is robust.
-*   **Testing:**
-    *   Write unit and integration tests for all new functionalities. Strive for high coverage on new code.
-    *   If time permits and it's straightforward, address one or two of the 3 minor outstanding test failures.
+- **Performance Monitoring:**
+  - As new multiplayer features are implemented and tested (especially with simulated multiple players/enemies), continuously monitor server performance (tick rate, CPU/memory usage). Aim to maintain the target of 45-50+ FPS equivalent processing capacity.
+- **Code Quality & Documentation:**
+  - Adhere to existing TypeScript best practices and project conventions.
+  - Add JSDoc comments for new public methods and complex logic.
+  - Ensure error handling is robust.
+- **Testing:**
+  - Write unit and integration tests for all new functionalities. Strive for high coverage on new code.
+  - If time permits and it's straightforward, address one or two of the 3 minor outstanding test failures.
 
 **Success Criteria for This Session:**
 
-*   Two or more (simulated) players can join a game room and see each other's movements synchronized in real-time.
-*   Enemy waves spawn and engage players in combat.
-*   Combat calculations (damage, XP) are verifiably authentic to OSRS.
-*   Server performance remains stable and within target ranges under simulated load.
-*   New functionalities are covered by tests.
+- Two or more (simulated) players can join a game room and see each other's movements synchronized in real-time.
+- Enemy waves spawn and engage players in combat.
+- Combat calculations (damage, XP) are verifiably authentic to OSRS.
+- Server performance remains stable and within target ranges under simulated load.
+- New functionalities are covered by tests.
 
 This is a pivotal session for RuneRogue. By focusing on these core multiplayer mechanics, we'll create a tangible, playable prototype. Let's build upon the excellent foundation from the last session and make this happen!
 
@@ -327,4 +338,3 @@ Good luck!
 ---
 
 ---
-

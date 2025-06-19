@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "node16",
-    "lib": [
-      "es2018",
-      "DOM",
-      "esnext"
-    ],
+    "lib": ["es2018", "DOM", "esnext"],
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
@@ -22,34 +18,15 @@
     "emitDecoratorMetadata": true,
     "composite": true,
     "paths": {
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@server/*": [
-        "src/server/*"
-      ],
-      "@client/*": [
-        "src/client/*"
-      ],
-      "@/*": [
-        "src/*"
-      ],
-      "@runerogue/shared": [
-        "../shared/dist/index.d.ts"
-      ],
-      "@runerogue/osrs-data": [
-        "../osrs-data/dist/index.d.ts"
-      ]
+      "@shared/*": ["src/shared/*"],
+      "@server/*": ["src/server/*"],
+      "@client/*": ["src/client/*"],
+      "@/*": ["src/*"],
+      "@runerogue/shared": ["../shared/dist/index.d.ts"],
+      "@runerogue/osrs-data": ["../osrs-data/dist/index.d.ts"]
     },
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
-    ],
-    "types": [
-      "node",
-      "express",
-      "ws"
-    ],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "express", "ws"],
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "noImplicitAny": false,
@@ -62,9 +39,7 @@
     "noFallthroughCasesInSwitch": false,
     "useUnknownInCatchVariables": false
   },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",

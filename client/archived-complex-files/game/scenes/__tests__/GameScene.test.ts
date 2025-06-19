@@ -39,7 +39,7 @@ const mockTweensAdd = jest.fn(
   ({ targets, y, alpha, duration, ease, onComplete }) => {
     // Simulate tween completion immediately
     if (onComplete) onComplete();
-  }
+  },
 );
 const mockScene = {
   add: { sprite: mockAddSprite, text: mockAddText },
@@ -70,7 +70,7 @@ it("should use pooled damage text objects for performance", () => {
 
 it("should not throw if target sprite is missing for damage event", () => {
   expect(() =>
-    scene["showDamageNumber"]("nonexistent", 7, "hit")
+    scene["showDamageNumber"]("nonexistent", 7, "hit"),
   ).not.toThrow();
 });
 

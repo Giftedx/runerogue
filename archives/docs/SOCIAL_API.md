@@ -152,7 +152,7 @@ GET /api/social/chat/messages?user_id=123&type=public&limit=50
 
 ```javascript
 // Client connects and receives confirmation
-socket.on('connected', function (data) {
+socket.on("connected", function (data) {
   console.log(data.message); // "Connected to RuneRogue"
 });
 ```
@@ -161,14 +161,14 @@ socket.on('connected', function (data) {
 
 ```javascript
 // Login and start presence tracking
-socket.emit('user_login', { user_id: 123 });
+socket.emit("user_login", { user_id: 123 });
 
-socket.on('login_success', function (data) {
-  console.log('Logged in as:', data.user);
+socket.on("login_success", function (data) {
+  console.log("Logged in as:", data.user);
 });
 
-socket.on('user_online', function (data) {
-  console.log('User came online:', data.user);
+socket.on("user_online", function (data) {
+  console.log("User came online:", data.user);
 });
 ```
 
@@ -177,21 +177,21 @@ socket.on('user_online', function (data) {
 #### Send Message
 
 ```javascript
-socket.emit('send_message', {
-  message_type: 'public',
-  content: 'Hello everyone!',
+socket.emit("send_message", {
+  message_type: "public",
+  content: "Hello everyone!",
 });
 
-socket.on('message_sent', function (data) {
-  console.log('Message sent:', data);
+socket.on("message_sent", function (data) {
+  console.log("Message sent:", data);
 });
 ```
 
 #### Receive Messages
 
 ```javascript
-socket.on('new_message', function (data) {
-  console.log('New message:', data);
+socket.on("new_message", function (data) {
+  console.log("New message:", data);
   // Display message in chat UI
 });
 ```
@@ -201,20 +201,20 @@ socket.on('new_message', function (data) {
 #### Join Party Room
 
 ```javascript
-socket.emit('join_party', { party_id: 123 });
+socket.emit("join_party", { party_id: 123 });
 
-socket.on('joined_party', function (data) {
-  console.log('Joined party room:', data.party_id);
+socket.on("joined_party", function (data) {
+  console.log("Joined party room:", data.party_id);
 });
 ```
 
 #### Leave Party Room
 
 ```javascript
-socket.emit('leave_party', { party_id: 123 });
+socket.emit("leave_party", { party_id: 123 });
 
-socket.on('left_party', function (data) {
-  console.log('Left party room:', data.party_id);
+socket.on("left_party", function (data) {
+  console.log("Left party room:", data.party_id);
 });
 ```
 
@@ -223,14 +223,14 @@ socket.on('left_party', function (data) {
 #### Update Status
 
 ```javascript
-socket.emit('update_status', { status: 'away' });
+socket.emit("update_status", { status: "away" });
 
-socket.on('status_updated', function (data) {
-  console.log('Status updated to:', data.status);
+socket.on("status_updated", function (data) {
+  console.log("Status updated to:", data.status);
 });
 
-socket.on('user_status_updated', function (data) {
-  console.log('Friend status changed:', data);
+socket.on("user_status_updated", function (data) {
+  console.log("Friend status changed:", data);
 });
 ```
 

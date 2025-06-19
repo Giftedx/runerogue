@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  extends: [
-    'next/core-web-vitals',
-    '@typescript-eslint/recommended',
-  ],
+  extends: ['next/core-web-vitals', '@typescript-eslint/recommended'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   rules: {

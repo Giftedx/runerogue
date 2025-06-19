@@ -293,7 +293,7 @@ class GameScene extends Phaser.Scene {
         strokeThickness: 2,
         backgroundColor: "rgba(0, 0, 0, 0.7)",
         padding: { x: 4, y: 2 },
-      }
+      },
     );
     nameText.setOrigin(0.5, 0.5);
     nameText.setDepth(15);

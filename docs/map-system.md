@@ -12,15 +12,15 @@ A map blueprint defines the static properties of a game map. The core structure 
 
 ### Key Fields:
 
-*   `id` (string): A unique identifier for the map (e.g., "default_map_001").
-*   `name` (string): A human-readable name for the map (e.g., "Starting Plains").
-*   `width` (number): The width of the map in tile units. Must be a positive integer.
-*   `height` (number): The height of the map in tile units. Must be a positive integer.
-*   `biome` (string, optional): Describes the general environment of the map (e.g., "plains", "forest", "dungeon"). Defaults to "plains" if not specified in the `AreaMap` constructor, but the schema allows it to be optional.
-*   `collisionMap` (boolean[][]): A 2D array representing the collision data for the map.
-    *   `true` indicates an unwalkable/collision tile.
-    *   `false` indicates a walkable tile.
-    *   The dimensions of this array (height x width) **must** match the `height` and `width` properties of the map blueprint.
+- `id` (string): A unique identifier for the map (e.g., "default_map_001").
+- `name` (string): A human-readable name for the map (e.g., "Starting Plains").
+- `width` (number): The width of the map in tile units. Must be a positive integer.
+- `height` (number): The height of the map in tile units. Must be a positive integer.
+- `biome` (string, optional): Describes the general environment of the map (e.g., "plains", "forest", "dungeon"). Defaults to "plains" if not specified in the `AreaMap` constructor, but the schema allows it to be optional.
+- `collisionMap` (boolean[][]): A 2D array representing the collision data for the map.
+  - `true` indicates an unwalkable/collision tile.
+  - `false` indicates a walkable tile.
+  - The dimensions of this array (height x width) **must** match the `height` and `width` properties of the map blueprint.
 
 ### Example Blueprint Data (Conceptual JSON):
 
@@ -32,8 +32,8 @@ A map blueprint defines the static properties of a game map. The core structure 
   "height": 25,
   "biome": "forest",
   "collisionMap": [
-    [true, true,  false, ...], 
-    [true, false, false, ...], 
+    [true, true,  false, ...],
+    [true, false, false, ...],
     // ... (23 more rows)
   ]
 }
@@ -46,24 +46,25 @@ To ensure stability and prevent errors from malformed map data, map blueprints a
 ### Validation Schema (`MapBlueprintSchema.ts`):
 
 A Zod schema (`MapBlueprintSchema`) is used to define the expected structure and constraints for map blueprints. This schema checks:
-*   **Required Fields**: `id`, `name`, `width`, `height`, `collisionMap` must be present.
-*   **Data Types**: Ensures fields are of the correct type (e.g., `id` is a string, `width` is a number).
-*   **Constraints**:
-    *   `id` and `name` cannot be empty.
-    *   `width` and `height` must be positive integers.
-    *   `collisionMap` must be a non-empty 2D array of booleans.
-    *   All rows in `collisionMap` must have the same length.
-*   **Cross-Field Validation (`superRefine`):**
-    *   The height of `collisionMap` (number of rows) must be equal to the blueprint's `height` property.
-    *   The width of `collisionMap` (length of rows) must be equal to the blueprint's `width` property.
+
+- **Required Fields**: `id`, `name`, `width`, `height`, `collisionMap` must be present.
+- **Data Types**: Ensures fields are of the correct type (e.g., `id` is a string, `width` is a number).
+- **Constraints**:
+  - `id` and `name` cannot be empty.
+  - `width` and `height` must be positive integers.
+  - `collisionMap` must be a non-empty 2D array of booleans.
+  - All rows in `collisionMap` must have the same length.
+- **Cross-Field Validation (`superRefine`):**
+  - The height of `collisionMap` (number of rows) must be equal to the blueprint's `height` property.
+  - The width of `collisionMap` (length of rows) must be equal to the blueprint's `width` property.
 
 ### Integration in `GameRoom.ts`:
 
-*   The `GameRoom` now uses `WorldState` (from `EntitySchemas.ts`) which can hold multiple `AreaMap` instances.
-*   A new public method `loadAndValidateMapBlueprint(blueprintData: unknown, makeCurrent: boolean = true): AreaMap | null` has been added to `GameRoom.ts`.
-*   This method takes raw blueprint data, attempts to parse it using `MapBlueprintSchema.parse()`.
-    *   If validation is successful, an `AreaMap` instance is created, added to `this.state.maps`, and can be set as the `currentMapId`.
-    *   If validation fails, a `ZodError` is caught, details are logged to the console, and `null` is returned, preventing the invalid map from being loaded.
+- The `GameRoom` now uses `WorldState` (from `EntitySchemas.ts`) which can hold multiple `AreaMap` instances.
+- A new public method `loadAndValidateMapBlueprint(blueprintData: unknown, makeCurrent: boolean = true): AreaMap | null` has been added to `GameRoom.ts`.
+- This method takes raw blueprint data, attempts to parse it using `MapBlueprintSchema.parse()`.
+  - If validation is successful, an `AreaMap` instance is created, added to `this.state.maps`, and can be set as the `currentMapId`.
+  - If validation fails, a `ZodError` is caught, details are logged to the console, and `null` is returned, preventing the invalid map from being loaded.
 
 ## 4. Loading and Managing Maps in `GameRoom`
 
@@ -90,10 +91,10 @@ private initializeDefaultMap(): void {
 
 ## 5. Future Enhancements
 
-*   Loading map blueprints from external JSON files or a database.
-*   Expanding the `MapBlueprintSchema` to include:
-    *   Tile layer data (for visual rendering).
-    *   Spawn points for players and NPCs.
-    *   Definitions for interactive elements (e.g., doors, chests, resource nodes).
-    *   Region definitions within a map (e.g., for specific events or music).
-*   Server-side tools or commands to hot-reload map data.
+- Loading map blueprints from external JSON files or a database.
+- Expanding the `MapBlueprintSchema` to include:
+  - Tile layer data (for visual rendering).
+  - Spawn points for players and NPCs.
+  - Definitions for interactive elements (e.g., doors, chests, resource nodes).
+  - Region definitions within a map (e.g., for specific events or music).
+- Server-side tools or commands to hot-reload map data.

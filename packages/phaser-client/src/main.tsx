@@ -26,7 +26,7 @@ function bootstrap(): void {
       <GameRoomProvider>
         <App />
       </GameRoomProvider>
-    </DiscordActivityProvider>
+    </DiscordActivityProvider>,
   );
 
   // Prepare Phaser configuration

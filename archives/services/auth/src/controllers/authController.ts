@@ -1,19 +1,19 @@
-import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
-import { AuthService } from '../services/authService';
-import { CreateUserRequest, LoginRequest, ApiResponse } from '../types';
+import { Request, Response } from "express";
+import { validationResult } from "express-validator";
+import { AuthService } from "../services/authService";
+import { CreateUserRequest, LoginRequest, ApiResponse } from "../types";
 
 export class AuthController {
   static async register(
     req: Request<{}, ApiResponse, CreateUserRequest>,
-    res: Response<ApiResponse>
+    res: Response<ApiResponse>,
   ): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({
           success: false,
-          error: 'Validation failed',
+          error: "Validation failed",
           data: errors.array(),
         });
         return;
@@ -33,26 +33,26 @@ export class AuthController {
           },
           tokens,
         },
-        message: 'User registered successfully',
+        message: "User registered successfully",
       });
     } catch (error) {
       res.status(400).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Registration failed',
+        error: error instanceof Error ? error.message : "Registration failed",
       });
     }
   }
 
   static async login(
     req: Request<{}, ApiResponse, LoginRequest>,
-    res: Response<ApiResponse>
+    res: Response<ApiResponse>,
   ): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({
           success: false,
-          error: 'Validation failed',
+          error: "Validation failed",
           data: errors.array(),
         });
         return;
@@ -64,7 +64,7 @@ export class AuthController {
       if (!user) {
         res.status(401).json({
           success: false,
-          error: 'Invalid email or password',
+          error: "Invalid email or password",
         });
         return;
       }
@@ -81,22 +81,25 @@ export class AuthController {
           },
           tokens,
         },
-        message: 'Login successful',
+        message: "Login successful",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Login failed',
+        error: error instanceof Error ? error.message : "Login failed",
       });
     }
   }
 
-  static async validateSession(req: Request, res: Response<ApiResponse>): Promise<void> {
+  static async validateSession(
+    req: Request,
+    res: Response<ApiResponse>,
+  ): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'No user found in request',
+          error: "No user found in request",
         });
         return;
       }
@@ -105,7 +108,7 @@ export class AuthController {
       if (!user) {
         res.status(404).json({
           success: false,
-          error: 'User not found',
+          error: "User not found",
         });
         return;
       }
@@ -120,22 +123,26 @@ export class AuthController {
           },
           valid: true,
         },
-        message: 'Session is valid',
+        message: "Session is valid",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Session validation failed',
+        error:
+          error instanceof Error ? error.message : "Session validation failed",
       });
     }
   }
 
-  static async getProfile(req: Request, res: Response<ApiResponse>): Promise<void> {
+  static async getProfile(
+    req: Request,
+    res: Response<ApiResponse>,
+  ): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'No user found in request',
+          error: "No user found in request",
         });
         return;
       }
@@ -144,7 +151,7 @@ export class AuthController {
       if (!user) {
         res.status(404).json({
           success: false,
-          error: 'User not found',
+          error: "User not found",
         });
         return;
       }
@@ -162,7 +169,7 @@ export class AuthController {
     } catch (error) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get profile',
+        error: error instanceof Error ? error.message : "Failed to get profile",
       });
     }
   }

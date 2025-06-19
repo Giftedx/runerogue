@@ -151,7 +151,7 @@ class DungeonGenerator {
   placeMonsters(
     map: TileMap,
     difficulty: number,
-    playerCount: number
+    playerCount: number,
   ): Monster[];
   generateLootTables(biome: Biome, rarity: number): ItemDrop[];
 

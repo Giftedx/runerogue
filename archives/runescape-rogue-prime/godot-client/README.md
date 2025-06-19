@@ -7,42 +7,45 @@ This directory will contain the Godot Engine project for the RuneScape Rogue Pri
 1.  **Download Godot Engine:** If you haven't already, download the Godot Engine (v4.x recommended) from the official website: [https://godotengine.org/download](https://godotengine.org/download)
 
 2.  **Create a New Godot Project:**
-    *   Open Godot Engine.
-    *   Click on "New Project".
-    *   Set the "Project Path" to this directory: `C:\Users\aggis\GitHub\runerogue\runescape-rogue-prime\godot-client`
-    *   Choose a "Project Name" (e.g., `RuneScapeRoguePrime`).
-    *   Click "Create & Edit".
 
-3.  **Initial Project Setup (Inside Godot):
-    *   **Project Settings:** Go to `Project -> Project Settings -> General`.
-    *   **Window:** Under `Display -> Window`:
-        *   Set `Viewport Width` and `Viewport Height` to your desired game resolution (e.g., 800x600 or 1024x768 for pixel art).
-        *   Set `Stretch Mode` to `canvas_items` and `Stretch Aspect` to `keep` for pixel-perfect scaling.
-    *   **Rendering:** Under `Rendering -> 2D`:
-        *   Consider `Snap to Pixel` for crisp pixel art rendering.
+    - Open Godot Engine.
+    - Click on "New Project".
+    - Set the "Project Path" to this directory: `C:\Users\aggis\GitHub\runerogue\runescape-rogue-prime\godot-client`
+    - Choose a "Project Name" (e.g., `RuneScapeRoguePrime`).
+    - Click "Create & Edit".
+
+3.  \*\*Initial Project Setup (Inside Godot):
+
+    - **Project Settings:** Go to `Project -> Project Settings -> General`.
+    - **Window:** Under `Display -> Window`:
+      - Set `Viewport Width` and `Viewport Height` to your desired game resolution (e.g., 800x600 or 1024x768 for pixel art).
+      - Set `Stretch Mode` to `canvas_items` and `Stretch Aspect` to `keep` for pixel-perfect scaling.
+    - **Rendering:** Under `Rendering -> 2D`:
+      - Consider `Snap to Pixel` for crisp pixel art rendering.
 
 4.  **HTML5 Export Setup:**
-    *   Go to `Project -> Export...`.
-    *   Click "Add..." and select "HTML5".
-    *   **Export Path:** Set the `Path` to `../meta-ui/public/godot-export` (relative to the Godot project root, so it exports directly into the Next.js `public` directory).
-    *   **Custom HTML Shell:** You might want to create a custom HTML shell for better integration with the Next.js app. This can be done by enabling `Custom HTML Shell` and providing a path to your custom HTML file.
-    *   **Export Presets:** Configure other settings as needed (e.g., `Export with Debug`, `Enable Fullscreen Button`).
-    *   **Export Project:** Click "Export Project" to generate the HTML5 build.
+
+    - Go to `Project -> Export...`.
+    - Click "Add..." and select "HTML5".
+    - **Export Path:** Set the `Path` to `../meta-ui/public/godot-export` (relative to the Godot project root, so it exports directly into the Next.js `public` directory).
+    - **Custom HTML Shell:** You might want to create a custom HTML shell for better integration with the Next.js app. This can be done by enabling `Custom HTML Shell` and providing a path to your custom HTML file.
+    - **Export Presets:** Configure other settings as needed (e.g., `Export with Debug`, `Enable Fullscreen Button`).
+    - **Export Project:** Click "Export Project" to generate the HTML5 build.
 
 5.  **UI Framework:**
-    *   **Core Game UI (Player-Facing):** Designed and implemented within Godot's powerful built-in UI system (Control nodes), leveraging its flexibility for custom layouts, animations, and OSRS-style iconography (Player Stats, Equipped, Inventory, Combat Log, Skills, Minimap). This UI *must* display data fetched from the authoritative game server.
-        *   **Implementation Guidance:**
-            *   **Scene Structure:** Create separate Godot scenes for each major UI component (e.g., `PlayerStats.tscn`, `Inventory.tscn`, `Minimap.tscn`).
-            *   **Control Nodes:** Use `Control` nodes (e.g., `Panel`, `Label`, `TextureRect`, `Button`) to construct the UI layout. Utilize `Anchor` and `Margin` properties for responsive design.
-            *   **Data Binding:** Implement GDScript or C# scripts to fetch and display data from the game server (once WebSocket communication is established in M3). For now, use mock data.
-            *   **OSRS Style:** Pay close attention to fonts, colors, borders, and iconography to match the OSRS aesthetic.
-            *   **Minimap:** For the minimap, consider using a `Viewport` to render a top-down view of the player's immediate surroundings, overlaid with UI elements.
-    *   **WebSocket Communication (Client-Server):**
-        *   **Godot's WebSocketClient:** Use Godot's `WebSocketClient` class to establish a connection to the game server.
-        *   **Connection:** Connect to `ws://localhost:3000` (or the appropriate server address).
-        *   **Sending Data:** Convert Godot data (e.g., player input, actions) to JSON strings and send them over the WebSocket.
-        *   **Receiving Data:** Parse incoming JSON messages from the server to update the client-side game state (e.g., player positions, entity updates).
-        *   **Example (GDScript):
+    - **Core Game UI (Player-Facing):** Designed and implemented within Godot's powerful built-in UI system (Control nodes), leveraging its flexibility for custom layouts, animations, and OSRS-style iconography (Player Stats, Equipped, Inventory, Combat Log, Skills, Minimap). This UI _must_ display data fetched from the authoritative game server.
+      - **Implementation Guidance:**
+        - **Scene Structure:** Create separate Godot scenes for each major UI component (e.g., `PlayerStats.tscn`, `Inventory.tscn`, `Minimap.tscn`).
+        - **Control Nodes:** Use `Control` nodes (e.g., `Panel`, `Label`, `TextureRect`, `Button`) to construct the UI layout. Utilize `Anchor` and `Margin` properties for responsive design.
+        - **Data Binding:** Implement GDScript or C# scripts to fetch and display data from the game server (once WebSocket communication is established in M3). For now, use mock data.
+        - **OSRS Style:** Pay close attention to fonts, colors, borders, and iconography to match the OSRS aesthetic.
+        - **Minimap:** For the minimap, consider using a `Viewport` to render a top-down view of the player's immediate surroundings, overlaid with UI elements.
+    - **WebSocket Communication (Client-Server):**
+      - **Godot's WebSocketClient:** Use Godot's `WebSocketClient` class to establish a connection to the game server.
+      - **Connection:** Connect to `ws://localhost:3000` (or the appropriate server address).
+      - **Sending Data:** Convert Godot data (e.g., player input, actions) to JSON strings and send them over the WebSocket.
+      - **Receiving Data:** Parse incoming JSON messages from the server to update the client-side game state (e.g., player positions, entity updates).
+      - \*\*Example (GDScript):
 
 ```gdscript
 # Example Godot WebSocket Client Script

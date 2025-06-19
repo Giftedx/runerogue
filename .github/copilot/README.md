@@ -90,7 +90,7 @@ The key to successful assignment is using the correct format for the GitHub Copi
 In GitHub API calls and GitHub Actions workflows, the correct format is:
 
 ```yaml
-assignees: ['Copilot']
+assignees: ["Copilot"]
 ```
 
 Not `github-copilot[bot]`, `@github/copilot` or other variations.

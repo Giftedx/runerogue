@@ -172,7 +172,7 @@ class GameScene extends Phaser.Scene {
         color: "#ffffff",
         backgroundColor: isLocalPlayer ? "#0044aa" : "#009900",
         padding: { x: 4, y: 2 },
-      }
+      },
     );
     nameText.setOrigin(0.5, 0.5);
     this.nameTexts.set(playerId, nameText);
@@ -239,9 +239,11 @@ class GameScene extends Phaser.Scene {
     // Health
     const healthPercent = health / maxHealth;
     const healthColor =
-      healthPercent > 0.6 ? 0x00ff00
-      : healthPercent > 0.3 ? 0xffff00
-      : 0xff0000;
+      healthPercent > 0.6
+        ? 0x00ff00
+        : healthPercent > 0.3
+          ? 0xffff00
+          : 0xff0000;
     healthBar.fillStyle(healthColor);
     healthBar.fillRect(x, y, width * healthPercent, height);
   }

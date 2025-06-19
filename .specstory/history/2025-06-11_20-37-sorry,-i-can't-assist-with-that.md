@@ -27,6 +27,7 @@ packages/osrs-data/src/skills/            # OSRS authentic data sources
 ```
 
 **Expected files to find:**
+
 - `WoodcuttingSystem.ts`, `MiningSystem.ts`, `FishingSystem.ts`
 - `CookingSystem.ts`, `FiremakingSystem.ts` (possibly incomplete)
 - Related components like `ResourceNodeComponent`, `SkillLevelComponent`, etc.
@@ -45,6 +46,7 @@ server-ts/src/server/ecs/systems/FiremakingSystem.ts
 ```
 
 **Commands to fix:**
+
 ```bash
 # Using dos2unix if available
 dos2unix server-ts/src/server/ecs/systems/CookingSystem.ts
@@ -74,16 +76,18 @@ pnpm lint
 **Task:** Examine and document the ECS components used by gathering skills.
 
 **Expected components:**
+
 ```typescript
 // Components to look for and understand:
-PlayerActionEventComponent   // Triggers for skill actions
-ResourceNodeComponent        // Trees, rocks, fishing spots, etc.
-SkillLevelComponent          // Player skill levels/XP
-InventoryComponent           // Player inventory contents
-EquipmentComponent           // Player equipped items
+PlayerActionEventComponent; // Triggers for skill actions
+ResourceNodeComponent; // Trees, rocks, fishing spots, etc.
+SkillLevelComponent; // Player skill levels/XP
+InventoryComponent; // Player inventory contents
+EquipmentComponent; // Player equipped items
 ```
 
 **Questions to answer:**
+
 - How are resource nodes represented? (Entity with ResourceNodeComponent?)
 - How are skill actions initiated? (PlayerActionEventComponent with action type?)
 - Where is player state stored? (Separate components or aggregated?)
@@ -93,6 +97,7 @@ EquipmentComponent           // Player equipped items
 **Task:** Examine the logic flow in existing skill systems to understand patterns.
 
 **Files to analyze:**
+
 ```
 server-ts/src/server/ecs/systems/WoodcuttingSystem.ts
 server-ts/src/server/ecs/systems/MiningSystem.ts
@@ -100,6 +105,7 @@ server-ts/src/server/ecs/systems/FishingSystem.ts
 ```
 
 **Common patterns to identify:**
+
 - How do systems query for entities with pending actions?
 - How are tool requirements checked?
 - How are success chances calculated?
@@ -119,6 +125,7 @@ packages/osrs-data/src/items/
 ```
 
 **Expected data:**
+
 - Tool types and effectiveness
 - Resource types and properties
 - XP values for various actions
@@ -130,6 +137,7 @@ packages/osrs-data/src/items/
 **Task:** Create a comprehensive checklist of all OSRS Wiki references needed for verification.
 
 **Key OSRS Wiki pages:**
+
 - [Woodcutting training](https://oldschool.runescape.wiki/w/Woodcutting_training)
 - [Mining training](https://oldschool.runescape.wiki/w/Mining_training)
 - [Fishing training](https://oldschool.runescape.wiki/w/Fishing_training)
@@ -138,6 +146,7 @@ packages/osrs-data/src/items/
 - [Experience](https://oldschool.runescape.wiki/w/Experience)
 
 **Required data points:**
+
 - Create a spreadsheet mapping each resource to its level requirement, XP value, and tool requirements
 - Document success formulas with exact mathematical representations
 - Document respawn timers and resource depletion chances
@@ -151,10 +160,11 @@ packages/osrs-data/src/items/
 **File:** CookingSystem.ts
 
 **Core requirements:**
+
 ```typescript
 /**
  * CookingSystem processes cooking actions from players.
- * It handles the cooking of various food items at different 
+ * It handles the cooking of various food items at different
  * cooking spots (fires, ranges) according to OSRS mechanics.
  */
 export class CookingSystem {
@@ -171,7 +181,7 @@ export class CookingSystem {
     // 6. Check for pet drops
     // 7. Update player state (animation, etc.)
   }
-  
+
   /**
    * Calculates if cooking was successful based on OSRS formulas
    * @param foodType - Type of food being cooked
@@ -179,13 +189,18 @@ export class CookingSystem {
    * @param cookingSpot - Type of cooking spot (fire or range)
    * @returns Whether the cooking was successful (true) or burnt (false)
    */
-  calculateCookingSuccess(foodType: string, cookingLevel: number, cookingSpot: 'fire' | 'range'): boolean {
+  calculateCookingSuccess(
+    foodType: string,
+    cookingLevel: number,
+    cookingSpot: "fire" | "range",
+  ): boolean {
     // OSRS-authentic cooking success calculation
   }
 }
 ```
 
 **Required food items (up to level 50):**
+
 - Shrimp (level 1)
 - Sardine (level 1)
 - Herring (level 5)
@@ -208,43 +223,44 @@ export class CookingSystem {
 **File:** `server-ts/src/server/ecs/systems/CookingSystem.test.ts`
 
 **Test cases:**
+
 ```typescript
-describe('CookingSystem', () => {
+describe("CookingSystem", () => {
   // Setup test world with necessary components
-  
-  describe('calculateCookingSuccess', () => {
-    test('shrimp at level 1 has correct burn chance', () => {
+
+  describe("calculateCookingSuccess", () => {
+    test("shrimp at level 1 has correct burn chance", () => {
       // OSRS Wiki states ~50% burn rate at level 1
     });
-    
-    test('shrimp never burns at level 34+', () => {
+
+    test("shrimp never burns at level 34+", () => {
       // OSRS Wiki states shrimp stops burning at level 34
     });
-    
+
     // Test each food type at minimum level and stop-burn level
   });
-  
-  describe('cooking process', () => {
-    test('successfully cooks food with correct requirements', () => {
+
+  describe("cooking process", () => {
+    test("successfully cooks food with correct requirements", () => {
       // Setup player with raw food and cooking action
       // Run system update
       // Verify inventory changes and XP gain
     });
-    
-    test('burns food according to chance formula', () => {
+
+    test("burns food according to chance formula", () => {
       // Mock success calculation to ensure burn
       // Verify burnt food is added to inventory
     });
-    
-    test('cooking on range vs fire affects burn chance', () => {
+
+    test("cooking on range vs fire affects burn chance", () => {
       // Compare success rates between range and fire
     });
-    
-    test('fails if player lacks requirements', () => {
+
+    test("fails if player lacks requirements", () => {
       // Test with insufficient cooking level
     });
-    
-    test('cooking awards correct XP', () => {
+
+    test("cooking awards correct XP", () => {
       // Verify XP matches OSRS values
     });
   });
@@ -260,6 +276,7 @@ describe('CookingSystem', () => {
 **File:** FiremakingSystem.ts
 
 **Core requirements:**
+
 ```typescript
 /**
  * FiremakingSystem processes firemaking actions from players.
@@ -281,7 +298,7 @@ export class FiremakingSystem {
     // 8. Update player state (animation, etc.)
     // 9. Check for Phoenix pet drop
   }
-  
+
   /**
    * Creates a fire entity at the specified position
    * @param world - The bitECS world instance
@@ -298,6 +315,7 @@ export class FiremakingSystem {
 ```
 
 **Required log types (up to level 50):**
+
 - Regular logs (level 1)
 - Achey logs (level 1)
 - Oak logs (level 15)
@@ -313,39 +331,40 @@ export class FiremakingSystem {
 **File:** `server-ts/src/server/ecs/systems/FiremakingSystem.test.ts`
 
 **Test cases:**
+
 ```typescript
-describe('FiremakingSystem', () => {
+describe("FiremakingSystem", () => {
   // Setup test world with necessary components
-  
-  describe('firemaking process', () => {
-    test('successfully creates fire with correct requirements', () => {
+
+  describe("firemaking process", () => {
+    test("successfully creates fire with correct requirements", () => {
       // Setup player with logs and tinderbox
       // Create firemaking action
       // Run system update
       // Verify fire entity created and logs consumed
     });
-    
-    test('awards correct XP based on log type', () => {
+
+    test("awards correct XP based on log type", () => {
       // Test each log type and verify XP matches OSRS Wiki
     });
-    
-    test('fails if player lacks requirements', () => {
+
+    test("fails if player lacks requirements", () => {
       // Test without logs
       // Test without tinderbox
       // Test with insufficient level
     });
-    
-    test('cannot create fire on occupied tile', () => {
+
+    test("cannot create fire on occupied tile", () => {
       // Create a fire, then try to create another at same position
     });
-    
-    test('fire expires after correct duration', () => {
+
+    test("fire expires after correct duration", () => {
       // Create fire
       // Fast-forward game ticks
       // Verify fire is removed/replaced with ashes
     });
-    
-    test('phoenix pet drop chance calculation', () => {
+
+    test("phoenix pet drop chance calculation", () => {
       // Mock RNG to test pet drop logic
     });
   });
@@ -361,16 +380,18 @@ describe('FiremakingSystem', () => {
 **File:** `server-ts/src/server/game/World.ts` (or equivalent main world setup)
 
 **Integration points:**
+
 ```typescript
 // Check that systems are registered in the correct order
-world.addSystem('woodcutting', woodcuttingSystem);
-world.addSystem('mining', miningSystem);
-world.addSystem('fishing', fishingSystem);
-world.addSystem('cooking', cookingSystem);
-world.addSystem('firemaking', firemakingSystem);
+world.addSystem("woodcutting", woodcuttingSystem);
+world.addSystem("mining", miningSystem);
+world.addSystem("fishing", fishingSystem);
+world.addSystem("cooking", cookingSystem);
+world.addSystem("firemaking", firemakingSystem);
 ```
 
 **Verify system dependencies:**
+
 - ResourceNodeSystem (for managing resource nodes)
 - InventorySystem (for item changes)
 - ExperienceSystem (for XP gains)
@@ -382,17 +403,18 @@ world.addSystem('firemaking', firemakingSystem);
 **File:** `server-ts/src/server/rooms/GameRoomState.ts`
 
 **Synchronization requirements:**
+
 ```typescript
 export class GameRoomState extends Schema {
   @type({ map: Player })
   players = new MapSchema<Player>();
-  
+
   @type({ map: ResourceNode })
   resourceNodes = new MapSchema<ResourceNode>();
-  
+
   @type({ map: WorldObject })
   worldObjects = new MapSchema<WorldObject>(); // For fires, etc.
-  
+
   // Ensure these schemas include all necessary properties:
   // - Player: inventory, skills, equipment, actions
   // - ResourceNode: type, state (depleted/available), respawn timer
@@ -401,6 +423,7 @@ export class GameRoomState extends Schema {
 ```
 
 **Client update handling:**
+
 ```typescript
 // In GameRoom.ts or equivalent
 private broadcastChanges(): void {
@@ -408,16 +431,16 @@ private broadcastChanges(): void {
   const updatedPlayers = getUpdatedPlayers(this.world);
   const updatedNodes = getUpdatedResourceNodes(this.world);
   const updatedObjects = getUpdatedWorldObjects(this.world);
-  
+
   // Update Colyseus state
   updatedPlayers.forEach(player => {
     // Update player state in this.state.players
   });
-  
+
   updatedNodes.forEach(node => {
     // Update resource node state in this.state.resourceNodes
   });
-  
+
   updatedObjects.forEach(object => {
     // Update world object state in this.state.worldObjects
   });
@@ -429,6 +452,7 @@ private broadcastChanges(): void {
 **Task:** Verify client-side rendering of gathering skill actions and effects.
 
 **Check points:**
+
 - Player animations for each gathering action
 - Visual feedback for successful/failed actions
 - Resource node state changes (depletion/respawn)
@@ -444,6 +468,7 @@ private broadcastChanges(): void {
 **Task:** Ensure comprehensive unit test coverage for all gathering skills.
 
 **Files to test:**
+
 - `WoodcuttingSystem.test.ts`
 - `MiningSystem.test.ts`
 - `FishingSystem.test.ts`
@@ -451,6 +476,7 @@ private broadcastChanges(): void {
 - `FiremakingSystem.test.ts`
 
 **Test coverage targets:**
+
 - 95%+ coverage for all system logic
 - 100% coverage for OSRS calculations
 - All edge cases tested (inventory full, insufficient level, etc.)
@@ -460,17 +486,18 @@ private broadcastChanges(): void {
 **Task:** Create integration tests that verify interaction between systems.
 
 **Integration test scenarios:**
+
 ```typescript
-describe('Gathering Skills Integration', () => {
-  test('complete gathering workflow', () => {
+describe("Gathering Skills Integration", () => {
+  test("complete gathering workflow", () => {
     // 1. Player cuts logs (Woodcutting)
     // 2. Player catches fish (Fishing)
     // 3. Player lights fire with logs (Firemaking)
     // 4. Player cooks fish on fire (Cooking)
     // Verify all state changes are correct
   });
-  
-  test('resource depletion and respawn', () => {
+
+  test("resource depletion and respawn", () => {
     // Deplete a resource node
     // Verify respawn timer starts
     // Fast-forward time
@@ -486,20 +513,21 @@ describe('Gathering Skills Integration', () => {
 **File:** `server-ts/src/tests/osrs-validation/gathering-skills.test.ts`
 
 **Verification tests:**
+
 ```typescript
-describe('OSRS Validation', () => {
-  describe('Woodcutting', () => {
+describe("OSRS Validation", () => {
+  describe("Woodcutting", () => {
     // Test XP values for each tree type
     // Test success chances with different axes
     // Test beaver pet drop rates
   });
-  
-  describe('Mining', () => {
+
+  describe("Mining", () => {
     // Test XP values for each rock type
     // Test success chances with different pickaxes
     // Test golem pet drop rates
   });
-  
+
   // Similar for other skills
 });
 ```
@@ -511,38 +539,39 @@ describe('OSRS Validation', () => {
 **Task:** Add comprehensive JSDoc comments to all gathering skill-related code.
 
 **Example for CookingSystem:**
+
 ```typescript
 /**
  * Represents the Cooking skill system in RuneRogue.
  * Handles the process of cooking raw food items with OSRS-authentic mechanics.
- * 
+ *
  * Based on OSRS Wiki: https://oldschool.runescape.wiki/w/Cooking
  */
 export class CookingSystem {
   /**
    * Calculates if cooking will be successful or result in burnt food.
-   * 
+   *
    * Formula from OSRS Wiki: (level - burnLevel) / (noburn - burnLevel)
-   * 
+   *
    * @param foodType - The type of food being cooked
    * @param cookingLevel - The player's current cooking level
    * @param cookingSpot - The type of cooking spot being used
    * @param cookingGauntlets - Whether the player has cooking gauntlets equipped
    * @returns True if cooking succeeds, false if food burns
-   * 
+   *
    * @example
    * // Check if player will successfully cook shrimp
    * const success = cookingSystem.calculateCookingSuccess('shrimp', 5, 'fire', false);
    */
   calculateCookingSuccess(
-    foodType: string, 
-    cookingLevel: number, 
-    cookingSpot: 'fire' | 'range', 
-    cookingGauntlets: boolean
+    foodType: string,
+    cookingLevel: number,
+    cookingSpot: "fire" | "range",
+    cookingGauntlets: boolean,
   ): boolean {
     // Implementation
   }
-  
+
   // Document all other methods...
 }
 ```
@@ -554,13 +583,16 @@ export class CookingSystem {
 **File:** `docs/systems/gathering-skills.md`
 
 **Content outline:**
+
 ```markdown
 # Gathering Skills Implementation
 
 ## Overview
+
 This document describes the implementation of OSRS-authentic gathering skills in RuneRogue.
 
 ## Skills Covered
+
 - Woodcutting
 - Mining
 - Fishing
@@ -568,7 +600,9 @@ This document describes the implementation of OSRS-authentic gathering skills in
 - Firemaking
 
 ## System Architecture
+
 Each gathering skill uses the following ECS pattern:
+
 1. Player initiates action via `PlayerActionEventComponent`
 2. Skill system validates requirements (level, tools, resources)
 3. System calculates success based on OSRS formulas
@@ -577,7 +611,9 @@ Each gathering skill uses the following ECS pattern:
 6. Changes are synchronized to clients via Colyseus
 
 ## OSRS Authenticity
+
 All calculations precisely match OSRS mechanics:
+
 - XP values
 - Success formulas
 - Tool requirements and effects
@@ -585,9 +621,11 @@ All calculations precisely match OSRS mechanics:
 - Pet drop chances
 
 ## Code Examples
+
 (Provide examples of typical usage for each skill system)
 
 ## References
+
 (List all OSRS Wiki pages used as references)
 ```
 
@@ -598,6 +636,7 @@ All calculations precisely match OSRS mechanics:
 **Task:** Profile gathering skill systems under load to identify bottlenecks.
 
 **Profiling steps:**
+
 ```bash
 # Start the server with profiling
 NODE_ENV=production node --prof server-ts/dist/index.js
@@ -609,6 +648,7 @@ node --prof-process isolate-*-v8.log > profiling-results.txt
 ```
 
 **Key metrics to monitor:**
+
 - Server tick rate (target: 20 TPS)
 - System execution time per tick
 - Memory usage patterns
@@ -619,6 +659,7 @@ node --prof-process isolate-*-v8.log > profiling-results.txt
 **Task:** Optimize identified bottlenecks in gathering skill systems.
 
 **Common optimization techniques:**
+
 ```typescript
 // Use efficient ECS queries
 const query = defineQuery([
@@ -639,6 +680,7 @@ private pendingUpdates: StateChange[] = [];
 ```
 
 **Monitoring improvement:**
+
 - Before/after benchmarks of system execution time
 - Before/after measurements of network traffic
 - Visual smoothness of gameplay (60fps target)
@@ -650,6 +692,7 @@ private pendingUpdates: StateChange[] = [];
 **Task:** Perform final code quality review of all gathering skill implementations.
 
 **Review checklist:**
+
 - TypeScript best practices followed
 - No `any` types used
 - Proper error handling implemented
@@ -663,6 +706,7 @@ private pendingUpdates: StateChange[] = [];
 **Task:** Verify all gathering skills are fully implemented up to level 50.
 
 **Verification checklist:**
+
 - All required resources implemented
 - All tools and equipment effects implemented
 - All level requirements correctly enforced
@@ -676,6 +720,7 @@ private pendingUpdates: StateChange[] = [];
 **Task:** Perform end-to-end testing of the complete gathering skill implementation.
 
 **Testing scenarios:**
+
 - Multiple players using different gathering skills simultaneously
 - Edge cases (inventory full, skill level up during action)
 - Long-duration stress test (resource respawning, fire lifetime)
@@ -717,10 +762,12 @@ find server-ts/src/server/ecs/systems -name "*.ts" -exec basename {} \; | sort >
 ```
 
 **Expected Output Documentation:**
+
 ```markdown
 ## Current Implementation Status
 
 ### Implemented Skills:
+
 - [ ] Woodcutting - Status: [Not Started/Partial/Complete]
 - [ ] Mining - Status: [Not Started/Partial/Complete]
 - [ ] Fishing - Status: [Not Started/Partial/Complete]
@@ -728,14 +775,17 @@ find server-ts/src/server/ecs/systems -name "*.ts" -exec basename {} \; | sort >
 - [ ] Firemaking - Status: [Not Started/Partial/Complete]
 
 ### Existing Components Found:
+
 - Component1.ts - Purpose: ...
 - Component2.ts - Purpose: ...
 
 ### Existing Systems Found:
+
 - System1.ts - Purpose: ...
 - System2.ts - Purpose: ...
 
 ### Missing Critical Components:
+
 - [ ] ResourceNodeComponent
 - [ ] PlayerActionEventComponent
 - [ ] SkillExperienceComponent
@@ -761,6 +811,7 @@ pnpm test --passWithNoTests
 ```
 
 **Required Dependencies Check:**
+
 ```json
 {
   "dependencies": {
@@ -785,21 +836,21 @@ pnpm test --passWithNoTests
 **File:** `server-ts/src/server/ecs/components/GatheringComponents.ts`
 
 ```typescript
-import { defineComponent, Types } from 'bitecs';
+import { defineComponent, Types } from "bitecs";
 
 /**
  * Component for entities that can be gathered (trees, rocks, fishing spots)
  */
 export const ResourceNodeComponent = defineComponent({
-  resourceType: Types.ui8,      // Enum index for resource type
-  resourceId: Types.ui16,       // Specific resource ID (e.g., oak tree = 1001)
-  requiredLevel: Types.ui8,     // Minimum skill level required
-  requiredTool: Types.ui16,     // Tool item ID required (0 = none)
-  xpReward: Types.ui16,         // XP granted on successful gather
-  respawnTicks: Types.ui16,     // Ticks until respawn after depletion
+  resourceType: Types.ui8, // Enum index for resource type
+  resourceId: Types.ui16, // Specific resource ID (e.g., oak tree = 1001)
+  requiredLevel: Types.ui8, // Minimum skill level required
+  requiredTool: Types.ui16, // Tool item ID required (0 = none)
+  xpReward: Types.ui16, // XP granted on successful gather
+  respawnTicks: Types.ui16, // Ticks until respawn after depletion
   currentRespawnTick: Types.ui16, // Current respawn countdown
-  isDepleted: Types.ui8,        // 0 = available, 1 = depleted
-  depletionChance: Types.f32,   // Chance to deplete on gather (0.0-1.0)
+  isDepleted: Types.ui8, // 0 = available, 1 = depleted
+  depletionChance: Types.f32, // Chance to deplete on gather (0.0-1.0)
 });
 
 /**
@@ -823,21 +874,21 @@ export const SkillDataComponent = defineComponent({
  * Component for player gathering actions
  */
 export const GatheringActionComponent = defineComponent({
-  actionType: Types.ui8,        // 0=none, 1=woodcutting, 2=mining, etc.
-  targetEntity: Types.eid,      // Entity being gathered from
-  startTick: Types.ui32,        // When action started
-  nextActionTick: Types.ui32,   // Next tick to process action
-  toolItemId: Types.ui16,       // Tool being used
+  actionType: Types.ui8, // 0=none, 1=woodcutting, 2=mining, etc.
+  targetEntity: Types.eid, // Entity being gathered from
+  startTick: Types.ui32, // When action started
+  nextActionTick: Types.ui32, // Next tick to process action
+  toolItemId: Types.ui16, // Tool being used
 });
 
 /**
  * Component for world objects like fires
  */
 export const WorldObjectComponent = defineComponent({
-  objectType: Types.ui8,        // 0=fire, 1=ashes, etc.
-  createdTick: Types.ui32,      // When object was created
-  expirationTick: Types.ui32,   // When object should be removed
-  creatorEntity: Types.eid,     // Entity that created this object
+  objectType: Types.ui8, // 0=fire, 1=ashes, etc.
+  createdTick: Types.ui32, // When object was created
+  expirationTick: Types.ui32, // When object should be removed
+  creatorEntity: Types.eid, // Entity that created this object
 });
 ```
 
@@ -848,49 +899,52 @@ export const WorldObjectComponent = defineComponent({
 **File:** `server-ts/src/server/ecs/components/index.ts`
 
 ```typescript
-export * from './GatheringComponents';
+export * from "./GatheringComponents";
 // ... other component exports
 ```
 
 **File:** `server-ts/src/server/ecs/components/GatheringComponents.test.ts`
 
 ```typescript
-import { createWorld, addEntity, addComponent, hasComponent } from 'bitecs';
-import { ResourceNodeComponent, SkillDataComponent } from './GatheringComponents';
+import { createWorld, addEntity, addComponent, hasComponent } from "bitecs";
+import {
+  ResourceNodeComponent,
+  SkillDataComponent,
+} from "./GatheringComponents";
 
-describe('GatheringComponents', () => {
+describe("GatheringComponents", () => {
   let world: World;
 
   beforeEach(() => {
     world = createWorld();
   });
 
-  test('ResourceNodeComponent can be added to entity', () => {
+  test("ResourceNodeComponent can be added to entity", () => {
     const entity = addEntity(world);
     addComponent(world, ResourceNodeComponent, entity);
-    
+
     expect(hasComponent(world, ResourceNodeComponent, entity)).toBe(true);
-    
+
     // Set component data
     ResourceNodeComponent.resourceType[entity] = 1; // Tree
     ResourceNodeComponent.requiredLevel[entity] = 15; // Oak tree
     ResourceNodeComponent.xpReward[entity] = 37.5;
-    
+
     expect(ResourceNodeComponent.resourceType[entity]).toBe(1);
     expect(ResourceNodeComponent.requiredLevel[entity]).toBe(15);
     expect(ResourceNodeComponent.xpReward[entity]).toBe(37.5);
   });
 
-  test('SkillDataComponent tracks multiple skills', () => {
+  test("SkillDataComponent tracks multiple skills", () => {
     const entity = addEntity(world);
     addComponent(world, SkillDataComponent, entity);
-    
+
     // Set initial skill levels
     SkillDataComponent.woodcuttingLevel[entity] = 15;
     SkillDataComponent.woodcuttingXp[entity] = 2411;
     SkillDataComponent.cookingLevel[entity] = 20;
     SkillDataComponent.cookingXp[entity] = 4470;
-    
+
     expect(SkillDataComponent.woodcuttingLevel[entity]).toBe(15);
     expect(SkillDataComponent.cookingLevel[entity]).toBe(20);
   });
@@ -930,7 +984,7 @@ export enum SkillType {
 export const TREES = {
   NORMAL: {
     id: 1000,
-    name: 'Tree',
+    name: "Tree",
     level: 1,
     xp: 25,
     respawnTicks: 30, // 18 seconds at 20 TPS
@@ -938,7 +992,7 @@ export const TREES = {
   },
   OAK: {
     id: 1001,
-    name: 'Oak tree',
+    name: "Oak tree",
     level: 15,
     xp: 37.5,
     respawnTicks: 50, // 30 seconds
@@ -946,7 +1000,7 @@ export const TREES = {
   },
   WILLOW: {
     id: 1002,
-    name: 'Willow tree',
+    name: "Willow tree",
     level: 30,
     xp: 67.5,
     respawnTicks: 50,
@@ -954,7 +1008,7 @@ export const TREES = {
   },
   MAPLE: {
     id: 1003,
-    name: 'Maple tree',
+    name: "Maple tree",
     level: 45,
     xp: 100,
     respawnTicks: 58, // 35 seconds
@@ -962,7 +1016,7 @@ export const TREES = {
   },
   YEW: {
     id: 1004,
-    name: 'Yew tree',
+    name: "Yew tree",
     level: 60,
     xp: 175,
     respawnTicks: 100, // 60 seconds
@@ -974,7 +1028,7 @@ export const TREES = {
 export const ROCKS = {
   COPPER: {
     id: 2000,
-    name: 'Copper rock',
+    name: "Copper rock",
     level: 1,
     xp: 17.5,
     respawnTicks: 4, // 2.4 seconds
@@ -982,7 +1036,7 @@ export const ROCKS = {
   },
   TIN: {
     id: 2001,
-    name: 'Tin rock',
+    name: "Tin rock",
     level: 1,
     xp: 17.5,
     respawnTicks: 4,
@@ -990,7 +1044,7 @@ export const ROCKS = {
   },
   IRON: {
     id: 2002,
-    name: 'Iron rock',
+    name: "Iron rock",
     level: 15,
     xp: 35,
     respawnTicks: 10, // 6 seconds
@@ -998,7 +1052,7 @@ export const ROCKS = {
   },
   SILVER: {
     id: 2003,
-    name: 'Silver rock',
+    name: "Silver rock",
     level: 20,
     xp: 40,
     respawnTicks: 100, // 60 seconds
@@ -1006,7 +1060,7 @@ export const ROCKS = {
   },
   COAL: {
     id: 2004,
-    name: 'Coal rock',
+    name: "Coal rock",
     level: 30,
     xp: 50,
     respawnTicks: 50, // 30 seconds
@@ -1014,7 +1068,7 @@ export const ROCKS = {
   },
   GOLD: {
     id: 2005,
-    name: 'Gold rock',
+    name: "Gold rock",
     level: 40,
     xp: 65,
     respawnTicks: 100, // 60 seconds
@@ -1026,57 +1080,57 @@ export const ROCKS = {
 export const FISHING_SPOTS = {
   NET_BAIT: {
     id: 3000,
-    name: 'Fishing spot',
+    name: "Fishing spot",
     options: {
       NET: {
         level: 1,
-        tool: 'small_fishing_net',
-        fish: ['shrimps', 'anchovies'],
+        tool: "small_fishing_net",
+        fish: ["shrimps", "anchovies"],
         xp: { shrimps: 10, anchovies: 40 },
       },
       BAIT: {
         level: 5,
-        tool: 'fishing_rod',
-        bait: 'fishing_bait',
-        fish: ['sardine', 'herring'],
+        tool: "fishing_rod",
+        bait: "fishing_bait",
+        fish: ["sardine", "herring"],
         xp: { sardine: 20, herring: 30 },
       },
     },
   },
   LURE_BAIT: {
     id: 3001,
-    name: 'Rod fishing spot',
+    name: "Rod fishing spot",
     options: {
       LURE: {
         level: 20,
-        tool: 'fly_fishing_rod',
-        bait: 'feather',
-        fish: ['trout', 'salmon'],
+        tool: "fly_fishing_rod",
+        bait: "feather",
+        fish: ["trout", "salmon"],
         xp: { trout: 50, salmon: 70 },
       },
       BAIT: {
         level: 25,
-        tool: 'fishing_rod',
-        bait: 'fishing_bait',
-        fish: ['pike'],
+        tool: "fishing_rod",
+        bait: "fishing_bait",
+        fish: ["pike"],
         xp: { pike: 60 },
       },
     },
   },
   CAGE_HARPOON: {
     id: 3002,
-    name: 'Cage/Harpoon spot',
+    name: "Cage/Harpoon spot",
     options: {
       CAGE: {
         level: 40,
-        tool: 'lobster_pot',
-        fish: ['lobster'],
+        tool: "lobster_pot",
+        fish: ["lobster"],
         xp: { lobster: 90 },
       },
       HARPOON: {
         level: 35,
-        tool: 'harpoon',
-        fish: ['tuna', 'swordfish'],
+        tool: "harpoon",
+        fish: ["tuna", "swordfish"],
         xp: { tuna: 80, swordfish: 100 },
       },
     },
@@ -1086,72 +1140,72 @@ export const FISHING_SPOTS = {
 // Cooking data
 export const COOKABLE_ITEMS = {
   SHRIMPS: {
-    raw: 'raw_shrimps',
-    cooked: 'shrimps',
-    burnt: 'burnt_shrimps',
+    raw: "raw_shrimps",
+    cooked: "shrimps",
+    burnt: "burnt_shrimps",
     level: 1,
     xp: 30,
     burnStopLevel: 34,
     burnStopLevelRange: 34, // Stop burning on range
   },
   SARDINE: {
-    raw: 'raw_sardine',
-    cooked: 'sardine',
-    burnt: 'burnt_sardine',
+    raw: "raw_sardine",
+    cooked: "sardine",
+    burnt: "burnt_sardine",
     level: 1,
     xp: 40,
     burnStopLevel: 38,
     burnStopLevelRange: 38,
   },
   HERRING: {
-    raw: 'raw_herring',
-    cooked: 'herring',
-    burnt: 'burnt_herring',
+    raw: "raw_herring",
+    cooked: "herring",
+    burnt: "burnt_herring",
     level: 5,
     xp: 50,
     burnStopLevel: 41,
     burnStopLevelRange: 41,
   },
   TROUT: {
-    raw: 'raw_trout',
-    cooked: 'trout',
-    burnt: 'burnt_trout',
+    raw: "raw_trout",
+    cooked: "trout",
+    burnt: "burnt_trout",
     level: 15,
     xp: 70,
     burnStopLevel: 49,
     burnStopLevelRange: 50,
   },
   SALMON: {
-    raw: 'raw_salmon',
-    cooked: 'salmon',
-    burnt: 'burnt_salmon',
+    raw: "raw_salmon",
+    cooked: "salmon",
+    burnt: "burnt_salmon",
     level: 25,
     xp: 90,
     burnStopLevel: 58,
     burnStopLevelRange: 58,
   },
   TUNA: {
-    raw: 'raw_tuna',
-    cooked: 'tuna',
-    burnt: 'burnt_tuna',
+    raw: "raw_tuna",
+    cooked: "tuna",
+    burnt: "burnt_tuna",
     level: 30,
     xp: 100,
     burnStopLevel: 63,
     burnStopLevelRange: 64,
   },
   LOBSTER: {
-    raw: 'raw_lobster',
-    cooked: 'lobster',
-    burnt: 'burnt_lobster',
+    raw: "raw_lobster",
+    cooked: "lobster",
+    burnt: "burnt_lobster",
     level: 40,
     xp: 120,
     burnStopLevel: 74,
     burnStopLevelRange: 74,
   },
   SWORDFISH: {
-    raw: 'raw_swordfish',
-    cooked: 'swordfish',
-    burnt: 'burnt_swordfish',
+    raw: "raw_swordfish",
+    cooked: "swordfish",
+    burnt: "burnt_swordfish",
     level: 45,
     xp: 140,
     burnStopLevel: 86,
@@ -1162,31 +1216,31 @@ export const COOKABLE_ITEMS = {
 // Firemaking data
 export const LOGS = {
   NORMAL: {
-    id: 'logs',
+    id: "logs",
     level: 1,
     xp: 40,
     burnTime: 100, // 60 seconds
   },
   OAK: {
-    id: 'oak_logs',
+    id: "oak_logs",
     level: 15,
     xp: 60,
     burnTime: 100,
   },
   WILLOW: {
-    id: 'willow_logs',
+    id: "willow_logs",
     level: 30,
     xp: 90,
     burnTime: 100,
   },
   MAPLE: {
-    id: 'maple_logs',
+    id: "maple_logs",
     level: 45,
     xp: 135,
     burnTime: 100,
   },
   YEW: {
-    id: 'yew_logs',
+    id: "yew_logs",
     level: 60,
     xp: 202.5,
     burnTime: 100,
@@ -1224,9 +1278,9 @@ export function getXpForLevel(level: number): number {
   if (level < 1 || level > 99) {
     throw new Error(`Invalid level ${level}. Must be between 1-99`);
   }
-  
+
   if (level === 1) return 0;
-  
+
   let xp = 0;
   for (let i = 1; i < level; i++) {
     xp += Math.floor(i + 300 * Math.pow(2, i / 7));
@@ -1256,11 +1310,16 @@ export function getLevelFromXp(xp: number): number {
 **File:** `packages/osrs-data/src/skills/gathering-data.test.ts`
 
 ```typescript
-import { getXpForLevel, getLevelFromXp, TREES, COOKABLE_ITEMS } from './gathering-data';
+import {
+  getXpForLevel,
+  getLevelFromXp,
+  TREES,
+  COOKABLE_ITEMS,
+} from "./gathering-data";
 
-describe('OSRS Data Validation', () => {
-  describe('Experience calculations', () => {
-    test('getXpForLevel matches OSRS values', () => {
+describe("OSRS Data Validation", () => {
+  describe("Experience calculations", () => {
+    test("getXpForLevel matches OSRS values", () => {
       // Values from OSRS Wiki
       expect(getXpForLevel(1)).toBe(0);
       expect(getXpForLevel(10)).toBe(1154);
@@ -1275,7 +1334,7 @@ describe('OSRS Data Validation', () => {
       expect(getXpForLevel(99)).toBe(13034431);
     });
 
-    test('getLevelFromXp returns correct levels', () => {
+    test("getLevelFromXp returns correct levels", () => {
       expect(getLevelFromXp(0)).toBe(1);
       expect(getLevelFromXp(1154)).toBe(10);
       expect(getLevelFromXp(1155)).toBe(10); // Just over level 10
@@ -1284,19 +1343,19 @@ describe('OSRS Data Validation', () => {
     });
   });
 
-  describe('Tree data validation', () => {
-    test('all trees have required properties', () => {
-      Object.values(TREES).forEach(tree => {
-        expect(tree).toHaveProperty('id');
-        expect(tree).toHaveProperty('name');
-        expect(tree).toHaveProperty('level');
-        expect(tree).toHaveProperty('xp');
-        expect(tree).toHaveProperty('respawnTicks');
-        expect(tree).toHaveProperty('depletionChance');
+  describe("Tree data validation", () => {
+    test("all trees have required properties", () => {
+      Object.values(TREES).forEach((tree) => {
+        expect(tree).toHaveProperty("id");
+        expect(tree).toHaveProperty("name");
+        expect(tree).toHaveProperty("level");
+        expect(tree).toHaveProperty("xp");
+        expect(tree).toHaveProperty("respawnTicks");
+        expect(tree).toHaveProperty("depletionChance");
       });
     });
 
-    test('tree XP values match OSRS Wiki', () => {
+    test("tree XP values match OSRS Wiki", () => {
       expect(TREES.NORMAL.xp).toBe(25);
       expect(TREES.OAK.xp).toBe(37.5);
       expect(TREES.WILLOW.xp).toBe(67.5);
@@ -1304,15 +1363,15 @@ describe('OSRS Data Validation', () => {
     });
   });
 
-  describe('Cooking data validation', () => {
-    test('cooking XP values match OSRS Wiki', () => {
+  describe("Cooking data validation", () => {
+    test("cooking XP values match OSRS Wiki", () => {
       expect(COOKABLE_ITEMS.SHRIMPS.xp).toBe(30);
       expect(COOKABLE_ITEMS.TROUT.xp).toBe(70);
       expect(COOKABLE_ITEMS.LOBSTER.xp).toBe(120);
       expect(COOKABLE_ITEMS.SWORDFISH.xp).toBe(140);
     });
 
-    test('burn stop levels are correct', () => {
+    test("burn stop levels are correct", () => {
       expect(COOKABLE_ITEMS.SHRIMPS.burnStopLevel).toBe(34);
       expect(COOKABLE_ITEMS.TROUT.burnStopLevel).toBe(49);
       expect(COOKABLE_ITEMS.LOBSTER.burnStopLevel).toBe(74);
@@ -1330,69 +1389,98 @@ describe('OSRS Data Validation', () => {
 **File:** `WoodcuttingSystem.ts`
 
 ```typescript
-import { defineQuery, defineSystem, enterQuery, exitQuery, World } from 'bitecs';
-import { 
-  GatheringActionComponent, 
-  ResourceNodeComponent, 
+import {
+  defineQuery,
+  defineSystem,
+  enterQuery,
+  exitQuery,
+  World,
+} from "bitecs";
+import {
+  GatheringActionComponent,
+  ResourceNodeComponent,
   SkillDataComponent,
   Position,
-  InventoryComponent 
-} from '../components';
-import { TREES, SkillType, ResourceType, TOOL_EFFECTIVENESS, getLevelFromXp } from '@runerogue/osrs-data';
+  InventoryComponent,
+} from "../components";
+import {
+  TREES,
+  SkillType,
+  ResourceType,
+  TOOL_EFFECTIVENESS,
+  getLevelFromXp,
+} from "@runerogue/osrs-data";
 
 /**
  * Handles woodcutting actions with OSRS-authentic mechanics
  * Based on: https://oldschool.runescape.wiki/w/Woodcutting
  */
 export class WoodcuttingSystem {
-  private actionQuery = defineQuery([GatheringActionComponent, Position, SkillDataComponent, InventoryComponent]);
+  private actionQuery = defineQuery([
+    GatheringActionComponent,
+    Position,
+    SkillDataComponent,
+    InventoryComponent,
+  ]);
   private treeQuery = defineQuery([ResourceNodeComponent, Position]);
-  
+
   update(world: World): void {
     const currentTick = world.time.tick;
-    
+
     // Process all entities with woodcutting actions
     const actionEntities = this.actionQuery(world);
-    
+
     for (const entity of actionEntities) {
-      if (GatheringActionComponent.actionType[entity] !== SkillType.WOODCUTTING) {
+      if (
+        GatheringActionComponent.actionType[entity] !== SkillType.WOODCUTTING
+      ) {
         continue;
       }
-      
+
       // Check if it's time to process this action
       if (currentTick < GatheringActionComponent.nextActionTick[entity]) {
         continue;
       }
-      
+
       this.processWoodcuttingAction(world, entity, currentTick);
     }
-    
+
     // Process tree respawning
     this.processTreeRespawns(world, currentTick);
   }
-  
-  private processWoodcuttingAction(world: World, entity: number, currentTick: number): void {
+
+  private processWoodcuttingAction(
+    world: World,
+    entity: number,
+    currentTick: number,
+  ): void {
     const targetTree = GatheringActionComponent.targetEntity[entity];
-    
+
     // Validate tree still exists and is not depleted
-    if (!ResourceNodeComponent.resourceType[targetTree] || 
-        ResourceNodeComponent.isDepleted[targetTree]) {
+    if (
+      !ResourceNodeComponent.resourceType[targetTree] ||
+      ResourceNodeComponent.isDepleted[targetTree]
+    ) {
       // Tree is gone or depleted, cancel action
       this.cancelWoodcuttingAction(world, entity);
       return;
     }
-    
+
     // Get player data
     const wcLevel = getLevelFromXp(SkillDataComponent.woodcuttingXp[entity]);
     const treeLevel = ResourceNodeComponent.requiredLevel[targetTree];
-    
+
     // Check level requirement
     if (wcLevel < treeLevel) {
       this.cancelWoodcuttingAction(world, entity);
-      this.sendMessage(world, entity, "You need a Woodcutting level of " + treeLevel + " to chop this tree.");
+      this.sendMessage(
+        world,
+        entity,
+        "You need a Woodcutting level of " + treeLevel + " to chop this tree.",
+      );
       return;
     }
-    
+
     // Check if player has required tool (axe)
     const axeType = this.getBestAxe(world, entity, wcLevel);
     if (!axeType) {
@@ -1400,14 +1488,18 @@ export class WoodcuttingSystem {
       this.sendMessage(world, entity, "You need an axe to chop this tree.");
       return;
     }
-    
+
     // Calculate success chance based on OSRS formula
-    const successRoll = this.calculateWoodcuttingSuccess(wcLevel, treeLevel, axeType);
-    
+    const successRoll = this.calculateWoodcuttingSuccess(
+      wcLevel,
+      treeLevel,
+      axeType,
+    );
+
     if (Math.random() < successRoll) {
       // Success! Give logs and XP
       this.giveWoodcuttingReward(world, entity, targetTree);
-      
+
       // Check for tree depletion
       const depletionChance = ResourceNodeComponent.depletionChance[targetTree];
       if (Math.random() < depletionChance) {
@@ -1415,126 +1507,172 @@ export class WoodcuttingSystem {
         this.cancelWoodcuttingAction(world, entity);
       }
     }
-    
+
     // Schedule next action (4-tick action cycle)
     GatheringActionComponent.nextActionTick[entity] = currentTick + 4;
   }
-  
-  private calculateWoodcuttingSuccess(wcLevel: number, treeLevel: number, axeType: string): number {
+
+  private calculateWoodcuttingSuccess(
+    wcLevel: number,
+    treeLevel: number,
+    axeType: string,
+  ): number {
     // OSRS woodcutting success formula (simplified)
     // Real formula involves invisible boost rolls
     const baseChance = 0.2; // Base 20% chance
     const levelBonus = (wcLevel - treeLevel) * 0.01; // 1% per level over requirement
     const axeMultiplier = TOOL_EFFECTIVENESS.AXES[axeType]?.speed || 1.0;
-    
+
     return Math.min(0.95, baseChance + levelBonus) * axeMultiplier;
   }
-  
-  private getBestAxe(world: World, entity: number, wcLevel: number): string | null {
+
+  private getBestAxe(
+    world: World,
+    entity: number,
+    wcLevel: number,
+  ): string | null {
     // Check inventory and equipment for best available axe
     // This is simplified - real implementation would check actual inventory
-    const axes = ['rune', 'adamant', 'mithril', 'black', 'steel', 'iron', 'bronze'];
-    
+    const axes = [
+      "rune",
+      "adamant",
+      "mithril",
+      "black",
+      "steel",
+      "iron",
+      "bronze",
+    ];
+
     for (const axe of axes) {
       const requiredLevel = TOOL_EFFECTIVENESS.AXES[axe].level;
-      if (wcLevel >= requiredLevel && this.hasItem(world, entity, axe + '_axe')) {
+      if (
+        wcLevel >= requiredLevel &&
+        this.hasItem(world, entity, axe + "_axe")
+      ) {
         return axe;
       }
     }
-    
+
     return null;
   }
-  
+
   private hasItem(world: World, entity: number, itemId: string): boolean {
     // Simplified inventory check
     // Real implementation would check InventoryComponent slots
     return true; // Assume player has bronze axe for now
   }
-  
-  private giveWoodcuttingReward(world: World, entity: number, treeEntity: number): void {
+
+  private giveWoodcuttingReward(
+    world: World,
+    entity: number,
+    treeEntity: number,
+  ): void {
     // Get tree data
     const treeId = ResourceNodeComponent.resourceId[treeEntity];
-    const tree = Object.values(TREES).find(t => t.id === treeId);
-    
+    const tree = Object.values(TREES).find((t) => t.id === treeId);
+
     if (!tree) return;
-    
+
     // Award XP
     const currentXp = SkillDataComponent.woodcuttingXp[entity];
     const newXp = currentXp + tree.xp;
     SkillDataComponent.woodcuttingXp[entity] = newXp;
-    
+
     // Check for level up
     const oldLevel = getLevelFromXp(currentXp);
     const newLevel = getLevelFromXp(newXp);
-    
+
     if (newLevel > oldLevel) {
       SkillDataComponent.woodcuttingLevel[entity] = newLevel;
-      this.sendMessage(world, entity, `Congratulations! You've reached Woodcutting level ${newLevel}!`);
+      this.sendMessage(
+        world,
+        entity,
+        `Congratulations! You've reached Woodcutting level ${newLevel}!`,
+      );
     }
-    
+
     // Add logs to inventory
     const logItemId = this.getLogItemId(tree.name);
     this.addItemToInventory(world, entity, logItemId, 1);
-    
+
     // Check for beaver pet (1/72,321 chance at level 99)
     this.checkForBeaverPet(world, entity, newLevel);
   }
-  
+
   private getLogItemId(treeName: string): string {
     const logMap = {
-      'Tree': 'logs',
-      'Oak tree': 'oak_logs',
-      'Willow tree': 'willow_logs',
-      'Maple tree': 'maple_logs',
-      'Yew tree': 'yew_logs',
+      Tree: "logs",
+      "Oak tree": "oak_logs",
+      "Willow tree": "willow_logs",
+      "Maple tree": "maple_logs",
+      "Yew tree": "yew_logs",
     };
-    
-    return logMap[treeName] || 'logs';
+
+    return logMap[treeName] || "logs";
   }
-  
-  private addItemToInventory(world: World, entity: number, itemId: string, quantity: number): boolean {
+
+  private addItemToInventory(
+    world: World,
+    entity: number,
+    itemId: string,
+    quantity: number,
+  ): boolean {
     // Simplified inventory addition
     // Real implementation would use InventoryComponent
     console.log(`Adding ${quantity} ${itemId} to player ${entity}`);
     return true;
   }
-  
-  private checkForBeaverPet(world: World, entity: number, wcLevel: number): void {
+
+  private checkForBeaverPet(
+    world: World,
+    entity: number,
+    wcLevel: number,
+  ): void {
     // OSRS beaver pet chance formula
     const baseChance = 72321;
     const levelModifier = wcLevel - 1;
-    const chance = 1 / (baseChance - (levelModifier * 25));
-    
+    const chance = 1 / (baseChance - levelModifier * 25);
+
     if (Math.random() < chance) {
-      this.sendMessage(world, entity, "You have a funny feeling like you're being followed...");
+      this.sendMessage(
+        world,
+        entity,
+        "You have a funny feeling like you're being followed...",
+      );
       // Award beaver pet
     }
   }
-  
-  private depleteTree(world: World, treeEntity: number, currentTick: number): void {
+
+  private depleteTree(
+    world: World,
+    treeEntity: number,
+    currentTick: number,
+  ): void {
     ResourceNodeComponent.isDepleted[treeEntity] = 1;
-    ResourceNodeComponent.currentRespawnTick[treeEntity] = 
+    ResourceNodeComponent.currentRespawnTick[treeEntity] =
       currentTick + ResourceNodeComponent.respawnTicks[treeEntity];
   }
-  
+
   private processTreeRespawns(world: World, currentTick: number): void {
     const trees = this.treeQuery(world);
-    
+
     for (const tree of trees) {
-      if (ResourceNodeComponent.isDepleted[tree] &&
-          currentTick >= ResourceNodeComponent.currentRespawnTick[tree]) {
+      if (
+        ResourceNodeComponent.isDepleted[tree] &&
+        currentTick >= ResourceNodeComponent.currentRespawnTick[tree]
+      ) {
         ResourceNodeComponent.isDepleted[tree] = 0;
         ResourceNodeComponent.currentRespawnTick[tree] = 0;
       }
     }
   }
-  
+
   private cancelWoodcuttingAction(world: World, entity: number): void {
     GatheringActionComponent.actionType[entity] = 0;
     GatheringActionComponent.targetEntity[entity] = 0;
     GatheringActionComponent.nextActionTick[entity] = 0;
   }
-  
+
   private sendMessage(world: World, entity: number, message: string): void {
     // Send message to player through Colyseus or message system
     console.log(`[Player ${entity}] ${message}`);
@@ -1551,18 +1689,23 @@ export const createWoodcuttingSystem = () => new WoodcuttingSystem();
 **File:** `server-ts/src/server/ecs/systems/WoodcuttingSystem.test.ts`
 
 ```typescript
-import { createWorld, addEntity, addComponent } from 'bitecs';
-import { 
-  GatheringActionComponent, 
-  ResourceNodeComponent, 
+import { createWorld, addEntity, addComponent } from "bitecs";
+import {
+  GatheringActionComponent,
+  ResourceNodeComponent,
   SkillDataComponent,
   Position,
-  InventoryComponent 
-} from '../components';
-import { WoodcuttingSystem } from './WoodcuttingSystem';
-import { TREES, SkillType, ResourceType, getXpForLevel } from '@runerogue/osrs-data';
+  InventoryComponent,
+} from "../components";
+import { WoodcuttingSystem } from "./WoodcuttingSystem";
+import {
+  TREES,
+  SkillType,
+  ResourceType,
+  getXpForLevel,
+} from "@runerogue/osrs-data";
 
-describe('WoodcuttingSystem', () => {
+describe("WoodcuttingSystem", () => {
   let world: World;
   let system: WoodcuttingSystem;
   let player: number;
@@ -1572,19 +1715,19 @@ describe('WoodcuttingSystem', () => {
     world = createWorld();
     world.time = { tick: 0 };
     system = new WoodcuttingSystem();
-    
+
     // Create player entity
     player = addEntity(world);
     addComponent(world, GatheringActionComponent, player);
     addComponent(world, SkillDataComponent, player);
     addComponent(world, Position, player);
     addComponent(world, InventoryComponent, player);
-    
+
     // Create tree entity
     tree = addEntity(world);
     addComponent(world, ResourceNodeComponent, tree);
     addComponent(world, Position, tree);
-    
+
     // Setup tree as oak
     ResourceNodeComponent.resourceType[tree] = ResourceType.TREE;
     ResourceNodeComponent.resourceId[tree] = TREES.OAK.id;
@@ -1595,109 +1738,116 @@ describe('WoodcuttingSystem', () => {
     ResourceNodeComponent.isDepleted[tree] = 0;
   });
 
-  describe('Level requirements', () => {
-    test('prevents woodcutting without required level', () => {
+  describe("Level requirements", () => {
+    test("prevents woodcutting without required level", () => {
       // Set player to level 1
       SkillDataComponent.woodcuttingXp[player] = 0;
-      
+
       // Try to cut oak (requires level 15)
       GatheringActionComponent.actionType[player] = SkillType.WOODCUTTING;
       GatheringActionComponent.targetEntity[player] = tree;
       GatheringActionComponent.nextActionTick[player] = 0;
-      
+
       system.update(world);
-      
+
       // Action should be cancelled
       expect(GatheringActionComponent.actionType[player]).toBe(0);
     });
 
-    test('allows woodcutting with required level', () => {
+    test("allows woodcutting with required level", () => {
       // Set player to level 15
       SkillDataComponent.woodcuttingXp[player] = getXpForLevel(15);
-      
+
       // Try to cut oak
       GatheringActionComponent.actionType[player] = SkillType.WOODCUTTING;
       GatheringActionComponent.targetEntity[player] = tree;
       GatheringActionComponent.nextActionTick[player] = 0;
-      
+
       const initialXp = SkillDataComponent.woodcuttingXp[player];
-      
+
       // Mock success
-      jest.spyOn(Math, 'random').mockReturnValue(0.1); // Success roll
-      
+      jest.spyOn(Math, "random").mockReturnValue(0.1); // Success roll
+
       system.update(world);
-      
+
       // Should still be woodcutting (not cancelled)
-      expect(GatheringActionComponent.actionType[player]).toBe(SkillType.WOODCUTTING);
-      
+      expect(GatheringActionComponent.actionType[player]).toBe(
+        SkillType.WOODCUTTING,
+      );
+
       // Should have gained XP
-      expect(SkillDataComponent.woodcuttingXp[player]).toBe(initialXp + TREES.OAK.xp);
+      expect(SkillDataComponent.woodcuttingXp[player]).toBe(
+        initialXp + TREES.OAK.xp,
+      );
     });
   });
 
-  describe('XP and leveling', () => {
-    test('awards correct XP for successful woodcut', () => {
+  describe("XP and leveling", () => {
+    test("awards correct XP for successful woodcut", () => {
       SkillDataComponent.woodcuttingXp[player] = getXpForLevel(15);
-      
+
       GatheringActionComponent.actionType[player] = SkillType.WOODCUTTING;
       GatheringActionComponent.targetEntity[player] = tree;
       GatheringActionComponent.nextActionTick[player] = 0;
-      
+
       const initialXp = SkillDataComponent.woodcuttingXp[player];
-      
-      jest.spyOn(Math, 'random').mockReturnValue(0.1); // Success
-      
+
+      jest.spyOn(Math, "random").mockReturnValue(0.1); // Success
+
       system.update(world);
-      
-      expect(SkillDataComponent.woodcuttingXp[player]).toBe(initialXp + TREES.OAK.xp);
+
+      expect(SkillDataComponent.woodcuttingXp[player]).toBe(
+        initialXp + TREES.OAK.xp,
+      );
     });
 
-    test('updates level when XP threshold is reached', () => {
+    test("updates level when XP threshold is reached", () => {
       // Set to 1 XP below level 16
       const level16Xp = getXpForLevel(16);
       SkillDataComponent.woodcuttingXp[player] = level16Xp - 1;
       SkillDataComponent.woodcuttingLevel[player] = 15;
-      
+
       GatheringActionComponent.actionType[player] = SkillType.WOODCUTTING;
       GatheringActionComponent.targetEntity[player] = tree;
       GatheringActionComponent.nextActionTick[player] = 0;
-      
-      jest.spyOn(Math, 'random').mockReturnValue(0.1); // Success
-      
+
+      jest.spyOn(Math, "random").mockReturnValue(0.1); // Success
+
       system.update(world);
-      
+
       expect(SkillDataComponent.woodcuttingLevel[player]).toBe(16);
     });
   });
 
-  describe('Tree depletion and respawn', () => {
-    test('tree depletes based on depletion chance', () => {
+  describe("Tree depletion and respawn", () => {
+    test("tree depletes based on depletion chance", () => {
       SkillDataComponent.woodcuttingXp[player] = getXpForLevel(15);
-      
+
       GatheringActionComponent.actionType[player] = SkillType.WOODCUTTING;
       GatheringActionComponent.targetEntity[player] = tree;
       GatheringActionComponent.nextActionTick[player] = 0;
-      
-      jest.spyOn(Math, 'random')
+
+      jest
+        .spyOn(Math, "random")
         .mockReturnValueOnce(0.1) // Success roll
         .mockReturnValueOnce(0.1); // Depletion roll (< 0.125)
-      
+
       system.update(world);
-      
+
       expect(ResourceNodeComponent.isDepleted[tree]).toBe(1);
       expect(GatheringActionComponent.actionType[player]).toBe(0); // Action cancelled
     });
 
-    test('depleted trees respawn after timer', () => {
+    test("depleted trees respawn after timer", () => {
       // Deplete tree
       ResourceNodeComponent.isDepleted[tree] = 1;
       ResourceNodeComponent.currentRespawnTick[tree] = 50;
-      
+
       // Advance time but not enough
       world.time.tick = 49;
       system.update(world);
       expect(ResourceNodeComponent.isDepleted[tree]).toBe(1);
-      
+
       // Advance time past respawn
       world.time.tick = 50;
       system.update(world);
@@ -1705,46 +1855,52 @@ describe('WoodcuttingSystem', () => {
     });
   });
 
-  describe('Action timing', () => {
-    test('respects 4-tick action cycle', () => {
+  describe("Action timing", () => {
+    test("respects 4-tick action cycle", () => {
       SkillDataComponent.woodcuttingXp[player] = getXpForLevel(15);
-      
+
       GatheringActionComponent.actionType[player] = SkillType.WOODCUTTING;
       GatheringActionComponent.targetEntity[player] = tree;
       GatheringActionComponent.nextActionTick[player] = 0;
-      
-      jest.spyOn(Math, 'random').mockReturnValue(0.1); // Always success
-      
+
+      jest.spyOn(Math, "random").mockReturnValue(0.1); // Always success
+
       const initialXp = SkillDataComponent.woodcuttingXp[player];
-      
+
       // First action at tick 0
       world.time.tick = 0;
       system.update(world);
-      expect(SkillDataComponent.woodcuttingXp[player]).toBe(initialXp + TREES.OAK.xp);
+      expect(SkillDataComponent.woodcuttingXp[player]).toBe(
+        initialXp + TREES.OAK.xp,
+      );
       expect(GatheringActionComponent.nextActionTick[player]).toBe(4);
-      
+
       // Too early for next action
       world.time.tick = 3;
       system.update(world);
-      expect(SkillDataComponent.woodcuttingXp[player]).toBe(initialXp + TREES.OAK.xp);
-      
+      expect(SkillDataComponent.woodcuttingXp[player]).toBe(
+        initialXp + TREES.OAK.xp,
+      );
+
       // Next action at tick 4
       world.time.tick = 4;
       system.update(world);
-      expect(SkillDataComponent.woodcuttingXp[player]).toBe(initialXp + (TREES.OAK.xp * 2));
+      expect(SkillDataComponent.woodcuttingXp[player]).toBe(
+        initialXp + TREES.OAK.xp * 2,
+      );
     });
   });
 
-  describe('Beaver pet chance', () => {
-    test('has correct drop rate based on level', () => {
+  describe("Beaver pet chance", () => {
+    test("has correct drop rate based on level", () => {
       // This is hard to test due to RNG, but we can verify the calculation
       // At level 99, chance should be 1/72,321
       const checkPetChance = (level: number): number => {
         const baseChance = 72321;
         const levelModifier = level - 1;
-        return 1 / (baseChance - (levelModifier * 25));
+        return 1 / (baseChance - levelModifier * 25);
       };
-      
+
       expect(checkPetChance(1)).toBeCloseTo(1 / 72321);
       expect(checkPetChance(99)).toBeCloseTo(1 / 69871);
     });
@@ -1761,69 +1917,90 @@ describe('WoodcuttingSystem', () => {
 **File:** `MiningSystem.ts`
 
 ```typescript
-import { defineQuery, World } from 'bitecs';
-import { 
-  GatheringActionComponent, 
-  ResourceNodeComponent, 
+import { defineQuery, World } from "bitecs";
+import {
+  GatheringActionComponent,
+  ResourceNodeComponent,
   SkillDataComponent,
   Position,
-  InventoryComponent 
-} from '../components';
-import { ROCKS, SkillType, ResourceType, TOOL_EFFECTIVENESS, getLevelFromXp } from '@runerogue/osrs-data';
+  InventoryComponent,
+} from "../components";
+import {
+  ROCKS,
+  SkillType,
+  ResourceType,
+  TOOL_EFFECTIVENESS,
+  getLevelFromXp,
+} from "@runerogue/osrs-data";
 
 /**
  * Handles mining actions with OSRS-authentic mechanics
  * Based on: https://oldschool.runescape.wiki/w/Mining
  */
 export class MiningSystem {
-  private actionQuery = defineQuery([GatheringActionComponent, Position, SkillDataComponent, InventoryComponent]);
+  private actionQuery = defineQuery([
+    GatheringActionComponent,
+    Position,
+    SkillDataComponent,
+    InventoryComponent,
+  ]);
   private rockQuery = defineQuery([ResourceNodeComponent, Position]);
-  
+
   update(world: World): void {
     const currentTick = world.time.tick;
-    
+
     // Process all entities with mining actions
     const actionEntities = this.actionQuery(world);
-    
+
     for (const entity of actionEntities) {
       if (GatheringActionComponent.actionType[entity] !== SkillType.MINING) {
         continue;
       }
-      
+
       // Check if it's time to process this action
       if (currentTick < GatheringActionComponent.nextActionTick[entity]) {
         continue;
       }
-      
+
       this.processMiningAction(world, entity, currentTick);
     }
-    
+
     // Process rock respawning
     this.processRockRespawns(world, currentTick);
   }
-  
-  private processMiningAction(world: World, entity: number, currentTick: number): void {
+
+  private processMiningAction(
+    world: World,
+    entity: number,
+    currentTick: number,
+  ): void {
     const targetRock = GatheringActionComponent.targetEntity[entity];
-    
+
     // Validate rock still exists and is not depleted
-    if (!ResourceNodeComponent.resourceType[targetRock] || 
-        ResourceNodeComponent.isDepleted[targetRock]) {
+    if (
+      !ResourceNodeComponent.resourceType[targetRock] ||
+      ResourceNodeComponent.isDepleted[targetRock]
+    ) {
       // Rock is gone or depleted, cancel action
       this.cancelMiningAction(world, entity);
       return;
     }
-    
+
     // Get player data
     const miningLevel = getLevelFromXp(SkillDataComponent.miningXp[entity]);
     const rockLevel = ResourceNodeComponent.requiredLevel[targetRock];
-    
+
     // Check level requirement
     if (miningLevel < rockLevel) {
       this.cancelMiningAction(world, entity);
-      this.sendMessage(world, entity, "You need a Mining level of " + rockLevel + " to mine this rock.");
+      this.sendMessage(
+        world,
+        entity,
+        "You need a Mining level of " + rockLevel + " to mine this rock.",
+      );
       return;
     }
-    
+
     // Check if player has required tool (pickaxe)
     const pickaxeType = this.getBestPickaxe(world, entity, miningLevel);
     if (!pickaxeType) {
@@ -1831,14 +2008,18 @@ export class MiningSystem {
       this.sendMessage(world, entity, "You need a pickaxe to mine this rock.");
       return;
     }
-    
+
     // Calculate success chance based on OSRS formula
-    const successRoll = this.calculateMiningSuccess(miningLevel, rockLevel, pickaxeType);
-    
+    const successRoll = this.calculateMiningSuccess(
+      miningLevel,
+      rockLevel,
+      pickaxeType,
+    );
+
     if (Math.random() < successRoll) {
       // Success! Give ore and XP
       this.giveMiningReward(world, entity, targetRock);
-      
+
       // Rocks always deplete in mining (except for some special rocks)
       const depletionChance = ResourceNodeComponent.depletionChance[targetRock];
       if (Math.random() < depletionChance) {
@@ -1846,124 +2027,171 @@ export class MiningSystem {
         this.cancelMiningAction(world, entity);
       }
     }
-    
+
     // Schedule next action (4-tick action cycle)
     GatheringActionComponent.nextActionTick[entity] = currentTick + 4;
   }
-  
-  private calculateMiningSuccess(miningLevel: number, rockLevel: number, pickaxeType: string): number {
+
+  private calculateMiningSuccess(
+    miningLevel: number,
+    rockLevel: number,
+    pickaxeType: string,
+  ): number {
     // OSRS mining success formula
     const baseChance = 0.25; // Base 25% chance
     const levelBonus = (miningLevel - rockLevel) * 0.01;
-    const pickaxeMultiplier = TOOL_EFFECTIVENESS.PICKAXES[pickaxeType]?.speed || 1.0;
-    
+    const pickaxeMultiplier =
+      TOOL_EFFECTIVENESS.PICKAXES[pickaxeType]?.speed || 1.0;
+
     return Math.min(0.95, baseChance + levelBonus) * pickaxeMultiplier;
   }
-  
-  private getBestPickaxe(world: World, entity: number, miningLevel: number): string | null {
+
+  private getBestPickaxe(
+    world: World,
+    entity: number,
+    miningLevel: number,
+  ): string | null {
     // Check inventory and equipment for best available pickaxe
-    const pickaxes = ['rune', 'adamant', 'mithril', 'black', 'steel', 'iron', 'bronze'];
-    
+    const pickaxes = [
+      "rune",
+      "adamant",
+      "mithril",
+      "black",
+      "steel",
+      "iron",
+      "bronze",
+    ];
+
     for (const pickaxe of pickaxes) {
       const requiredLevel = TOOL_EFFECTIVENESS.PICKAXES[pickaxe].level;
-      if (miningLevel >= requiredLevel && this.hasItem(world, entity, pickaxe + '_pickaxe')) {
+      if (
+        miningLevel >= requiredLevel &&
+        this.hasItem(world, entity, pickaxe + "_pickaxe")
+      ) {
         return pickaxe;
       }
     }
-    
+
     return null;
   }
-  
+
   private hasItem(world: World, entity: number, itemId: string): boolean {
     // Simplified inventory check
     return true; // Assume player has bronze pickaxe for now
   }
-  
-  private giveMiningReward(world: World, entity: number, rockEntity: number): void {
+
+  private giveMiningReward(
+    world: World,
+    entity: number,
+    rockEntity: number,
+  ): void {
     // Get rock data
     const rockId = ResourceNodeComponent.resourceId[rockEntity];
-    const rock = Object.values(ROCKS).find(r => r.id === rockId);
-    
+    const rock = Object.values(ROCKS).find((r) => r.id === rockId);
+
     if (!rock) return;
-    
+
     // Award XP
     const currentXp = SkillDataComponent.miningXp[entity];
     const newXp = currentXp + rock.xp;
     SkillDataComponent.miningXp[entity] = newXp;
-    
+
     // Check for level up
     const oldLevel = getLevelFromXp(currentXp);
     const newLevel = getLevelFromXp(newXp);
-    
+
     if (newLevel > oldLevel) {
       SkillDataComponent.miningLevel[entity] = newLevel;
-      this.sendMessage(world, entity, `Congratulations! You've reached Mining level ${newLevel}!`);
+      this.sendMessage(
+        world,
+        entity,
+        `Congratulations! You've reached Mining level ${newLevel}!`,
+      );
     }
-    
+
     // Add ore to inventory
     const oreItemId = this.getOreItemId(rock.name);
     this.addItemToInventory(world, entity, oreItemId, 1);
-    
+
     // Check for rock golem pet (1/244,640 chance at level 99)
     this.checkForRockGolemPet(world, entity, newLevel);
   }
-  
+
   private getOreItemId(rockName: string): string {
     const oreMap = {
-      'Copper rock': 'copper_ore',
-      'Tin rock': 'tin_ore',
-      'Iron rock': 'iron_ore',
-      'Silver rock': 'silver_ore',
-      'Coal rock': 'coal',
-      'Gold rock': 'gold_ore',
+      "Copper rock": "copper_ore",
+      "Tin rock": "tin_ore",
+      "Iron rock": "iron_ore",
+      "Silver rock": "silver_ore",
+      "Coal rock": "coal",
+      "Gold rock": "gold_ore",
     };
-    
-    return oreMap[rockName] || 'copper_ore';
+
+    return oreMap[rockName] || "copper_ore";
   }
-  
-  private addItemToInventory(world: World, entity: number, itemId: string, quantity: number): boolean {
+
+  private addItemToInventory(
+    world: World,
+    entity: number,
+    itemId: string,
+    quantity: number,
+  ): boolean {
     // Simplified inventory addition
     console.log(`Adding ${quantity} ${itemId} to player ${entity}`);
     return true;
   }
-  
-  private checkForRockGolemPet(world: World, entity: number, miningLevel: number): void {
+
+  private checkForRockGolemPet(
+    world: World,
+    entity: number,
+    miningLevel: number,
+  ): void {
     // OSRS rock golem pet chance formula
     const baseChance = 244640;
     const levelModifier = miningLevel - 1;
-    const chance = 1 / (baseChance - (levelModifier * 25));
-    
+    const chance = 1 / (baseChance - levelModifier * 25);
+
     if (Math.random() < chance) {
-      this.sendMessage(world, entity, "You have a funny feeling like you're being followed...");
+      this.sendMessage(
+        world,
+        entity,
+        "You have a funny feeling like you're being followed...",
+      );
       // Award rock golem pet
     }
   }
-  
-  private depleteRock(world: World, rockEntity: number, currentTick: number): void {
+
+  private depleteRock(
+    world: World,
+    rockEntity: number,
+    currentTick: number,
+  ): void {
     ResourceNodeComponent.isDepleted[rockEntity] = 1;
-    ResourceNodeComponent.currentRespawnTick[rockEntity] = 
+    ResourceNodeComponent.currentRespawnTick[rockEntity] =
       currentTick + ResourceNodeComponent.respawnTicks[rockEntity];
   }
-  
+
   private processRockRespawns(world: World, currentTick: number): void {
     const rocks = this.rockQuery(world);
-    
+
     for (const rock of rocks) {
-      if (ResourceNodeComponent.resourceType[rock] === ResourceType.ROCK &&
-          ResourceNodeComponent.isDepleted[rock] &&
-          currentTick >= ResourceNodeComponent.currentRespawnTick[rock]) {
+      if (
+        ResourceNodeComponent.resourceType[rock] === ResourceType.ROCK &&
+        ResourceNodeComponent.isDepleted[rock] &&
+        currentTick >= ResourceNodeComponent.currentRespawnTick[rock]
+      ) {
         ResourceNodeComponent.isDepleted[rock] = 0;
         ResourceNodeComponent.currentRespawnTick[rock] = 0;
       }
     }
   }
-  
+
   private cancelMiningAction(world: World, entity: number): void {
     GatheringActionComponent.actionType[entity] = 0;
     GatheringActionComponent.targetEntity[entity] = 0;
     GatheringActionComponent.nextActionTick[entity] = 0;
   }
-  
+
   private sendMessage(world: World, entity: number, message: string): void {
     // Send message to player through Colyseus or message system
     console.log(`[Player ${entity}] ${message}`);
@@ -1983,12 +2211,12 @@ export const createMiningSystem = () => new MiningSystem();
 
 ```typescript
 import { defineQuery, World } from 'bitecs';
-import { 
-  GatheringActionComponent, 
-  ResourceNodeComponent, 
+import {
+  GatheringActionComponent,
+  ResourceNodeComponent,
   SkillDataComponent,
   Position,
-  InventoryComponent 
+  InventoryComponent
 } from '../components';
 import { FISHING_SPOTS, SkillType, ResourceType, getLevelFromXp } from '@runerogue/osrs-data';
 
@@ -1999,116 +2227,116 @@ import { FISHING_SPOTS, SkillType, ResourceType, getLevelFromXp } from '@runerog
 export class FishingSystem {
   private actionQuery = defineQuery([GatheringActionComponent, Position, SkillDataComponent, InventoryComponent]);
   private fishingSpotQuery = defineQuery([ResourceNodeComponent, Position]);
-  
+
   update(world: World): void {
     const currentTick = world.time.tick;
-    
+
     // Process all entities with fishing actions
     const actionEntities = this.actionQuery(world);
-    
+
     for (const entity of actionEntities) {
       if (GatheringActionComponent.actionType[entity] !== SkillType.FISHING) {
         continue;
       }
-      
+
       // Check if it's time to process this action
       if (currentTick < GatheringActionComponent.nextActionTick[entity]) {
         continue;
       }
-      
+
       this.processFishingAction(world, entity, currentTick);
     }
-    
+
     // Process fishing spot movements (they can randomly move)
     this.processFishingSpotMovements(world, currentTick);
   }
-  
+
   private processFishingAction(world: World, entity: number, currentTick: number): void {
     const targetSpot = GatheringActionComponent.targetEntity[entity];
-    
+
     // Validate fishing spot still exists
     if (!ResourceNodeComponent.resourceType[targetSpot]) {
       this.cancelFishingAction(world, entity);
       return;
     }
-    
+
     // Get player data
     const fishingLevel = getLevelFromXp(SkillDataComponent.fishingXp[entity]);
-    
+
     // Get fishing spot data and method
     const spotId = ResourceNodeComponent.resourceId[targetSpot];
     const fishingSpot = Object.values(FISHING_SPOTS).find(s => s.id === spotId);
-    
+
     if (!fishingSpot) {
       this.cancelFishingAction(world, entity);
       return;
     }
-    
+
     // Determine which fishing method is being used (simplified - would check action subtype)
     const fishingMethod = this.getFishingMethod(world, entity, fishingSpot);
-    
+
     if (!fishingMethod) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, "You don't have the required items to fish here.");
       return;
     }
-    
+
     // Check level requirement
     if (fishingLevel < fishingMethod.level) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, `You need a Fishing level of ${fishingMethod.level} to fish here.`);
       return;
     }
-    
+
     // Check for required tool and bait
     if (!this.hasItem(world, entity, fishingMethod.tool)) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, `You need a ${fishingMethod.tool.replace('_', ' ')} to fish here.`);
       return;
     }
-    
+
     if (fishingMethod.bait && !this.hasItem(world, entity, fishingMethod.bait)) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, `You need ${fishingMethod.bait.replace('_', ' ')} to fish here.`);
       return;
     }
-    
+
     // Calculate success chance
     const successRoll = this.calculateFishingSuccess(fishingLevel, fishingMethod.level);
-    
+
     if (Math.random() < successRoll) {
       // Success! Determine which fish was caught
       const caughtFish = this.determineCaughtFish(fishingLevel, fishingMethod.fish);
-      
+
       if (caughtFish) {
         this.giveFishingReward(world, entity, caughtFish, fishingMethod);
-        
+
         // Consume bait if required
         if (fishingMethod.bait) {
           this.removeItemFromInventory(world, entity, fishingMethod.bait, 1);
         }
       }
     }
-    
+
     // Schedule next action (5-tick action cycle for fishing)
     GatheringActionComponent.nextActionTick[entity] = currentTick + 5;
   }
-  
+
   private getFishingMethod(world: World, entity: number, fishingSpot: any): any {
     // Simplified - would check which option player selected
     // For now, return the first available method
     const methods = Object.values(fishingSpot.options);
     return methods[0];
   }
-  
+
   private calculateFishingSuccess(fishingLevel: number, requiredLevel: number): number {
     // OSRS fishing success formula
     const baseChance = 0.3; // Base 30% chance
     const levelBonus = (fishingLevel - requiredLevel) * 0.01;
-    
+
     return Math.min(0.95, baseChance + levelBonus);
   }
-  
+
   private determineCaughtFish(fishingLevel: number, availableFish: string[]): string | null {
     // Filter fish by level requirement and randomly select one
     // In OSRS, higher level fish have lower catch rates
@@ -2116,53 +2344,53 @@ export class FishingSystem {
       // Check if player has level for this fish
       return true; // Simplified
     });
-    
+
     if (catchableFish.length === 0) return null;
-    
+
     // Weighted selection based on fish type
     return catchableFish[Math.floor(Math.random() * catchableFish.length)];
   }
-  
+
   private giveFishingReward(world: World, entity: number, fishType: string, fishingMethod: any): void {
     // Award XP
     const xpReward = fishingMethod.xp[fishType] || 10;
     const currentXp = SkillDataComponent.fishingXp[entity];
     const newXp = currentXp + xpReward;
     SkillDataComponent.fishingXp[entity] = newXp;
-    
+
     // Check for level up
     const oldLevel = getLevelFromXp(currentXp);
     const newLevel = getLevelFromXp(newXp);
-    
+
     if (newLevel > oldLevel) {
       SkillDataComponent.fishingLevel[entity] = newLevel;
       this.sendMessage(world, entity, `Congratulations! You've reached Fishing level ${newLevel}!`);
     }
-    
+
     // Add fish to inventory
     const fishItemId = `raw_${fishType}`;
     this.addItemToInventory(world, entity, fishItemId, 1);
-    
+
     // Check for heron pet (1/128,456 chance at level 99)
     this.checkForHeronPet(world, entity, newLevel);
   }
-  
+
   private checkForHeronPet(world: World, entity: number, fishingLevel: number): void {
     // OSRS heron pet chance formula
     const baseChance = 128456;
     const levelModifier = fishingLevel - 1;
     const chance = 1 / (baseChance - (levelModifier * 25));
-    
+
     if (Math.random() < chance) {
       this.sendMessage(world, entity, "You have a funny feeling like you're being followed...");
       // Award heron pet
     }
   }
-  
+
   private processFishingSpotMovements(world: World, currentTick: number): void {
     // Fishing spots can randomly move in OSRS
     const spots = this.fishingSpotQuery(world);
-    
+
     for (const spot of spots) {
       if (ResourceNodeComponent.resourceType[spot] === ResourceType.FISHING_SPOT) {
         // Small chance to move each tick
@@ -2173,20 +2401,20 @@ export class FishingSystem {
       }
     }
   }
-  
+
   private moveFishingSpot(world: World, spotEntity: number): void {
     // Move fishing spot to a nearby valid water tile
     const currentX = Position.x[spotEntity];
     const currentY = Position.y[spotEntity];
-    
+
     // Random offset within 5 tiles
     const offsetX = Math.floor(Math.random() * 11) - 5;
     const offsetY = Math.floor(Math.random() * 11) - 5;
-    
+
     // Validate new position is water (simplified)
     Position.x[spotEntity] = currentX + offsetX;
     Position.y[spotEntity] = currentY + offsetY;
-    
+
     // Cancel any players fishing at this spot
     const players = this.actionQuery(world);
     for (const player of players) {
@@ -2196,32 +2424,32 @@ export class FishingSystem {
       }
     }
   }
-  
+
   private hasItem(world: World, entity: number, itemId: string): boolean {
     // Simplified inventory check
     return true;
   }
-  
+
   private addItemToInventory(world: World, entity: number, itemId: string, quantity: number): boolean {
     console.log(`Adding ${quantity} ${itemId} to player ${entity}`);
     return true;
   }
-  
+
   private removeItemFromInventory(world: World, entity: number, itemId: string, quantity: number): boolean {
     console.log(`Removing ${quantity} ${itemId} from player ${entity}`);
     return true;
   }
-  
+
   private cancelFishingAction(world: World, entity: number): void {
     GatheringActionComponent.actionType[entity] = 0;
     GatheringActionComponent.targetEntity[entity] = 0;
     GatheringActionComponent.nextActionTick[entity] =import { defineQuery, World } from 'bitecs';
-import { 
-  GatheringActionComponent, 
-  ResourceNodeComponent, 
+import {
+  GatheringActionComponent,
+  ResourceNodeComponent,
   SkillDataComponent,
   Position,
-  InventoryComponent 
+  InventoryComponent
 } from '../components';
 import { FISHING_SPOTS, SkillType, ResourceType, getLevelFromXp } from '@runerogue/osrs-data';
 
@@ -2232,116 +2460,116 @@ import { FISHING_SPOTS, SkillType, ResourceType, getLevelFromXp } from '@runerog
 export class FishingSystem {
   private actionQuery = defineQuery([GatheringActionComponent, Position, SkillDataComponent, InventoryComponent]);
   private fishingSpotQuery = defineQuery([ResourceNodeComponent, Position]);
-  
+
   update(world: World): void {
     const currentTick = world.time.tick;
-    
+
     // Process all entities with fishing actions
     const actionEntities = this.actionQuery(world);
-    
+
     for (const entity of actionEntities) {
       if (GatheringActionComponent.actionType[entity] !== SkillType.FISHING) {
         continue;
       }
-      
+
       // Check if it's time to process this action
       if (currentTick < GatheringActionComponent.nextActionTick[entity]) {
         continue;
       }
-      
+
       this.processFishingAction(world, entity, currentTick);
     }
-    
+
     // Process fishing spot movements (they can randomly move)
     this.processFishingSpotMovements(world, currentTick);
   }
-  
+
   private processFishingAction(world: World, entity: number, currentTick: number): void {
     const targetSpot = GatheringActionComponent.targetEntity[entity];
-    
+
     // Validate fishing spot still exists
     if (!ResourceNodeComponent.resourceType[targetSpot]) {
       this.cancelFishingAction(world, entity);
       return;
     }
-    
+
     // Get player data
     const fishingLevel = getLevelFromXp(SkillDataComponent.fishingXp[entity]);
-    
+
     // Get fishing spot data and method
     const spotId = ResourceNodeComponent.resourceId[targetSpot];
     const fishingSpot = Object.values(FISHING_SPOTS).find(s => s.id === spotId);
-    
+
     if (!fishingSpot) {
       this.cancelFishingAction(world, entity);
       return;
     }
-    
+
     // Determine which fishing method is being used (simplified - would check action subtype)
     const fishingMethod = this.getFishingMethod(world, entity, fishingSpot);
-    
+
     if (!fishingMethod) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, "You don't have the required items to fish here.");
       return;
     }
-    
+
     // Check level requirement
     if (fishingLevel < fishingMethod.level) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, `You need a Fishing level of ${fishingMethod.level} to fish here.`);
       return;
     }
-    
+
     // Check for required tool and bait
     if (!this.hasItem(world, entity, fishingMethod.tool)) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, `You need a ${fishingMethod.tool.replace('_', ' ')} to fish here.`);
       return;
     }
-    
+
     if (fishingMethod.bait && !this.hasItem(world, entity, fishingMethod.bait)) {
       this.cancelFishingAction(world, entity);
       this.sendMessage(world, entity, `You need ${fishingMethod.bait.replace('_', ' ')} to fish here.`);
       return;
     }
-    
+
     // Calculate success chance
     const successRoll = this.calculateFishingSuccess(fishingLevel, fishingMethod.level);
-    
+
     if (Math.random() < successRoll) {
       // Success! Determine which fish was caught
       const caughtFish = this.determineCaughtFish(fishingLevel, fishingMethod.fish);
-      
+
       if (caughtFish) {
         this.giveFishingReward(world, entity, caughtFish, fishingMethod);
-        
+
         // Consume bait if required
         if (fishingMethod.bait) {
           this.removeItemFromInventory(world, entity, fishingMethod.bait, 1);
         }
       }
     }
-    
+
     // Schedule next action (5-tick action cycle for fishing)
     GatheringActionComponent.nextActionTick[entity] = currentTick + 5;
   }
-  
+
   private getFishingMethod(world: World, entity: number, fishingSpot: any): any {
     // Simplified - would check which option player selected
     // For now, return the first available method
     const methods = Object.values(fishingSpot.options);
     return methods[0];
   }
-  
+
   private calculateFishingSuccess(fishingLevel: number, requiredLevel: number): number {
     // OSRS fishing success formula
     const baseChance = 0.3; // Base 30% chance
     const levelBonus = (fishingLevel - requiredLevel) * 0.01;
-    
+
     return Math.min(0.95, baseChance + levelBonus);
   }
-  
+
   private determineCaughtFish(fishingLevel: number, availableFish: string[]): string | null {
     // Filter fish by level requirement and randomly select one
     // In OSRS, higher level fish have lower catch rates
@@ -2349,53 +2577,53 @@ export class FishingSystem {
       // Check if player has level for this fish
       return true; // Simplified
     });
-    
+
     if (catchableFish.length === 0) return null;
-    
+
     // Weighted selection based on fish type
     return catchableFish[Math.floor(Math.random() * catchableFish.length)];
   }
-  
+
   private giveFishingReward(world: World, entity: number, fishType: string, fishingMethod: any): void {
     // Award XP
     const xpReward = fishingMethod.xp[fishType] || 10;
     const currentXp = SkillDataComponent.fishingXp[entity];
     const newXp = currentXp + xpReward;
     SkillDataComponent.fishingXp[entity] = newXp;
-    
+
     // Check for level up
     const oldLevel = getLevelFromXp(currentXp);
     const newLevel = getLevelFromXp(newXp);
-    
+
     if (newLevel > oldLevel) {
       SkillDataComponent.fishingLevel[entity] = newLevel;
       this.sendMessage(world, entity, `Congratulations! You've reached Fishing level ${newLevel}!`);
     }
-    
+
     // Add fish to inventory
     const fishItemId = `raw_${fishType}`;
     this.addItemToInventory(world, entity, fishItemId, 1);
-    
+
     // Check for heron pet (1/128,456 chance at level 99)
     this.checkForHeronPet(world, entity, newLevel);
   }
-  
+
   private checkForHeronPet(world: World, entity: number, fishingLevel: number): void {
     // OSRS heron pet chance formula
     const baseChance = 128456;
     const levelModifier = fishingLevel - 1;
     const chance = 1 / (baseChance - (levelModifier * 25));
-    
+
     if (Math.random() < chance) {
       this.sendMessage(world, entity, "You have a funny feeling like you're being followed...");
       // Award heron pet
     }
   }
-  
+
   private processFishingSpotMovements(world: World, currentTick: number): void {
     // Fishing spots can randomly move in OSRS
     const spots = this.fishingSpotQuery(world);
-    
+
     for (const spot of spots) {
       if (ResourceNodeComponent.resourceType[spot] === ResourceType.FISHING_SPOT) {
         // Small chance to move each tick
@@ -2406,20 +2634,20 @@ export class FishingSystem {
       }
     }
   }
-  
+
   private moveFishingSpot(world: World, spotEntity: number): void {
     // Move fishing spot to a nearby valid water tile
     const currentX = Position.x[spotEntity];
     const currentY = Position.y[spotEntity];
-    
+
     // Random offset within 5 tiles
     const offsetX = Math.floor(Math.random() * 11) - 5;
     const offsetY = Math.floor(Math.random() * 11) - 5;
-    
+
     // Validate new position is water (simplified)
     Position.x[spotEntity] = currentX + offsetX;
     Position.y[spotEntity] = currentY + offsetY;
-    
+
     // Cancel any players fishing at this spot
     const players = this.actionQuery(world);
     for (const player of players) {
@@ -2429,22 +2657,22 @@ export class FishingSystem {
       }
     }
   }
-  
+
   private hasItem(world: World, entity: number, itemId: string): boolean {
     // Simplified inventory check
     return true;
   }
-  
+
   private addItemToInventory(world: World, entity: number, itemId: string, quantity: number): boolean {
     console.log(`Adding ${quantity} ${itemId} to player ${entity}`);
     return true;
   }
-  
+
   private removeItemFromInventory(world: World, entity: number, itemId: string, quantity: number): boolean {
     console.log(`Removing ${quantity} ${itemId} from player ${entity}`);
     return true;
   }
-  
+
   private cancelFishingAction(world: World, entity: number): void {
     GatheringActionComponent.actionType[entity] = 0;
     GatheringActionComponent.targetEntity[entity] = 0;
@@ -2452,3 +2680,4 @@ export class FishingSystem {
 
 ---
 
+```

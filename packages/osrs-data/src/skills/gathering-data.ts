@@ -602,12 +602,12 @@ export const FISH = {
 export function getEffectiveTool(
   tools: Record<string, any>,
   playerLevel: number,
-  playerId?: any
+  playerId?: any,
 ): any | null {
   // For now, return the most appropriate tool for the level
   // In full implementation, check player's inventory
   const availableTools = Object.values(tools).filter(
-    (tool: any) => tool.level <= playerLevel
+    (tool: any) => tool.level <= playerLevel,
   );
   if (availableTools.length === 0) return null;
   // Direct tool selection based on level ranges for test consistency
@@ -666,7 +666,7 @@ export function getEffectiveTool(
     // Prefer Bronze tools (level 1-5)
     console.log(`Debug: Looking for Bronze in level ${playerLevel}`);
     const bronzeFound = availableTools.find((tool) =>
-      tool.name.includes("Bronze")
+      tool.name.includes("Bronze"),
     );
     console.log(`Debug: Bronze found:`, bronzeFound?.name);
     return (
@@ -686,7 +686,7 @@ export function getEffectiveTool(
 export function calculateWoodcuttingSuccess(
   playerLevel: number,
   treeLevel: number,
-  toolEffectiveness: number
+  toolEffectiveness: number,
 ): number {
   // OSRS formula: Base chance + level difference + tool bonus
   const baseChance = 0.5;
@@ -709,7 +709,7 @@ export function calculateWoodcuttingSuccess(
 export function calculateMiningSuccess(
   playerLevel: number,
   rockLevel: number,
-  toolEffectiveness: number
+  toolEffectiveness: number,
 ): number {
   // Similar to woodcutting but with different base rates
   const baseChance = 0.4;
@@ -729,7 +729,7 @@ export function calculateMiningSuccess(
  */
 export function calculateFishingSuccess(
   playerLevel: number,
-  fishLevel: number
+  fishLevel: number,
 ): number {
   const baseChance = 0.3;
   const levelBonus = (playerLevel - fishLevel) * 0.02;
@@ -745,7 +745,7 @@ export function calculateFishingSuccess(
 export function calculateCookingSuccess(
   cookingLevel: number,
   foodLevel: number,
-  toolEffectiveness: number = 1.0
+  toolEffectiveness: number = 1.0,
 ): number {
   const levelDifference = cookingLevel - foodLevel;
   let baseChance = 0.5 + levelDifference * 0.02;
@@ -764,7 +764,7 @@ export function calculateBurnChance(
   foodLevel: number,
   burnStopLevel: number,
   isRange: boolean = false,
-  hasCookingGauntlets: boolean = false
+  hasCookingGauntlets: boolean = false,
 ): number {
   // No burning after burn stop level
   if (cookingLevel >= burnStopLevel) return 0;
@@ -787,7 +787,7 @@ export function calculateBurnChance(
 export function calculateFiremakingSuccess(
   firemakingLevel: number,
   logLevel: number,
-  toolEffectiveness: number = 1.0
+  toolEffectiveness: number = 1.0,
 ): number {
   const levelDifference = firemakingLevel - logLevel;
   let baseChance = 0.6 + levelDifference * 0.03;

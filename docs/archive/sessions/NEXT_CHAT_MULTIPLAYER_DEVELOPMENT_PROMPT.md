@@ -147,7 +147,7 @@ server-ts/
      "player_move",
      (client, data: { x: number; y: number; direction: string }) => {
        this.validateAndApplyMovement(client.sessionId, data);
-     }
+     },
    );
    ```
 

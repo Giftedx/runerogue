@@ -24,96 +24,97 @@ Looking at your VS Code settings, I can see several issues and improvements that
 
 Here are the corrections and improvements for your VS Code settings:
 
-````jsonc
+```jsonc
 {
-    // Editor settings - Enhanced for AI assistance
-    // ...existing code...
-    
-    // GitHub Copilot Advanced Settings - Enhanced
-    "github.copilot.advanced": {
-        "authProvider": "github",
-        "useLanguageServer": true,
-        "authPermissions": "default",
-        // Remove invalid model override - this doesn't exist
-        // "debug.overrideEngine": "gpt-4.5-preview",
-        "debug.testOverrideProxyUrl": "",
-        "debug.overrideProxyUrl": "",
-        "listCount": 10,
-        "inlineSuggestCount": 5,
-        "length": 500,
-        "temperature": 0.1
-    },
-    
-    // GitHub Copilot Chat Settings - Enhanced
-    "github.copilot.chat.localeOverride": "en",
-    // Fix model names - these are the correct identifiers
-    "github.copilot.chat.defaultModel": "gpt-4o",
-    "github.copilot.chat.preferredModels": {
-        "chat": "gpt-4o",
-        "code": "gpt-4",
-        "explain": "gpt-4",
-        "refactor": "gpt-4",
-        "test": "gpt-4o",
-        "docs": "gpt-4"
-    },
-    // ...existing code...
-    
-    // Remove non-existent experimental features
-    // These don't exist in current VS Code:
-    // "github.copilot.experimental.enableCodeRefinement": true,
-    // "github.copilot.experimental.enableAutoDebug": true,
-    // "github.copilot.experimental.enableTestGeneration": true,
-    // "github.copilot.experimental.enableDocGeneration": true,
-    // "github.copilot.experimental.enableRefactorSuggestions": true,
-    // "github.copilot.experimental.enablePerformanceInsights": true,
-    
-    // Remove non-existent AI assistant settings
-    // "aiAssistant.enableAutoComplete": true,
-    // "aiAssistant.enableContextualSuggestions": true,
-    // "aiAssistant.enableSemanticHighlighting": true,
-    
-    // ...existing code...
-    
-    // Fix GitLens AI model reference
-    "gitlens.ai.model": "vscode",
-    "gitlens.ai.vscode.model": "copilot:gpt-4o",
-    
-    // ...existing code...
-    
-    // Fix TypeScript SDK path for workspace
-    "typescript.tsdk": "./node_modules/typescript/lib",
-    
-    // ...existing code...
-    
-    // Add proper workspace settings for RuneRogue
-    "files.associations": {
-        "*.osrs": "typescript",
-        "*.ecs": "typescript",
-        "*.colyseus": "typescript"
-    },
-    
-    // Update search excludes for RuneRogue
-    "search.exclude": {
-        "**/node_modules": true,
-        "**/dist": true,
-        "**/coverage": true,
-        "**/.turbo": true,
-        "**/build": true,
-        "**/packages/*/dist": true,
-        "**/packages/*/build": true,
-        "**/.next": true
-    },
-    
-    // ...existing code...
-    
-    // Remove duplicate typescript.enablePromptUseWorkspaceTsdk
-    // (it appears twice in your config)
-    
-    // ...existing code...
+  // Editor settings - Enhanced for AI assistance
+  // ...existing code...
+
+  // GitHub Copilot Advanced Settings - Enhanced
+  "github.copilot.advanced": {
+    "authProvider": "github",
+    "useLanguageServer": true,
+    "authPermissions": "default",
+    // Remove invalid model override - this doesn't exist
+    // "debug.overrideEngine": "gpt-4.5-preview",
+    "debug.testOverrideProxyUrl": "",
+    "debug.overrideProxyUrl": "",
+    "listCount": 10,
+    "inlineSuggestCount": 5,
+    "length": 500,
+    "temperature": 0.1,
+  },
+
+  // GitHub Copilot Chat Settings - Enhanced
+  "github.copilot.chat.localeOverride": "en",
+  // Fix model names - these are the correct identifiers
+  "github.copilot.chat.defaultModel": "gpt-4o",
+  "github.copilot.chat.preferredModels": {
+    "chat": "gpt-4o",
+    "code": "gpt-4",
+    "explain": "gpt-4",
+    "refactor": "gpt-4",
+    "test": "gpt-4o",
+    "docs": "gpt-4",
+  },
+  // ...existing code...
+
+  // Remove non-existent experimental features
+  // These don't exist in current VS Code:
+  // "github.copilot.experimental.enableCodeRefinement": true,
+  // "github.copilot.experimental.enableAutoDebug": true,
+  // "github.copilot.experimental.enableTestGeneration": true,
+  // "github.copilot.experimental.enableDocGeneration": true,
+  // "github.copilot.experimental.enableRefactorSuggestions": true,
+  // "github.copilot.experimental.enablePerformanceInsights": true,
+
+  // Remove non-existent AI assistant settings
+  // "aiAssistant.enableAutoComplete": true,
+  // "aiAssistant.enableContextualSuggestions": true,
+  // "aiAssistant.enableSemanticHighlighting": true,
+
+  // ...existing code...
+
+  // Fix GitLens AI model reference
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4o",
+
+  // ...existing code...
+
+  // Fix TypeScript SDK path for workspace
+  "typescript.tsdk": "./node_modules/typescript/lib",
+
+  // ...existing code...
+
+  // Add proper workspace settings for RuneRogue
+  "files.associations": {
+    "*.osrs": "typescript",
+    "*.ecs": "typescript",
+    "*.colyseus": "typescript",
+  },
+
+  // Update search excludes for RuneRogue
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.turbo": true,
+    "**/build": true,
+    "**/packages/*/dist": true,
+    "**/packages/*/build": true,
+    "**/.next": true,
+  },
+
+  // ...existing code...
+
+  // Remove duplicate typescript.enablePromptUseWorkspaceTsdk
+  // (it appears twice in your config)
+
+  // ...existing code...
 }
-````
+```
 
 Key issues found:
+
 1. **Invalid model names**: Models like "claude-opus-4", "gpt-4.5-preview", "gemini-2.5-pro" don't exist in GitHub Copilot
 2. **Non-existent settings**: Several experimental features and aiAssistant settings don't exist
 3. **Duplicate settings**: `typescript.enablePromptUseWorkspaceTsdk` appears twice
@@ -122,4 +123,3 @@ Key issues found:
 The settings are mostly correct, but these corrections will prevent errors and improve functionality.
 
 ---
-

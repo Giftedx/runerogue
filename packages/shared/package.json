@@ -9,7 +9,7 @@
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint . \"**/*.ts\"",
     "clean": "rimraf dist"
   },
   "devDependencies": {

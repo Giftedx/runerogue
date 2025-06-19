@@ -86,7 +86,7 @@ class TestPlayer {
 
       this.move(
         Math.max(0, Math.min(30, this.position.x + deltaX)),
-        Math.max(0, Math.min(30, this.position.y + deltaY))
+        Math.max(0, Math.min(30, this.position.y + deltaY)),
       );
 
       this.lastMoveTime = currentTime;

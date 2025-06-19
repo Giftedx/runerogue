@@ -12,7 +12,7 @@ class SpriteAnimationManager {
   /**
    * Create walking animation for sprites
    */
-  createWalkingAnimation(sprite, direction = 'down') {
+  createWalkingAnimation(sprite, direction = "down") {
     const animKey = `walk_${direction}_${sprite.texture.key}`;
 
     if (!this.scene.anims.exists(animKey)) {
@@ -34,7 +34,7 @@ class SpriteAnimationManager {
   /**
    * Create combat animation
    */
-  createCombatAnimation(sprite, type = 'attack') {
+  createCombatAnimation(sprite, type = "attack") {
     const animKey = `combat_${type}_${sprite.texture.key}`;
 
     if (!this.scene.anims.exists(animKey)) {
@@ -68,7 +68,7 @@ class SpriteAnimationManager {
       x: toX,
       y: toY,
       duration: duration,
-      ease: 'Power2',
+      ease: "Power2",
       onComplete: () => {
         sprite.stop(); // Stop animation when movement is done
       },
@@ -79,7 +79,7 @@ class SpriteAnimationManager {
    * Play combat animation with effects
    */
   playCombatAnimation(attacker, target, damage) {
-    const animKey = this.createCombatAnimation(attacker, 'attack');
+    const animKey = this.createCombatAnimation(attacker, "attack");
 
     // Play attack animation
     attacker.play(animKey);
@@ -99,7 +99,7 @@ class SpriteAnimationManager {
       scaleY: 1.3,
       duration: 100,
       yoyo: true,
-      ease: 'Power2',
+      ease: "Power2",
     });
 
     // Hit effect on target
@@ -108,7 +108,7 @@ class SpriteAnimationManager {
       tint: 0xff4444,
       duration: 200,
       yoyo: true,
-      ease: 'Power2',
+      ease: "Power2",
     });
 
     // Create impact particles
@@ -138,7 +138,7 @@ class SpriteAnimationManager {
         alpha: 0,
         scale: 0.1,
         duration: 300,
-        ease: 'Power2',
+        ease: "Power2",
         onComplete: () => particle.destroy(),
       });
     }
@@ -149,10 +149,10 @@ class SpriteAnimationManager {
    */
   createDamageNumber(x, y, damage) {
     const damageText = this.scene.add.text(x, y, `-${damage}`, {
-      fontFamily: 'Arial',
-      fontSize: '18px',
-      color: '#ff0000',
-      stroke: '#ffffff',
+      fontFamily: "Arial",
+      fontSize: "18px",
+      color: "#ff0000",
+      stroke: "#ffffff",
       strokeThickness: 3,
     });
     damageText.setOrigin(0.5);
@@ -164,7 +164,7 @@ class SpriteAnimationManager {
       alpha: 0,
       scale: 1.5,
       duration: 1500,
-      ease: 'Power2',
+      ease: "Power2",
       onComplete: () => damageText.destroy(),
     });
   }
@@ -177,9 +177,9 @@ class SpriteAnimationManager {
     const dy = toY - fromY;
 
     if (Math.abs(dx) > Math.abs(dy)) {
-      return dx > 0 ? 'right' : 'left';
+      return dx > 0 ? "right" : "left";
     } else {
-      return dy > 0 ? 'down' : 'up';
+      return dy > 0 ? "down" : "up";
     }
   }
 }
@@ -211,30 +211,34 @@ class OSRSUIManager {
     chatBg.setDepth(100);
 
     // Chat title
-    const chatTitle = this.scene.add.text(x + 10, y + 5, 'Chat', {
-      fontFamily: 'Arial',
-      fontSize: '14px',
-      color: '#ffff00',
-      fontStyle: 'bold',
+    const chatTitle = this.scene.add.text(x + 10, y + 5, "Chat", {
+      fontFamily: "Arial",
+      fontSize: "14px",
+      color: "#ffff00",
+      fontStyle: "bold",
     });
     chatTitle.setDepth(101);
 
     // Chat messages area
-    this.chatMessages = this.scene.add.text(x + 10, y + 25, '', {
-      fontFamily: 'Arial',
-      fontSize: '12px',
-      color: '#ffffff',
+    this.chatMessages = this.scene.add.text(x + 10, y + 25, "", {
+      fontFamily: "Arial",
+      fontSize: "12px",
+      color: "#ffffff",
       wordWrap: { width: width - 20 },
     });
     this.chatMessages.setDepth(101);
 
-    this.chatBox = { bg: chatBg, title: chatTitle, messages: this.chatMessages };
+    this.chatBox = {
+      bg: chatBg,
+      title: chatTitle,
+      messages: this.chatMessages,
+    };
   }
 
   /**
    * Add message to chat
    */
-  addChatMessage(message, color = '#ffffff') {
+  addChatMessage(message, color = "#ffffff") {
     if (!this.chatBox) this.createChatBox();
 
     const timestamp = new Date().toLocaleTimeString();
@@ -242,7 +246,7 @@ class OSRSUIManager {
 
     // Add new message
     const currentText = this.chatMessages.text;
-    const lines = currentText.split('\n');
+    const lines = currentText.split("\n");
     lines.push(formattedMessage);
 
     // Keep only last 6 lines
@@ -250,7 +254,7 @@ class OSRSUIManager {
       lines.shift();
     }
 
-    this.chatMessages.setText(lines.join('\n'));
+    this.chatMessages.setText(lines.join("\n"));
     this.chatMessages.setColor(color);
   }
 
@@ -269,11 +273,11 @@ class OSRSUIManager {
     minimapBg.setDepth(100);
 
     // Minimap title
-    const minimapTitle = this.scene.add.text(x + 5, y - 20, 'Minimap', {
-      fontFamily: 'Arial',
-      fontSize: '12px',
-      color: '#ffffff',
-      fontStyle: 'bold',
+    const minimapTitle = this.scene.add.text(x + 5, y - 20, "Minimap", {
+      fontFamily: "Arial",
+      fontSize: "12px",
+      color: "#ffffff",
+      fontStyle: "bold",
     });
     minimapTitle.setDepth(101);
 
@@ -288,7 +292,7 @@ class OSRSUIManager {
     if (!this.minimap) this.createMinimap();
 
     // Clear existing dots
-    this.minimapDots.forEach(dot => dot.destroy());
+    this.minimapDots.forEach((dot) => dot.destroy());
     this.minimapDots.clear();
 
     // Add player dots
@@ -322,30 +326,41 @@ class OSRSUIManager {
     const y = 10;
 
     // Stats background
-    const statsBg = this.scene.add.rectangle(x, y, width, height, 0x2d2d2d, 0.9);
+    const statsBg = this.scene.add.rectangle(
+      x,
+      y,
+      width,
+      height,
+      0x2d2d2d,
+      0.9,
+    );
     statsBg.setOrigin(0, 0);
     statsBg.setStrokeStyle(2, 0x666666);
     statsBg.setDepth(100);
 
     // Stats title
-    const statsTitle = this.scene.add.text(x + 10, y + 10, 'Player Stats', {
-      fontFamily: 'Arial',
-      fontSize: '16px',
-      color: '#ffff00',
-      fontStyle: 'bold',
+    const statsTitle = this.scene.add.text(x + 10, y + 10, "Player Stats", {
+      fontFamily: "Arial",
+      fontSize: "16px",
+      color: "#ffff00",
+      fontStyle: "bold",
     });
     statsTitle.setDepth(101);
 
     // Stats content
-    this.statsContent = this.scene.add.text(x + 10, y + 40, '', {
-      fontFamily: 'Arial',
-      fontSize: '12px',
-      color: '#ffffff',
+    this.statsContent = this.scene.add.text(x + 10, y + 40, "", {
+      fontFamily: "Arial",
+      fontSize: "12px",
+      color: "#ffffff",
       lineSpacing: 5,
     });
     this.statsContent.setDepth(101);
 
-    this.statsPanel = { bg: statsBg, title: statsTitle, content: this.statsContent };
+    this.statsPanel = {
+      bg: statsBg,
+      title: statsTitle,
+      content: this.statsContent,
+    };
   }
 
   /**
@@ -359,25 +374,25 @@ class OSRSUIManager {
       `Position: (${playerData.x}, ${playerData.y})`,
       `Level: ${playerData.level || 1}`,
       `Experience: ${playerData.experience || 0}`,
-      '',
-      'Skills:',
+      "",
+      "Skills:",
       `⚔️ Attack: ${playerData.attackLevel || 1}`,
       `🛡️ Defence: ${playerData.defenceLevel || 1}`,
       `💪 Strength: ${playerData.strengthLevel || 1}`,
       `🏹 Ranged: ${playerData.rangedLevel || 1}`,
       `🔮 Magic: ${playerData.magicLevel || 1}`,
-      '',
-      'Equipment:',
-      `Weapon: ${playerData.weapon || 'None'}`,
-      `Armor: ${playerData.armor || 'None'}`,
+      "",
+      "Equipment:",
+      `Weapon: ${playerData.weapon || "None"}`,
+      `Armor: ${playerData.armor || "None"}`,
     ];
 
-    this.statsContent.setText(stats.join('\n'));
+    this.statsContent.setText(stats.join("\n"));
   }
 }
 
 // Export classes for use in main client
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = { SpriteAnimationManager, OSRSUIManager };
 } else {
   window.SpriteAnimationManager = SpriteAnimationManager;

@@ -55,9 +55,11 @@ Based on my analysis, here's the corrected and improved plan:
 # RuneRogue Implementation & Cleanup Plan - CORRECTED VERSION
 
 ## Context
+
 This plan provides a complete roadmap to clean up and implement the remaining features for RuneRogue, an OSRS-inspired multiplayer roguelike survival game. The project uses TypeScript, Phaser 3, Colyseus, and bitECS.
 
 ## Current Project Structure
+
 ```
 runerogue/
 ├── packages/
@@ -77,7 +79,9 @@ runerogue/
 ```
 
 ## Required Reading
+
 Before proceeding, ensure you've reviewed:
+
 - `.github/instructions/core-standards.instructions.md` - OSRS authenticity requirements
 - `.github/instructions/project-overview.instructions.md` - Project concept and phases
 - `.github/instructions/architecture.instructions.md` - Technical architecture
@@ -86,13 +90,16 @@ Before proceeding, ensure you've reviewed:
 ## Current State Analysis
 
 ### ✅ Completed Components
+
 1. **OSRS Data Pipeline** (`packages/osrs-data/`)
+
    - Combat formulas: `calculateAccuracy`, `calculateMaxHit`, `calculateDefenseRoll`
    - XP calculations and level requirements
    - Prayer effects and drain rates
    - Comprehensive test coverage
 
 2. **ECS Architecture** (`server-ts/src/server/ecs/`)
+
    - **Components**: Position, Velocity, Health, Combat, Player, Enemy, Sprite, Name, Room, Target, Projectile, AttackTimer, PrayerTimer, Input
    - **Systems**: MovementSystem, CombatSystem, HealthSystem, InputSystem, SpawnSystem, TargetingSystem, ProjectileSystem, AttackTimerSystem, PrayerSystem, CleanupSystem
 
@@ -105,16 +112,19 @@ Before proceeding, ensure you've reviewed:
 ### 🔧 Critical Issues to Fix
 
 1. **Missing Client-Server Integration**
+
    - Client code in `server-ts/src/client/` is not connected to React app
    - No Colyseus client connection established
    - GameScene exists but isn't integrated
 
 2. **Incomplete State Synchronization**
+
    - GameRoom doesn't properly sync ECS state
    - Missing state schema definitions
    - No proper entity-to-state mapping
 
 3. **No Shared Package**
+
    - Types scattered between server and client
    - Need proper shared types package
    - Network message types undefined
@@ -129,7 +139,7 @@ Before proceeding, ensure you've reviewed:
 ### Phase 1: Project Structure Cleanup (1-2 days)
 
 1. **Create Shared Package**
-   ````typescript
+   ```typescript
    // packages/shared/package.json
    {
      "name": "@runerogue/shared",
@@ -137,10 +147,12 @@ Before proceeding, ensure you've reviewed:
      "main": "dist/index.js",
      "types": "dist/index.d.ts"
    }
-   ````
+   ```
+````
 
 2. **Move and Organize Types**
-   ````typescript
+
+   ```typescript
    // packages/shared/src/types/game.ts
    export interface PlayerState {
      id: string;
@@ -156,7 +168,7 @@ Before proceeding, ensure you've reviewed:
      enemies: Map<string, EnemyState>;
      tick: number;
    }
-   ````
+   ```
 
 3. **Fix Client Integration**
    - Move `server-ts/src/client/` to `client/src/game/`
@@ -166,7 +178,8 @@ Before proceeding, ensure you've reviewed:
 ### Phase 2: State Synchronization (2-3 days)
 
 1. **Define Colyseus Schema**
-   ````typescript
+
+   ```typescript
    // server-ts/src/server/rooms/schema/GameRoomState.ts
    import { Schema, MapSchema, type } from "@colyseus/schema";
 
@@ -183,38 +196,40 @@ Before proceeding, ensure you've reviewed:
      @type({ map: PlayerSchema }) players = new MapSchema<PlayerSchema>();
      @type("number") tick: number = 0;
    }
-   ````
+   ```
 
 2. **Sync ECS to Colyseus State**
-   ````typescript
+
+   ```typescript
    // server-ts/src/server/rooms/GameRoom.ts
    private syncECSToState() {
      // Query all player entities
      const players = this.world.query([Player, Position, Health]);
-     
+
      for (const eid of players) {
        const playerId = this.entityToPlayerId.get(eid);
        if (!playerId) continue;
-       
+
        let playerState = this.state.players.get(playerId);
        if (!playerState) {
          playerState = new PlayerSchema();
          playerState.id = playerId;
          this.state.players.set(playerId, playerState);
        }
-       
+
        playerState.x = Position.x[eid];
        playerState.y = Position.y[eid];
        playerState.health = Health.current[eid];
        playerState.maxHealth = Health.max[eid];
      }
    }
-   ````
+   ```
 
 ### Phase 3: Client Game Integration (3-4 days)
 
 1. **React + Phaser Setup**
-   ````typescript
+
+   ```typescript
    // client/src/components/GameCanvas.tsx
    import React, { useEffect, useRef } from 'react';
    import Phaser from 'phaser';
@@ -239,7 +254,7 @@ Before proceeding, ensure you've reviewed:
        };
 
        gameRef.current = new Phaser.Game(config);
-       
+
        // Pass Colyseus client to game
        gameRef.current.registry.set('colyseusClient', client);
 
@@ -250,18 +265,19 @@ Before proceeding, ensure you've reviewed:
 
      return <div id="game-container" />;
    };
-   ````
+   ```
 
 2. **Connect GameScene to Colyseus**
-   ````typescript
+
+   ```typescript
    // client/src/game/scenes/GameScene.ts
    export class GameScene extends Phaser.Scene {
      private room: Room<GameRoomState>;
      private players: Map<string, Phaser.GameObjects.Sprite> = new Map();
 
      async create() {
-       const client = this.game.registry.get('colyseusClient');
-       
+       const client = this.game.registry.get("colyseusClient");
+
        try {
          this.room = await client.joinOrCreate<GameRoomState>("game_room");
          this.setupRoomListeners();
@@ -272,7 +288,7 @@ Before proceeding, ensure you've reviewed:
 
      private setupRoomListeners() {
        this.room.state.players.onAdd = (player, key) => {
-         const sprite = this.add.sprite(player.x, player.y, 'player');
+         const sprite = this.add.sprite(player.x, player.y, "player");
          this.players.set(key, sprite);
        };
 
@@ -290,59 +306,71 @@ Before proceeding, ensure you've reviewed:
        };
      }
    }
-   ````
+   ```
 
 ### Phase 4: Core Gameplay Features (3-4 days)
 
 1. **Input Handling**
-   ````typescript
+
+   ```typescript
    // client/src/game/systems/InputSystem.ts
    export class InputSystem {
-     constructor(private scene: GameScene, private room: Room) {
+     constructor(
+       private scene: GameScene,
+       private room: Room,
+     ) {
        this.setupInputHandlers();
      }
 
      private setupInputHandlers() {
-       this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+       this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
          if (pointer.isDown) {
-           this.room.send('move', { x: pointer.worldX, y: pointer.worldY });
+           this.room.send("move", { x: pointer.worldX, y: pointer.worldY });
          }
        });
 
-       this.scene.input.keyboard.on('keydown-SPACE', () => {
-         this.room.send('attack');
+       this.scene.input.keyboard.on("keydown-SPACE", () => {
+         this.room.send("attack");
        });
      }
    }
-   ````
+   ```
 
 2. **Combat Visualization**
-   ````typescript
+
+   ```typescript
    // client/src/game/effects/DamageNumbers.ts
    export class DamageNumberPool {
      private pool: Phaser.GameObjects.Text[] = [];
-     
-     showDamage(scene: Phaser.Scene, x: number, y: number, damage: number, type: 'normal' | 'max') {
+
+     showDamage(
+       scene: Phaser.Scene,
+       x: number,
+       y: number,
+       damage: number,
+       type: "normal" | "max",
+     ) {
        const text = this.getFromPool(scene);
        text.setPosition(x, y);
        text.setText(damage.toString());
-       text.setColor(type === 'max' ? '#ff0000' : '#ffffff');
-       
+       text.setColor(type === "max" ? "#ff0000" : "#ffffff");
+
        scene.tweens.add({
          targets: text,
          y: y - 50,
          alpha: 0,
          duration: 1000,
-         onComplete: () => this.returnToPool(text)
+         onComplete: () => this.returnToPool(text),
        });
      }
    }
-   ````
+   ```
 
 ### Phase 5: UI Implementation (2-3 days)
 
 1. **Game HUD Component**
-   ````typescript
+
+   ```typescript
    // client/src/components/game/GameHUD.tsx
    import React from 'react';
    import { useGameState } from '../../hooks/useGameState';
@@ -352,7 +380,7 @@ Before proceeding, ensure you've reviewed:
 
    export const GameHUD: React.FC = () => {
      const { player } = useGameState();
-     
+
      if (!player) return null;
 
      return (
@@ -363,41 +391,42 @@ Before proceeding, ensure you've reviewed:
        </div>
      );
    };
-   ````
+   ```
 
 ### Phase 6: Testing & Polish (2-3 days)
 
 1. **Integration Tests**
-   ````typescript
+
+   ```typescript
    // tests/integration/multiplayer.test.ts
-   describe('Multiplayer Integration', () => {
+   describe("Multiplayer Integration", () => {
      let server: Server;
      let client1: Client;
      let client2: Client;
 
      beforeAll(async () => {
        server = await startTestServer();
-       client1 = new Client('ws://localhost:2567');
-       client2 = new Client('ws://localhost:2567');
+       client1 = new Client("ws://localhost:2567");
+       client2 = new Client("ws://localhost:2567");
      });
 
-     test('players can see each other move', async () => {
-       const room1 = await client1.joinOrCreate('game_room');
-       const room2 = await client2.joinOrCreate('game_room');
-       
+     test("players can see each other move", async () => {
+       const room1 = await client1.joinOrCreate("game_room");
+       const room2 = await client2.joinOrCreate("game_room");
+
        // Client 1 moves
-       room1.send('move', { x: 100, y: 100 });
-       
+       room1.send("move", { x: 100, y: 100 });
+
        // Wait for sync
-       await new Promise(resolve => setTimeout(resolve, 100));
-       
+       await new Promise((resolve) => setTimeout(resolve, 100));
+
        // Client 2 should see the movement
        const player1State = room2.state.players.get(room1.sessionId);
        expect(player1State.x).toBe(100);
        expect(player1State.y).toBe(100);
      });
    });
-   ````
+   ```
 
 ## Key Differences from Original Plan
 
@@ -417,6 +446,7 @@ Before proceeding, ensure you've reviewed:
 6. **Polish and optimize** (Final - after core is working)
 
 ## Success Metrics
+
 - [ ] Players can connect and see each other
 - [ ] Movement is synchronized between clients
 - [ ] Combat calculations use OSRS formulas
@@ -426,6 +456,7 @@ Before proceeding, ensure you've reviewed:
 - [ ] Integration tests pass for multiplayer scenarios
 
 ## Next Immediate Steps
+
 1. Fix GameRoom state synchronization with ECS
 2. Create shared types package
 3. Integrate Phaser client into React app
@@ -433,6 +464,7 @@ Before proceeding, ensure you've reviewed:
 5. Add combat visualization
 
 Remember: Focus on getting basic multiplayer working first. Everything else builds on that foundation.
+
 ````
 
 This corrected plan addresses the actual codebase structure and provides a more realistic implementation path based on what actually exists versus what was assumed in the original plan.
@@ -483,7 +515,7 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
      private currentWave = 1;
      private enemiesPerWave = 5;
      private waveMultiplier = 1.2;
-     
+
      // OSRS-inspired enemy types per wave
      private waveEnemies: Record<number, EnemyType[]> = {
        1: ['chicken', 'rat', 'spider'],
@@ -492,7 +524,7 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
        15: ['hobgoblin', 'hillGiant', 'moss_giant'],
        20: ['lesser_demon', 'greater_demon']
      };
-     
+
      getWaveConfig(waveNumber: number): WaveConfig {
        return {
          enemyCount: Math.floor(this.enemiesPerWave * Math.pow(this.waveMultiplier, waveNumber - 1)),
@@ -512,11 +544,11 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
      quantity: number;
      rarity: 'always' | 'common' | 'uncommon' | 'rare' | 'very_rare';
    }
-   
+
    // server-ts/src/server/ecs/systems/LootSystem.ts
    export class LootSystem {
      private dropTables = new Map<EnemyType, Drop[]>();
-     
+
      constructor() {
        // Chicken drops feathers, bones
        this.dropTables.set('chicken', [
@@ -533,17 +565,17 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
    export class EnhancedPrayerSystem extends System {
      execute(delta: number, world: World) {
        const players = world.query([Player, Prayer, PrayerTimer]);
-       
+
        for (const eid of players) {
          // OSRS-accurate prayer drain (1 point per 3 seconds for protect prayers)
          if (Prayer.active[eid] & PRAYERS.PROTECT_MELEE) {
            PrayerTimer.accumulated[eid] += delta;
-           
+
            // Drain every 3 seconds (5 game ticks at 0.6s per tick)
            if (PrayerTimer.accumulated[eid] >= 3000) {
              Prayer.points[eid] = Math.max(0, Prayer.points[eid] - 1);
              PrayerTimer.accumulated[eid] = 0;
-             
+
              // Prayer flicking reward - restore 1 point if perfectly timed
              if (this.checkPrayerFlick(eid)) {
                Prayer.points[eid] = Math.min(Prayer.level[eid], Prayer.points[eid] + 1);
@@ -564,7 +596,7 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
      private availableEntities: number[] = [];
      private activeEntities = new Set<number>();
      private world: World;
-     
+
      constructor(world: World, poolSize: number = 1000) {
        this.world = world;
        // Pre-allocate entities
@@ -572,13 +604,13 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
          this.availableEntities.push(ecs.addEntity(world));
        }
      }
-     
+
      acquire(): number {
        const eid = this.availableEntities.pop() ?? ecs.addEntity(this.world);
        this.activeEntities.add(eid);
        return eid;
      }
-     
+
      release(eid: number) {
        // Clear all components
        this.clearEntity(eid);
@@ -594,18 +626,18 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
    export class SpatialGrid {
      private grid: Map<string, Set<number>> = new Map();
      private cellSize = 64; // OSRS tile size
-     
+
      updateEntity(eid: number, x: number, y: number, oldX?: number, oldY?: number) {
        if (oldX !== undefined && oldY !== undefined) {
          this.removeFromCell(eid, oldX, oldY);
        }
        this.addToCell(eid, x, y);
      }
-     
+
      getNearbyEntities(x: number, y: number, range: number): number[] {
        const entities: number[] = [];
        const cellRange = Math.ceil(range / this.cellSize);
-       
+
        for (let dx = -cellRange; dx <= cellRange; dx++) {
          for (let dy = -cellRange; dy <= cellRange; dy++) {
            const cell = this.getCell(x + dx * this.cellSize, y + dy * this.cellSize);
@@ -614,7 +646,7 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
            }
          }
        }
-       
+
        return entities;
      }
    }
@@ -627,20 +659,20 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
    // server-ts/src/server/ecs/systems/CombatSystem.ts
    export class TickPerfectCombatSystem extends System {
      private readonly TICK_RATE = 600; // 0.6 seconds per game tick
-     
+
      execute(delta: number, world: World) {
        const attackers = world.query([AttackTimer, Target, Combat, Equipment]);
-       
+
        for (const eid of attackers) {
          AttackTimer.accumulated[eid] += delta;
-         
+
          const weaponSpeed = this.getWeaponSpeed(eid);
          const ticksRequired = weaponSpeed; // 4-tick, 5-tick, etc.
-         
+
          if (AttackTimer.accumulated[eid] >= ticksRequired * this.TICK_RATE) {
            this.performAttack(eid, world);
            AttackTimer.accumulated[eid] = 0;
-           
+
            // Emit attack event for client visualization
            this.emitAttackEvent(eid, Target.id[eid]);
          }
@@ -657,18 +689,18 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
      weaponSpecial: Types.ui8, // Weapon special attack ID
      cooldown: Types.f32
    });
-   
+
    // Dragon dagger special attack
    export function dragonDaggerSpecial(attacker: number, target: number, world: World) {
      // Two instant hits with 15% damage and accuracy boost
      const baseMax = calculateMaxHit(attacker, world);
      const boostedMax = Math.floor(baseMax * 1.15);
-     
+
      // First hit
      const hit1 = calculateHit(attacker, target, boostedMax, world);
      // Second hit
      const hit2 = calculateHit(attacker, target, boostedMax, world);
-     
+
      return [hit1, hit2];
    }
    ```
@@ -688,7 +720,7 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
        prayer: Types.ui8,
        magic: Types.ui8
      }),
-     
+
      bonuses: defineComponent({
        attackStab: Types.i16,
        attackSlash: Types.i16,
@@ -706,15 +738,15 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
    export class MessageBatcher {
      private batch: GameMessage[] = [];
      private batchTimer?: NodeJS.Timeout;
-     
+
      addMessage(message: GameMessage) {
        this.batch.push(message);
-       
+
        if (!this.batchTimer) {
          this.batchTimer = setTimeout(() => this.flush(), 50); // Batch every 50ms
        }
      }
-     
+
      flush() {
        if (this.batch.length > 0) {
          this.room.broadcast('batch', { messages: this.batch });
@@ -739,20 +771,20 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
          prayers: [],
          voidBonus: false
        });
-       
+
        expect(maxHit).toBe(19); // Wiki confirmed value
      });
-     
+
      test('attack speed timing is frame-perfect', async () => {
        const world = createTestWorld();
        const player = createPlayer(world, { weapon: 'scimitar' });
-       
+
        const attacks: number[] = [];
        world.on('attack', () => attacks.push(Date.now()));
-       
+
        // Run for 10 seconds
        await runWorld(world, 10000);
-       
+
        // Verify 4-tick weapon fires every 2.4 seconds
        for (let i = 1; i < attacks.length; i++) {
          const delta = attacks[i] - attacks[i-1];
@@ -776,7 +808,7 @@ find . -path "*/node_modules" -prune -o -name "*.ts" -print | xargs grep -l "exp
          this.load.audio('hit-sound', 'assets/audio/hit.mp3')
        ]);
      }
-     
+
      async loadSecondary() {
        // Load nice-to-have assets in background
        return Promise.all([
@@ -973,7 +1005,7 @@ export interface GameState {
 }
 
 // Network message types
-export type ClientMessage = 
+export type ClientMessage =
   | { type: 'move'; x: number; y: number }
   | { type: 'attack'; targetId: string }
   | { type: 'prayer'; action: 'activate' | 'deactivate'; prayer: string }
@@ -1053,7 +1085,7 @@ export class GameRoom extends Room<GameRoomState> {
   private world: World;
   private tickRate = 50; // 20 TPS (OSRS standard)
   private tickInterval: NodeJS.Timer;
-  
+
   // CRITICAL: Maps to sync ECS entities with network IDs
   private playerEntityMap = new Map<string, number>(); // sessionId -> ECS entity
   private entityPlayerMap = new Map<number, string>(); // ECS entity -> sessionId
@@ -1062,31 +1094,31 @@ export class GameRoom extends Room<GameRoomState> {
 
   async onCreate(options: any) {
     console.log("GameRoom created with options:", options);
-    
+
     // Initialize state
     this.setState(new GameRoomState());
-    
+
     // Create ECS world
     this.world = createWorld();
-    
+
     // Register message handlers
     this.onMessage("move", this.handleMove.bind(this));
     this.onMessage("attack", this.handleAttack.bind(this));
     this.onMessage("prayer", this.handlePrayer.bind(this));
-    
+
     // Start game loop
     this.startGameLoop();
-    
+
     // Spawn initial enemies
     this.spawnWaveEnemies(1);
   }
 
   onJoin(client: Client, options: any) {
     console.log(`Player ${client.sessionId} joined`);
-    
+
     // Create player entity in ECS
     const entity = this.world.addEntity();
-    
+
     // Add components (MUST match OSRS standards)
     Components.Position.x[entity] = 400 + Math.random() * 100;
     Components.Position.y[entity] = 300 + Math.random() * 100;
@@ -1098,11 +1130,11 @@ export class GameRoom extends Room<GameRoomState> {
     Components.Combat.strengthBonus[entity] = 0;
     Components.Combat.defenseBonus[entity] = 0;
     Components.Name.value[entity] = options.name || `Player${client.sessionId.slice(0, 4)}`;
-    
+
     // Map entity to client
     this.playerEntityMap.set(client.sessionId, entity);
     this.entityPlayerMap.set(entity, client.sessionId);
-    
+
     // Create schema object
     const player = new PlayerSchema();
     player.id = client.sessionId;
@@ -1112,25 +1144,25 @@ export class GameRoom extends Room<GameRoomState> {
     player.health.current = Components.Health.current[entity];
     player.health.max = Components.Health.max[entity];
     player.combat.level = Components.Combat.level[entity];
-    
+
     // Add to state
     this.state.players.set(client.sessionId, player);
   }
 
   onLeave(client: Client, consented: boolean) {
     console.log(`Player ${client.sessionId} left (consented: ${consented})`);
-    
+
     // Get entity
     const entity = this.playerEntityMap.get(client.sessionId);
     if (entity !== undefined) {
       // Remove from ECS
       this.world.removeEntity(entity);
-      
+
       // Clean up maps
       this.playerEntityMap.delete(client.sessionId);
       this.entityPlayerMap.delete(entity);
     }
-    
+
     // Remove from state
     this.state.players.delete(client.sessionId);
   }
@@ -1144,7 +1176,7 @@ export class GameRoom extends Room<GameRoomState> {
   private tick() {
     // Update tick counter
     this.state.tick++;
-    
+
     // Run ECS systems in correct order
     Systems.InputSystem(this.world);
     Systems.MovementSystem(this.world);
@@ -1156,10 +1188,10 @@ export class GameRoom extends Room<GameRoomState> {
     Systems.PrayerSystem(this.world);
     Systems.SpawnSystem(this.world);
     Systems.CleanupSystem(this.world);
-    
+
     // CRITICAL: Sync ECS state to Colyseus state
     this.syncECSToState();
-    
+
     // Check wave completion
     this.checkWaveComplete();
   }
@@ -1174,37 +1206,37 @@ export class GameRoom extends Room<GameRoomState> {
     for (const entity of playerQuery) {
       const sessionId = this.entityPlayerMap.get(entity);
       if (!sessionId) continue;
-      
+
       const player = this.state.players.get(sessionId);
       if (!player) continue;
-      
+
       // Update position
       player.position.x = Components.Position.x[entity];
       player.position.y = Components.Position.y[entity];
-      
+
       // Update health
       player.health.current = Components.Health.current[entity];
       player.health.max = Components.Health.max[entity];
-      
+
       // Update combat stats
       player.combat.level = Components.Combat.level[entity];
       player.combat.xp = Components.Combat.xp[entity];
       player.combat.attackBonus = Components.Combat.attackBonus[entity];
       player.combat.strengthBonus = Components.Combat.strengthBonus[entity];
       player.combat.defenseBonus = Components.Combat.defenseBonus[entity];
-      
+
       // Update prayer
       if (Components.Prayer.points[entity] !== undefined) {
         player.prayerPoints = Components.Prayer.points[entity];
       }
     }
-    
+
     // Sync enemies
     const enemyQuery = this.world.query([Components.Enemy, Components.Position, Components.Health]);
     for (const entity of enemyQuery) {
       const enemyId = this.entityEnemyMap.get(entity);
       if (!enemyId) continue;
-      
+
       let enemy = this.state.enemies.get(enemyId);
       if (!enemy) {
         // Create new enemy schema
@@ -1213,7 +1245,7 @@ export class GameRoom extends Room<GameRoomState> {
         enemy.type = Components.Enemy.type[entity].toString();
         this.state.enemies.set(enemyId, enemy);
       }
-      
+
       // Update enemy state
       enemy.position.x = Components.Position.x[entity];
       enemy.position.y = Components.Position.y[entity];
@@ -1221,7 +1253,7 @@ export class GameRoom extends Room<GameRoomState> {
       enemy.health.max = Components.Health.max[entity];
       enemy.combatLevel = Components.Combat.level[entity];
     }
-    
+
     // Remove dead enemies from state
     for (const [enemyId, _] of this.state.enemies) {
       if (!this.enemyEntityMap.has(enemyId)) {
@@ -1233,19 +1265,19 @@ export class GameRoom extends Room<GameRoomState> {
   private handleMove(client: Client, message: { x: number; y: number }) {
     const entity = this.playerEntityMap.get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Validate movement (anti-cheat)
     const currentX = Components.Position.x[entity];
     const currentY = Components.Position.y[entity];
     const distance = Math.sqrt((message.x - currentX) ** 2 + (message.y - currentY) ** 2);
-    
+
     // Max movement speed check (OSRS run speed)
     const maxSpeed = 10; // tiles per tick
     if (distance > maxSpeed * this.tickRate) {
       console.warn(`Player ${client.sessionId} moving too fast`);
       return;
     }
-    
+
     // Set target position for movement system
     Components.Input.moveX[entity] = message.x;
     Components.Input.moveY[entity] = message.y;
@@ -1255,29 +1287,29 @@ export class GameRoom extends Room<GameRoomState> {
   private handleAttack(client: Client, message: { targetId: string }) {
     const entity = this.playerEntityMap.get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Find target entity
     let targetEntity: number | undefined;
-    
+
     // Check if targeting enemy
     targetEntity = this.enemyEntityMap.get(message.targetId);
-    
+
     // Check if targeting player (PvP)
     if (targetEntity === undefined) {
       targetEntity = this.playerEntityMap.get(message.targetId);
     }
-    
+
     if (targetEntity === undefined) return;
-    
+
     // Validate attack range (OSRS standard)
     const distance = this.getDistance(entity, targetEntity);
     const maxRange = 1; // Melee range
-    
+
     if (distance > maxRange) {
       console.warn(`Player ${client.sessionId} attacking out of range`);
       return;
     }
-    
+
     // Set target
     Components.Target.id[entity] = targetEntity;
     Components.Input.isAttacking[entity] = 1;
@@ -1286,7 +1318,7 @@ export class GameRoom extends Room<GameRoomState> {
   private handlePrayer(client: Client, message: { action: 'activate' | 'deactivate'; prayer: string }) {
     const entity = this.playerEntityMap.get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Implement prayer activation/deactivation
     // This needs to match OSRS prayer system exactly
     console.log(`Prayer ${message.action}: ${message.prayer}`);
@@ -1296,12 +1328,12 @@ export class GameRoom extends Room<GameRoomState> {
     // OSRS-inspired enemy spawning
     const enemyCount = 5 + (wave - 1) * 2;
     const enemyTypes = this.getEnemyTypesForWave(wave);
-    
+
     for (let i = 0; i < enemyCount; i++) {
       const entity = this.world.addEntity();
       const enemyId = `enemy_${Date.now()}_${i}`;
       const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-      
+
       // Position around edges
       const side = Math.random() * 4;
       let x, y;
@@ -1309,15 +1341,15 @@ export class GameRoom extends Room<GameRoomState> {
       else if (side < 2) { x = 800; y = Math.random() * 600; }
       else if (side < 3) { x = Math.random() * 800; y = 0; }
       else { x = Math.random() * 800; y = 600; }
-      
+
       // Set components based on enemy type
       Components.Position.x[entity] = x;
       Components.Position.y[entity] = y;
       Components.Enemy.type[entity] = 1; // TODO: Use actual enemy type enum
-      
+
       // Set stats based on OSRS data
       this.setEnemyStats(entity, enemyType, wave);
-      
+
       // Map entity
       this.enemyEntityMap.set(enemyId, entity);
       this.entityEnemyMap.set(entity, enemyId);
@@ -1341,10 +1373,10 @@ export class GameRoom extends Room<GameRoomState> {
       'guard': { hp: 22, combat: 21, attack: 19, strength: 18, defense: 19 },
       // Add more...
     };
-    
+
     const baseStats = stats[type] || stats['chicken'];
     const waveMultiplier = 1 + (wave - 1) * 0.1; // 10% stronger per wave
-    
+
     Components.Health.max[entity] = Math.floor(baseStats.hp * waveMultiplier);
     Components.Health.current[entity] = Components.Health.max[entity];
     Components.Combat.level[entity] = Math.floor(baseStats.combat * waveMultiplier);
@@ -1359,7 +1391,7 @@ export class GameRoom extends Room<GameRoomState> {
       // Wave complete!
       this.state.wave++;
       this.broadcast("waveComplete", { wave: this.state.wave - 1 });
-      
+
       // Spawn next wave after delay
       setTimeout(() => {
         this.spawnWaveEnemies(this.state.wave);
@@ -1475,7 +1507,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ playerName, onGameEnd })
       const room = await client.joinOrCreate<GameRoomState>('game_room', {
         name: playerName
       });
-      
+
       console.log('Connected to room:', room.id);
       return room;
     } catch (error) {
@@ -1523,7 +1555,7 @@ export class GameScene extends Phaser.Scene {
   private enemies: Map<string, Phaser.GameObjects.Sprite> = new Map();
   private playerNameTexts: Map<string, Phaser.GameObjects.Text> = new Map();
   private healthBars: Map<string, Phaser.GameObjects.Graphics> = new Map();
-  
+
   // Damage number pool for optimization
   private damageNumberPool: Phaser.GameObjects.Text[] = [];
   private activeDamageNumbers: Set<Phaser.GameObjects.Text> = new Set();
@@ -1534,7 +1566,7 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     console.log('GameScene created');
-    
+
     // Get room from registry
     this.room = this.registry.get('room');
     if (!this.room) {
@@ -1563,7 +1595,7 @@ export class GameScene extends Phaser.Scene {
     // Player added
     this.room.state.players.onAdd = (player: PlayerSchema, sessionId: string) => {
       console.log('Player added:', sessionId, player);
-      
+
       // Create player sprite
       const sprite = this.add.sprite(player.position.x, player.position.y, 'player');
       sprite.setOrigin(0.5, 0.5);
@@ -1594,7 +1626,7 @@ export class GameScene extends Phaser.Scene {
     this.room.state.players.onChange = (player: PlayerSchema, sessionId: string) => {
       const sprite = this.players.get(sessionId);
       const nameText = this.playerNameTexts.get(sessionId);
-      
+
       if (sprite && nameText) {
         // Smooth interpolation for other players
         if (sessionId !== this.room.sessionId) {
@@ -1605,7 +1637,7 @@ export class GameScene extends Phaser.Scene {
             duration: 100, // Slightly longer than server tick
             ease: 'Linear'
           });
-          
+
           this.tweens.add({
             targets: nameText,
             x: player.position.x,
@@ -1627,14 +1659,14 @@ export class GameScene extends Phaser.Scene {
     // Player removed
     this.room.state.players.onRemove = (player: PlayerSchema, sessionId: string) => {
       console.log('Player removed:', sessionId);
-      
+
       // Clean up all player visuals
       this.players.get(sessionId)?.destroy();
       this.players.delete(sessionId);
-      
+
       this.playerNameTexts.get(sessionId)?.destroy();
       this.playerNameTexts.delete(sessionId);
-      
+
       this.healthBars.get(sessionId)?.destroy();
       this.healthBars.delete(sessionId);
     };
@@ -1642,7 +1674,7 @@ export class GameScene extends Phaser.Scene {
     // Enemy added
     this.room.state.enemies.onAdd = (enemy: EnemySchema, enemyId: string) => {
       console.log('Enemy added:', enemyId, enemy.type);
-      
+
       // Create enemy sprite based on type
       const sprite = this.add.sprite(enemy.position.x, enemy.position.y, `enemy_${enemy.type}`);
       sprite.setOrigin(0.5, 0.5);
@@ -1657,7 +1689,7 @@ export class GameScene extends Phaser.Scene {
     // Enemy updated
     this.room.state.enemies.onChange = (enemy: EnemySchema, enemyId: string) => {
       const sprite = this.enemies.get(enemyId);
-      
+
       if (sprite) {
         // Enemies use interpolation too
         this.tweens.add({
@@ -1676,7 +1708,7 @@ export class GameScene extends Phaser.Scene {
     // Enemy removed
     this.room.state.enemies.onRemove = (enemy: EnemySchema, enemyId: string) => {
       console.log('Enemy removed:', enemyId);
-      
+
       // Death animation
       const sprite = this.enemies.get(enemyId);
       if (sprite) {
@@ -1690,9 +1722,9 @@ export class GameScene extends Phaser.Scene {
           }
         });
       }
-      
+
       this.enemies.delete(enemyId);
-      
+
       this.healthBars.get(enemyId)?.destroy();
       this.healthBars.delete(enemyId);
     };
@@ -1703,7 +1735,7 @@ export class GameScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       // Convert screen coordinates to world coordinates
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-      
+
       // Send move command
       this.room.send('move', {
         x: worldPoint.x,
@@ -1739,7 +1771,7 @@ export class GameScene extends Phaser.Scene {
           myPlayer.x, myPlayer.y,
           sprite.x, sprite.y
         );
-        
+
         if (distance < nearestDistance) {
           nearestDistance = distance;
           nearestEnemy = enemyId;
@@ -1768,9 +1800,9 @@ export class GameScene extends Phaser.Scene {
     this.room.onMessage('damage', (message: { attackerId: string; targetId: string; damage: number; hitType: string }) => {
       // Find target position
       let targetSprite: Phaser.GameObjects.Sprite | undefined;
-      
+
       targetSprite = this.players.get(message.targetId) || this.enemies.get(message.targetId);
-      
+
       if (targetSprite) {
         // Show damage number
         this.showDamageNumber(
@@ -1917,7 +1949,7 @@ export class GameScene extends Phaser.Scene {
 
   private createClickEffect(x: number, y: number) {
     const circle = this.add.circle(x, y, 5, 0xffffff, 0.5);
-    
+
     this.tweens.add({
       targets: circle,
       radius: 20,
@@ -2034,8 +2066,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({ room }) => {
         {/* Health orb */}
         <div className="orb health-orb">
           <div className="orb-background">
-            <div 
-              className="orb-fill" 
+            <div
+              className="orb-fill"
               style={{ height: `${healthPercent}%` }}
             />
           </div>
@@ -2047,8 +2079,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({ room }) => {
         {/* Prayer orb */}
         <div className="orb prayer-orb">
           <div className="orb-background">
-            <div 
-              className="orb-fill" 
+            <div
+              className="orb-fill"
               style={{ height: `${prayerPercent}%` }}
             />
           </div>
@@ -2215,7 +2247,7 @@ export class EntityPool {
 
   constructor(world: World, initialSize: number = 1000) {
     this.world = world;
-    
+
     // Pre-allocate entities
     console.log(`Pre-allocating ${initialSize} entities...`);
     for (let i = 0; i < initialSize; i++) {
@@ -2230,7 +2262,7 @@ export class EntityPool {
    */
   acquire(): number {
     let entity: number;
-    
+
     if (this.availableEntities.length > 0) {
       entity = this.availableEntities.pop()!;
     } else {
@@ -2238,7 +2270,7 @@ export class EntityPool {
       console.warn('Entity pool exhausted, allocating new entity');
       entity = addEntity(this.world);
     }
-    
+
     this.activeEntities.add(entity);
     return entity;
   }
@@ -2542,7 +2574,7 @@ export interface PlayerState {
 }
 
 // Enemy types (OSRS creatures)
-export type EnemyType = 
+export type EnemyType =
   | 'chicken' | 'rat' | 'spider' | 'cow'           // Wave 1-3
   | 'goblin' | 'imp' | 'guard'                     // Wave 4-6
   | 'wizard' | 'dark_wizard' | 'hobgoblin'         // Wave 7-10
@@ -2588,7 +2620,7 @@ export interface GameState {
 }
 
 // Network message types (client -> server)
-export type ClientMessage = 
+export type ClientMessage =
   | { type: 'move'; target: Vector2 }
   | { type: 'attack'; targetId: string }
   | { type: 'stopAttack' }
@@ -2879,7 +2911,7 @@ export class PlayerSchema extends Schema {
   @type(EquipmentSchema) equipment = new EquipmentSchema();
   @type(PrayerSchema) prayer = new PrayerSchema();
   @type(SpecialAttackSchema) specialAttack = new SpecialAttackSchema();
-  
+
   // Combat state
   @type("string") target: string = ""; // Entity ID being attacked
   @type("number") lastAttackTick: number = 0;
@@ -2901,7 +2933,7 @@ export class EnemySchema extends Schema {
   @type("number") combatLevel: number = 1;
   @type(EnemyStatsSchema) stats = new EnemyStatsSchema();
   @type(EquipmentBonusesSchema) bonuses = new EquipmentBonusesSchema();
-  
+
   // AI state
   @type("string") target: string = ""; // Player ID being attacked
   @type("number") lastAttackTick: number = 0;
@@ -2948,19 +2980,19 @@ import { Room } from 'colyseus';
 /**
  * CRITICAL SYSTEM: Synchronizes ECS world state to Colyseus network state
  * This MUST run every tick or clients won't see updates
- * 
+ *
  * Performance target: <5ms per tick with 4 players + 50 enemies
  */
 export class StateSyncSystem {
   private room: Room<GameRoomState>;
   private world: World;
-  
+
   // Entity mapping (CRITICAL for maintaining sync)
   private playerEntityMap = new Map<string, number>(); // sessionId -> ECS entity
   private entityPlayerMap = new Map<number, string>(); // ECS entity -> sessionId
   private enemyEntityMap = new Map<string, number>();  // enemyId -> ECS entity
   private entityEnemyMap = new Map<number, string>();  // ECS entity -> enemyId
-  
+
   // Queries for performance (computed once, reused)
   private playerQuery = defineQuery([Components.Player, Components.Position, Components.Health]);
   private enemyQuery = defineQuery([Components.Enemy, Components.Position, Components.Health]);
@@ -2976,21 +3008,21 @@ export class StateSyncSystem {
    */
   execute(deltaTime: number) {
     const startTime = performance.now();
-    
+
     try {
       this.syncPlayers();
       this.syncEnemies();
       this.cleanupDeadEntities();
       this.syncGameTime();
-      
+
       const endTime = performance.now();
       const executionTime = endTime - startTime;
-      
+
       // Performance monitoring
       if (executionTime > 5) {
         console.warn(`StateSyncSystem took ${executionTime.toFixed(2)}ms (target: <5ms)`);
       }
-      
+
     } catch (error) {
       console.error('StateSyncSystem error:', error);
     }
@@ -3001,32 +3033,32 @@ export class StateSyncSystem {
    */
   private syncPlayers() {
     const entities = this.playerQuery(this.world);
-    
+
     for (const entity of entities) {
       const sessionId = this.entityPlayerMap.get(entity);
       if (!sessionId) {
         console.warn(`Player entity ${entity} has no sessionId mapping`);
         continue;
       }
-      
+
       let playerState = this.room.state.players.get(sessionId);
       if (!playerState) {
         console.warn(`No player state for sessionId ${sessionId}`);
         continue;
       }
-      
+
       // Sync position (CRITICAL for movement)
       if (Components.Position.x[entity] !== undefined) {
         playerState.position.x = Components.Position.x[entity];
         playerState.position.y = Components.Position.y[entity];
       }
-      
+
       // Sync health (CRITICAL for combat)
       if (Components.Health.current[entity] !== undefined) {
         playerState.health.current = Components.Health.current[entity];
         playerState.health.max = Components.Health.max[entity];
       }
-      
+
       // Sync combat stats
       if (Components.CombatStats) {
         playerState.stats.attack.level = Components.CombatStats.attack[entity] || 1;
@@ -3038,13 +3070,13 @@ export class StateSyncSystem {
         playerState.stats.hitpoints.level = Components.CombatStats.hitpoints[entity] || 10;
         playerState.stats.hitpoints.xp = Components.CombatStats.hitpointsXp[entity] || 1154;
       }
-      
+
       // Sync prayer
       if (Components.Prayer) {
         playerState.prayer.points = Components.Prayer.points[entity] || 1;
         // Note: Active prayers need special handling
       }
-      
+
       // Sync combat state
       if (Components.Target && Components.Target.id[entity]) {
         const targetEntityId = Components.Target.id[entity];
@@ -3054,11 +3086,11 @@ export class StateSyncSystem {
       } else {
         playerState.target = "";
       }
-      
+
       if (Components.AttackTimer) {
         playerState.lastAttackTick = Components.AttackTimer.lastAttack[entity] || 0;
       }
-      
+
       playerState.inCombat = this.isInCombat(entity);
     }
   }
@@ -3068,14 +3100,14 @@ export class StateSyncSystem {
    */
   private syncEnemies() {
     const entities = this.enemyQuery(this.world);
-    
+
     for (const entity of entities) {
       const enemyId = this.entityEnemyMap.get(entity);
       if (!enemyId) {
         console.warn(`Enemy entity ${entity} has no enemyId mapping`);
         continue;
       }
-      
+
       let enemyState = this.room.state.enemies.get(enemyId);
       if (!enemyState) {
         // Create new enemy state
@@ -3083,24 +3115,24 @@ export class StateSyncSystem {
         enemyState.id = enemyId;
         this.room.state.enemies.set(enemyId, enemyState);
       }
-      
+
       // Sync basic data
       if (Components.Enemy && Components.Enemy.type[entity] !== undefined) {
         enemyState.type = this.getEnemyTypeName(Components.Enemy.type[entity]);
       }
-      
+
       // Sync position
       if (Components.Position.x[entity] !== undefined) {
         enemyState.position.x = Components.Position.x[entity];
         enemyState.position.y = Components.Position.y[entity];
       }
-      
+
       // Sync health
       if (Components.Health.current[entity] !== undefined) {
         enemyState.health.current = Components.Health.current[entity];
         enemyState.health.max = Components.Health.max[entity];
       }
-      
+
       // Sync combat stats
       if (Components.CombatStats) {
         enemyState.combatLevel = Components.CombatStats.combatLevel[entity] || 1;
@@ -3109,7 +3141,7 @@ export class StateSyncSystem {
         enemyState.stats.defence = Components.CombatStats.defence[entity] || 1;
         enemyState.stats.hitpoints = Components.CombatStats.hitpoints[entity] || 1;
       }
-      
+
       // Sync AI state
       if (Components.Target && Components.Target.id[entity]) {
         const targetEntityId = Components.Target.id[entity];
@@ -3118,7 +3150,7 @@ export class StateSyncSystem {
       } else {
         enemyState.target = "";
       }
-      
+
       if (Components.AttackTimer) {
         enemyState.lastAttackTick = Components.AttackTimer.lastAttack[entity] || 0;
       }
@@ -3130,7 +3162,7 @@ export class StateSyncSystem {
    */
   private cleanupDeadEntities() {
     const deadEntities = this.deadEntityQuery(this.world);
-    
+
     for (const entity of deadEntities) {
       // Check if it's a player
       const sessionId = this.entityPlayerMap.get(entity);
@@ -3144,13 +3176,13 @@ export class StateSyncSystem {
           playerState.target = "";
         }
       }
-      
+
       // Check if it's an enemy
       const enemyId = this.entityEnemyMap.get(entity);
       if (enemyId) {
         // Remove enemy from state
         this.room.state.enemies.delete(enemyId);
-        
+
         // Clean up mappings
         this.enemyEntityMap.delete(enemyId);
         this.entityEnemyMap.delete(entity);
@@ -3164,10 +3196,10 @@ export class StateSyncSystem {
   private syncGameTime() {
     // Update game tick
     this.room.state.gameTime.tick++;
-    
+
     // Update elapsed time (approximate)
     this.room.state.gameTime.elapsed = Math.floor(this.room.state.gameTime.tick * 0.6);
-    
+
     // Update wave info
     const remainingEnemies = this.room.state.enemies.size;
     this.room.state.wave.enemiesRemaining = remainingEnemies;
@@ -3222,31 +3254,31 @@ export class StateSyncSystem {
     // 1. It has a target, OR
     // 2. Something is targeting it, OR
     // 3. It attacked recently (within 10 seconds/17 ticks)
-    
+
     if (Components.Target && Components.Target.id[entity]) {
       return true;
     }
-    
+
     if (Components.AttackTimer && Components.AttackTimer.lastAttack[entity]) {
       const ticksSinceAttack = this.room.state.gameTime.tick - Components.AttackTimer.lastAttack[entity];
       if (ticksSinceAttack < 17) { // 10 seconds
         return true;
       }
     }
-    
+
     // Check if anything is targeting this entity
     for (const [otherEntity] of this.entityPlayerMap) {
       if (Components.Target && Components.Target.id[otherEntity] === entity) {
         return true;
       }
     }
-    
+
     for (const [otherEntity] of this.entityEnemyMap) {
       if (Components.Target && Components.Target.id[otherEntity] === entity) {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -3260,7 +3292,7 @@ export class StateSyncSystem {
       'dark_wizard', 'hobgoblin', 'hill_giant',
       'moss_giant', 'lesser_demon', 'greater_demon'
     ];
-    
+
     return typeNames[typeId] || 'unknown';
   }
 
@@ -3297,7 +3329,7 @@ import { ClientMessage, ServerMessage, EnemyType } from "@runerogue/shared";
 
 /**
  * MAIN GAME ROOM - Handles multiplayer game logic
- * 
+ *
  * This room manages:
  * - Player connections and disconnections
  * - ECS world simulation
@@ -3310,22 +3342,22 @@ export class GameRoom extends Room<GameRoomState> {
   // Core systems
   private world: World;
   private stateSyncSystem: StateSyncSystem;
-  
+
   // Game loop
   private gameLoopInterval: NodeJS.Timer;
   private readonly TICK_RATE = 50; // 20 TPS (1 tick = 50ms)
   private readonly OSRS_TICK_RATE = 600; // OSRS: 1 tick = 600ms
   private tickCounter = 0;
-  
+
   // Wave management
   private currentWave = 1;
   private waveInProgress = false;
   private enemiesSpawned = 0;
   private waveStartTime = 0;
-  
+
   // Entity management
   private entityIdCounter = 0;
-  
+
   // Performance monitoring
   private lastTickTime = 0;
   private averageTickTime = 0;
@@ -3333,23 +3365,23 @@ export class GameRoom extends Room<GameRoomState> {
 
   async onCreate(options: any) {
     console.log("🎮 GameRoom created with options:", options);
-    
+
     // Initialize state
     this.setState(new GameRoomState());
     this.state.gameStarted = false;
     this.state.gameEnded = false;
-    
+
     // Create ECS world
     this.world = createWorld();
     console.log("🌍 ECS World created");
-    
+
     // Initialize sync system
     this.stateSyncSystem = new StateSyncSystem(this, this.world);
     console.log("🔄 State sync system initialized");
-    
+
     // Register message handlers
     this.setupMessageHandlers();
-    
+
     // Set room metadata
     this.setMetadata({
       name: "RuneRogue Game",
@@ -3358,7 +3390,7 @@ export class GameRoom extends Room<GameRoomState> {
       gameMode: "survival",
       difficulty: "normal"
     });
-    
+
     console.log("✅ GameRoom setup complete");
   }
 
@@ -3373,30 +3405,30 @@ export class GameRoom extends Room<GameRoomState> {
 
   async onJoin(client: Client, options: any) {
     console.log(`👤 Player ${client.sessionId} joining...`);
-    
+
     // Validate player name
     const playerName = options.name || `Player${client.sessionId.slice(0, 4)}`;
     if (playerName.length > 12) {
       throw new Error("Player name too long");
     }
-    
+
     // Create player entity in ECS
     const entity = this.createPlayerEntity(client.sessionId, playerName);
-    
+
     // Register with sync system
     this.stateSyncSystem.registerPlayer(client.sessionId, entity);
-    
+
     // Create Colyseus state object
     const playerState = new PlayerSchema();
     playerState.id = client.sessionId;
     playerState.name = playerName;
-    
+
     // Set initial position (spawn area)
     const spawnX = 400 + (Math.random() - 0.5) * 100;
     const spawnY = 300 + (Math.random() - 0.5) * 100;
     playerState.position.x = spawnX;
     playerState.position.y = spawnY;
-    
+
     // Set initial stats (level 1 pure)
     playerState.stats.attack.level = 1;
     playerState.stats.attack.xp = 0;
@@ -3408,105 +3440,105 @@ export class GameRoom extends Room<GameRoomState> {
     playerState.stats.hitpoints.xp = 1154; // OSRS: Level 10 HP = 1154 XP
     playerState.stats.prayer.level = 1;
     playerState.stats.prayer.xp = 0;
-    
+
     // Set initial health
     playerState.health.current = 10;
     playerState.health.max = 10;
-    
+
     // Set initial prayer
     playerState.prayer.points = 1;
-    
+
     // Add to state
     this.state.players.set(client.sessionId, playerState);
-    
+
     // Start game if this is the first player
     if (this.state.players.size === 1 && !this.state.gameStarted) {
       this.startGame();
     }
-    
+
     // Send welcome message
     this.send(client, "chatMessage", {
       playerId: "system",
       playerName: "System",
       message: `${playerName} has joined the battle!`
     });
-    
+
     console.log(`✅ Player ${playerName} (${client.sessionId}) joined successfully`);
   }
 
   async onLeave(client: Client, consented: boolean) {
     console.log(`👋 Player ${client.sessionId} leaving (consented: ${consented})`);
-    
+
     // Get player name for goodbye message
     const playerState = this.state.players.get(client.sessionId);
     const playerName = playerState?.name || "Unknown";
-    
+
     // Clean up ECS entity
     this.stateSyncSystem.unregisterPlayer(client.sessionId);
-    
+
     // Remove from state
     this.state.players.delete(client.sessionId);
-    
+
     // Send goodbye message
     this.broadcast("chatMessage", {
       playerId: "system",
       playerName: "System",
       message: `${playerName} has left the battle.`
     });
-    
+
     // End game if no players left
     if (this.state.players.size === 0) {
       this.endGame();
     }
-    
+
     console.log(`✅ Player ${client.sessionId} cleanup complete`);
   }
 
   private startGame() {
     console.log("🚀 Starting game...");
-    
+
     this.state.gameStarted = true;
     this.state.wave.current = 1;
     this.currentWave = 1;
     this.waveStartTime = Date.now();
-    
+
     // Start game loop
     this.gameLoopInterval = setInterval(() => {
       this.tick();
     }, this.TICK_RATE);
-    
+
     // Start first wave after brief delay
     this.clock.setTimeout(() => {
       this.startWave(1);
     }, 3000);
-    
+
     this.broadcast("waveStart", {
       wave: 1,
       enemyCount: this.getEnemyCountForWave(1),
       enemyTypes: this.getEnemyTypesForWave(1)
     });
-    
+
     console.log("✅ Game started successfully");
   }
 
   private endGame() {
     console.log("🏁 Ending game...");
-    
+
     this.state.gameEnded = true;
-    
+
     if (this.gameLoopInterval) {
       clearInterval(this.gameLoopInterval);
     }
-    
+
     // Calculate game stats
     const gameTime = Math.floor((Date.now() - this.waveStartTime) / 1000);
-    
+
     this.broadcast("gameOver", {
       survivedWaves: this.currentWave - 1,
       totalXp: 0, // TODO: Calculate total XP gained
       timePlayed: gameTime
     });
-    
+
     console.log("✅ Game ended");
   }
 
@@ -3515,23 +3547,23 @@ export class GameRoom extends Room<GameRoomState> {
    */
   private tick() {
     const startTime = performance.now();
-    
+
     try {
       // Update tick counter
       this.tickCounter++;
-      
+
       // Run ECS systems in correct order
       this.runECSSystems();
-      
+
       // Sync ECS state to Colyseus state
       this.stateSyncSystem.execute(this.TICK_RATE);
-      
+
       // Check for wave completion
       this.checkWaveCompletion();
-      
+
       // Update performance metrics
       this.updatePerformanceMetrics(startTime);
-      
+
     } catch (error) {
       console.error("❌ Game tick error:", error);
     }
@@ -3541,21 +3573,21 @@ export class GameRoom extends Room<GameRoomState> {
     // Movement and physics
     if (Systems.InputSystem) Systems.InputSystem(this.world);
     if (Systems.MovementSystem) Systems.MovementSystem(this.world);
-    
+
     // Combat systems
     if (Systems.TargetingSystem) Systems.TargetingSystem(this.world);
     if (Systems.AttackTimerSystem) Systems.AttackTimerSystem(this.world);
     if (Systems.CombatSystem) Systems.CombatSystem(this.world);
     if (Systems.ProjectileSystem) Systems.ProjectileSystem(this.world);
-    
+
     // Status systems
     if (Systems.HealthSystem) Systems.HealthSystem(this.world);
     if (Systems.PrayerSystem) Systems.PrayerSystem(this.world);
-    
+
     // AI and spawning
     if (Systems.AISystem) Systems.AISystem(this.world);
     if (Systems.SpawnSystem) Systems.SpawnSystem(this.world);
-    
+
     // Cleanup
     if (Systems.CleanupSystem) Systems.CleanupSystem(this.world);
   }
@@ -3563,14 +3595,14 @@ export class GameRoom extends Room<GameRoomState> {
   private updatePerformanceMetrics(startTime: number) {
     const endTime = performance.now();
     const tickTime = endTime - startTime;
-    
+
     this.tickTimeSamples.push(tickTime);
     if (this.tickTimeSamples.length > 60) { // Keep last 60 samples (3 seconds)
       this.tickTimeSamples.shift();
     }
-    
+
     this.averageTickTime = this.tickTimeSamples.reduce((a, b) => a + b, 0) / this.tickTimeSamples.length;
-    
+
     // Warn if performance is poor
     if (tickTime > 25) { // More than half our tick budget
       console.warn(`⚠️ Slow tick: ${tickTime.toFixed(2)}ms (avg: ${this.averageTickTime.toFixed(2)}ms)`);
@@ -3579,20 +3611,20 @@ export class GameRoom extends Room<GameRoomState> {
 
   private createPlayerEntity(sessionId: string, name: string): number {
     const entity = this.world.addEntity();
-    
+
     // Position
     const spawnX = 400 + (Math.random() - 0.5) * 100;
     const spawnY = 300 + (Math.random() - 0.5) * 100;
     Components.Position.x[entity] = spawnX;
     Components.Position.y[entity] = spawnY;
-    
+
     // Mark as player
     Components.Player.id[entity] = 1;
-    
+
     // Health (level 10 hitpoints in OSRS)
     Components.Health.current[entity] = 10;
     Components.Health.max[entity] = 10;
-    
+
     // Combat stats (level 1 pure)
     if (Components.CombatStats) {
       Components.CombatStats.attack[entity] = 1;
@@ -3606,29 +3638,29 @@ export class GameRoom extends Room<GameRoomState> {
       Components.CombatStats.prayer[entity] = 1;
       Components.CombatStats.prayerXp[entity] = 0;
     }
-    
+
     // Prayer
     if (Components.Prayer) {
       Components.Prayer.points[entity] = 1;
       Components.Prayer.level[entity] = 1;
     }
-    
+
     // Name
     if (Components.Name) {
       Components.Name.value[entity] = name;
     }
-    
+
     // Movement speed (OSRS walk speed)
     if (Components.Velocity) {
       Components.Velocity.maxSpeed[entity] = 160; // pixels per second
     }
-    
+
     // Attack timer
     if (Components.AttackTimer) {
       Components.AttackTimer.cooldown[entity] = 5 * (this.OSRS_TICK_RATE / this.TICK_RATE); // 5 OSRS ticks
       Components.AttackTimer.lastAttack[entity] = 0;
     }
-    
+
     console.log(`👤 Created player entity ${entity} for ${name}`);
     return entity;
   }
@@ -3638,22 +3670,22 @@ export class GameRoom extends Room<GameRoomState> {
   private handleMove(client: Client, message: { target: { x: number; y: number } }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Validate movement (anti-cheat)
     const currentX = Components.Position.x[entity];
     const currentY = Components.Position.y[entity];
     const distance = Math.sqrt(
-      (message.target.x - currentX) ** 2 + 
+      (message.target.x - currentX) ** 2 +
       (message.target.y - currentY) ** 2
     );
-    
+
     // Max movement distance per message (prevent teleporting)
     const maxDistance = 200; // Reasonable for click-to-move
     if (distance > maxDistance) {
       console.warn(`⚠️ Player ${client.sessionId} tried to move too far: ${distance}px`);
       return;
     }
-    
+
     // Set movement target
     if (Components.Input) {
       Components.Input.moveX[entity] = message.target.x;
@@ -3665,53 +3697,53 @@ export class GameRoom extends Room<GameRoomState> {
   private handleAttack(client: Client, message: { targetId: string }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Find target entity
     let targetEntity: number | undefined;
-    
+
     // Check if targeting enemy
     targetEntity = this.stateSyncSystem['enemyEntityMap'].get(message.targetId);
-    
+
     // Check if targeting player (for PvP, if enabled)
     if (targetEntity === undefined) {
       targetEntity = this.stateSyncSystem['playerEntityMap'].get(message.targetId);
     }
-    
+
     if (targetEntity === undefined) {
       console.warn(`⚠️ Player ${client.sessionId} tried to attack non-existent target: ${message.targetId}`);
       return;
     }
-    
+
     // Validate attack range
     const distance = this.getDistance(entity, targetEntity);
     const maxRange = 1.5; // Melee range in tiles
-    
+
     if (distance > maxRange * 64) { // Convert tiles to pixels
       console.warn(`⚠️ Player ${client.sessionId} attacking out of range: ${distance}px`);
       return;
     }
-    
+
     // Set target
     if (Components.Target) {
       Components.Target.id[entity] = targetEntity;
     }
-    
+
     if (Components.Input) {
       Components.Input.isAttacking[entity] = 1;
     }
-    
+
     console.log(`⚔️ Player ${client.sessionId} attacking ${message.targetId}`);
   }
 
   private handleStopAttack(client: Client, message: {}) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Clear target
     if (Components.Target) {
       Components.Target.id[entity] = 0;
     }
-    
+
     if (Components.Input) {
       Components.Input.isAttacking[entity] = 0;
     }
@@ -3720,7 +3752,7 @@ export class GameRoom extends Room<GameRoomState> {
   private handlePrayer(client: Client, message: { action: 'activate' | 'deactivate'; prayer: string }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // TODO: Implement prayer system
     console.log(`🙏 Player ${client.sessionId} prayer ${message.action}: ${message.prayer}`);
   }
@@ -3728,7 +3760,7 @@ export class GameRoom extends Room<GameRoomState> {
   private handleSpecialAttack(client: Client, message: { targetId?: string }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // TODO: Implement special attack system
     console.log(`⚡ Player ${client.sessionId} special attack`);
   }
@@ -3736,11 +3768,11 @@ export class GameRoom extends Room<GameRoomState> {
   private handleChat(client: Client, message: { message: string }) {
     const playerState = this.state.players.get(client.sessionId);
     if (!playerState) return;
-    
+
     // Validate chat message
     if (message.message.length > 100) return; // Max 100 characters
     if (message.message.trim().length === 0) return; // No empty messages
-    
+
     // Broadcast chat message
     this.broadcast("chatMessage", {
       playerId: client.sessionId,
@@ -3753,21 +3785,21 @@ export class GameRoom extends Room<GameRoomState> {
 
   private startWave(waveNumber: number) {
     console.log(`🌊 Starting wave ${waveNumber}`);
-    
+
     this.currentWave = waveNumber;
     this.waveInProgress = true;
     this.enemiesSpawned = 0;
-    
+
     this.state.wave.current = waveNumber;
-    
+
     const enemyCount = this.getEnemyCountForWave(waveNumber);
     const enemyTypes = this.getEnemyTypesForWave(waveNumber);
-    
+
     this.state.wave.enemiesRemaining = enemyCount;
-    
+
     // Spawn enemies gradually
     this.spawnWaveEnemies(waveNumber, enemyCount, enemyTypes);
-    
+
     this.broadcast("waveStart", {
       wave: waveNumber,
       enemyCount: enemyCount,
@@ -3777,7 +3809,7 @@ export class GameRoom extends Room<GameRoomState> {
 
   private spawnWaveEnemies(wave: number, count: number, types: EnemyType[]) {
     const spawnDelay = Math.max(500, 2000 - (wave * 50)); // Faster spawns each wave
-    
+
     for (let i = 0; i < count; i++) {
       this.clock.setTimeout(() => {
         this.spawnEnemy(types[Math.floor(Math.random() * types.length)], wave);
@@ -3788,21 +3820,21 @@ export class GameRoom extends Room<GameRoomState> {
   private spawnEnemy(type: EnemyType, wave: number) {
     const entity = this.world.addEntity();
     const enemyId = `enemy_${Date.now()}_${++this.entityIdCounter}`;
-    
+
     // Position around map edges
     const { x, y } = this.getRandomSpawnPosition();
-    
+
     Components.Position.x[entity] = x;
     Components.Position.y[entity] = y;
-    
+
     // Mark as enemy
     if (Components.Enemy) {
       Components.Enemy.type[entity] = this.getEnemyTypeId(type);
     }
-    
+
     // Set stats based on enemy type and wave
     this.setEnemyStats(entity, type, wave);
-    
+
     // Register with sync system
     this.stateSyncSystem.registerEnemy(enemyId,import { Room, Client, Delayed } from "colyseus";
 import { World, createWorld } from "bitecs";
@@ -3815,7 +3847,7 @@ import { ClientMessage, ServerMessage, EnemyType } from "@runerogue/shared";
 
 /**
  * MAIN GAME ROOM - Handles multiplayer game logic
- * 
+ *
  * This room manages:
  * - Player connections and disconnections
  * - ECS world simulation
@@ -3828,22 +3860,22 @@ export class GameRoom extends Room<GameRoomState> {
   // Core systems
   private world: World;
   private stateSyncSystem: StateSyncSystem;
-  
+
   // Game loop
   private gameLoopInterval: NodeJS.Timer;
   private readonly TICK_RATE = 50; // 20 TPS (1 tick = 50ms)
   private readonly OSRS_TICK_RATE = 600; // OSRS: 1 tick = 600ms
   private tickCounter = 0;
-  
+
   // Wave management
   private currentWave = 1;
   private waveInProgress = false;
   private enemiesSpawned = 0;
   private waveStartTime = 0;
-  
+
   // Entity management
   private entityIdCounter = 0;
-  
+
   // Performance monitoring
   private lastTickTime = 0;
   private averageTickTime = 0;
@@ -3851,23 +3883,23 @@ export class GameRoom extends Room<GameRoomState> {
 
   async onCreate(options: any) {
     console.log("🎮 GameRoom created with options:", options);
-    
+
     // Initialize state
     this.setState(new GameRoomState());
     this.state.gameStarted = false;
     this.state.gameEnded = false;
-    
+
     // Create ECS world
     this.world = createWorld();
     console.log("🌍 ECS World created");
-    
+
     // Initialize sync system
     this.stateSyncSystem = new StateSyncSystem(this, this.world);
     console.log("🔄 State sync system initialized");
-    
+
     // Register message handlers
     this.setupMessageHandlers();
-    
+
     // Set room metadata
     this.setMetadata({
       name: "RuneRogue Game",
@@ -3876,7 +3908,7 @@ export class GameRoom extends Room<GameRoomState> {
       gameMode: "survival",
       difficulty: "normal"
     });
-    
+
     console.log("✅ GameRoom setup complete");
   }
 
@@ -3891,30 +3923,30 @@ export class GameRoom extends Room<GameRoomState> {
 
   async onJoin(client: Client, options: any) {
     console.log(`👤 Player ${client.sessionId} joining...`);
-    
+
     // Validate player name
     const playerName = options.name || `Player${client.sessionId.slice(0, 4)}`;
     if (playerName.length > 12) {
       throw new Error("Player name too long");
     }
-    
+
     // Create player entity in ECS
     const entity = this.createPlayerEntity(client.sessionId, playerName);
-    
+
     // Register with sync system
     this.stateSyncSystem.registerPlayer(client.sessionId, entity);
-    
+
     // Create Colyseus state object
     const playerState = new PlayerSchema();
     playerState.id = client.sessionId;
     playerState.name = playerName;
-    
+
     // Set initial position (spawn area)
     const spawnX = 400 + (Math.random() - 0.5) * 100;
     const spawnY = 300 + (Math.random() - 0.5) * 100;
     playerState.position.x = spawnX;
     playerState.position.y = spawnY;
-    
+
     // Set initial stats (level 1 pure)
     playerState.stats.attack.level = 1;
     playerState.stats.attack.xp = 0;
@@ -3926,105 +3958,105 @@ export class GameRoom extends Room<GameRoomState> {
     playerState.stats.hitpoints.xp = 1154; // OSRS: Level 10 HP = 1154 XP
     playerState.stats.prayer.level = 1;
     playerState.stats.prayer.xp = 0;
-    
+
     // Set initial health
     playerState.health.current = 10;
     playerState.health.max = 10;
-    
+
     // Set initial prayer
     playerState.prayer.points = 1;
-    
+
     // Add to state
     this.state.players.set(client.sessionId, playerState);
-    
+
     // Start game if this is the first player
     if (this.state.players.size === 1 && !this.state.gameStarted) {
       this.startGame();
     }
-    
+
     // Send welcome message
     this.send(client, "chatMessage", {
       playerId: "system",
       playerName: "System",
       message: `${playerName} has joined the battle!`
     });
-    
+
     console.log(`✅ Player ${playerName} (${client.sessionId}) joined successfully`);
   }
 
   async onLeave(client: Client, consented: boolean) {
     console.log(`👋 Player ${client.sessionId} leaving (consented: ${consented})`);
-    
+
     // Get player name for goodbye message
     const playerState = this.state.players.get(client.sessionId);
     const playerName = playerState?.name || "Unknown";
-    
+
     // Clean up ECS entity
     this.stateSyncSystem.unregisterPlayer(client.sessionId);
-    
+
     // Remove from state
     this.state.players.delete(client.sessionId);
-    
+
     // Send goodbye message
     this.broadcast("chatMessage", {
       playerId: "system",
       playerName: "System",
       message: `${playerName} has left the battle.`
     });
-    
+
     // End game if no players left
     if (this.state.players.size === 0) {
       this.endGame();
     }
-    
+
     console.log(`✅ Player ${client.sessionId} cleanup complete`);
   }
 
   private startGame() {
     console.log("🚀 Starting game...");
-    
+
     this.state.gameStarted = true;
     this.state.wave.current = 1;
     this.currentWave = 1;
     this.waveStartTime = Date.now();
-    
+
     // Start game loop
     this.gameLoopInterval = setInterval(() => {
       this.tick();
     }, this.TICK_RATE);
-    
+
     // Start first wave after brief delay
     this.clock.setTimeout(() => {
       this.startWave(1);
     }, 3000);
-    
+
     this.broadcast("waveStart", {
       wave: 1,
       enemyCount: this.getEnemyCountForWave(1),
       enemyTypes: this.getEnemyTypesForWave(1)
     });
-    
+
     console.log("✅ Game started successfully");
   }
 
   private endGame() {
     console.log("🏁 Ending game...");
-    
+
     this.state.gameEnded = true;
-    
+
     if (this.gameLoopInterval) {
       clearInterval(this.gameLoopInterval);
     }
-    
+
     // Calculate game stats
     const gameTime = Math.floor((Date.now() - this.waveStartTime) / 1000);
-    
+
     this.broadcast("gameOver", {
       survivedWaves: this.currentWave - 1,
       totalXp: 0, // TODO: Calculate total XP gained
       timePlayed: gameTime
     });
-    
+
     console.log("✅ Game ended");
   }
 
@@ -4033,23 +4065,23 @@ export class GameRoom extends Room<GameRoomState> {
    */
   private tick() {
     const startTime = performance.now();
-    
+
     try {
       // Update tick counter
       this.tickCounter++;
-      
+
       // Run ECS systems in correct order
       this.runECSSystems();
-      
+
       // Sync ECS state to Colyseus state
       this.stateSyncSystem.execute(this.TICK_RATE);
-      
+
       // Check for wave completion
       this.checkWaveCompletion();
-      
+
       // Update performance metrics
       this.updatePerformanceMetrics(startTime);
-      
+
     } catch (error) {
       console.error("❌ Game tick error:", error);
     }
@@ -4059,21 +4091,21 @@ export class GameRoom extends Room<GameRoomState> {
     // Movement and physics
     if (Systems.InputSystem) Systems.InputSystem(this.world);
     if (Systems.MovementSystem) Systems.MovementSystem(this.world);
-    
+
     // Combat systems
     if (Systems.TargetingSystem) Systems.TargetingSystem(this.world);
     if (Systems.AttackTimerSystem) Systems.AttackTimerSystem(this.world);
     if (Systems.CombatSystem) Systems.CombatSystem(this.world);
     if (Systems.ProjectileSystem) Systems.ProjectileSystem(this.world);
-    
+
     // Status systems
     if (Systems.HealthSystem) Systems.HealthSystem(this.world);
     if (Systems.PrayerSystem) Systems.PrayerSystem(this.world);
-    
+
     // AI and spawning
     if (Systems.AISystem) Systems.AISystem(this.world);
     if (Systems.SpawnSystem) Systems.SpawnSystem(this.world);
-    
+
     // Cleanup
     if (Systems.CleanupSystem) Systems.CleanupSystem(this.world);
   }
@@ -4081,14 +4113,14 @@ export class GameRoom extends Room<GameRoomState> {
   private updatePerformanceMetrics(startTime: number) {
     const endTime = performance.now();
     const tickTime = endTime - startTime;
-    
+
     this.tickTimeSamples.push(tickTime);
     if (this.tickTimeSamples.length > 60) { // Keep last 60 samples (3 seconds)
       this.tickTimeSamples.shift();
     }
-    
+
     this.averageTickTime = this.tickTimeSamples.reduce((a, b) => a + b, 0) / this.tickTimeSamples.length;
-    
+
     // Warn if performance is poor
     if (tickTime > 25) { // More than half our tick budget
       console.warn(`⚠️ Slow tick: ${tickTime.toFixed(2)}ms (avg: ${this.averageTickTime.toFixed(2)}ms)`);
@@ -4097,20 +4129,20 @@ export class GameRoom extends Room<GameRoomState> {
 
   private createPlayerEntity(sessionId: string, name: string): number {
     const entity = this.world.addEntity();
-    
+
     // Position
     const spawnX = 400 + (Math.random() - 0.5) * 100;
     const spawnY = 300 + (Math.random() - 0.5) * 100;
     Components.Position.x[entity] = spawnX;
     Components.Position.y[entity] = spawnY;
-    
+
     // Mark as player
     Components.Player.id[entity] = 1;
-    
+
     // Health (level 10 hitpoints in OSRS)
     Components.Health.current[entity] = 10;
     Components.Health.max[entity] = 10;
-    
+
     // Combat stats (level 1 pure)
     if (Components.CombatStats) {
       Components.CombatStats.attack[entity] = 1;
@@ -4124,29 +4156,29 @@ export class GameRoom extends Room<GameRoomState> {
       Components.CombatStats.prayer[entity] = 1;
       Components.CombatStats.prayerXp[entity] = 0;
     }
-    
+
     // Prayer
     if (Components.Prayer) {
       Components.Prayer.points[entity] = 1;
       Components.Prayer.level[entity] = 1;
     }
-    
+
     // Name
     if (Components.Name) {
       Components.Name.value[entity] = name;
     }
-    
+
     // Movement speed (OSRS walk speed)
     if (Components.Velocity) {
       Components.Velocity.maxSpeed[entity] = 160; // pixels per second
     }
-    
+
     // Attack timer
     if (Components.AttackTimer) {
       Components.AttackTimer.cooldown[entity] = 5 * (this.OSRS_TICK_RATE / this.TICK_RATE); // 5 OSRS ticks
       Components.AttackTimer.lastAttack[entity] = 0;
     }
-    
+
     console.log(`👤 Created player entity ${entity} for ${name}`);
     return entity;
   }
@@ -4156,22 +4188,22 @@ export class GameRoom extends Room<GameRoomState> {
   private handleMove(client: Client, message: { target: { x: number; y: number } }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Validate movement (anti-cheat)
     const currentX = Components.Position.x[entity];
     const currentY = Components.Position.y[entity];
     const distance = Math.sqrt(
-      (message.target.x - currentX) ** 2 + 
+      (message.target.x - currentX) ** 2 +
       (message.target.y - currentY) ** 2
     );
-    
+
     // Max movement distance per message (prevent teleporting)
     const maxDistance = 200; // Reasonable for click-to-move
     if (distance > maxDistance) {
       console.warn(`⚠️ Player ${client.sessionId} tried to move too far: ${distance}px`);
       return;
     }
-    
+
     // Set movement target
     if (Components.Input) {
       Components.Input.moveX[entity] = message.target.x;
@@ -4183,53 +4215,53 @@ export class GameRoom extends Room<GameRoomState> {
   private handleAttack(client: Client, message: { targetId: string }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Find target entity
     let targetEntity: number | undefined;
-    
+
     // Check if targeting enemy
     targetEntity = this.stateSyncSystem['enemyEntityMap'].get(message.targetId);
-    
+
     // Check if targeting player (for PvP, if enabled)
     if (targetEntity === undefined) {
       targetEntity = this.stateSyncSystem['playerEntityMap'].get(message.targetId);
     }
-    
+
     if (targetEntity === undefined) {
       console.warn(`⚠️ Player ${client.sessionId} tried to attack non-existent target: ${message.targetId}`);
       return;
     }
-    
+
     // Validate attack range
     const distance = this.getDistance(entity, targetEntity);
     const maxRange = 1.5; // Melee range in tiles
-    
+
     if (distance > maxRange * 64) { // Convert tiles to pixels
       console.warn(`⚠️ Player ${client.sessionId} attacking out of range: ${distance}px`);
       return;
     }
-    
+
     // Set target
     if (Components.Target) {
       Components.Target.id[entity] = targetEntity;
     }
-    
+
     if (Components.Input) {
       Components.Input.isAttacking[entity] = 1;
     }
-    
+
     console.log(`⚔️ Player ${client.sessionId} attacking ${message.targetId}`);
   }
 
   private handleStopAttack(client: Client, message: {}) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // Clear target
     if (Components.Target) {
       Components.Target.id[entity] = 0;
     }
-    
+
     if (Components.Input) {
       Components.Input.isAttacking[entity] = 0;
     }
@@ -4238,7 +4270,7 @@ export class GameRoom extends Room<GameRoomState> {
   private handlePrayer(client: Client, message: { action: 'activate' | 'deactivate'; prayer: string }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // TODO: Implement prayer system
     console.log(`🙏 Player ${client.sessionId} prayer ${message.action}: ${message.prayer}`);
   }
@@ -4246,7 +4278,7 @@ export class GameRoom extends Room<GameRoomState> {
   private handleSpecialAttack(client: Client, message: { targetId?: string }) {
     const entity = this.stateSyncSystem['playerEntityMap'].get(client.sessionId);
     if (entity === undefined) return;
-    
+
     // TODO: Implement special attack system
     console.log(`⚡ Player ${client.sessionId} special attack`);
   }
@@ -4254,11 +4286,11 @@ export class GameRoom extends Room<GameRoomState> {
   private handleChat(client: Client, message: { message: string }) {
     const playerState = this.state.players.get(client.sessionId);
     if (!playerState) return;
-    
+
     // Validate chat message
     if (message.message.length > 100) return; // Max 100 characters
     if (message.message.trim().length === 0) return; // No empty messages
-    
+
     // Broadcast chat message
     this.broadcast("chatMessage", {
       playerId: client.sessionId,
@@ -4271,21 +4303,21 @@ export class GameRoom extends Room<GameRoomState> {
 
   private startWave(waveNumber: number) {
     console.log(`🌊 Starting wave ${waveNumber}`);
-    
+
     this.currentWave = waveNumber;
     this.waveInProgress = true;
     this.enemiesSpawned = 0;
-    
+
     this.state.wave.current = waveNumber;
-    
+
     const enemyCount = this.getEnemyCountForWave(waveNumber);
     const enemyTypes = this.getEnemyTypesForWave(waveNumber);
-    
+
     this.state.wave.enemiesRemaining = enemyCount;
-    
+
     // Spawn enemies gradually
     this.spawnWaveEnemies(waveNumber, enemyCount, enemyTypes);
-    
+
     this.broadcast("waveStart", {
       wave: waveNumber,
       enemyCount: enemyCount,
@@ -4295,7 +4327,7 @@ export class GameRoom extends Room<GameRoomState> {
 
   private spawnWaveEnemies(wave: number, count: number, types: EnemyType[]) {
     const spawnDelay = Math.max(500, 2000 - (wave * 50)); // Faster spawns each wave
-    
+
     for (let i = 0; i < count; i++) {
       this.clock.setTimeout(() => {
         this.spawnEnemy(types[Math.floor(Math.random() * types.length)], wave);
@@ -4306,21 +4338,21 @@ export class GameRoom extends Room<GameRoomState> {
   private spawnEnemy(type: EnemyType, wave: number) {
     const entity = this.world.addEntity();
     const enemyId = `enemy_${Date.now()}_${++this.entityIdCounter}`;
-    
+
     // Position around map edges
     const { x, y } = this.getRandomSpawnPosition();
-    
+
     Components.Position.x[entity] = x;
     Components.Position.y[entity] = y;
-    
+
     // Mark as enemy
     if (Components.Enemy) {
       Components.Enemy.type[entity] = this.getEnemyTypeId(type);
     }
-    
+
     // Set stats based on enemy type and wave
     this.setEnemyStats(entity, type, wave);
-    
+
     // Register with sync system
     this.stateSyncSystem.registerEnemy(enemyId,
 
@@ -4553,7 +4585,7 @@ export interface PlayerState {
 }
 
 // Enemy types (OSRS creatures)
-export type EnemyType = 
+export type EnemyType =
   | 'chicken' | 'rat' | 'spider' | 'cow'           // Wave 1-3
   | 'goblin' | 'imp' | 'guard'                     // Wave 4-6
   | 'wizard' | 'dark_wizard' | 'hobgoblin'         // Wave 7-10
@@ -4599,7 +4631,7 @@ export interface GameState {
 }
 
 // Network message types (client -> server)
-export type ClientMessage = 
+export type ClientMessage =
   | { type: 'move'; target: Vector2 }
   | { type: 'attack'; targetId: string }
   | { type: 'stopAttack' }
@@ -4797,7 +4829,7 @@ export const SHARED_VERSION = '1.0.0';
   // ... other package.json content ...
   "dependencies": {
     // ... other dependencies ...
-    "@runerogue/shared": "workspace:*" 
+    "@runerogue/shared": "workspace:*"
   }
   // ... other package.json content ...
 }
@@ -4914,7 +4946,7 @@ export class PlayerSchema extends Schema {
   @type(EquipmentSchema) equipment = new EquipmentSchema();
   @type(PrayerSchema) prayer = new PrayerSchema();
   @type(SpecialAttackSchema) specialAttack = new SpecialAttackSchema();
-  
+
   @type("string") target?: string = "";
   @type("number") lastAttackTick: number = 0;
   @type("boolean") inCombat: boolean = false;
@@ -4935,7 +4967,7 @@ export class EnemySchema extends Schema {
   @type("number") combatLevel: number = 1;
   @type(EnemyStatsSchema) stats = new EnemyStatsSchema();
   @type(EquipmentBonusesSchema) bonuses = new EquipmentBonusesSchema();
-  
+
   @type("string") target?: string = "";
   @type("number") lastAttackTick: number = 0;
   @type("number") aggroRange: number = 5;
@@ -4987,7 +5019,7 @@ import { EnemyType, ItemData as SharedItemData, Equipment as SharedEquipment } f
 export class StateSyncSystem {
   private room: Room<GameRoomState>;
   private world: World;
-  
+
   // Entity mapping (CRITICAL for maintaining sync)
   // These maps are managed by GameRoom on player/enemy creation/deletion
   public playerEntityMap: Map<string, number>; // sessionId -> ECS entity
@@ -4999,7 +5031,7 @@ export class StateSyncSystem {
   private playerQuery = defineQuery([Components.Player, Components.Position, Components.Health]);
   private enemyQuery = defineQuery([Components.Enemy, Components.Position, Components.Health]);
   // Query for entities that have been marked for removal
-  private deadEntityQuery = defineQuery([Components.Dead]); 
+  private deadEntityQuery = defineQuery([Components.Dead]);
 
   constructor(room: Room<GameRoomState>, world: World, entityMaps: {
     playerEntityMap: Map<string, number>;
@@ -5022,7 +5054,7 @@ export class StateSyncSystem {
       this.syncEnemies();
       this.cleanupDeadNetworkEntities(); // Important: remove from Colyseus state
       this.syncGameTimeAndWave();
-      
+
       const endTime = performance.now();
       const executionTime = endTime - startTime;
       if (executionTime > 10) { // Increased threshold slightly
@@ -5038,7 +5070,7 @@ export class StateSyncSystem {
     for (const entity of entities) {
       const sessionId = this.entityPlayerMap.get(entity);
       if (!sessionId) continue;
-      
+
       let playerState = this.room.state.players.get(sessionId);
       if (!playerState) {
         // This case should ideally be handled by GameRoom onJoin
@@ -5048,7 +5080,7 @@ export class StateSyncSystem {
         // Populate with default/initial values if necessary
         this.room.state.players.set(sessionId, playerState);
       }
-      
+
       // Sync Name (if component exists)
       if (Components.Name && Components.Name.value[entity]) {
          playerState.name = Components.Name.value[entity] as string; // Assuming Name.value is string
@@ -5056,15 +5088,15 @@ export class StateSyncSystem {
 
       // Sync Position
       this.syncVector2(playerState.position, Components.Position.x[entity], Components.Position.y[entity]);
-      
+
       // Sync Health
       this.syncHealth(playerState.health, Components.Health.current[entity], Components.Health.max[entity]);
-      
+
       // Sync Combat Stats
       if (Components.CombatStats) {
         this.syncCombatStats(playerState.stats, entity);
       }
-      
+
       // Sync Prayer
       if (Components.Prayer) {
         this.syncPrayerState(playerState.prayer, entity);
@@ -5080,7 +5112,7 @@ export class StateSyncSystem {
         playerState.specialAttack.energy = Components.SpecialAttack.energy[entity] || 0;
         playerState.specialAttack.available = (Components.SpecialAttack.cooldownTimer[entity] || 0) <= 0;
       }
-      
+
       // Sync Combat State
       playerState.target = this.getTargetId(Components.Target.id[entity]);
       playerState.lastAttackTick = Components.AttackTimer.lastAttack[entity] || 0;
@@ -5093,18 +5125,18 @@ export class StateSyncSystem {
     for (const entity of entities) {
       const enemyId = this.entityEnemyMap.get(entity);
       if (!enemyId) continue;
-      
+
       let enemyState = this.room.state.enemies.get(enemyId);
       if (!enemyState) {
         enemyState = new EnemySchema();
         enemyState.id = enemyId;
         this.room.state.enemies.set(enemyId, enemyState);
       }
-      
+
       enemyState.type = this.getEnemyTypeName(Components.Enemy.type[entity]);
       this.syncVector2(enemyState.position, Components.Position.x[entity], Components.Position.y[entity]);
       this.syncHealth(enemyState.health, Components.Health.current[entity], Components.Health.max[entity]);
-      
+
       if (Components.CombatStats) {
         enemyState.combatLevel = Components.CombatStats.combatLevel[entity] || 1;
         this.syncEnemyStats(enemyState.stats, entity);
@@ -5112,7 +5144,7 @@ export class StateSyncSystem {
       if (Components.EquipmentBonuses) {
         this.syncEquipmentBonuses(enemyState.bonuses, entity);
       }
-      
+
       enemyState.target = this.getTargetId(Components.Target.id[entity]);
       enemyState.lastAttackTick = Components.AttackTimer.lastAttack[entity] || 0;
       enemyState.aggroRange = Components.AI.aggroRange[entity] || 5;
@@ -5138,7 +5170,7 @@ export class StateSyncSystem {
   private syncGameTimeAndWave() {
     this.room.state.gameTime.tick = this.room['tickCounter'] || 0; // Access from GameRoom
     this.room.state.gameTime.elapsed = Math.floor(this.room.state.gameTime.tick * (this.room['TICK_RATE'] / 1000));
-    
+
     this.room.state.wave.current = this.room['currentWave'] || 1;
     this.room.state.wave.enemiesRemaining = this.room.state.enemies.size;
     // nextWaveIn needs to be calculated in GameRoom based on wave completion
@@ -5165,7 +5197,7 @@ export class StateSyncSystem {
     schema.prayer.level = s.prayer[entity] || 1; schema.prayer.xp = s.prayerXp[entity] || 0;
     schema.magic.level = s.magic[entity] || 1; schema.magic.xp = s.magicXp[entity] || 0;
   }
-  
+
   private syncEnemyStats(schema: EnemyStatsSchema, entity: number) {
     const s = Components.CombatStats;
     schema.attack = s.attack[entity] || 1;
@@ -5208,7 +5240,7 @@ export class StateSyncSystem {
     // schemaItem.name = itemData.name;
     // this.syncEquipmentBonuses(schemaItem.bonuses, ecsItemId); // if bonuses are per-item entity
   }
-  
+
   private syncEquipmentBonuses(schema: EquipmentBonusesSchema, entity: number) {
     const eb = Components.EquipmentBonuses; // Assuming total bonuses on player/enemy entity
     schema.attackStab = eb.attackStab[entity] || 0;
@@ -5259,11 +5291,11 @@ export class GameRoom extends Room<GameRoomState> {
   private entityPlayerMap = new Map<number, string>();
   private enemyEntityMap = new Map<string, number>();
   private entityEnemyMap = new Map<number, string>();
-  
+
   private gameLoopInterval!: NodeJS.Timer; // Definite assignment assertion
   public readonly TICK_RATE = 50; // Server tick rate: 20 TPS (50ms)
   public tickCounter = 0; // Public for StateSyncSystem access
-  
+
   public currentWave = 0; // Public for StateSyncSystem access
   private waveInProgress = false;
   private enemiesToSpawnThisWave = 0;
@@ -5278,10 +5310,10 @@ export class GameRoom extends Room<GameRoomState> {
     this.setState(new GameRoomState());
     this.state.gameStarted = false;
     this.state.gameEnded = false;
-    
+
     this.world = createWorld();
     console.log("🌍 ECS World created");
-    
+
     this.stateSyncSystem = new StateSyncSystem(this, this.world, {
         playerEntityMap: this.playerEntityMap,
         entityPlayerMap: this.entityPlayerMap,
@@ -5289,10 +5321,10 @@ export class GameRoom extends Room<GameRoomState> {
         entityEnemyMap: this.entityEnemyMap
     });
     console.log("🔄 State sync system initialized");
-    
+
     this.initializeECSSystems();
     this.setupMessageHandlers();
-    
+
     this.setMetadata({ name: "RuneRogue Alpha", mode: "Survival" });
     console.log("✅ GameRoom setup complete");
   }
@@ -5331,9 +5363,9 @@ export class GameRoom extends Room<GameRoomState> {
     const entity = addEntity(this.world);
     this.playerEntityMap.set(client.sessionId, entity);
     this.entityPlayerMap.set(entity, client.sessionId);
-    
+
     this.initializePlayerEntity(entity, playerName);
-    
+
     const playerState = new PlayerSchema(); // Create schema for the new player
     playerState.id = client.sessionId;
     playerState.name = playerName;
@@ -5442,9 +5474,9 @@ export class GameRoom extends Room<GameRoomState> {
     this.state.gameStarted = true;
     this.currentWave = 0; // Will be incremented to 1 by startNextWave
     this.waveStartTime = this.clock.currentTime;
-    
+
     this.gameLoopInterval = this.clock.setInterval(() => this.tick(), this.TICK_RATE);
-    
+
     this.startNextWave();
     console.log("✅ Game started successfully.");
   }
@@ -5488,9 +5520,9 @@ export class GameRoom extends Room<GameRoomState> {
     console.log(`🌊 Starting Wave ${this.currentWave} with ${this.enemiesToSpawnThisWave} enemies.`);
     this.state.wave.current = this.currentWave;
     this.state.wave.enemiesRemaining = this.enemiesToSpawnThisWave; // Initial count for UI
-    
+
     this.broadcast("waveStart", { wave: this.currentWave, enemyCount: this.enemiesToSpawnThisWave, enemyTypes } as ServerMessage);
-    
+
     // Trigger SpawnSystem (it should handle gradual spawning based on wave config)
     if (Components.WaveState) { // Assuming a WaveState component to trigger spawner
         const waveEntity = addEntity(this.world); // Or a singleton entity
@@ -5506,7 +5538,7 @@ export class GameRoom extends Room<GameRoomState> {
     this.waveInProgress = false;
     console.log(`🎉 Wave ${this.currentWave} Complete!`);
     this.broadcast("waveComplete", { wave: this.currentWave, bonusXp: 100 * this.currentWave } as ServerMessage); // Example bonus XP
-    
+
     const delayBetweenWaves = 10000; // 10 seconds
     this.state.wave.nextWaveIn = delayBetweenWaves / 1000;
     this.nextWaveTimeout = this.clock.setTimeout(() => {
@@ -5525,7 +5557,7 @@ export class GameRoom extends Room<GameRoomState> {
     if (wave <= 12) return ['wizard', 'moss_giant', 'hill_giant'];
     return ['lesser_demon', 'fire_giant']; // Add more variety
   }
-  
+
   // Message Handlers
   private handleMove(client: Client, target: { x: number; y: number }) {
     const entity = this.playerEntityMap.get(client.sessionId);
@@ -5549,7 +5581,7 @@ export class GameRoom extends Room<GameRoomState> {
     Components.Target.id[attackerEntity] = targetEntity;
     Components.Input.isAttacking[attackerEntity] = 1;
   }
-  
+
   private handleStopAttack(client: Client) {
     const entity = this.playerEntityMap.get(client.sessionId);
     if (entity === undefined || !Components.Input || !Components.Target) return;
@@ -5572,7 +5604,7 @@ export class GameRoom extends Room<GameRoomState> {
     // This should queue an action for SpecialAttackSystem
     console.log(`Player ${client.sessionId} used special attack on ${targetId || 'area'}`);
   }
-  
+
   private handleChat(client: Client, message: string) {
     const player = this.state.players.get(client.sessionId);
     if (!player || message.length === 0 || message.length > 80) return;
@@ -5672,7 +5704,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.audio('hit_sound_melee', 'assets/sounds/hit_melee.wav');
     this.load.audio('player_death_sound', 'assets/sounds/player_death.wav');
     this.load.audio('level_up_sound', 'assets/sounds/level_up.wav');
-    
+
     // Particle effects
     this.load.image('spark_particle', 'assets/particles/spark.png');
   }
@@ -5760,7 +5792,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ playerName, onGameEnd })
             autoCenter: Phaser.Scale.CENTER_BOTH
           }
         };
-        
+
         gameRef.current = new Phaser.Game(config);
         // Pass Colyseus room and client to Phaser scenes via registry
         gameRef.current.registry.set('colyseusRoom', room);
@@ -5852,7 +5884,7 @@ export class GameScene extends Phaser.Scene {
   private enemySprites: Map<string, Phaser.GameObjects.Sprite> = new Map();
   private nameTexts: Map<string, Phaser.GameObjects.Text> = new Map();
   private healthBars: Map<string, Phaser.GameObjects.Graphics> = new Map();
-  
+
   private damageTextPool: Phaser.GameObjects.Text[] = [];
 
   constructor() {
@@ -5927,7 +5959,7 @@ export class GameScene extends Phaser.Scene {
             }
         }
     });
-    
+
     // Keyboard shortcuts for prayers (example: P key)
     this.input.keyboard.on('keydown-P', () => {
         // Example: Toggle Protect from Melee
@@ -5939,7 +5971,7 @@ export class GameScene extends Phaser.Scene {
         // this.room.send("prayer", { action: 'activate', prayer: prayerToToggle } as ClientMessage);
     });
   }
-  
+
   private findClickedEnemy(worldX: number, worldY: number): EnemySchema | null {
     let closestEnemy: EnemySchema | null = null;
     let minDistance = 32 * 32; // Click within 32px radius
@@ -6008,7 +6040,7 @@ export class GameScene extends Phaser.Scene {
     const sprite = this.add.sprite(enemy.position.x, enemy.position.y, `enemy_${enemy.type}` || 'player_default'); // Fallback sprite
     sprite.setDepth(5); // Enemies below players
     this.enemySprites.set(enemyId, sprite);
-    
+
     const healthBar = this.add.graphics().setDepth(6);
     this.healthBars.set(enemyId, healthBar);
     this.updateHealthBar(healthBar, enemy.position, enemy.health.current, enemy.health.max, true);
@@ -6040,7 +6072,7 @@ export class GameScene extends Phaser.Scene {
     this.healthBars.get(enemyId)?.destroy();
     this.healthBars.delete(enemyId);
   }
-  
+
   private updateHealthBar(graphics: Phaser.GameObjects.Graphics, pos: Vector2, current: number, max: number, isEnemy: boolean = false) {
     graphics.clear();
     const width = 40;
@@ -6069,7 +6101,7 @@ export class GameScene extends Phaser.Scene {
       this.createHitSplat(targetSprite.x, targetSprite.y, message.damage, message.hitType);
     }
   }
-  
+
   private handleXpGainMessage(message: Extract<ServerMessage, { type: 'xpGain' }>) {
     // Display XP drop text near player or in a dedicated UI area
     const playerSprite = this.playerSprites.get(this.localPlayerId); // Assuming XP is for local player
@@ -6086,11 +6118,11 @@ export class GameScene extends Phaser.Scene {
         // Could add a graphical effect too
     }
   }
-  
+
   private handleWaveStartMessage(message: Extract<ServerMessage, { type: 'waveStart' }>) {
     this.showCenterScreenText(`Wave ${message.wave} Starting!`, '#ffffff', 2000, 48);
   }
-  
+
   private handleWaveCompleteMessage(message: Extract<ServerMessage, { type: 'waveComplete' }>) {
     this.showCenterScreenText(`Wave ${message.wave} Complete!`, '#00ff00', 3000, 48);
   }
@@ -6132,7 +6164,7 @@ export class GameScene extends Phaser.Scene {
       onComplete: () => text.setVisible(false)
     });
   }
-  
+
   private createHitSplat(x: number, y: number, damage: number, hitType: 'hit' | 'max' | 'miss') {
     // Simple particle effect for now
     const particles = this.add.particles('spark_particle'); // Ensure 'spark_particle' is loaded
@@ -6150,7 +6182,7 @@ export class GameScene extends Phaser.Scene {
     emitter.setDepth(99);
     this.time.delayedCall(300, () => particles.destroy());
   }
-  
+
   private showFloatingText(content: string, x: number, y: number, color: string = '#ffffff', duration: number = 1500, fontSize: number = 16, isChat: boolean = false) {
     const text = this.add.text(x, y, content, { font: `${fontSize}px Arial`, color: color, stroke: '#000000', strokeThickness: isChat ? 0 : 2 })
         .setOrigin(0.5, 1).setDepth(101);
@@ -6171,7 +6203,7 @@ export class GameScene extends Phaser.Scene {
     const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
     const text = this.add.text(screenCenterX, screenCenterY, content, { font: `${fontSize}px Arial Black`, color: color, stroke: '#000000', strokeThickness: 4 })
         .setOrigin(0.5, 0.5).setDepth(200).setAlpha(0);
-    
+
     this.tweens.timeline({
         targets: text,
         tweens: [
@@ -6182,7 +6214,7 @@ export class GameScene extends Phaser.Scene {
         onComplete: () => text.destroy()
     });
   }
-  
+
   private createClickIndicator(x: number, y: number, color: number = 0xffffff) {
     const circle = this.add.graphics().setDepth(1);
     circle.lineStyle(2, color, 0.8);
@@ -6272,7 +6304,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({ room }) => {
     room.state.players.onChange = (player, sessionId) => {
       if (sessionId === room.sessionId) updateLocalPlayerData();
     };
-    
+
     // Listen for wave changes
     room.state.wave.onChange = () => {
         setCurrentWave(room.state.wave.current);
@@ -6287,15 +6319,15 @@ export const GameHUD: React.FC<GameHUDProps> = ({ room }) => {
         // Assuming xpGain is only sent for the player who earned it, or has a targetId
         // For simplicity, let's assume it's for the local player if no targetId or targetId matches
         if (message.skill && OSRS_SKILLS.includes(message.skill as SkillName)) {
-            setXpDrops(prev => [...prev, { 
+            setXpDrops(prev => [...prev, {
                 id: Math.random().toString(36).substr(2, 9),
-                skill: message.skill as SkillName, 
+                skill: message.skill as SkillName,
                 amount: message.amount,
                 timestamp: Date.now()
             }]);
         }
     });
-    
+
     // Cleanup listeners
     return () => {
         xpListener?.unsubscribe();
@@ -6355,7 +6387,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({ room }) => {
           </div>
         ))}
       </div>
-      
+
       {/* Basic Chat (display only for now) */}
       {/* <div className="chat-display"> ... </div> */}
     </div>
@@ -6525,7 +6557,7 @@ import { GameHUD } from './game/GameHUD'; // Import GameHUD
 }
 
 .phaser-container {
-  width: 100%; 
+  width: 100%;
   height: 100%;
   /* border: 2px solid #333; */ /* Optional border */
   background-color: #000;
@@ -6605,7 +6637,7 @@ export function CombatSystem(world: World, gameRoom: GameRoom) {
         defenceSlash: C.EquipmentBonuses.defenceSlash[targetEid],
         // ... other bonuses
       };
-      
+
       // OSRS Max Hit Calculation
       const maxHit = calculateMaxHit(
         attackerStats.strength, // Effective strength level
@@ -6625,7 +6657,7 @@ export function CombatSystem(world: World, gameRoom: GameRoom) {
         // TODO: Add prayer effects, special attack modifiers, etc.
         [], [], false
       );
-      
+
       let damage = 0;
       let hitType: 'miss' | 'hit' | 'max' = 'miss';
 
@@ -6639,11 +6671,11 @@ export function CombatSystem(world: World, gameRoom: GameRoom) {
 
       // Apply damage to defender's health
       C.Health.current[targetEid] = Math.max(0, C.Health.current[targetEid] - damage);
-      
+
       // Broadcast damage message to clients
       const attackerId = gameRoom['entityPlayerMap'].get(entity) || gameRoom['entityEnemyMap'].get(entity) || `unknown_${entity}`;
       const targetId = gameRoom['entityPlayerMap'].get(targetEid) || gameRoom['entityEnemyMap'].get(targetEid) || `unknown_${targetEid}`;
-      
+
       gameRoom.broadcast("damage", { attackerId, targetId, damage, hitType } as ServerMessage);
 
       // Grant XP if attacker is a player and damage was dealt
@@ -6669,7 +6701,7 @@ export function CombatSystem(world: World, gameRoom: GameRoom) {
       if (C.Health.current[targetEid] <= 0 && !Has(world, C.Dead, targetEid)) {
         addComponent(world, C.Dead, targetEid); // Mark as dead for CleanupSystem
         C.Dead.timer[targetEid] = 50; // Despawn after 50 server ticks (2.5s)
-        
+
         // If an enemy died, grant loot, clear its target, etc.
         if (Has(world, C.Enemy, targetEid)) {
             // TODO: LootSystem call
@@ -6695,3 +6727,4 @@ This detailed plan should provide a solid foundation. Remember to test each phas
 
 ---
 
+````

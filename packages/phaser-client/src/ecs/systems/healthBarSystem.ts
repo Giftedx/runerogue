@@ -53,9 +53,11 @@ export const createHealthBarSystem = (scene: GameScene) => {
 
       // Foreground
       bar.fillStyle(
-        healthPercentage > 0.5 ? 0x00ff00
-        : healthPercentage > 0.2 ? 0xffff00
-        : 0xff0000
+        healthPercentage > 0.5
+          ? 0x00ff00
+          : healthPercentage > 0.2
+            ? 0xffff00
+            : 0xff0000,
       );
       bar.fillRect(x, y, BAR_WIDTH * healthPercentage, BAR_HEIGHT);
 

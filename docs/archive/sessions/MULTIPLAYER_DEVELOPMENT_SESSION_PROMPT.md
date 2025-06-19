@@ -30,7 +30,7 @@ Build real-time 2-4 player movement synchronization and auto-combat system on th
 **Implementation Steps:**
 
 1. Add movement message handlers to GameRoom.ts
-2. Implement server-side movement validation (speed limits, boundaries)  
+2. Implement server-side movement validation (speed limits, boundaries)
 3. Create position broadcasting via Colyseus state
 4. Add interpolation for smooth remote player movement
 5. Test with multiple concurrent players
@@ -49,7 +49,7 @@ Build real-time 2-4 player movement synchronization and auto-combat system on th
 **Implementation Steps:**
 
 1. Enhance WaveManager with enemy positioning
-2. Add automatic target acquisition for enemies  
+2. Add automatic target acquisition for enemies
 3. Implement OSRS-accurate damage calculations
 4. Create enemy pathfinding toward players
 5. Add XP gain and progression feedback
@@ -132,7 +132,7 @@ cd c:\Users\aggis\GitHub\runerogue\server-ts
 # Start development server
 npm run start
 
-# Run tests for validation  
+# Run tests for validation
 npm test
 
 # Quick performance check

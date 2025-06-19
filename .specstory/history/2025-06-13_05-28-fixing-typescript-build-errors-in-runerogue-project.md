@@ -24,10 +24,10 @@ Do this for every dynamic/static import in your `src/assets/*.ts` and `src/osrs-
 // tsconfig.json
 {
   "compilerOptions": {
-    "moduleResolution": "node",            // instead of node16/nodenext
+    "moduleResolution": "node", // instead of node16/nodenext
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
-  }
+    "allowSyntheticDefaultImports": true,
+  },
 }
 ```
 
@@ -42,8 +42,8 @@ Do this for every dynamic/static import in your `src/assets/*.ts` and `src/osrs-
 
 Either:
 
-* Remove the `: void` annotation so TS can infer the actual return type,
-* **or** explicitly declare the function’s signature to return `Promise<ComprehensiveAssetManifest>` (or synchronous `ComprehensiveAssetManifest`).
+- Remove the `: void` annotation so TS can infer the actual return type,
+- **or** explicitly declare the function’s signature to return `Promise<ComprehensiveAssetManifest>` (or synchronous `ComprehensiveAssetManifest`).
 
 ```ts
 // before
@@ -131,10 +131,10 @@ export { OSRSCacheReaderFallback };
 
 ## 6. Third-party typings
 
-* **Phaser**: install `npm install --save-dev phaser @types/phaser` and then either:
+- **Phaser**: install `npm install --save-dev phaser @types/phaser` and then either:
 
   ```ts
-  import Phaser from 'phaser';
+  import Phaser from "phaser";
   ```
 
   or add to your `tsconfig.json`:
@@ -143,20 +143,22 @@ export { OSRSCacheReaderFallback };
   {
     "compilerOptions": {
       "types": ["phaser"],
-      "typeRoots": ["node_modules/@types"]
-    }
+      "typeRoots": ["node_modules/@types"],
+    },
   }
   ```
 
-* **Discord SDK**: consult its docs—`commands.on/register` may no longer exist. If you need slash-command support, you’ll likely need to call:
+- **Discord SDK**: consult its docs—`commands.on/register` may no longer exist. If you need slash-command support, you’ll likely need to call:
 
   ```ts
-  discord.application.commands.create({ /* ... */ });
+  discord.application.commands.create({
+    /* ... */
+  });
   ```
 
   Or update to whatever the current API surface is.
 
-* **ROTMap**: fix your import if you intended to use `RNG` as a value and type:
+- **ROTMap**: fix your import if you intended to use `RNG` as a value and type:
 
   ```ts
   import { RNG } from 'rot-js';
@@ -169,8 +171,8 @@ export { OSRSCacheReaderFallback };
 
 ## 7. Duplicate methods & mismatched signatures
 
-* **WaveManager** has two `completeWave()`s—remove or rename one.
-* Anywhere you pass the “wrong” parameter type (e.g. string → number), either convert the argument or change the function signature to accept a string.
+- **WaveManager** has two `completeWave()`s—remove or rename one.
+- Anywhere you pass the “wrong” parameter type (e.g. string → number), either convert the argument or change the function signature to accept a string.
 
 ---
 
@@ -179,10 +181,12 @@ export { OSRSCacheReaderFallback };
 Your interceptor callback:
 
 ```ts
-use: (success, error) => { /* … */ }
+use: (success, error) => {
+  /* … */
+};
 ```
 
-must return a **number** (the interceptor ID). Typically you’d just *call* the method:
+must return a **number** (the interceptor ID). Typically you’d just _call_ the method:
 
 ```ts
 const id = this.client.interceptors.response.use(success, error);
@@ -192,8 +196,10 @@ Or if directly assigning:
 
 ```ts
 this.client.interceptors.response.use(
-  (res) => { /*…*/ return res; },
-  (err) => Promise.reject(err)
+  (res) => {
+    /*…*/ return res;
+  },
+  (err) => Promise.reject(err),
 );
 ```
 
@@ -205,8 +211,7 @@ this.client.interceptors.response.use(
 2. Incrementally tackle one category at a time—e.g. first fix all file-extension errors, then move on to metadata/interface fixes.
 3. Consider tightening your own types so you rarely deal with `unknown`.
 
-Let me know if you want sample `tsconfig.json` adjustments or want me to walk through *any* of those error categories in more detail!
-
+Let me know if you want sample `tsconfig.json` adjustments or want me to walk through _any_ of those error categories in more detail!
 
 ---
 
@@ -252,6 +257,7 @@ For each file with errors:
 ## File Priority Order
 
 Start with core files first:
+
 1. `src/osrs-cache-reader-fallback.ts`
 2. `src/assets/*.ts` files
 3. `src/server/systems/*.ts`
@@ -262,9 +268,10 @@ Start with core files first:
 
 For each file, provide:
 
-````typescript
+```typescript
 // filepath: packages/game-server/src/[path-to-file].ts
 // Complete file content with all fixes applied
+```
 ````
 
 Include brief comments explaining non-obvious fixes.
@@ -278,7 +285,8 @@ Include brief comments explaining non-obvious fixes.
 - Server-authoritative multiplayer design
 
 Begin with the first file that has errors and continue until all build errors are resolved.
-````
+
+```
 
 This prompt:
 1. Clearly defines the problem and all error categories
@@ -300,3 +308,4 @@ Would you like me to adjust anything in this prompt before using it?
 
 ---
 
+```

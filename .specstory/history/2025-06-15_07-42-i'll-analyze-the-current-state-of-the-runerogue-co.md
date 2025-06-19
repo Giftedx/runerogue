@@ -26,8 +26,9 @@ Based on my analysis of the codebase against the project documentation and devel
 ## 🎯 **Current Status Assessment**
 
 ### ✅ **Phase 0: Foundation - COMPLETE**
+
 - OSRS data pipeline with combat formulas ✅
-- Colyseus multiplayer server infrastructure ✅  
+- Colyseus multiplayer server infrastructure ✅
 - bitECS entity component system ✅
 - Comprehensive test suite ✅
 - API server with OSRS data endpoints ✅
@@ -40,7 +41,7 @@ Based on my analysis of the codebase against the project documentation and devel
 
 The client exists but lacks proper game integration. We need:
 
-````typescript
+```typescript
 /**
  * Main game client that connects to Colyseus server and manages game state
  * Implements client-side prediction and server reconciliation
@@ -49,7 +50,7 @@ export class GameClient {
   private room: Room<GameRoomState> | null = null;
   private gameEngine: PhaserGame;
   private lastServerState: GameRoomState | null = null;
-  
+
   /**
    * Initialize connection to game server
    * @param roomId - Optional room ID to join specific room
@@ -57,8 +58,10 @@ export class GameClient {
   async connect(roomId?: string): Promise<void> {
     try {
       const client = new Client("ws://localhost:2567");
-      this.room = await client.joinOrCreate<GameRoomState>("game_room", { roomId });
-      
+      this.room = await client.joinOrCreate<GameRoomState>("game_room", {
+        roomId,
+      });
+
       this.setupEventHandlers();
       this.startClientPrediction();
     } catch (error) {
@@ -66,34 +69,34 @@ export class GameClient {
       throw new Error("Connection failed");
     }
   }
-  
+
   /**
    * Handle server state updates with client-side prediction
    */
   private setupEventHandlers(): void {
     if (!this.room) return;
-    
+
     // Handle state updates
     this.room.onStateChange((state) => {
       this.reconcileServerState(state);
       this.updateGameWorld(state);
     });
-    
+
     // Handle player join/leave
     this.room.state.players.onAdd = (player, key) => {
       this.createPlayerEntity(player, key);
     };
-    
+
     this.room.state.players.onRemove = (player, key) => {
       this.removePlayerEntity(key);
     };
   }
 }
-````
+```
 
 ### **2. CRITICAL: Phaser Game Engine Integration**
 
-````typescript
+```typescript
 /**
  * Phaser 3 game engine configuration for RuneRogue
  * Handles rendering, input, and client-side game logic
@@ -104,19 +107,15 @@ export class PhaserGame extends Phaser.Game {
       type: Phaser.AUTO,
       width: 1024,
       height: 768,
-      parent: 'game-container',
+      parent: "game-container",
       physics: {
-        default: 'arcade',
+        default: "arcade",
         arcade: {
           gravity: { y: 0 },
-          debug: false
-        }
+          debug: false,
+        },
       },
-      scene: [
-        BootScene,
-        GameScene,
-        UIScene
-      ]
+      scene: [BootScene, GameScene, UIScene],
     });
   }
 }
@@ -128,11 +127,11 @@ export class GameScene extends Phaser.Scene {
   private players: Map<string, PlayerSprite> = new Map();
   private enemies: Map<number, EnemySprite> = new Map();
   private gameClient: GameClient;
-  
+
   constructor() {
-    super({ key: 'GameScene' });
+    super({ key: "GameScene" });
   }
-  
+
   /**
    * Update game objects based on server state
    * Implements smooth interpolation between server updates
@@ -144,13 +143,13 @@ export class GameScene extends Phaser.Scene {
       if (playerSprite) {
         playerSprite.interpolateToPosition(
           serverPlayer.position.x,
-          serverPlayer.position.y
+          serverPlayer.position.y,
         );
         playerSprite.updateHealthBar(serverPlayer.health);
         playerSprite.updatePrayerBar(serverPlayer.prayer);
       }
     });
-    
+
     // Update enemies
     state.enemies.forEach((serverEnemy, enemyId) => {
       let enemySprite = this.enemies.get(enemyId);
@@ -162,52 +161,55 @@ export class GameScene extends Phaser.Scene {
     });
   }
 }
-````
+```
 
 ### **3. HIGH PRIORITY: Player Movement System**
 
-````typescript
+```typescript
 /**
  * Handles player movement with server-side validation
  * Implements pathfinding and collision detection
  */
 export const MovementSystem = defineSystem((world: World) => {
   const entities = enterQuery(world);
-  const deltaTime = 1/20; // 20 TPS server tick rate
-  
+  const deltaTime = 1 / 20; // 20 TPS server tick rate
+
   for (let i = 0; i < entities.length; i++) {
     const eid = entities[i];
-    
+
     // Validate movement speed (anti-cheat)
     const currentSpeed = calculateMovementSpeed(eid);
     const maxAllowedSpeed = getMaxMovementSpeed(eid);
-    
-    if (currentSpeed > maxAllowedSpeed * 1.1) { // 10% tolerance for network lag
-      console.warn(`Player ${eid} exceeded max speed: ${currentSpeed} > ${maxAllowedSpeed}`);
+
+    if (currentSpeed > maxAllowedSpeed * 1.1) {
+      // 10% tolerance for network lag
+      console.warn(
+        `Player ${eid} exceeded max speed: ${currentSpeed} > ${maxAllowedSpeed}`,
+      );
       // Reset to last valid position
       resetToLastValidPosition(eid);
       continue;
     }
-    
+
     // Update position
     const velocity = Velocity[eid];
     const position = Position[eid];
-    
+
     position.x += velocity.x * deltaTime;
     position.y += velocity.y * deltaTime;
-    
+
     // Collision detection with world boundaries
     validateWorldBounds(eid);
-    
+
     // Update last valid position for anti-cheat
     updateLastValidPosition(eid);
   }
 });
-````
+```
 
 ### **4. HIGH PRIORITY: Real-time Combat Visualization**
 
-````typescript
+```typescript
 /**
  * Renders combat effects and damage numbers
  * Synchronizes with server-authoritative combat results
@@ -216,48 +218,61 @@ export class CombatRenderer {
   private scene: Phaser.Scene;
   private damageNumbers: Phaser.GameObjects.Group;
   private hitEffects: Phaser.GameObjects.Group;
-  
+
   /**
    * Display damage number with OSRS-style formatting
    * @param damage - Damage amount from server
    * @param position - World position to display damage
    * @param damageType - Type of damage (melee, ranged, magic)
    */
-  showDamageNumber(damage: number, position: Vector2, damageType: DamageType): void {
+  showDamageNumber(
+    damage: number,
+    position: Vector2,
+    damageType: DamageType,
+  ): void {
     const color = this.getDamageColor(damageType);
-    const damageText = this.scene.add.text(position.x, position.y, damage.toString(), {
-      fontSize: '16px',
-      color: color,
-      stroke: '#000000',
-      strokeThickness: 2,
-      fontFamily: 'RuneScape UF'
-    });
-    
+    const damageText = this.scene.add.text(
+      position.x,
+      position.y,
+      damage.toString(),
+      {
+        fontSize: "16px",
+        color: color,
+        stroke: "#000000",
+        strokeThickness: 2,
+        fontFamily: "RuneScape UF",
+      },
+    );
+
     // Animate damage number floating upward
     this.scene.tweens.add({
       targets: damageText,
       y: position.y - 50,
       alpha: 0,
       duration: 1500,
-      ease: 'Power2',
-      onComplete: () => damageText.destroy()
+      ease: "Power2",
+      onComplete: () => damageText.destroy(),
     });
   }
-  
+
   /**
    * Play hit effect animation
    */
   playHitEffect(target: Vector2, attackType: AttackType): void {
-    const effect = this.scene.add.sprite(target.x, target.y, `${attackType}_hit_effect`);
+    const effect = this.scene.add.sprite(
+      target.x,
+      target.y,
+      `${attackType}_hit_effect`,
+    );
     effect.play(`${attackType}_hit_animation`);
-    effect.once('animationcomplete', () => effect.destroy());
+    effect.once("animationcomplete", () => effect.destroy());
   }
 }
-````
+```
 
 ### **5. MEDIUM PRIORITY: Discord Activity Integration**
 
-````typescript
+```typescript
 /**
  * Discord Activity SDK integration for RuneRogue
  * Handles authentication, voice, and social features
@@ -265,32 +280,32 @@ export class CombatRenderer {
 export class DiscordActivitySDK {
   private discordSdk: DiscordSDK;
   private auth: DiscordAuth | null = null;
-  
+
   /**
    * Initialize Discord Activity
    */
   async initialize(): Promise<void> {
     this.discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
-    
+
     // Wait for Discord to be ready
     await this.discordSdk.ready();
-    
+
     // Authenticate user
     this.auth = await this.discordSdk.commands.authenticate({
       access_token: await this.getAccessToken(),
     });
-    
+
     // Set activity status
     await this.setActivity("Playing RuneRogue", "In multiplayer survival");
   }
-  
+
   /**
    * Get user's Discord info for display in game
    */
   getUserInfo(): DiscordUser | null {
     return this.auth?.user || null;
   }
-  
+
   /**
    * Update Discord activity status
    */
@@ -300,31 +315,34 @@ export class DiscordActivitySDK {
         details,
         state,
         timestamps: {
-          start: Date.now()
+          start: Date.now(),
         },
         assets: {
           large_image: "runerogue_logo",
-          large_text: "RuneRogue"
-        }
-      }
+          large_text: "RuneRogue",
+        },
+      },
     });
   }
 }
-````
+```
 
 ## 📋 **Implementation Priority Order**
 
 ### **🔴 CRITICAL (This Week)**
+
 1. **Client-Server Integration** - Connect Phaser client to Colyseus server
-2. **Player Movement** - Real-time movement with server validation  
+2. **Player Movement** - Real-time movement with server validation
 3. **Basic Combat Rendering** - Visualize damage and effects
 
 ### **🟡 HIGH (Next Week)**
+
 4. **Enemy Spawning System** - Server-controlled enemy generation
 5. **UI Health/Prayer Bars** - Real-time stat display
 6. **Discord Activity Setup** - Basic activity integration
 
 ### **🟢 MEDIUM (Following Weeks)**
+
 7. **Advanced Combat Effects** - Particle systems and animations
 8. **Sound System** - OSRS-authentic audio
 9. **Performance Optimization** - 60fps with 4 players + enemies
@@ -332,6 +350,7 @@ export class DiscordActivitySDK {
 ## 🛠 **Technical Implementation Strategy**
 
 ### **Start with MVP Client-Server Connection**
+
 ```bash
 # Create basic client entry point
 cd client/src
@@ -344,11 +363,13 @@ pnpm dev
 ```
 
 ### **Follow OSRS Authenticity Guidelines**
+
 - Use exact combat formulas from osrs-data
 - Implement precise tick timing (20 TPS server, 60 FPS client)
 - Validate all mechanics against OSRS Wiki
 
 ### **Implement Client-Side Prediction**
+
 - Predict movement locally for responsiveness
 - Reconcile with server state on updates
 - Handle network lag gracefully
@@ -366,6 +387,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 1. **Client-Server Integration**
 
 **Key Files:**
+
 - `packages/server/src/client/game/GameClient.ts`
   - Main orchestrator for client logic, Colyseus connection, and event handling.
 - `packages/server/src/client/index.ts`
@@ -380,6 +402,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
   - HTML entry for enhanced Phaser client, loads and initializes the game client.
 
 **Supporting Docs:**
+
 - `docs/PROJECT_STRUCTURE.md`
 - `docs/RUNEROGUE_PROJECT_STRUCTURE.md`
 - `packages/server/src/client/client_architecture.md`
@@ -390,6 +413,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 2. **Phaser Game Engine Integration**
 
 **Key Files:**
+
 - `packages/server/src/client/game/PhaserGameClient.ts`
   - Class for Phaser game logic, manages scenes and rendering.
 - `packages/server/src/client/game/GameRenderer.ts`
@@ -408,6 +432,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 3. **Player Movement System**
 
 **Key Files:**
+
 - `packages/server/src/server/ecs/systems/MovementSystem.ts`
   - ECS system for movement, includes validation, anti-cheat, and position updates.
 - `packages/server/src/server/game/ECSIntegration.ts`
@@ -422,6 +447,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
   - Captures and processes user input for movement.
 
 **Supporting Docs:**
+
 - `docs/map-system.md`
 - `docs/ARCHITECTURE.md`
 - `docs/AI_AGENT_TASK_COORDINATION.md`
@@ -431,6 +457,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 4. **Combat Visualization (Damage Numbers, Effects)**
 
 **Key Files:**
+
 - `packages/server/src/client/game/GameRenderer.ts`
   - Renders combat effects, damage numbers, and hit splats.
 - `packages/server/src/client/ui/DamageNumber.ts`
@@ -445,6 +472,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
   - UI logic for damage numbers and hit effects.
 
 **Supporting Docs:**
+
 - `docs/OSRS_COMBAT_FORMULAS_VALIDATION.md`
 - `docs/PHASE_3_IMPLEMENTATION_COMPLETE.md`
 - `docs/COMPETITIVE_INTELLIGENCE.md`
@@ -454,6 +482,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 5. **Discord Activity Integration**
 
 **Key Files:**
+
 - `packages/server/src/client/enhanced-index.ts`
   - Imports and initializes `DiscordSDK`.
 - `packages/server/src/client/simple-enhanced-index.ts`
@@ -464,6 +493,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
   - For Discord UI integration and activity status.
 
 **Supporting Docs:**
+
 - `docs/PROJECT_STRUCTURE.md`
 - `docs/ARCHITECTURE.md`
 - `docs/AI_AGENT_GUIDE.md`
@@ -474,6 +504,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 6. **ECS System Status**
 
 **Key Files:**
+
 - `packages/server/src/server/ecs/systems/`
   - `MovementSystem.ts`, `CombatSystem.ts`, `HealthBarSystem.ts`, `DamageNumberSystem.ts`, `SpawnSystem.ts`
   - All core ECS systems for movement, combat, health, and spawning.
@@ -483,6 +514,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
   - Main server game loop, runs ECS systems in order.
 
 **Supporting Docs:**
+
 - `docs/ARCHITECTURE.md`
 - `docs/AI_ORCHESTRATOR_TASK_BREAKDOWN.md`
 
@@ -491,6 +523,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 7. **Testing and Validation**
 
 **Key Files:**
+
 - `packages/server/test-visual-systems.ts`
   - Tests for health bar and damage number systems.
 - `packages/server/test-movement.js`
@@ -501,6 +534,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
   - API and server tests.
 
 **Supporting Docs:**
+
 - `.github/instructions/test.instructions.md`
 - `.github/instructions/core-standards.instructions.md`
 - `.github/instructions/development-workflow.instructions.md`
@@ -510,6 +544,7 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 ## 8. **Documentation and Project Status**
 
 **Key Files:**
+
 - `docs/PROJECT_STRUCTURE.md`
 - `docs/RUNEROGUE_PROJECT_STRUCTURE.md`
 - `docs/COMPETITIVE_INTELLIGENCE.md`
@@ -529,15 +564,15 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 
 ## 9. **Other Relevant Areas**
 
-- **UI Health/Prayer Bars:**  
+- **UI Health/Prayer Bars:**
   - `packages/server/src/client/game/UIManager.ts`
   - `packages/server/src/client/ui/HealthBar.ts`
   - `packages/phaser-client/assets/enhancedUI.js`
-- **Enemy Spawning:**  
+- **Enemy Spawning:**
   - `packages/server/src/server/ecs/systems/SpawnSystem.ts`
   - `packages/server/src/server/game/SurvivorWaveSystem.ts`
   - `packages/server/src/server/game/WaveManager.ts`
-- **Performance Optimization:**  
+- **Performance Optimization:**
   - `docs/ARCHITECTURE.md` (object pooling, ECS queries)
   - `docs/COMPETITIVE_INTELLIGENCE.md`
 
@@ -545,16 +580,16 @@ Here is a comprehensive mapping of the code in your workspace that is relevant t
 
 ## Summary Table
 
-| Area                        | Key Files/Dirs                                                                                  | Docs/Standards                                                                 |
-|-----------------------------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-| Client-Server Integration   | `GameClient.ts`, `index.ts`, `enhanced-index.ts`, `PhaserGameClient.ts`, `enhanced-phaser-client.js` | `client_architecture.md`, `PROJECT_STRUCTURE.md`                               |
-| Phaser Engine Integration   | `PhaserGameClient.ts`, `GameRenderer.ts`, `GameScene.ts`, `enhanced-phaser-client.js`         | `ARCHITECTURE.md`                                                              |
-| Player Movement System      | `MovementSystem.ts`, `ECSIntegration.ts`, `GameRoom.ts`, `GameClient.ts`, `InputManager.ts`   | `map-system.md`, `ARCHITECTURE.md`                                             |
-| Combat Visualization        | `GameRenderer.ts`, `DamageNumber.ts`, `CombatEventHandler.ts`, `GameScene.ts`, `enhanced-phaser-client.js` | `OSRS_COMBAT_FORMULAS_VALIDATION.md`, `PHASE_3_IMPLEMENTATION_COMPLETE.md`     |
-| Discord Activity Integration| `enhanced-index.ts`, `simple-enhanced-index.ts`, `UIManager.ts`, `InputManager.ts`, `client/` | `PROJECT_STRUCTURE.md`, `ARCHITECTURE.md`                                      |
-| ECS System Status           | `ecs/systems/`, `ECSIntegration.ts`, `GameRoom.ts`                                            | `ARCHITECTURE.md`, `AI_ORCHESTRATOR_TASK_BREAKDOWN.md`                         |
-| Testing/Validation          | `test-visual-systems.ts`, `test-movement.js`, `test-phase4-integration.js`                    | `test.instructions.md`, `core-standards.instructions.md`, `development-workflow.instructions.md` |
-| Documentation/Status        | `docs/`, `.github/instructions/`                                                              | All project instructions and architecture docs                                 |
+| Area                         | Key Files/Dirs                                                                                             | Docs/Standards                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Client-Server Integration    | `GameClient.ts`, `index.ts`, `enhanced-index.ts`, `PhaserGameClient.ts`, `enhanced-phaser-client.js`       | `client_architecture.md`, `PROJECT_STRUCTURE.md`                                                 |
+| Phaser Engine Integration    | `PhaserGameClient.ts`, `GameRenderer.ts`, `GameScene.ts`, `enhanced-phaser-client.js`                      | `ARCHITECTURE.md`                                                                                |
+| Player Movement System       | `MovementSystem.ts`, `ECSIntegration.ts`, `GameRoom.ts`, `GameClient.ts`, `InputManager.ts`                | `map-system.md`, `ARCHITECTURE.md`                                                               |
+| Combat Visualization         | `GameRenderer.ts`, `DamageNumber.ts`, `CombatEventHandler.ts`, `GameScene.ts`, `enhanced-phaser-client.js` | `OSRS_COMBAT_FORMULAS_VALIDATION.md`, `PHASE_3_IMPLEMENTATION_COMPLETE.md`                       |
+| Discord Activity Integration | `enhanced-index.ts`, `simple-enhanced-index.ts`, `UIManager.ts`, `InputManager.ts`, `client/`              | `PROJECT_STRUCTURE.md`, `ARCHITECTURE.md`                                                        |
+| ECS System Status            | `ecs/systems/`, `ECSIntegration.ts`, `GameRoom.ts`                                                         | `ARCHITECTURE.md`, `AI_ORCHESTRATOR_TASK_BREAKDOWN.md`                                           |
+| Testing/Validation           | `test-visual-systems.ts`, `test-movement.js`, `test-phase4-integration.js`                                 | `test.instructions.md`, `core-standards.instructions.md`, `development-workflow.instructions.md` |
+| Documentation/Status         | `docs/`, `.github/instructions/`                                                                           | All project instructions and architecture docs                                                   |
 
 ---
 
@@ -586,11 +621,13 @@ Here is a concise, actionable summary of the next implementation priorities for 
 ### 🔴 CRITICAL (This Week)
 
 1. **Client-Server Integration**
+
    - Connect Phaser client to Colyseus server.
    - Implement `GameClient` class for connection, state sync, and event handling.
    - Add client-side prediction and server reconciliation.
 
 2. **Player Movement System**
+
    - Implement real-time movement with server-side validation.
    - Use ECS for movement, anti-cheat, and collision.
    - Ensure smooth interpolation on the client.
@@ -604,9 +641,11 @@ Here is a concise, actionable summary of the next implementation priorities for 
 ### 🟡 HIGH (Next Week)
 
 4. **Enemy Spawning System**
+
    - Server-controlled enemy generation and synchronization.
 
 5. **UI Health/Prayer Bars**
+
    - Real-time stat display in the client.
 
 6. **Discord Activity Integration**
@@ -676,7 +715,6 @@ continue agentically
 
 _**Assistant**_
 
-
 ```
 
 ```
@@ -688,6 +726,7 @@ _**Assistant**_
 ```
 
 ```
+
 - Added real-time movement input handling to `GameScene` and a `sendMoveCommand` method to `GameClient`, enabling client-to-server movement commands.
 - Wired up `PhaserGame` to set the `GameClient` instance on the scene, so input can trigger networked movement.
 - This establishes the foundation for OSRS-authentic, server-authoritative player movement with client-side prediction and reconciliation.
@@ -704,10 +743,10 @@ continue agentically
 
 _**Assistant**_
 
-
 ```
 
 ```
+
 - Added OSRS-authentic click-to-move support in `GameScene`, sending world coordinates to the server on mouse click.
 - Retained WASD/arrow movement for development and debugging.
 - This enables both authentic and developer-friendly movement input, ready for server-side pathfinding and validation.
@@ -734,13 +773,10 @@ At every stage, prioritize intelligent decision-making. Before making changes, c
 
 If a planned change leads to a suboptimal or unstable solution, pause and reconsider. Rethink the approach, understand the root cause of the problem, devise a better plan, and then generate a robust fix. Once resolved, resume the cycle from the beginning: think → analyze → plan → generate.
 
-
-
 ---
 
 _**Assistant**_
 
-
 ```
 
 ```
@@ -748,6 +784,7 @@ _**Assistant**_
 ```
 
 ```
+
 - Exposed the local player ID in `GameClient` for use in prediction and reconciliation.
 - Implemented a prediction buffer and interpolation logic in `GameScene`:
   - Local player movement is predicted immediately on input.
@@ -766,10 +803,10 @@ approved, proceed
 
 _**Assistant**_
 
-
 ```
 
 ```
+
 - Added strict type annotations, robust error handling, and comprehensive JSDoc comments to `GameScene`.
 - All movement prediction and interpolation logic is now type-safe and maintainable.
 - The interface between `GameClient` and `GameScene` is explicit and robust.
@@ -795,8 +832,6 @@ Repeat this loop continuously until instructed to stop.
 At every stage, prioritize intelligent decision-making. Before making changes, carefully evaluate their impact on the overall system. Only produce high-quality code that integrates cleanly and does not introduce new issues.
 
 If a planned change leads to a suboptimal or unstable solution, pause and reconsider. Rethink the approach, understand the root cause of the problem, devise a better plan, and then generate a robust fix. Once resolved, resume the cycle from the beginning: think → analyze → plan → generate.
-
-
 
 ---
 
@@ -843,7 +878,4 @@ If a planned change leads to a suboptimal or unstable solution, pause and recons
 
 _**Assistant**_
 
-
-
 ---
-

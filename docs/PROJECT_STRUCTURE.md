@@ -1,6 +1,6 @@
 # RuneRogue Project Structure (Current State)
 
-**Last Updated: [Current Date]** - *This document reflects the current, in-progress state of the repository and is being updated as part of a codebase-wide cleanup.*
+**Last Updated: [Current Date]** - _This document reflects the current, in-progress state of the repository and is being updated as part of a codebase-wide cleanup._
 
 ## Root Directory Organization
 
@@ -46,25 +46,31 @@ The `packages/` directory is the heart of the application, but contains a mix of
 ## Detailed Directory Notes
 
 ### `packages/server/src/server/`
+
 This is the core of the active server.
+
 - **`rooms/`**: Contains the Colyseus rooms.
-    - `RuneRogueGameRoom.ts`: This is an old file. The main logic is in `CleanGameRoom.ts`.
-    - `CleanGameRoom.ts`: **The primary, active game room.**
-    - *Other files* (`JsonGameRoom.ts`, `MinimalGameRoom.ts`, etc.): These are **deprecated** test rooms using legacy schemas. They have been marked with `@deprecated` notices and are pending removal.
+  - `RuneRogueGameRoom.ts`: This is an old file. The main logic is in `CleanGameRoom.ts`.
+  - `CleanGameRoom.ts`: **The primary, active game room.**
+  - _Other files_ (`JsonGameRoom.ts`, `MinimalGameRoom.ts`, etc.): These are **deprecated** test rooms using legacy schemas. They have been marked with `@deprecated` notices and are pending removal.
 - **`systems/`**: Contains the ECS (`bitecs`) systems that implement all game logic (e.g., `StateSyncSystem.ts`). This is where the core game mechanics live.
 - **`schemas/`**: This directory is now **entirely deprecated**. It used to contain many different schema versions. The canonical schemas have been moved to `packages/shared/src/schemas`. All files remaining here are marked as `@deprecated` and are pending removal.
 - **`ecs/`**: Contains component definitions and system initializations for the ECS world.
 
 ### `client/`
+
 The canonical client.
+
 - **`src/`**: Contains the React and Phaser source code.
 - **`src/components/`**: React components for the UI.
 - **`src/game/`**: Contains the Phaser game implementation, including scenes and the `GameClient.ts` for connecting to the Colyseus server.
 
 ---
+
 ## Cleanup & Refactoring Status
 
 This structure was updated on **[Current Date]** as part of a deep clean. The primary goals of this refactoring are:
+
 - Consolidate duplicated server and client implementations.
 - Establish a single source of truth for network schemas in `packages/shared`.
 - Clearly identify and document legacy and orphaned code.

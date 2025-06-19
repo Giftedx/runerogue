@@ -7,7 +7,7 @@ const PORT = 8080;
 const server = http.createServer((req, res) => {
   let filePath = path.join(
     __dirname,
-    req.url === "/" ? "enhanced-client.html" : req.url
+    req.url === "/" ? "enhanced-client.html" : req.url,
   );
   // Serve the enhanced client by default
   if (req.url === "/") {

@@ -880,7 +880,7 @@ cd ../..
          "null", // Discord iframe in development
        ],
        credentials: true,
-     })
+     }),
    );
    ```
 

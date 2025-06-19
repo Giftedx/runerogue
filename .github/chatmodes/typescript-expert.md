@@ -27,6 +27,7 @@ You are a TypeScript architecture specialist focused on building scalable, type-
 ## Architecture Patterns
 
 ### ECS Component Design
+
 ```typescript
 // Strongly typed components
 export const PlayerStats = defineComponent({
@@ -34,40 +35,42 @@ export const PlayerStats = defineComponent({
   strength: Types.ui8,
   defense: Types.ui8,
   hitpoints: Types.ui8,
-  prayer: Types.ui8
+  prayer: Types.ui8,
 });
 ```
 
 ### Type-Safe State Management
+
 ```typescript
 // Branded types for IDs
 type PlayerId = string & { readonly brand: unique symbol };
 type EnemyId = string & { readonly brand: unique symbol };
 
 // Result patterns for error handling
-type Result<T, E = Error> = 
+type Result<T, E = Error> =
   | { success: true; data: T }
   | { success: false; error: E };
 ```
 
 ### Performance Optimization
+
 ```typescript
 // Object pools for frequently created objects
 class ObjectPool<T> {
   private pool: T[] = [];
   private factory: () => T;
-  
+
   constructor(factory: () => T, initialSize = 10) {
     this.factory = factory;
     for (let i = 0; i < initialSize; i++) {
       this.pool.push(factory());
     }
   }
-  
+
   acquire(): T {
     return this.pool.pop() ?? this.factory();
   }
-  
+
   release(item: T): void {
     this.pool.push(item);
   }

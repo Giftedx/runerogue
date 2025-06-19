@@ -101,10 +101,13 @@ Based on my analysis, here's the comprehensive plan:
 # RuneRogue Implementation & Cleanup Plan
 
 ## Context
+
 This plan provides a complete roadmap to clean up and implement the remaining features for RuneRogue, an OSRS-inspired multiplayer roguelike survival game. The project uses TypeScript, Phaser 3, Colyseus, and bitECS.
 
 ## Required Reading
+
 Before proceeding, ensure you've reviewed:
+
 - `.github/instructions/core-standards.instructions.md` - OSRS authenticity requirements
 - `.github/instructions/project-overview.instructions.md` - Project concept and phases
 - `.github/instructions/architecture.instructions.md` - Technical architecture
@@ -113,12 +116,15 @@ Before proceeding, ensure you've reviewed:
 ## Current State Analysis
 
 ### ✅ Completed Components
+
 1. **OSRS Data Pipeline** (`packages/osrs-data/`)
+
    - All combat formulas implemented
    - Comprehensive test coverage (13/13 passing)
    - API endpoints functional
 
 2. **Multiplayer Infrastructure** (`packages/game-server/`)
+
    - Colyseus server setup complete
    - Room management implemented
    - State synchronization ready
@@ -133,12 +139,14 @@ Before proceeding, ensure you've reviewed:
 #### Phase 1: Code Organization & Cleanup (2-3 days)
 
 1. **Consolidate Client Code**
+
    - Move `server-ts/src/client/` to `client/src/game/`
    - Merge duplicate client implementations
    - Set up proper Vite + React + Phaser integration
    - Fix import paths and dependencies
 
 2. **Fix Shared Types**
+
    - Complete `packages/shared/src/types/` definitions
    - Add missing network message types
    - Define consistent entity interfaces
@@ -153,6 +161,7 @@ Before proceeding, ensure you've reviewed:
 #### Phase 2: Core Game Loop Integration (3-4 days)
 
 1. **Connect Phaser to Colyseus**
+
    ```typescript
    // client/src/game/scenes/GameScene.ts
    - Initialize Colyseus client
@@ -162,6 +171,7 @@ Before proceeding, ensure you've reviewed:
    ```
 
 2. **Implement Client Prediction**
+
    ```typescript
    // client/src/game/systems/ClientPredictionSystem.ts
    - Predict player movement locally
@@ -182,6 +192,7 @@ Before proceeding, ensure you've reviewed:
 #### Phase 3: Combat Visualization (2-3 days)
 
 1. **Damage Number Display**
+
    ```typescript
    // client/src/game/effects/DamageNumbers.ts
    - Pool damage text objects
@@ -191,6 +202,7 @@ Before proceeding, ensure you've reviewed:
    ```
 
 2. **Attack Animations**
+
    ```typescript
    // client/src/game/animations/CombatAnimations.ts
    - Melee swing animations
@@ -208,6 +220,7 @@ Before proceeding, ensure you've reviewed:
 #### Phase 4: UI Implementation (3-4 days)
 
 1. **Game HUD**
+
    ```typescript
    // client/src/components/game/GameHUD.tsx
    - Health/Prayer orbs
@@ -217,6 +230,7 @@ Before proceeding, ensure you've reviewed:
    ```
 
 2. **Inventory System**
+
    ```typescript
    // client/src/components/game/Inventory.tsx
    - Drag & drop items
@@ -234,6 +248,7 @@ Before proceeding, ensure you've reviewed:
 #### Phase 5: Enemy AI & Spawning (2-3 days)
 
 1. **Enemy Behavior**
+
    ```typescript
    // server-ts/src/server/ecs/systems/EnemyAISystem.ts
    - Pathfinding to players
@@ -254,6 +269,7 @@ Before proceeding, ensure you've reviewed:
 #### Phase 6: Discord Integration (1-2 days)
 
 1. **Activity Setup**
+
    ```typescript
    // client/src/discord/DiscordActivity.ts
    - Initialize Discord SDK
@@ -271,12 +287,14 @@ Before proceeding, ensure you've reviewed:
 #### Phase 7: Testing & Polish (2-3 days)
 
 1. **Integration Tests**
+
    - Multiplayer synchronization
    - Combat calculations
    - State persistence
    - Error recovery
 
 2. **Performance Optimization**
+
    - Profile render loops
    - Optimize network messages
    - Reduce memory allocations
@@ -291,16 +309,19 @@ Before proceeding, ensure you've reviewed:
 ## Implementation Order
 
 ### Week 1: Foundation
+
 1. Code organization and cleanup
 2. Client-server connection
 3. Basic rendering and movement
 
 ### Week 2: Combat
+
 1. Combat visualization
 2. UI implementation
 3. Enemy AI basics
 
 ### Week 3: Features
+
 1. Complete enemy systems
 2. Discord integration
 3. Testing and polish
@@ -308,6 +329,7 @@ Before proceeding, ensure you've reviewed:
 ## Key Files to Create/Modify
 
 ### Client Structure
+
 ```
 client/
 ├── src/
@@ -337,6 +359,7 @@ client/
 ```
 
 ### Server Structure
+
 ```
 packages/game-server/
 ├── src/
@@ -353,6 +376,7 @@ packages/game-server/
 ```
 
 ## Success Criteria
+
 - [ ] Players can join rooms and see each other
 - [ ] Movement is smooth and synchronized
 - [ ] Combat shows damage numbers and animations
@@ -363,6 +387,7 @@ packages/game-server/
 - [ ] Discord integration works seamlessly
 
 ## Commands to Run
+
 ```bash
 # Initial setup
 pnpm install
@@ -380,6 +405,7 @@ pnpm build:prod
 ```
 
 ## Next Steps
+
 1. Start with Phase 1 code cleanup
 2. Set up development environment
 3. Follow implementation order strictly
@@ -444,9 +470,11 @@ Based on my analysis, here's the corrected and improved plan:
 # RuneRogue Implementation & Cleanup Plan - CORRECTED VERSION
 
 ## Context
+
 This plan provides a complete roadmap to clean up and implement the remaining features for RuneRogue, an OSRS-inspired multiplayer roguelike survival game. The project uses TypeScript, Phaser 3, Colyseus, and bitECS.
 
 ## Current Project Structure
+
 ```
 runerogue/
 ├── packages/
@@ -466,7 +494,9 @@ runerogue/
 ```
 
 ## Required Reading
+
 Before proceeding, ensure you've reviewed:
+
 - `.github/instructions/core-standards.instructions.md` - OSRS authenticity requirements
 - `.github/instructions/project-overview.instructions.md` - Project concept and phases
 - `.github/instructions/architecture.instructions.md` - Technical architecture
@@ -475,13 +505,16 @@ Before proceeding, ensure you've reviewed:
 ## Current State Analysis
 
 ### ✅ Completed Components
+
 1. **OSRS Data Pipeline** (`packages/osrs-data/`)
+
    - Combat formulas: `calculateAccuracy`, `calculateMaxHit`, `calculateDefenseRoll`
    - XP calculations and level requirements
    - Prayer effects and drain rates
    - Comprehensive test coverage
 
 2. **ECS Architecture** (`server-ts/src/server/ecs/`)
+
    - **Components**: Position, Velocity, Health, Combat, Player, Enemy, Sprite, Name, Room, Target, Projectile, AttackTimer, PrayerTimer, Input
    - **Systems**: MovementSystem, CombatSystem, HealthSystem, InputSystem, SpawnSystem, TargetingSystem, ProjectileSystem, AttackTimerSystem, PrayerSystem, CleanupSystem
 
@@ -494,16 +527,19 @@ Before proceeding, ensure you've reviewed:
 ### 🔧 Critical Issues to Fix
 
 1. **Missing Client-Server Integration**
+
    - Client code in `server-ts/src/client/` is not connected to React app
    - No Colyseus client connection established
    - GameScene exists but isn't integrated
 
 2. **Incomplete State Synchronization**
+
    - GameRoom doesn't properly sync ECS state
    - Missing state schema definitions
    - No proper entity-to-state mapping
 
 3. **No Shared Package**
+
    - Types scattered between server and client
    - Need proper shared types package
    - Network message types undefined
@@ -518,7 +554,7 @@ Before proceeding, ensure you've reviewed:
 ### Phase 1: Project Structure Cleanup (1-2 days)
 
 1. **Create Shared Package**
-   ````typescript
+   ```typescript
    // packages/shared/package.json
    {
      "name": "@runerogue/shared",
@@ -526,10 +562,12 @@ Before proceeding, ensure you've reviewed:
      "main": "dist/index.js",
      "types": "dist/index.d.ts"
    }
-   ````
+   ```
+````
 
 2. **Move and Organize Types**
-   ````typescript
+
+   ```typescript
    // packages/shared/src/types/game.ts
    export interface PlayerState {
      id: string;
@@ -545,7 +583,7 @@ Before proceeding, ensure you've reviewed:
      enemies: Map<string, EnemyState>;
      tick: number;
    }
-   ````
+   ```
 
 3. **Fix Client Integration**
    - Move `server-ts/src/client/` to `client/src/game/`
@@ -555,7 +593,8 @@ Before proceeding, ensure you've reviewed:
 ### Phase 2: State Synchronization (2-3 days)
 
 1. **Define Colyseus Schema**
-   ````typescript
+
+   ```typescript
    // server-ts/src/server/rooms/schema/GameRoomState.ts
    import { Schema, MapSchema, type } from "@colyseus/schema";
 
@@ -572,38 +611,40 @@ Before proceeding, ensure you've reviewed:
      @type({ map: PlayerSchema }) players = new MapSchema<PlayerSchema>();
      @type("number") tick: number = 0;
    }
-   ````
+   ```
 
 2. **Sync ECS to Colyseus State**
-   ````typescript
+
+   ```typescript
    // server-ts/src/server/rooms/GameRoom.ts
    private syncECSToState() {
      // Query all player entities
      const players = this.world.query([Player, Position, Health]);
-     
+
      for (const eid of players) {
        const playerId = this.entityToPlayerId.get(eid);
        if (!playerId) continue;
-       
+
        let playerState = this.state.players.get(playerId);
        if (!playerState) {
          playerState = new PlayerSchema();
          playerState.id = playerId;
          this.state.players.set(playerId, playerState);
        }
-       
+
        playerState.x = Position.x[eid];
        playerState.y = Position.y[eid];
        playerState.health = Health.current[eid];
        playerState.maxHealth = Health.max[eid];
      }
    }
-   ````
+   ```
 
 ### Phase 3: Client Game Integration (3-4 days)
 
 1. **React + Phaser Setup**
-   ````typescript
+
+   ```typescript
    // client/src/components/GameCanvas.tsx
    import React, { useEffect, useRef } from 'react';
    import Phaser from 'phaser';
@@ -628,7 +669,7 @@ Before proceeding, ensure you've reviewed:
        };
 
        gameRef.current = new Phaser.Game(config);
-       
+
        // Pass Colyseus client to game
        gameRef.current.registry.set('colyseusClient', client);
 
@@ -639,18 +680,19 @@ Before proceeding, ensure you've reviewed:
 
      return <div id="game-container" />;
    };
-   ````
+   ```
 
 2. **Connect GameScene to Colyseus**
-   ````typescript
+
+   ```typescript
    // client/src/game/scenes/GameScene.ts
    export class GameScene extends Phaser.Scene {
      private room: Room<GameRoomState>;
      private players: Map<string, Phaser.GameObjects.Sprite> = new Map();
 
      async create() {
-       const client = this.game.registry.get('colyseusClient');
-       
+       const client = this.game.registry.get("colyseusClient");
+
        try {
          this.room = await client.joinOrCreate<GameRoomState>("game_room");
          this.setupRoomListeners();
@@ -661,7 +703,7 @@ Before proceeding, ensure you've reviewed:
 
      private setupRoomListeners() {
        this.room.state.players.onAdd = (player, key) => {
-         const sprite = this.add.sprite(player.x, player.y, 'player');
+         const sprite = this.add.sprite(player.x, player.y, "player");
          this.players.set(key, sprite);
        };
 
@@ -679,59 +721,71 @@ Before proceeding, ensure you've reviewed:
        };
      }
    }
-   ````
+   ```
 
 ### Phase 4: Core Gameplay Features (3-4 days)
 
 1. **Input Handling**
-   ````typescript
+
+   ```typescript
    // client/src/game/systems/InputSystem.ts
    export class InputSystem {
-     constructor(private scene: GameScene, private room: Room) {
+     constructor(
+       private scene: GameScene,
+       private room: Room,
+     ) {
        this.setupInputHandlers();
      }
 
      private setupInputHandlers() {
-       this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+       this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
          if (pointer.isDown) {
-           this.room.send('move', { x: pointer.worldX, y: pointer.worldY });
+           this.room.send("move", { x: pointer.worldX, y: pointer.worldY });
          }
        });
 
-       this.scene.input.keyboard.on('keydown-SPACE', () => {
-         this.room.send('attack');
+       this.scene.input.keyboard.on("keydown-SPACE", () => {
+         this.room.send("attack");
        });
      }
    }
-   ````
+   ```
 
 2. **Combat Visualization**
-   ````typescript
+
+   ```typescript
    // client/src/game/effects/DamageNumbers.ts
    export class DamageNumberPool {
      private pool: Phaser.GameObjects.Text[] = [];
-     
-     showDamage(scene: Phaser.Scene, x: number, y: number, damage: number, type: 'normal' | 'max') {
+
+     showDamage(
+       scene: Phaser.Scene,
+       x: number,
+       y: number,
+       damage: number,
+       type: "normal" | "max",
+     ) {
        const text = this.getFromPool(scene);
        text.setPosition(x, y);
        text.setText(damage.toString());
-       text.setColor(type === 'max' ? '#ff0000' : '#ffffff');
-       
+       text.setColor(type === "max" ? "#ff0000" : "#ffffff");
+
        scene.tweens.add({
          targets: text,
          y: y - 50,
          alpha: 0,
          duration: 1000,
-         onComplete: () => this.returnToPool(text)
+         onComplete: () => this.returnToPool(text),
        });
      }
    }
-   ````
+   ```
 
 ### Phase 5: UI Implementation (2-3 days)
 
 1. **Game HUD Component**
-   ````typescript
+
+   ```typescript
    // client/src/components/game/GameHUD.tsx
    import React from 'react';
    import { useGameState } from '../../hooks/useGameState';
@@ -741,7 +795,7 @@ Before proceeding, ensure you've reviewed:
 
    export const GameHUD: React.FC = () => {
      const { player } = useGameState();
-     
+
      if (!player) return null;
 
      return (
@@ -752,41 +806,42 @@ Before proceeding, ensure you've reviewed:
        </div>
      );
    };
-   ````
+   ```
 
 ### Phase 6: Testing & Polish (2-3 days)
 
 1. **Integration Tests**
-   ````typescript
+
+   ```typescript
    // tests/integration/multiplayer.test.ts
-   describe('Multiplayer Integration', () => {
+   describe("Multiplayer Integration", () => {
      let server: Server;
      let client1: Client;
      let client2: Client;
 
      beforeAll(async () => {
        server = await startTestServer();
-       client1 = new Client('ws://localhost:2567');
-       client2 = new Client('ws://localhost:2567');
+       client1 = new Client("ws://localhost:2567");
+       client2 = new Client("ws://localhost:2567");
      });
 
-     test('players can see each other move', async () => {
-       const room1 = await client1.joinOrCreate('game_room');
-       const room2 = await client2.joinOrCreate('game_room');
-       
+     test("players can see each other move", async () => {
+       const room1 = await client1.joinOrCreate("game_room");
+       const room2 = await client2.joinOrCreate("game_room");
+
        // Client 1 moves
-       room1.send('move', { x: 100, y: 100 });
-       
+       room1.send("move", { x: 100, y: 100 });
+
        // Wait for sync
-       await new Promise(resolve => setTimeout(resolve, 100));
-       
+       await new Promise((resolve) => setTimeout(resolve, 100));
+
        // Client 2 should see the movement
        const player1State = room2.state.players.get(room1.sessionId);
        expect(player1State.x).toBe(100);
        expect(player1State.y).toBe(100);
      });
    });
-   ````
+   ```
 
 ## Key Differences from Original Plan
 
@@ -806,6 +861,7 @@ Before proceeding, ensure you've reviewed:
 6. **Polish and optimize** (Final - after core is working)
 
 ## Success Metrics
+
 - [ ] Players can connect and see each other
 - [ ] Movement is synchronized between clients
 - [ ] Combat calculations use OSRS formulas
@@ -815,6 +871,7 @@ Before proceeding, ensure you've reviewed:
 - [ ] Integration tests pass for multiplayer scenarios
 
 ## Next Immediate Steps
+
 1. Fix GameRoom state synchronization with ECS
 2. Create shared types package
 3. Integrate Phaser client into React app
@@ -822,9 +879,11 @@ Before proceeding, ensure you've reviewed:
 5. Add combat visualization
 
 Remember: Focus on getting basic multiplayer working first. Everything else builds on that foundation.
-````
+
+```
 
 This corrected plan addresses the actual codebase structure and provides a more realistic implementation path based on what actually exists versus what was assumed in the original plan.
 
 ---
 
+```

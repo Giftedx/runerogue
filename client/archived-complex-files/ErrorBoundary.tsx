@@ -59,7 +59,7 @@ export const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({
             onClick={() =>
               window.open(
                 "https://github.com/your-repo/runerogue/issues",
-                "_blank"
+                "_blank",
               )
             }
           >

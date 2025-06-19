@@ -74,6 +74,7 @@ TASKS:
 // CURRENT: Multiple contradictory status documents
 
 TASKS:
+
 1. Update RUNEROGUE_PROJECT_STRUCTURE.md to reflect server-ts architecture
 2. Consolidate and correct all status documents
 3. Create realistic roadmap based on actual implementation
@@ -89,7 +90,7 @@ TASKS:
 // FOUNDATION: ECS Automation Manager provides stable base
 
 TASKS:
-1. Implement client-server movement synchronization  
+1. Implement client-server movement synchronization
 2. Add basic enemy spawning and auto-combat
 3. Create wave progression system
 4. Test multiplayer scenarios (2-4 players)
@@ -142,6 +143,7 @@ TASKS:
 
    ```markdown
    # Update core documents to reflect reality:
+
    - RUNEROGUE_PROJECT_STRUCTURE.md (server-ts architecture)
    - ORCHESTRATION_STATUS.md (correct current status)
    - PHASE_1_DEVELOPMENT_PROMPT.md (realistic goals)
@@ -183,6 +185,7 @@ TASKS:
 ## 🚀 **PROJECT COMPETITIVE ADVANTAGE**
 
 **Our Unique Strength:**
+
 > **"OSRS × Vampire Survivors on Discord with Production-Ready ECS Automation"**
 
 **vs. Competing Projects:**
@@ -227,16 +230,18 @@ TASKS:
 ## 🎯 **NEXT CHAT STARTING POINT**
 
 ```markdown
-PROMPT: "Continue RuneRogue development focusing on ECS performance optimization and multiplayer prototype completion. 
+PROMPT: "Continue RuneRogue development focusing on ECS performance optimization and multiplayer prototype completion.
 
 Current Status:
+
 - ECS Automation Manager: 88.5% test success, 38 FPS (production-ready base)
 - GameRoom: Working player lifecycle with ECS integration
 - Target: 95%+ tests passing, 45+ FPS, 2-4 player multiplayer prototype
 
 Priority Tasks:
+
 1. Investigate and fix ECS performance bottlenecks
-2. Stabilize remaining test failures  
+2. Stabilize remaining test failures
 3. Implement basic multiplayer movement synchronization
 4. Add enemy spawning with wave progression
 

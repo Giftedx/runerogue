@@ -68,12 +68,14 @@ RuneRogue integrates GitHub Copilot Agents with custom MCP tools to automate dev
 - **Next Steps**: Continue auditing for any remaining schema field mutations with plain arrays/objects. Patch and re-test until all Colyseus serialization errors are resolved and all GameRoom tests pass. Update documentation to reflect the new defensive patterns and schema usage requirements.
 
 ### Example: Generate Documentation
+
 =======
 A full-stack web scraping application with comprehensive multi-fallback patterns and browser-based game client.
 
 ## Components
 
 ### Backend (Python/Flask)
+
 - **Multi-fallback scraping**: requests → BeautifulSoup → Playwright
 - **Configuration management**: YAML config files with environment variable overrides
 - **Progress tracking**: Built-in `update_status()` function with progress reporting
@@ -83,6 +85,7 @@ A full-stack web scraping application with comprehensive multi-fallback patterns
 - **CI/CD Pipeline**: Automated testing, linting, and deployment
 
 ### Client (Godot Engine 4.x)
+
 - **Browser-ready**: HTML5/WebGL export for web deployment
 - **Pixel-perfect rendering**: Optimized for crisp 2D graphics
 - **Scene management**: Main menu, game scenes, and HUD system
@@ -90,7 +93,8 @@ A full-stack web scraping application with comprehensive multi-fallback patterns
 - **CI integration**: Automated builds and exports
 
 ## Installation
->>>>>>> origin/copilot/fix-7
+
+> > > > > > > origin/copilot/fix-7
 
 ### Backend Setup
 
@@ -104,6 +108,7 @@ node scripts/test_mcp_tools.js generate_docs --module_path=agents/osrs_agent_sys
 ```
 
 <<<<<<< HEAD
+
 ## Usage
 
 ### Usage Instructions
@@ -221,7 +226,9 @@ npm run dev
 ```
 
 ### Quick Start (Backend API Example)
+
 =======
+
 ### Client Setup
 
 1. Install Godot Engine 4.3+ from [godotengine.org](https://godotengine.org/download)
@@ -233,7 +240,8 @@ npm run dev
 3. Open `client/godot/` directory in Godot Engine
 
 ## Quick Start
->>>>>>> origin/copilot/fix-7
+
+> > > > > > > origin/copilot/fix-7
 
 ### Backend API
 
@@ -243,8 +251,11 @@ from config import config
 ```
 
 <<<<<<< HEAD
+
 ## Project Structure
+
 =======
+
 ### Client Development
 
 1. Open the Godot project: `client/godot/`
@@ -258,7 +269,8 @@ from config import config
 See [client/godot/README.md](client/godot/README.md) for detailed client documentation.
 
 ## Configuration
->>>>>>> origin/copilot/fix-7
+
+> > > > > > > origin/copilot/fix-7
 
 - `app.py`: Main Flask application entry point.
 - `config.py`: Application configuration.
@@ -279,12 +291,14 @@ See [client/godot/README.md](client/godot/README.md) for detailed client documen
 ## API Endpoints (Backend Services)
 
 ### Backend Services
+
 - `GET /` - Application info
 - `GET /config` - Current configuration
 - `GET /health` - Health check
 - `POST /scrape` - Scrape URL with fallback patterns
 
 ### Client Integration
+
 - Client builds are served via CI/CD artifacts
 - Web client deployable to static hosting
 - Backend API provides data services for client

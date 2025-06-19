@@ -23,11 +23,11 @@ async function testPlayerMovement() {
       console.log("  Enemies Killed:", state.enemiesKilled);
       console.log(
         "  Players:",
-        state.players ? state.players.size : "undefined"
+        state.players ? state.players.size : "undefined",
       );
       console.log(
         "  Enemies:",
-        state.enemies ? state.enemies.size : "undefined"
+        state.enemies ? state.enemies.size : "undefined",
       );
     });
 

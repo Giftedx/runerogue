@@ -115,7 +115,9 @@ async function create() {
   wasdKeys = this.input.keyboard.addKeys('W,S,A,D');
 
   // Set up mouse/touch input for click-to-move and targeting
-  this.input.on('pointerdown', function(pointer) { handlePointerDown.call(this, pointer); });
+  this.input.on('pointerdown', function (pointer) {
+    handlePointerDown.call(this, pointer);
+  });
 
   // Create UI
   createUI();
@@ -169,14 +171,15 @@ function createUI() {
     .setScrollFactor(0);
 
   // Performance monitor panel (top-right)
-  perfMonitor.ui = this.add.text(800, 20, 'FPS: --\nMemory: --\nMsgs/s: --', {
-    fontSize: '14px',
-    fill: '#00ff00',
-    fontFamily: 'monospace',
-    backgroundColor: '#222',
-    padding: { x: 8, y: 6 },
-    align: 'right',
-  })
+  perfMonitor.ui = this.add
+    .text(800, 20, 'FPS: --\nMemory: --\nMsgs/s: --', {
+      fontSize: '14px',
+      fill: '#00ff00',
+      fontFamily: 'monospace',
+      backgroundColor: '#222',
+      padding: { x: 8, y: 6 },
+      align: 'right',
+    })
     .setScrollFactor(0)
     .setDepth(1000);
 
@@ -715,15 +718,25 @@ function handlePointerDown(pointer) {
  */
 function getLinePath(x0, y0, x1, y1) {
   const path = [];
-  let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-  let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-  let err = dx + dy, e2;
-  let x = x0, y = y0;
+  let dx = Math.abs(x1 - x0),
+    sx = x0 < x1 ? 1 : -1;
+  let dy = -Math.abs(y1 - y0),
+    sy = y0 < y1 ? 1 : -1;
+  let err = dx + dy,
+    e2;
+  let x = x0,
+    y = y0;
   while (true) {
     if (x === x1 && y === y1) break;
     e2 = 2 * err;
-    if (e2 >= dy) { err += dy; x += sx; }
-    if (e2 <= dx) { err += dx; y += sy; }
+    if (e2 >= dy) {
+      err += dy;
+      x += sx;
+    }
+    if (e2 <= dx) {
+      err += dx;
+      y += sy;
+    }
     path.push({ x, y });
   }
   return path;

@@ -147,7 +147,7 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
        // Check for conflicting prayers
        const conflicts = this.getConflictingPrayers(
          prayer,
-         player.activePrayers
+         player.activePrayers,
        );
        conflicts.forEach((p) => this.deactivatePrayer(playerId, p.id));
 
@@ -170,6 +170,7 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
    ```
 
 2. **Integrate with combat calculations**:
+
    ```typescript
    // In CombatSystem.ts
    /**
@@ -248,7 +249,7 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
        spriteBatch.setFloat2(
          "uResolution",
          this.game.config.width,
-         this.game.config.height
+         this.game.config.height,
        );
 
        // Set up OSRS color palette
@@ -272,6 +273,7 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
    ```
 
 2. **Add damage splats and visual feedback**:
+
    ```typescript
    /**
     * Render OSRS-style damage splat
@@ -468,10 +470,10 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
        if (rooms.length > 0) {
          const spawnRoom = rooms[0];
          const centerX = Math.floor(
-           spawnRoom.getLeft() + spawnRoom.getWidth() / 2
+           spawnRoom.getLeft() + spawnRoom.getWidth() / 2,
          );
          const centerY = Math.floor(
-           spawnRoom.getTop() + spawnRoom.getHeight() / 2
+           spawnRoom.getTop() + spawnRoom.getHeight() / 2,
          );
          map[centerY][centerX] = TileType.SPAWN;
        }
@@ -512,7 +514,7 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
       */
      private calculateWaveConfig(
        waveNumber: number,
-       playerCount: number
+       playerCount: number,
      ): WaveConfig {
        // Exponential difficulty scaling
        const baseEnemyCount = 3 + Math.floor(waveNumber * 1.5);
@@ -564,7 +566,7 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
        const allTypes = ["goblin", "spider", "skeleton", "zombie", "demon"];
        const maxTier = Math.min(
          Math.floor(waveNumber / 5) + 1,
-         allTypes.length
+         allTypes.length,
        );
        return allTypes.slice(0, maxTier);
      }
@@ -581,10 +583,10 @@ You are continuing development on **RuneRogue**, an OSRS-inspired roguelike surv
 const calculateMaxHit = (
   effectiveStrength: number,
   strengthBonus: number,
-  specialMultiplier: number = 1
+  specialMultiplier: number = 1,
 ): number => {
   const baseMax = Math.floor(
-    0.5 + (effectiveStrength * (strengthBonus + 64)) / 640
+    0.5 + (effectiveStrength * (strengthBonus + 64)) / 640,
   );
   return Math.floor(baseMax * specialMultiplier);
 };
@@ -593,7 +595,7 @@ const calculateMaxHit = (
 // Source: https://oldschool.runescape.wiki/w/Accuracy
 const calculateAccuracy = (
   maxAttackRoll: number,
-  maxDefenseRoll: number
+  maxDefenseRoll: number,
 ): number => {
   if (maxAttackRoll > maxDefenseRoll) {
     return 1 - (maxDefenseRoll + 2) / (2 * (maxAttackRoll + 1));
@@ -606,7 +608,7 @@ const calculateAccuracy = (
 const getEffectiveLevel = (
   baseLevel: number,
   prayerBonus: number,
-  styleBonus: number
+  styleBonus: number,
 ): number => {
   return Math.floor(Math.floor(baseLevel * prayerBonus) + styleBonus + 8);
 };

@@ -4,8 +4,6 @@
 
 For an overall understanding of the system architecture and inter-service communication, please consult the [Architecture Document](ARCHITECTURE.md).
 
-
-
 This document provides comprehensive documentation for the RuneRogue API endpoints.
 
 ## Table of Contents

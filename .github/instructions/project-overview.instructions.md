@@ -455,7 +455,7 @@ Based on recent test runs:
        key: fs.readFileSync("key.pem"),
        cert: fs.readFileSync("cert.pem"),
      },
-     app
+     app,
    );
 
    const gameServer = new Server({
@@ -473,7 +473,7 @@ Based on recent test runs:
          "null", // For Discord iframe in development
        ],
        credentials: true,
-     })
+     }),
    );
    ```
 

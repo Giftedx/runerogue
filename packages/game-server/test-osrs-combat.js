@@ -15,7 +15,7 @@ async function testOSRSCombat() {
     room.onMessage("damage_dealt", (data) => {
       if (data.hitSuccess) {
         console.log(
-          `💥 HIT! ${data.damage} damage dealt (${data.accuracy}% accuracy)`
+          `💥 HIT! ${data.damage} damage dealt (${data.accuracy}% accuracy)`,
         );
       } else {
         console.log(`💨 MISS! (${data.accuracy}% accuracy)`);
@@ -47,7 +47,7 @@ async function testOSRSCombat() {
           const currentState = room.state;
           console.log(
             "Current enemies in state:",
-            Object.keys(currentState.enemies || {})
+            Object.keys(currentState.enemies || {}),
           );
 
           // Try to attack any available enemies

@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       output_format:
-        description: 'Documentation format (markdown or rst)'
+        description: "Documentation format (markdown or rst)"
         required: true
-        default: 'markdown'
+        default: "markdown"
         type: choice
         options:
           - markdown
@@ -32,42 +32,42 @@ jobs:
             // Format the issue body using the Copilot Agent task template
             const issueBody = `## Task Type
             - [x] Documentation - Generate or update documentation
-            
+
             ## Priority
             - [x] Medium
-            
+
             ## Description
             Generate comprehensive documentation for the OSRS agent system module. The documentation should include:
-            
+
             1. Overview of the module's purpose and architecture
             2. Description of each agent's role and functionality
             3. Explanation of the agent communication flow
             4. Examples of how to use the system
             5. API reference for public functions and classes
-            
+
             ## Relevant Code References
             - agents/osrs_agent_system.py
             - economy_models/osrs_parser.py (for the fetch_wiki_data function)
-            
+
             ## Custom MCP Tool Options
-            
+
             ### For Documentation Tasks
-            
+
             - Module Path: agents/osrs_agent_system.py
             - Output Format: ${context.payload.inputs.output_format}
-            
+
             ## Acceptance Criteria
             - [ ] Documentation includes overview of module purpose
             - [ ] All agents are documented with their roles
             - [ ] Agent communication flow is explained
             - [ ] Usage examples are provided
             - [ ] API reference is complete
-            
+
             ## Environment
             - [x] Development
-            
+
             Created via GitHub Actions workflow at ${new Date().toISOString()}`;
-            
+
             // Create the issue
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
@@ -76,9 +76,9 @@ jobs:
               body: issueBody,
               labels: ['copilot', 'documentation']
             });
-            
+
             console.log(`Created issue #${issue.data.number}`);
-            
+
             // Assign to GitHub Copilot
             await github.rest.issues.addAssignees({
               owner: context.repo.owner,
@@ -86,9 +86,9 @@ jobs:
               issue_number: issue.data.number,
               assignees: ['github-copilot[bot]']
             });
-            
+
             console.log(`Assigned issue #${issue.data.number} to GitHub Copilot`);
-            
+
             // Add a comment to indicate the assignment was done automatically
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -100,13 +100,13 @@ jobs:
               
               [View Workflow Status](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
             });
-            
+
             return { issue_number: issue.data.number };
-      
+
       - name: Set output
         id: set-output
         run: echo "issue_number=${{ fromJson(steps.create-issue.outputs.result).issue_number }}" >> $GITHUB_OUTPUT
-  
+
   # Monitor the issue for completion
   monitor-documentation-task:
     needs: create-documentation-task
@@ -118,26 +118,26 @@ jobs:
           echo "This may take a few minutes..."
           # In a real scenario, you might implement polling logic here to check for task completion
           sleep 30
-      
+
       - name: Check issue status
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue_number = ${{ needs.create-documentation-task.outputs.issue_number }};
-            
+
             // Get the issue comments to check for completion
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number
             });
-            
+
             console.log(`Issue #${issue_number} has ${comments.data.length} comments`);
-            
+
             // In a real implementation, you would check for a specific completion marker in the comments
             // For this example, we're just acknowledging the task was created
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -146,6 +146,6 @@ jobs:
               
               To view the generated documentation, check the repository after the task is complete.`
             });
-  
+
   # Optional: You could add additional jobs here to take actions after documentation is generated
   # For example, you might want to commit the generated docs, create a PR, or publish them somewhere

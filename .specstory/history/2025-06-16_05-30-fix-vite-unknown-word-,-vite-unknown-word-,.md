@@ -20,7 +20,7 @@ The "unknown word" errors are coming from a spell checker that doesn't recognize
 
 Create a VS Code settings file to add technical terms to the spell checker dictionary.
 
-````json
+```json
 {
   "cSpell.words": [
     "appendonly",
@@ -31,3 +31,4 @@ Create a VS Code settings file to add technical terms to the spell checker dicti
 
 ---
 
+```

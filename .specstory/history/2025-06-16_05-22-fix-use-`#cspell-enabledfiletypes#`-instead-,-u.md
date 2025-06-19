@@ -50,17 +50,16 @@ Replace the deprecated cSpell setting with the new format.
     "analytics",
     "XP",
     "TPS",
-    "FPS"
+    "FPS",
   ],
   "cSpell.enabledFileTypes": [
     "markdown",
     "typescript",
     "javascript",
     "json",
-    "jsonc"
-  ]
+    "jsonc",
+  ],
 }
 ```
 
 ---
-

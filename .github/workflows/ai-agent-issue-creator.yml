@@ -4,19 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       title:
-        description: 'Issue title'
+        description: "Issue title"
         required: true
       body:
-        description: 'Issue body (markdown format)'
+        description: "Issue body (markdown format)"
         required: true
       labels:
-        description: 'Comma-separated list of labels'
+        description: "Comma-separated list of labels"
         required: false
-        default: 'copilot'
+        default: "copilot"
       assignees:
-        description: 'Comma-separated list of assignees'
+        description: "Comma-separated list of assignees"
         required: false
-        default: 'github-copilot[bot]'
+        default: "github-copilot[bot]"
 
 jobs:
   create-issue:
@@ -33,13 +33,13 @@ jobs:
               .split(',')
               .map(label => label.trim())
               .filter(label => label.length > 0);
-            
+
             // Process assignees
             const assigneesList = context.payload.inputs.assignees
               .split(',')
               .map(assignee => assignee.trim())
               .filter(assignee => assignee.length > 0);
-            
+
             // Ensure all labels exist
             for (const labelName of labelsList) {
               try {
@@ -64,7 +64,7 @@ jobs:
                 console.log(`Label '${labelName}' created.`);
               }
             }
-            
+
             // Create the issue
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
@@ -74,14 +74,14 @@ jobs:
               labels: labelsList,
               assignees: assigneesList
             });
-            
+
             console.log(`Issue #${issue.data.number} created: ${issue.data.html_url}`);
-            
+
             return {
               issue_number: issue.data.number,
               issue_url: issue.data.html_url
             };
-      
+
       - name: Output Issue Details
         run: |
           echo "Issue created: ${{ steps.create-issue.outputs.result }}"

@@ -136,9 +136,9 @@ export const GameUI: React.FC<GameUIProps> = ({
             <span
               className={`status-indicator ${gameClient?.getConnectionStatus() ? "connected" : "disconnected"}`}
             >
-              {gameClient?.getConnectionStatus() ?
-                "🟢 Connected"
-              : "🔴 Disconnected"}
+              {gameClient?.getConnectionStatus()
+                ? "🟢 Connected"
+                : "🔴 Disconnected"}
             </span>
           </div>
         </div>

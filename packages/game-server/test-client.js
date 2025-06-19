@@ -27,7 +27,7 @@ async function testConnection() {
           "� State updated - Players:",
           state.players.size,
           "Enemies:",
-          state.enemies.size
+          state.enemies.size,
         );
       });
     });

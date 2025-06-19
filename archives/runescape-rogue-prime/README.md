@@ -9,6 +9,7 @@ RuneScape Rogue Prime is a high-fidelity, high-replayability 2D roguelike that r
 The project employs a robust, layered, and decoupled system architecture designed for production-grade performance, scalability, and security. All inter-service communication is secured via HTTPS, WSS, and mTLS for internal RPC.
 
 ### Layered System Overview
+
 - **Presentation Layer:** Godot Engine (HTML5 Export) for in-game client, React/Next.js with TypeScript and Tailwind CSS for Meta-UI.
 - **Application Layer:** Authoritative Game Server (Node.js/TypeScript), API Gateway (Node.js/TypeScript), Authentication Microservice (Node.js/TypeScript), AI Inference Engine (Python/FastAPI), Telemetry Aggregator (Node.js/TypeScript).
 - **Service Layer:** Specialized microservices providing decoupled, scalable functionalities.

@@ -1,9 +1,9 @@
 // src/world-generation/types.ts
 
 export enum BiomeType {
-  LumbridgePlains = 'lumbridge_plains',
-  VarrockCity = 'varrock_city',
-  Wilderness = 'wilderness',
+  LumbridgePlains = "lumbridge_plains",
+  VarrockCity = "varrock_city",
+  Wilderness = "wilderness",
   // Add more biomes as needed
 }
 

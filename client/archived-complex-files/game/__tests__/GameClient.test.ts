@@ -19,7 +19,7 @@ describe("GameClient", () => {
       return { joinOrCreate: () => Promise.reject(new Error("fail")) };
     });
     await expect(gameClient.connect(mockGameEngine)).rejects.toThrow(
-      "Connection failed"
+      "Connection failed",
     );
   });
 

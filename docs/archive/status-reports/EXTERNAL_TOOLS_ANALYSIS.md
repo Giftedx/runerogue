@@ -2,7 +2,7 @@
 
 **Investigation Date:** January 2025  
 **Status:** Research Complete  
-**Purpose:** Evaluate external tools for potential integration or inspiration  
+**Purpose:** Evaluate external tools for potential integration or inspiration
 
 ---
 
@@ -18,7 +18,7 @@ After investigating the mentioned external tools (RuneMonk Playback, EntityViewe
 
 **Status:** Early Beta (Active Development)  
 **Repository:** [Dezinater/runemonk-recorder](https://github.com/Dezinater/runemonk-recorder)  
-**Website:** [RuneMonk Playback](https://runemonk.com/tools/playback/)  
+**Website:** [RuneMonk Playback](https://runemonk.com/tools/playback/)
 
 **What it is:**
 
@@ -46,14 +46,14 @@ interface MatchReplay {
 
 class ReplayRecorder {
   private frames: GameStateFrame[] = [];
-  
+
   recordFrame(gameState: GameState): void {
     // Record key game state for replay
     this.frames.push({
       timestamp: Date.now(),
       players: this.capturePlayerStates(gameState),
       enemies: this.captureEnemyStates(gameState),
-      events: this.captureEvents(gameState)
+      events: this.captureEvents(gameState),
     });
   }
 }
@@ -64,7 +64,7 @@ class ReplayRecorder {
 ### **2. EntityViewer (OpenOSRS Plugin)**
 
 **Status:** Repository Not Found (404)  
-**Alternative:** Multiple external plugin repositories exist  
+**Alternative:** Multiple external plugin repositories exist
 
 **What it was intended to be:**
 
@@ -88,10 +88,10 @@ class EntityInspector {
       id: entityId,
       components: this.getEntityComponents(entityId, world),
       systems: this.getAffectingSystems(entityId),
-      state: this.captureCurrentState(entityId, world)
+      state: this.captureCurrentState(entityId, world),
     };
   }
-  
+
   renderDebugPanel(entityId: number): void {
     // Similar to EntityViewer but for our ECS entities
   }
@@ -104,7 +104,7 @@ class EntityInspector {
 
 **Status:** Stable Release (v1.0+)  
 **Website:** [Bun.sh](https://bun.sh/)  
-**Performance:** 2.5-10x faster than Node.js in many scenarios  
+**Performance:** 2.5-10x faster than Node.js in many scenarios
 
 **What it is:**
 
@@ -145,7 +145,7 @@ bun run start # Test Colyseus server
 
 **Status:** Pre-Alpha (2025 Usability Target)  
 **Repository:** [CanadaHonk/porffor](https://github.com/CanadaHonk/porffor)  
-**Performance:** 3-5x speedup potential, 10-30x smaller WebAssembly output  
+**Performance:** 3-5x speedup potential, 10-30x smaller WebAssembly output
 
 **What it is:**
 
@@ -240,4 +240,4 @@ While none of these tools require immediate integration, they provide valuable r
 
 ---
 
-*This analysis supports RuneRogue's goal of maintaining technical excellence while building toward a 60 FPS multiplayer experience.*
+_This analysis supports RuneRogue's goal of maintaining technical excellence while building toward a 60 FPS multiplayer experience._

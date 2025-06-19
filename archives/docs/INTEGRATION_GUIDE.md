@@ -23,31 +23,31 @@ The primary game state synchronization happens through Colyseus:
 
 ```typescript
 // Client-side connection (Godot with TypeScript)
-const client = new Colyseus.Client('ws://localhost:3001');
-const room = await client.joinOrCreate('game_room', {
-  playerName: 'Player1',
-  authToken: 'jwt-token',
+const client = new Colyseus.Client("ws://localhost:3001");
+const room = await client.joinOrCreate("game_room", {
+  playerName: "Player1",
+  authToken: "jwt-token",
 });
 
 // Listen for state changes
-room.onStateChange(state => {
+room.onStateChange((state) => {
   updateGameState(state);
 });
 
 // Send player actions
-room.send('move', { x: 100, y: 200 });
-room.send('action', { type: 'attack', targetId: 'enemy1' });
+room.send("move", { x: 100, y: 200 });
+room.send("action", { type: "attack", targetId: "enemy1" });
 ```
 
 ```typescript
 // Server-side handling (GameRoom.ts)
-this.onMessage('move', (client, message) => {
+this.onMessage("move", (client, message) => {
   const player = this.state.players.get(client.sessionId);
   player.x = message.x;
   player.y = message.y;
 });
 
-this.onMessage('action', (client, message) => {
+this.onMessage("action", (client, message) => {
   const player = this.state.players.get(client.sessionId);
   // Handle player action
 });
@@ -60,9 +60,9 @@ For non-real-time operations like authentication:
 ```typescript
 // Client-side API call
 async function login(username, password) {
-  const response = await fetch('http://localhost:3001/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const response = await fetch("http://localhost:3001/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
   return response.json();
@@ -75,10 +75,12 @@ The TypeScript Game Server should communicate with the MCP Server using REST API
 
 ```typescript
 // TypeScript Game Server
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 async function getOSRSData(itemName: string): Promise<any> {
-  const response = await fetch(`http://localhost:8000/tools/osrs-data?item=${itemName}`);
+  const response = await fetch(
+    `http://localhost:8000/tools/osrs-data?item=${itemName}`,
+  );
   return response.json();
 }
 ```
@@ -225,11 +227,11 @@ Each integration point should have dedicated integration tests:
 
 ```typescript
 // Test TypeScript to MCP Server integration
-describe('MCP Server Integration', () => {
-  it('should retrieve OSRS item data', async () => {
-    const data = await getOSRSData('Dragon Scimitar');
-    expect(data).toHaveProperty('name', 'Dragon Scimitar');
-    expect(data).toHaveProperty('value');
+describe("MCP Server Integration", () => {
+  it("should retrieve OSRS item data", async () => {
+    const data = await getOSRSData("Dragon Scimitar");
+    expect(data).toHaveProperty("name", "Dragon Scimitar");
+    expect(data).toHaveProperty("value");
   });
 });
 ```
@@ -252,9 +254,9 @@ Ensure all services have proper CORS configuration:
 // TypeScript server
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL?.split(',') || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL?.split(",") || "http://localhost:3000",
     credentials: true,
-  })
+  }),
 );
 ```
 
@@ -278,11 +280,14 @@ When one service calls another, authentication needs to be propagated:
 ```typescript
 // TypeScript server calling Economy API
 async function getPlayerInventory(playerId: string, authToken: string) {
-  const response = await fetch(`http://localhost:8001/players/${playerId}/inventory`, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
+  const response = await fetch(
+    `http://localhost:8001/players/${playerId}/inventory`,
+    {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
     },
-  });
+  );
   return response.json();
 }
 ```

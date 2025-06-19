@@ -24,19 +24,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginCredentials) => {
     try {
       const { user, tokens } = await apiClient.login(credentials);
-      
+
       // Store tokens in cookies
-      Cookies.set('accessToken', tokens.accessToken, { 
+      Cookies.set('accessToken', tokens.accessToken, {
         expires: 7, // 7 days
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
-      Cookies.set('refreshToken', tokens.refreshToken, { 
+      Cookies.set('refreshToken', tokens.refreshToken, {
         expires: 30, // 30 days
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
-      
+
       setUser(user);
     } catch (error) {
       throw error;
@@ -50,19 +50,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       const { user, tokens } = await apiClient.register(data);
-      
+
       // Store tokens in cookies
-      Cookies.set('accessToken', tokens.accessToken, { 
+      Cookies.set('accessToken', tokens.accessToken, {
         expires: 7,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
-      Cookies.set('refreshToken', tokens.refreshToken, { 
+      Cookies.set('refreshToken', tokens.refreshToken, {
         expires: 30,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
-      
+
       setUser(user);
     } catch (error) {
       throw error;

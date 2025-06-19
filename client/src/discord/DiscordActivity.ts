@@ -33,7 +33,7 @@ export class DiscordActivity {
       this.discordSdk = new DiscordSDKMock(
         clientId,
         null,
-        null
+        null,
       ) as unknown as DiscordSDK;
     }
   }

@@ -112,7 +112,7 @@ calculateBurnChance(
   foodLevel,
   burnStopLevel,
   isRange,
-  hasGauntlets
+  hasGauntlets,
 );
 
 // XP/Level calculations (exact OSRS table)

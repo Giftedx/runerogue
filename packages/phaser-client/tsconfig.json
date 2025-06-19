@@ -1,15 +1,24 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "jsx": "react-jsx",
-        "baseUrl": "src",
-        "paths": {
-            "@/*": [
-                "*"
-            ]
-        }
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "*"
+      ]
     },
-    "include": [
-        "src"
-    ]
+    "outDir": "./dist",
+    "rootDir": ".",
+    "allowJs": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

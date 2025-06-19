@@ -25,6 +25,6 @@ export const createMainPipeline = (scene: GameScene) =>
     createMovementSystem(scene),
     createRenderingSystem(scene),
     createDamageSplatSystem(scene),
-    createHealthBarSystem(scene)
+    createHealthBarSystem(scene),
     // Other systems will be added here
   );

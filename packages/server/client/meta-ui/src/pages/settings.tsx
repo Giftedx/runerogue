@@ -88,7 +88,9 @@ const SettingsPage: React.FC = () => {
                   type="text"
                   name="created"
                   id="created"
-                  defaultValue={user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                  defaultValue={
+                    user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
+                  }
                   className="form-input"
                   disabled
                 />
@@ -116,8 +118,8 @@ const SettingsPage: React.FC = () => {
                   </h3>
                   <div className="mt-2 text-sm text-yellow-700">
                     <p>
-                      Password change functionality will be available in a future update. 
-                      For now, your account is secured with the password you created during registration.
+                      Password change functionality will be available in a future update. For now,
+                      your account is secured with the password you created during registration.
                     </p>
                   </div>
                 </div>
@@ -129,7 +131,9 @@ const SettingsPage: React.FC = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Notification Preferences</h3>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Notification Preferences
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Choose what notifications you want to receive.
               </p>
@@ -145,7 +149,7 @@ const SettingsPage: React.FC = () => {
                   </h3>
                   <div className="mt-2 text-sm text-blue-700">
                     <p>
-                      Customizable notification preferences will be available in a future update. 
+                      Customizable notification preferences will be available in a future update.
                       Stay tuned for email alerts, leaderboard updates, and more!
                     </p>
                   </div>
@@ -177,7 +181,7 @@ const SettingsPage: React.FC = () => {
           <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
             <aside className="py-6 px-2 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">
               <nav className="space-y-1">
-                {tabs.map((tab) => (
+                {tabs.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -189,7 +193,9 @@ const SettingsPage: React.FC = () => {
                   >
                     <tab.icon
                       className={`${
-                        activeTab === tab.id ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
+                        activeTab === tab.id
+                          ? 'text-primary-500'
+                          : 'text-gray-400 group-hover:text-gray-500'
                       } flex-shrink-0 -ml-1 mr-3 h-6 w-6`}
                     />
                     <span className="truncate">{tab.name}</span>

@@ -1,6 +1,6 @@
 // src/world-generation/index.ts
 
-import { BiomeType, Tile, World, WorldGenerationConfig } from './types';
+import { BiomeType, Tile, World, WorldGenerationConfig } from "./types";
 
 /**
  * Generates a procedural game world based on the provided configuration.
@@ -32,7 +32,13 @@ export class WorldGenerator {
     for (let y = 0; y < world.height; y++) {
       world.tiles[y] = [];
       for (let x = 0; x < world.width; x++) {
-        world.tiles[y][x] = { x, y, type: 'grassland', biome: BiomeType.LumbridgePlains, entities: [] };
+        world.tiles[y][x] = {
+          x,
+          y,
+          type: "grassland",
+          biome: BiomeType.LumbridgePlains,
+          entities: [],
+        };
       }
     }
 
@@ -43,7 +49,7 @@ export class WorldGenerator {
     // - Spawning of initial adversaries based on biome
     // - Pathfinding graph generation
 
-    console.log('World generation complete.');
+    console.log("World generation complete.");
     return world;
   }
 

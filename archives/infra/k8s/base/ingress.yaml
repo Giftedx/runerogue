@@ -12,16 +12,16 @@ metadata:
     kubernetes.io/ingress.allow-http: "false"
 spec:
   rules:
-  - host: api.runerogue.com
-    http:
-      paths:
-      - path: /*
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: runerogue-service
-            port:
-              number: 80
+    - host: api.runerogue.com
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: runerogue-service
+                port:
+                  number: 80
 ---
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate

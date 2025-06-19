@@ -7,7 +7,7 @@ spec:
   selector:
     app: ai-service
   ports:
-  - protocol: TCP
-    port: 3003
-    targetPort: 3003
+    - protocol: TCP
+      port: 3003
+      targetPort: 3003
   type: ClusterIP

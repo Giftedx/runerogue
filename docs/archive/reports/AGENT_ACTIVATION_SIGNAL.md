@@ -4,13 +4,14 @@
 
 **TIME:** NOW  
 **AUTHORITY:** Master Orchestrator  
-**DIRECTIVE:** BEGIN AUTONOMOUS DEVELOPMENT  
+**DIRECTIVE:** BEGIN AUTONOMOUS DEVELOPMENT
 
 ---
 
 ## 🟢 ACTIVE AGENTS - BEGIN IMMEDIATELY
 
 ### **agent/osrs-data (The Lorekeeper)**
+
 ```
 WORKSPACE: packages/osrs-data/
 PRIORITY: CRITICAL PATH
@@ -22,7 +23,8 @@ ACTION: START IMMEDIATELY
 4. Update AGENT_PROGRESS.md with your status
 ```
 
-### **agent/backend-infra (The Architect)**  
+### **agent/backend-infra (The Architect)**
+
 ```
 WORKSPACE: packages/game-server/
 PRIORITY: HIGH (PARALLEL)
@@ -40,19 +42,21 @@ ACTION: START IMMEDIATELY
 
 **Progress Updates:** Edit `AGENT_PROGRESS.md`  
 **Blockers:** Report in `AGENT_BLOCKERS.md`  
-**Questions:** Add to relevant code comments  
+**Questions:** Add to relevant code comments
 
 ---
 
 ## 🎯 SUCCESS CRITERIA REMINDER
 
 **agent/osrs-data:**
+
 - Combat formulas match Wiki EXACTLY
 - 5 enemies with complete stats
 - API running on port 3001
 - Tests prove Wiki accuracy
 
 **agent/backend-infra:**
+
 - Colyseus server on port 2567
 - Logs all connections/disconnections
 - Handles multiple rooms
@@ -63,6 +67,7 @@ ACTION: START IMMEDIATELY
 ## 💻 QUICK START COMMANDS
 
 ### For agent/osrs-data:
+
 ```bash
 cd packages/osrs-data
 npm install
@@ -70,6 +75,7 @@ npm run dev
 ```
 
 ### For agent/backend-infra:
+
 ```bash
 cd packages/game-server
 npm install
@@ -83,6 +89,7 @@ npm run dev
 You are building RuneRogue - a game that will bring the depth of OSRS combat and progression into the addictive Vampire Survivors format on Discord. Thousands of players will experience the nostalgia of RuneScape through your code.
 
 Every line you write brings us closer to:
+
 - Players grinding levels while chatting with friends
 - Epic boss battles with OSRS mechanics
 - Competitive leaderboards showing off achievements
@@ -94,8 +101,8 @@ Every line you write brings us closer to:
 
 **Phase 0 Target:** 7 days  
 **Current Status:** DAY 1, HOUR 0  
-**Next Milestone:** First working API endpoint  
+**Next Milestone:** First working API endpoint
 
 ---
 
-## THE FLOOR IS YOURS, AGENTS. MAKE IT LEGENDARY! 🚀⚔️🎮 
+## THE FLOOR IS YOURS, AGENTS. MAKE IT LEGENDARY! 🚀⚔️🎮

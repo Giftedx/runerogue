@@ -35,6 +35,6 @@
  * Validate calculation result
  */
 export function validateCalculationResult(result) {
-    return !isNaN(result) && isFinite(result) && result >= 0;
+  return !isNaN(result) && isFinite(result) && result >= 0;
 }
 //# sourceMappingURL=validation.js.map

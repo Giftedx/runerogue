@@ -48,14 +48,12 @@ const LeaderboardPage: React.FC = () => {
               <TrophyIcon className="h-8 w-8 text-yellow-500 mr-3" />
               <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
             </div>
-            <p className="mt-2 text-gray-600">
-              Compete with other players and climb the ranks!
-            </p>
+            <p className="mt-2 text-gray-600">Compete with other players and climb the ranks!</p>
           </div>
 
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
-              {mockLeaderboard.map((player) => (
+              {mockLeaderboard.map(player => (
                 <li key={player.rank} className="px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -65,31 +63,25 @@ const LeaderboardPage: React.FC = () => {
                             player.rank === 1
                               ? 'bg-yellow-500'
                               : player.rank === 2
-                              ? 'bg-gray-400'
-                              : player.rank === 3
-                              ? 'bg-orange-600'
-                              : 'bg-primary-600'
+                                ? 'bg-gray-400'
+                                : player.rank === 3
+                                  ? 'bg-orange-600'
+                                  : 'bg-primary-600'
                           }`}
                         >
                           {player.rank}
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {player.username}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Level {player.level}
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{player.username}</div>
+                        <div className="text-sm text-gray-500">Level {player.level}</div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-medium text-gray-900">
                         {player.score.toLocaleString()} points
                       </div>
-                      <div className="text-sm text-gray-500">
-                        Total Score
-                      </div>
+                      <div className="text-sm text-gray-500">Total Score</div>
                     </div>
                   </div>
                 </li>
@@ -108,8 +100,8 @@ const LeaderboardPage: React.FC = () => {
                 </h3>
                 <div className="mt-2 text-sm text-blue-700">
                   <p>
-                    We're working on integrating real player data and live scoring. 
-                    Stay tuned for updates as we enhance the competitive experience!
+                    We're working on integrating real player data and live scoring. Stay tuned for
+                    updates as we enhance the competitive experience!
                   </p>
                 </div>
               </div>

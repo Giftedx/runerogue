@@ -12,7 +12,7 @@ data:
     log_level: "INFO"
     timeout: 30
     port: 5000
-    
+
     # Scraping configuration
     scraper:
       user_agents:
@@ -20,7 +20,7 @@ data:
         - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
       retry_attempts: 3
       backoff_factor: 2
-    
+
     # API configuration
     api:
       rate_limit: 100

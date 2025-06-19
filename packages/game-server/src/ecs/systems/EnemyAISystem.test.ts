@@ -97,14 +97,14 @@ describe("EnemyAISystem", () => {
     state.enemies.set(enemy.id, enemy);
 
     const initialDistance = Math.sqrt(
-      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
     );
 
     // Simulate one game tick
     enemyAISystem.execute(OSRS_TICK_MS);
 
     const newDistance = Math.sqrt(
-      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
     );
 
     // The enemy should move 1 tile per tick

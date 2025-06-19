@@ -10,16 +10,22 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "src/**/*"
+    "**/*.ts",
+    "**/*.js"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "__mocks__"
   ],
   "references": [
-    { "path": "../shared" },
-    { "path": "../osrs-data" }
+    {
+      "path": "../shared"
+    },
+    {
+      "path": "../osrs-data"
+    }
   ]
-} 
+}

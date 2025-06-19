@@ -457,7 +457,7 @@ export class GameScene extends Phaser.Scene {
     const localPlayer = this.room.state.players.get(this.room.sessionId);
     await this.discord.setActivity(
       "Playing RuneRogue",
-      `Level ${localPlayer?.combatLevel || 1}`
+      `Level ${localPlayer?.combatLevel || 1}`,
     );
   }
 
@@ -709,7 +709,7 @@ export class ActivitySecurity {
    */
   async verifyActivityPermissions(
     instanceId: string,
-    userId: string
+    userId: string,
   ): Promise<boolean> {
     // Verify user has permission to join this activity instance
     const response = await fetch(`/api/activity/${instanceId}/members`);
@@ -747,8 +747,8 @@ export class SessionManager {
   private encryptionKey: Buffer;
 
   constructor(masterKey?: string) {
-    this.encryptionKey = masterKey 
-      ? Buffer.from(masterKey, 'hex')
+    this.encryptionKey = masterKey
+      ? Buffer.from(masterKey, "hex")
       : randomBytes(this.keyLength);
   }
 
@@ -756,9 +756,9 @@ export class SessionManager {
    * Create a new encrypted session
    */
   async createSession(
-    clientId: string, 
+    clientId: string,
     ipAddress: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<string> {
     const token = randomBytes(32).toString("hex");
     const sessionData: SessionData = {
@@ -784,8 +784,8 @@ export class SessionManager {
    * Validate and retrieve session
    */
   async validateSession(
-    token: string, 
-    ipAddress?: string
+    token: string,
+    ipAddress?: string,
   ): Promise<SessionData | null> {
     const encryptedSession = this.sessions.get(token);
     if (!encryptedSession) return null;
@@ -824,52 +824,64 @@ export class SessionManager {
   /**
    * Encrypt session data using AES-256-GCM
    */
-  private async encryptSession(session: SessionData): Promise<EncryptedSession> {
+  private async encryptSession(
+    session: SessionData,
+  ): Promise<EncryptedSession> {
     const iv = randomBytes(this.ivLength);
     const salt = randomBytes(this.saltLength);
-    
+
     // Derive key from master key and salt
-    const key = await scryptAsync(this.encryptionKey, salt, this.keyLength) as Buffer;
-    
+    const key = (await scryptAsync(
+      this.encryptionKey,
+      salt,
+      this.keyLength,
+    )) as Buffer;
+
     const cipher = createCipheriv(this.algorithm, key, iv);
-    
+
     const sessionJson = JSON.stringify(session);
     const encrypted = Buffer.concat([
-      cipher.update(sessionJson, 'utf8'),
+      cipher.update(sessionJson, "utf8"),
       cipher.final(),
     ]);
-    
+
     const tag = cipher.getAuthTag();
 
     return {
-      encrypted: encrypted.toString('base64'),
-      salt: salt.toString('base64'),
-      iv: iv.toString('base64'),
-      tag: tag.toString('base64'),
+      encrypted: encrypted.toString("base64"),
+      salt: salt.toString("base64"),
+      iv: iv.toString("base64"),
+      tag: tag.toString("base64"),
     };
   }
 
   /**
    * Decrypt session data
    */
-  private async decryptSession(encryptedSession: EncryptedSession): Promise<SessionData> {
-    const salt = Buffer.from(encryptedSession.salt, 'base64');
-    const iv = Buffer.from(encryptedSession.iv, 'base64');
-    const tag = Buffer.from(encryptedSession.tag, 'base64');
-    const encrypted = Buffer.from(encryptedSession.encrypted, 'base64');
-    
+  private async decryptSession(
+    encryptedSession: EncryptedSession,
+  ): Promise<SessionData> {
+    const salt = Buffer.from(encryptedSession.salt, "base64");
+    const iv = Buffer.from(encryptedSession.iv, "base64");
+    const tag = Buffer.from(encryptedSession.tag, "base64");
+    const encrypted = Buffer.from(encryptedSession.encrypted, "base64");
+
     // Derive key from master key and salt
-    const key = await scryptAsync(this.encryptionKey, salt, this.keyLength) as Buffer;
-    
+    const key = (await scryptAsync(
+      this.encryptionKey,
+      salt,
+      this.keyLength,
+    )) as Buffer;
+
     const decipher = createDecipheriv(this.algorithm, key, iv);
     decipher.setAuthTag(tag);
-    
+
     const decrypted = Buffer.concat([
       decipher.update(encrypted),
       decipher.final(),
     ]);
-    
-    return JSON.parse(decrypted.toString('utf8'));
+
+    return JSON.parse(decrypted.toString("utf8"));
   }
 
   /**
@@ -893,7 +905,7 @@ export class SessionManager {
    */
   async revokeClientSessions(clientId: string): Promise<number> {
     let revokedCount = 0;
-    
+
     for (const [token, encryptedSession] of this.sessions) {
       try {
         const session = await this.decryptSession(encryptedSession);
@@ -906,7 +918,7 @@ export class SessionManager {
         this.sessions.delete(token);
       }
     }
-    
+
     return revokedCount;
   }
 
@@ -979,7 +991,7 @@ export class AntiCheatValidator {
   validateAction(
     playerId: string,
     action: PlayerAction,
-    currentState: PlayerState
+    currentState: PlayerState,
   ): ValidationResult {
     const history = this.getOrCreateHistory(playerId);
     const violations: string[] = [];
@@ -989,7 +1001,7 @@ export class AntiCheatValidator {
       const moveValidation = this.validateMovement(
         action as MoveAction,
         currentState,
-        history
+        history,
       );
       if (!moveValidation.valid) {
         violations.push(...moveValidation.violations);
@@ -1001,7 +1013,7 @@ export class AntiCheatValidator {
       const combatValidation = this.validateCombat(
         action as AttackAction,
         currentState,
-        history
+        history,
       );
       if (!combatValidation.valid) {
         violations.push(...combatValidation.violations);
@@ -1020,7 +1032,7 @@ export class AntiCheatValidator {
       // Clean old violations
       const oneHourAgo = Date.now() - 60 * 60 * 1000;
       history.violations = history.violations.filter(
-        v => v.timestamp > oneHourAgo
+        (v) => v.timestamp > oneHourAgo,
       );
     }
 
@@ -1047,7 +1059,7 @@ export class AntiCheatValidator {
   private validateMovement(
     action: MoveAction,
     state: PlayerState,
-    history: PlayerActionHistory
+    history: PlayerActionHistory,
   ): ValidationResult {
     const violations: string[] = [];
     const lastPosition = history.lastPosition;
@@ -1056,24 +1068,27 @@ export class AntiCheatValidator {
     if (lastPosition) {
       const distance = Math.sqrt(
         Math.pow(action.x - lastPosition.x, 2) +
-        Math.pow(action.y - lastPosition.y, 2)
+          Math.pow(action.y - lastPosition.y, 2),
       );
 
       // Check for teleportation
       const maxDistance = (state.isRunning ? 2 : 1) * (timeDelta / 600);
       if (distance > maxDistance * 1.5) {
-        violations.push(`Impossible movement: ${distance} tiles in ${timeDelta}ms`);
+        violations.push(
+          `Impossible movement: ${distance} tiles in ${timeDelta}ms`,
+        );
       }
 
       // Check for speed hacking patterns
       history.movementSpeeds.push(distance / timeDelta);
       if (history.movementSpeeds.length > 10) {
         history.movementSpeeds.shift();
-        
-        const avgSpeed = history.movementSpeeds.reduce((a, b) => a + b) / 
+
+        const avgSpeed =
+          history.movementSpeeds.reduce((a, b) => a + b) /
           history.movementSpeeds.length;
         const maxSpeed = state.isRunning ? 0.00333 : 0.00167; // tiles per ms
-        
+
         if (avgSpeed > maxSpeed * 1.2) {
           violations.push(`Consistent speed hacking detected`);
         }
@@ -1090,7 +1105,7 @@ export class AntiCheatValidator {
   private validateCombat(
     action: AttackAction,
     state: PlayerState,
-    history: PlayerActionHistory
+    history: PlayerActionHistory,
   ): ValidationResult {
     const violations: string[] = [];
     const now = Date.now();
@@ -1102,7 +1117,7 @@ export class AntiCheatValidator {
 
       if (timeSinceLastAttack < minAttackDelay * 0.9) {
         violations.push(
-          `Attack too fast: ${timeSinceLastAttack}ms (min: ${minAttackDelay}ms)`
+          `Attack too fast: ${timeSinceLastAttack}ms (min: ${minAttackDelay}ms)`,
         );
       }
     }
@@ -1112,7 +1127,7 @@ export class AntiCheatValidator {
       const maxPossibleDamage = this.calculateMaxDamage(state);
       if (action.damage > maxPossibleDamage) {
         violations.push(
-          `Impossible damage: ${action.damage} (max: ${maxPossibleDamage})`
+          `Impossible damage: ${action.damage} (max: ${maxPossibleDamage})`,
         );
       }
     }
@@ -1126,18 +1141,19 @@ export class AntiCheatValidator {
   private calculateMaxDamage(state: PlayerState): number {
     // Use OSRS formulas to calculate theoretical max damage
     let effectiveStrength = state.strengthLevel + 8;
-    
+
     // Apply prayer bonuses
     if (state.prayers.includes("ultimate_strength")) {
       effectiveStrength = Math.floor(effectiveStrength * 1.15);
     }
-    
+
     // Apply stance bonus
     if (state.attackStyle === "aggressive") {
       effectiveStrength += 3;
     }
-    
-    const baseDamage = 0.5 + (effectiveStrength * (state.strengthBonus + 64)) / 640;
+
+    const baseDamage =
+      0.5 + (effectiveStrength * (state.strengthBonus + 64)) / 640;
     return Math.floor(baseDamage);
   }
 
@@ -1160,7 +1176,7 @@ export class AntiCheatValidator {
    */
   cleanup(): void {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    
+
     for (const [playerId, history] of this.playerHistory) {
       if (history.lastActionTime < oneHourAgo) {
         this.playerHistory.delete(playerId);
@@ -1279,14 +1295,18 @@ export class PerformanceMonitor {
   private recordError(name: string, duration: number, error: unknown): void {
     const metric = this.getOrCreateMetric(name);
     metric.errors++;
-    
+
     // Log error details
     console.error(`[Performance] Error in ${name}:`, error);
-    
+
     // Check error rate
     const errorRate = metric.errors / (metric.count + metric.errors);
     if (errorRate > this.alertThresholds.errorRate) {
-      this.createAlert(name, 'error_rate', `Error rate ${(errorRate * 100).toFixed(1)}%`);
+      this.createAlert(
+        name,
+        "error_rate",
+        `Error rate ${(errorRate * 100).toFixed(1)}%`,
+      );
     }
   }
 
@@ -1316,11 +1336,11 @@ export class PerformanceMonitor {
     const p95Time = this.calculatePercentile(metric.samples, 0.95);
 
     if (avgTime > this.alertThresholds.avgTime) {
-      this.createAlert(name, 'avg_time', `Avg time ${avgTime.toFixed(1)}ms`);
+      this.createAlert(name, "avg_time", `Avg time ${avgTime.toFixed(1)}ms`);
     }
 
     if (p95Time > this.alertThresholds.p95Time) {
-      this.createAlert(name, 'p95_time', `P95 time ${p95Time.toFixed(1)}ms`);
+      this.createAlert(name, "p95_time", `P95 time ${p95Time.toFixed(1)}ms`);
     }
   }
 
@@ -1336,7 +1356,7 @@ export class PerformanceMonitor {
 
     // Keep only recent alerts (last hour)
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    this.alerts = this.alerts.filter(a => a.timestamp > oneHourAgo);
+    this.alerts = this.alerts.filter((a) => a.timestamp > oneHourAgo);
 
     // Log alert
     console.warn(`[Performance Alert] ${metric}: ${message}`);
@@ -1347,9 +1367,10 @@ export class PerformanceMonitor {
 
     for (const [name, metric] of this.metrics) {
       const avgTime = metric.count > 0 ? metric.totalTime / metric.count : 0;
-      const errorRate = (metric.count + metric.errors) > 0 
-        ? metric.errors / (metric.count + metric.errors) 
-        : 0;
+      const errorRate =
+        metric.count + metric.errors > 0
+          ? metric.errors / (metric.count + metric.errors)
+          : 0;
 
       report[name] = {
         count: metric.count,
@@ -1381,33 +1402,43 @@ export class PerformanceMonitor {
    */
   exportPrometheus(): string {
     const lines: string[] = [];
-    
+
     for (const [name, metric] of this.metrics) {
-      const safeName = name.replace(/[^a-zA-Z0-9_]/g, '_');
-      
+      const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_");
+
       // Counter metrics
       lines.push(`# HELP ${safeName}_total Total count of ${name} operations`);
       lines.push(`# TYPE ${safeName}_total counter`);
       lines.push(`${safeName}_total ${metric.count}`);
-      
+
       // Error metrics
       lines.push(`# HELP ${safeName}_errors_total Total errors in ${name}`);
       lines.push(`# TYPE ${safeName}_errors_total counter`);
       lines.push(`${safeName}_errors_total ${metric.errors}`);
-      
+
       // Duration metrics
-      lines.push(`# HELP ${safeName}_duration_seconds Duration of ${name} operations`);
+      lines.push(
+        `# HELP ${safeName}_duration_seconds Duration of ${name} operations`,
+      );
       lines.push(`# TYPE ${safeName}_duration_seconds summary`);
-      lines.push(`${safeName}_duration_seconds{quantile="0.5"} ${(this.calculatePercentile(metric.samples, 0.5) / 1000).toFixed(6)}`);
-      lines.push(`${safeName}_duration_seconds{quantile="0.95"} ${(this.calculatePercentile(metric.samples, 0.95) / 1000).toFixed(6)}`);
-      lines.push(`${safeName}_duration_seconds{quantile="0.99"} ${(this.calculatePercentile(metric.samples, 0.99) / 1000).toFixed(6)}`);
-      lines.push(`${safeName}_duration_seconds_sum ${(metric.totalTime / 1000).toFixed(6)}`);
+      lines.push(
+        `${safeName}_duration_seconds{quantile="0.5"} ${(this.calculatePercentile(metric.samples, 0.5) / 1000).toFixed(6)}`,
+      );
+      lines.push(
+        `${safeName}_duration_seconds{quantile="0.95"} ${(this.calculatePercentile(metric.samples, 0.95) / 1000).toFixed(6)}`,
+      );
+      lines.push(
+        `${safeName}_duration_seconds{quantile="0.99"} ${(this.calculatePercentile(metric.samples, 0.99) / 1000).toFixed(6)}`,
+      );
+      lines.push(
+        `${safeName}_duration_seconds_sum ${(metric.totalTime / 1000).toFixed(6)}`,
+      );
       lines.push(`${safeName}_duration_seconds_count ${metric.count}`);
-      
-      lines.push('');
+
+      lines.push("");
     }
-    
-    return lines.join('\n');
+
+    return lines.join("\n");
   }
 }
 
@@ -1465,12 +1496,12 @@ export class DebugOverlay {
       backgroundColor: "#000000cc",
       padding: { x: 5, y: 5 },
     });
-    
+
     this.debugText.setScrollFactor(0);
     this.debugText.setDepth(9999);
-    
+
     // Add keyboard toggle
-    this.scene.input.keyboard?.on('keydown-F3', () => {
+    this.scene.input.keyboard?.on("keydown-F3", () => {
       if (this.debugText) {
         this.debugText.visible = !this.debugText.visible;
       }
@@ -1491,13 +1522,15 @@ export class DebugOverlay {
     }
 
     // Calculate statistics
-    const avgFPS = this.performanceHistory.reduce((a, b) => a + b, 0) / this.performanceHistory.length;
+    const avgFPS =
+      this.performanceHistory.reduce((a, b) => a + b, 0) /
+      this.performanceHistory.length;
     const minFPS = Math.min(...this.performanceHistory);
     const maxFPS = Math.max(...this.performanceHistory);
 
     // Get memory info if available
     const memoryInfo = (performance as any).memory;
-    const memoryMB = memoryInfo 
+    const memoryMB = memoryInfo
       ? (memoryInfo.usedJSHeapSize / 1048576).toFixed(1)
       : (metrics.memory / 1048576).toFixed(1);
 
@@ -1592,7 +1625,7 @@ export class GameEventEmitter<T extends Record<string, any>> {
 
   emit<K extends keyof T>(event: K, data: T[K]): void {
     // Emit to regular listeners
-    this.listeners.get(event)?.forEach(listener => {
+    this.listeners.get(event)?.forEach((listener) => {
       try {
         listener(data);
       } catch (error) {
@@ -1603,7 +1636,7 @@ export class GameEventEmitter<T extends Record<string, any>> {
     // Emit to once listeners and clear them
     const onceListeners = this.onceListeners.get(event);
     if (onceListeners) {
-      onceListeners.forEach(listener => {
+      onceListeners.forEach((listener) => {
         try {
           listener(data);
         } catch (error) {
@@ -1630,7 +1663,11 @@ interface GameEvents {
   playerJoined: { playerId: string; username: string };
   playerLeft: { playerId: string; reason: string };
   playerDamaged: { playerId: string; damage: number; source: string };
-  enemySpawned: { enemyId: string; type: string; position: { x: number; y: number } };
+  enemySpawned: {
+    enemyId: string;
+    type: string;
+    position: { x: number; y: number };
+  };
   enemyKilled: { enemyId: string; killedBy: string; drops: string[] };
   waveStarted: { waveNumber: number; enemyCount: number };
   waveCompleted: { waveNumber: number; duration: number };
@@ -1689,14 +1726,16 @@ export class ResourceManager {
     }
 
     // Start loading
-    const loadingPromise = loader().then(resource => {
-      this.cache.set(key, resource);
-      this.loadingPromises.delete(key);
-      return resource as T;
-    }).catch(error => {
-      this.loadingPromises.delete(key);
-      throw error;
-    });
+    const loadingPromise = loader()
+      .then((resource) => {
+        this.cache.set(key, resource);
+        this.loadingPromises.delete(key);
+        return resource as T;
+      })
+      .catch((error) => {
+        this.loadingPromises.delete(key);
+        throw error;
+      });
 
     this.loadingPromises.set(key, loadingPromise);
     return loadingPromise;
@@ -1706,7 +1745,7 @@ export class ResourceManager {
    * Preload multiple resources
    */
   async preload(keys: string[]): Promise<void> {
-    await Promise.all(keys.map(key => this.load(key)));
+    await Promise.all(keys.map((key) => this.load(key)));
   }
 
   /**
@@ -1732,18 +1771,18 @@ export class ResourceManager {
    */
   getMemoryUsage(): number {
     let totalSize = 0;
-    
+
     for (const [key, value] of this.cache) {
       if (value instanceof ArrayBuffer) {
         totalSize += value.byteLength;
-      } else if (typeof value === 'string') {
+      } else if (typeof value === "string") {
         totalSize += value.length * 2; // Rough estimate for UTF-16
-      } else if (value && typeof value === 'object') {
+      } else if (value && typeof value === "object") {
         // Rough estimate for objects
         totalSize += JSON.stringify(value).length * 2;
       }
     }
-    
+
     return totalSize;
   }
 }
@@ -1752,18 +1791,18 @@ export class ResourceManager {
 export const resources = new ResourceManager();
 
 // Register common resources
-resources.register('osrs-items', async () => {
-  const response = await fetch('/api/osrs-data/items');
+resources.register("osrs-items", async () => {
+  const response = await fetch("/api/osrs-data/items");
   return response.json();
 });
 
-resources.register('osrs-monsters', async () => {
-  const response = await fetch('/api/osrs-data/monsters');
+resources.register("osrs-monsters", async () => {
+  const response = await fetch("/api/osrs-data/monsters");
   return response.json();
 });
 
-resources.register('game-config', async () => {
-  const response = await fetch('/api/config/game');
+resources.register("game-config", async () => {
+  const response = await fetch("/api/config/game");
   return response.json();
 });
 ```

@@ -22,9 +22,9 @@ jobs:
           echo "GitHub Copilot Agent is processing issue #${{ github.event.issue.number }}"
           echo "Issue Title: ${{ github.event.issue.title }}"
           echo "Issue Body: ${{ github.event.issue.body }}"
-          
+
           # The actual logic for the agent to interpret and execute the task
           # from the issue body is handled by the GitHub Copilot Agent itself.
           # This workflow simply provides the environment for it to run.
-          
+
           echo "Agent is now analyzing the codebase as per the issue description..."

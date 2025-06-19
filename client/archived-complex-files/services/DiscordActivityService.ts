@@ -106,7 +106,7 @@ export class DiscordActivityService {
 
         // Notify game about participant changes
         this.onParticipantsUpdate?.(Array.from(this.participants.values()));
-      }
+      },
     );
 
     // Listen for speaking state changes (optional for voice features)

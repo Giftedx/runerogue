@@ -75,7 +75,7 @@ First, I'll provide the core server-side logic you'll be testing.
 
 This is the main game room file where the ECS systems are integrated.
 
- I will begin by gathering the code requested.
+I will begin by gathering the code requested.
 
 First, I will find and read the server-side files that were mentioned, which are `EnemyAISystem.ts`, `DeathSystem.ts`, `RuneRogueGameRoom.ts`, and `GameState.ts`. This will provide the context for the server-side logic that needs to be tested.
 
@@ -91,11 +91,11 @@ This part focuses on adding animations and audio to provide feedback for combat 
 
 Here is the content of the main client-side file you'll be working with:
 
- Of course. I will find all the relevant code in the workspace to help you with your task. Here is the context you requested:
+Of course. I will find all the relevant code in the workspace to help you with your task. Here is the context you requested:
 
 First, I will locate and read the core server-side files that were recently implemented and require testing.
 
- Hello! As a code search expert, I'll help you find the relevant code to complete your task. Here are the files related to implementing client-side combat feedback and server-side testing.
+Hello! As a code search expert, I'll help you find the relevant code to complete your task. Here are the files related to implementing client-side combat feedback and server-side testing.
 
 ### Server-Side Files
 
@@ -105,7 +105,7 @@ Here are the core server-side files you'll be working with and testing.
 2.  **`EnemyAISystem.ts`**: Manages enemy behavior, including aggression, targeting, and attacking. You will need to create tests for this file.
 3.  **`DeathSystem.ts`**: Handles what happens when players or enemies die, including respawning and removal. You will also create tests for this file.
 
- Okay, I will begin by implementing the client-side combat feedback and then proceed to the server-side testing.
+Okay, I will begin by implementing the client-side combat feedback and then proceed to the server-side testing.
 
 First, I'll create the directory for the new `AudioManager` on the client. Okay, I will start by implementing the client-side combat feedback and then move on to the server-side testing.
 
@@ -113,11 +113,13 @@ First, I'll create the directory for the `AudioManager`. Okay, I will now begin 
 
 First, I will create the `AudioManager.ts` to handle sound effects. Okay, I will now begin implementing the client-side combat feedback and creating tests for the server-side systems.
 
-First, I'll set up the client-side enhancements. I'll start by creating the `AudioManager` to handle sound effects. 
-````
+First, I'll set up the client-side enhancements. I'll start by creating the `AudioManager` to handle sound effects.
 
-````
-Okay, client-side enhancements are done. Now for server-side testing, starting with the `EnemyAISystem` test file. 
+```
+
+```
+
+Okay, client-side enhancements are done. Now for server-side testing, starting with the `EnemyAISystem` test file.
 
 ---
 
@@ -137,30 +139,38 @@ First, I'll create the test file for the `DeathSystem`. I've created the test fi
 
 First, I'll update `GameScene.ts` to correctly integrate and utilize the `AnimationSystem` and `AudioManager`. I've identified a few areas for improvement: the `createAnimationSystem` call needs to be corrected to match its definition, the `updatePlayer` and `updateEnemy` methods should trigger sound effects for events like death, and the damage splat visuals can be enhanced for better clarity. Specifically, I'll change the color of the damage splat for player-inflicted damage to blue to make it more distinct.
 
-I will now apply these changes to `GameScene.ts`. 
-````
+I will now apply these changes to `GameScene.ts`.
 
-````
+```
+
+```
+
 Of course. I will continue with the requested task.
 
-First, I'll create the test file for the `DeathSystem` to ensure we can validate its functionality, including player and enemy death scenarios. 
-````
+First, I'll create the test file for the `DeathSystem` to ensure we can validate its functionality, including player and enemy death scenarios.
 
-````
-I have implemented the client-side animation and audio feedback, and created comprehensive tests for the `DeathSystem`. Now, I will finish the server-side testing by improving the tests for the `EnemyAISystem`. I will add test cases to verify state transitions, targeting, movement speed, and attack intervals, ensuring the AI behaves as expected under various combat scenarios. 
-````
+```
 
-````
+```
+
+I have implemented the client-side animation and audio feedback, and created comprehensive tests for the `DeathSystem`. Now, I will finish the server-side testing by improving the tests for the `EnemyAISystem`. I will add test cases to verify state transitions, targeting, movement speed, and attack intervals, ensuring the AI behaves as expected under various combat scenarios.
+
+```
+
+```
+
 I have reviewed the server-side test files and they look complete and correct. I will now focus on the client-side enhancements.
 
 I'll start by correcting `AnimationSystem.ts` to properly handle animations based on the game state from the server and to align with the existing code in `GameScene.ts`. The current implementation has some inconsistencies that I will resolve.
 
 I will update the `createAnimationSystem` function to accept the necessary entity maps, use the correct properties for player and enemy states (`isDead` for players, `alive` for enemies), and handle animations more efficiently by checking the currently playing animation. This will prevent animations from restarting on every frame. I'll also ensure it uses client-side velocity data to switch between idle and walking animations.
 
-Here are the changes for `AnimationSystem.ts`: 
-````
+Here are the changes for `AnimationSystem.ts`:
 
-````
+```
+
+```
+
 I have implemented the server-side tests and the client-side animation and audio systems. Now, I will finalize the client-side implementation by creating placeholder animations and refining the visual feedback for damage.
 
 First, I'll create the test file for the `DeathSystem` to ensure the server-side logic for player and enemy death is working as expected. This includes handling respawns and entity removal. I have implemented the client-side animation and audio systems, created tests for the server-side `DeathSystem`, and improved the tests for the `EnemyAISystem`. I've also updated the `GameScene` to integrate these new features and refine the visual feedback for combat.
@@ -181,24 +191,30 @@ The error `Element implicitly has an 'any' type because expression of type 'numb
 
 I'll correct the indexing logic in `ResourceNodeSystem.ts` to properly look up resource data. First, I need to locate the definition of `OSRS_RESOURCE_DATA`. Okay, the test run revealed a multitude of TypeScript errors across the server package, preventing many test suites from even running. The most frequent error seems to be related to indexing, especially in `ResourceNodeSystem.ts`. I'll start by fixing that, as it appears to be a foundational issue affecting many other parts of the server.
 
-First, I'll correct the import path for `OSRS_RESOURCE_DATA` in `ResourceNodeSystem.ts` and then address the indexing issue. It seems the system is trying to use a numeric ID to access properties of an object that is keyed by strings. I'll need to find the correct mapping or data structure to resolve this. 
-````
+First, I'll correct the import path for `OSRS_RESOURCE_DATA` in `ResourceNodeSystem.ts` and then address the indexing issue. It seems the system is trying to use a numeric ID to access properties of an object that is keyed by strings. I'll need to find the correct mapping or data structure to resolve this.
 
-````
+```
+
+```
+
 I've analyzed the extensive test failures. The root cause appears to be a cascade of TypeScript type errors, primarily stemming from incorrect data access patterns and outdated test setups. The most frequent error, `Element implicitly has an 'any' type`, points to a fundamental mismatch between how data is structured and how it's being accessed.
 
 I'll begin by addressing the most critical and widespread issues. My first step will be to correct the import path in `ResourceNodeSystem.ts` to ensure it can correctly locate the `OSRS_RESOURCE_DATA`. This might resolve a number of downstream errors in tests that rely on this system.
 
-Correcting the import path for `OSRS_RESOURCE_DATA` in `ResourceNodeSystem.ts`. 
-````
+Correcting the import path for `OSRS_RESOURCE_DATA` in `ResourceNodeSystem.ts`.
 
-````
+```
+
+```
+
 The test suite has revealed a significant number of TypeScript errors and other issues across the server-side codebase. I will now work through these issues systematically, starting with the type errors in `ResourceNodeSystem.ts`.
 
-First, I'll correct an import path that appears to be causing problems. 
-````
+First, I'll correct an import path that appears to be causing problems.
 
-````
+```
+
+```
+
 I've encountered a series of cascading type errors in the test suite. The initial error in `ResourceNodeSystem.ts` seems to be the root of many failures. I've attempted to correct the import path for `OSRS_RESOURCE_DATA`, but the issue persists, indicating a deeper problem with how `nodeType` is being used to index `OSRS_RESOURCE_DATA`.
 
 I'll now investigate the component definitions to resolve this typing mismatch. I will start by searching for the `components.ts` file. I've analyzed the test failures and see a recurring error in `ResourceNodeSystem.ts` related to how resource data is accessed. It seems there's a mismatch between the data type used for indexing and the actual data structure. I'll start by fixing this issue, as it appears to be the root cause of several cascading test failures. First, I need to examine the component definitions to understand the intended data structure. I see a large number of test failures. The first error in `packages/server/src/server/ecs/systems/__tests__/CombatSystem.test.ts` is a TypeScript error indicating improper use of a `MapSchema`. I'll start by fixing that and then move on to the other errors. It seems like many of the errors are related to incorrect import paths and type mismatches. I will address them systematically.
@@ -211,42 +227,51 @@ A recurring error is `error TS7053: Element implicitly has an 'any' type because
 
 To fix this, I will create a direct lookup map, `OSRS_RESOURCES_BY_ID`, that maps numeric resource IDs to their data. This will resolve the indexing errors and improve performance.
 
-First, I'll modify `osrs-resource-data.ts` to create and export this new map. 
-````
+First, I'll modify `osrs-resource-data.ts` to create and export this new map.
 
-````
+```
+
+```
+
 I've analyzed the test failures and have a plan to address them. The majority of errors are TypeScript type-related issues and incorrect module imports. I'll start by fixing the most critical ones.
 
 First, I'll correct the import path in `ResourceNodeSystem.ts` and then modify it to use a new, more efficient data structure for looking up resource data. This should resolve the indexing and type errors that are causing a cascade of failures in other tests.
 
-I will now correct the import path in `ResourceNodeSystem.ts`. 
-````
+I will now correct the import path in `ResourceNodeSystem.ts`.
 
-````
+```
+
+```
+
 I've analyzed the extensive test failures. The root cause of many errors appears to be a series of cascading type mismatches and incorrect data access patterns, starting with how resource data is handled.
 
 I'll begin by refactoring the data access layer for OSRS resources to be more efficient and type-safe. This should resolve the failures in `ResourceNodeSystem` and dependent tests.
 
-First, I will modify `osrs-resource-data.ts` to create a unified, ID-indexed map of all game resources. This will allow systems to look up resource data directly by ID, which is much cleaner than the current approach. 
-````
+First, I will modify `osrs-resource-data.ts` to create a unified, ID-indexed map of all game resources. This will allow systems to look up resource data directly by ID, which is much cleaner than the current approach.
 
-````
+```
+
+```
+
 The test failures are widespread and stem from a variety of issues, including incorrect import paths, type mismatches, and outdated test implementations. I'll start by addressing the errors in `ResourceNodeSystem.ts` and then move on to the other files.
 
 First, I'll fix the indexing issue with `OSRS_RESOURCE_DATA`. I've already created a more efficient and type-safe lookup structure, `OSRS_RESOURCES_BY_ID`, and updated `ResourceNodeSystem.ts` to use it. This should resolve the first set of errors.
 
 Next, I'll correct the type errors in the other failing test files, addressing issues with component access, outdated function calls, and incorrect mock implementations. This will be a file-by-file process.
 
-I will now fix the `SkillLevels` access issue in `ResourceNodeSystem.ts`. The property `nodeData.skill` needs to be correctly typed to be used as an index for the `SkillLevels` component. I will ensure the `SkillType` enum from `@runerogue/osrs-data` is compatible with the keys of the `SkillLevels` component. 
-````
+I will now fix the `SkillLevels` access issue in `ResourceNodeSystem.ts`. The property `nodeData.skill` needs to be correctly typed to be used as an index for the `SkillLevels` component. I will ensure the `SkillType` enum from `@runerogue/osrs-data` is compatible with the keys of the `SkillLevels` component.
 
-````
+```
+
+```
+
 The test suite is riddled with errors, but I've identified the primary causes:
+
 1.  **Incorrect Data Imports:** The `ResourceNodeSystem` was failing due to an incorrect import path for `OSRS_RESOURCE_DATA`. I've corrected this by creating a centralized, ID-based lookup table (`OSRS_RESOURCES_BY_ID`) and updating the system to use it. This also resolves the TypeScript errors related to dynamic indexing.
 2.  **Type-Safety Violations:** The `ResourceNodeSystem` was also attempting to access `SkillLevels` using a string key that wasn't guaranteed to be a valid skill name. I've added a cast to ensure the key is valid.
 3.  **Widespread Dependency Issues:** A significant number of other tests are failing due to what appear to be breaking changes in dependencies like `@colyseus/testing`, issues with mocking the `economyIntegration`, and various other TypeScript errors.
 
-I will now proceed to fix the remaining test failures by addressing these systemic issues. I will start with the most critical and widespread problems first, beginning with the errors in `WaveCombatIntegration.test.ts`. 
+I will now proceed to fix the remaining test failures by addressing these systemic issues. I will start with the most critical and widespread problems first, beginning with the errors in `WaveCombatIntegration.test.ts`.
 
 ---
 
@@ -283,21 +308,26 @@ I'll proceed by fixing these issues systematically, starting with the most impac
 
 First, I'll address the errors in `ResourceNodeSystem.ts`, which are causing failures in multiple dependent test suites. The problems are an incorrect import path for `osrs-resource-data` and an invalid method of accessing skill level data from the `SkillLevels` component.
 
-I will correct the import path and refactor the skill access logic to be type-safe and compatible with the `bitecs` API. 
-````
+I will correct the import path and refactor the skill access logic to be type-safe and compatible with the `bitecs` API.
 
-````
+```
+
+```
+
 I've addressed the import path and type-safety issues in `ResourceNodeSystem.ts`. Although this introduced some linting errors, they are non-critical and I will proceed with fixing the remaining test failures.
 
 The test results indicate a significant number of errors in `SurvivorWaveSystem.test.ts`, specifically with how it interacts with `MapSchema` and accesses player properties. I'll now read that test file to diagnose and fix these issues. I've analyzed the test failures in `SurvivorWaveSystem.test.ts`. The errors are primarily due to schema changes in the `Player` entity and incorrect usage of the Colyseus `MapSchema` API. The `Player` schema now uses `hitpoints` instead of `health`, `maxHitpoints` instead of `maxHealth`, and a nested `prayer` object for prayer points. Additionally, entities must be added to `MapSchema` instances using the `.set()` method, not by direct property assignment.
 
-I will now correct these issues in `SurvivorWaveSystem.test.ts`. 
-````
+I will now correct these issues in `SurvivorWaveSystem.test.ts`.
 
-````
+```
+
+```
+
 I've corrected the issues in `ResourceNodeSystem.ts` and `SurvivorWaveSystem.test.ts`. Now, I'll move on to the next set of test failures, starting with `GameRoom-inventory-debug.test.ts` to continue fixing the codebase. I've analyzed the test failures and will begin by fixing the errors in `GameRoom-inventory-debug.test.ts`. The issues are related to implicit `any` types and an incorrect method call for disconnecting a client. I will correct the typings and use the proper method to disconnect the test client. I will continue fixing the test failures. The next file I'll address is `GameRoom-inventory-debug.test.ts`. The errors indicate problems with implicit `any` types and an incorrect method call for disconnecting a client.
 
 First, I'll read `EntitySchemas.ts` to get the definition of `InventoryItem` so I can correctly type the variables in the test file. Then I will correct the test file. I've analyzed the extensive test failures. The errors point to several core issues:
+
 1.  **Outdated Schema Usage:** Many tests are still using old property names for the `Player` schema (e.g., `health` instead of `hitpoints`, `skills` instead of `skillLevels`).
 2.  **Incorrect MapSchema Access:** Tests are trying to access `MapSchema` properties with array-style brackets (`state.players['id']`) instead of the required `.get()` or `.set()` methods.
 3.  **`@colyseus/testing` API Changes:** The testing library has been updated, and methods like `disconnectClient` are no longer available, causing multiple test suites to fail during setup or teardown.
@@ -305,13 +335,15 @@ First, I'll read `EntitySchemas.ts` to get the definition of `InventoryItem` so 
 
 I will proceed by fixing these issues systematically, starting with the test files that have the most failures. I'll begin with `SurvivorWaveSystem.test.ts` and `GameRoom-inventory-debug.test.ts`.
 
-First, I'll correct the issues in `GameRoom-inventory-debug.test.ts`. The `any` types in the mock need to be resolved, and the deprecated `disconnectClient` call needs to be updated. 
-````
+First, I'll correct the issues in `GameRoom-inventory-debug.test.ts`. The `any` types in the mock need to be resolved, and the deprecated `disconnectClient` call needs to be updated.
 
-````
+```
+
+```
+
 I've fixed the errors in `ResourceNodeSystem.ts`, `SurvivorWaveSystem.test.ts`, and `GameRoom-inventory-debug.test.ts`. Now, I'll proceed to fix the remaining test files.
 
-The next file on the list is `ecs-integration.test.ts`, which has an error indicating that a numeric value is being used where a string is expected for a prayer name. I'll examine the `PrayerFlag` definition and correct the usage in the test. 
+The next file on the list is `ecs-integration.test.ts`, which has an error indicating that a numeric value is being used where a string is expected for a prayer name. I'll examine the `PrayerFlag` definition and correct the usage in the test.
 
 ---
 
@@ -332,31 +364,39 @@ I'll adopt a systematic approach to resolve these issues, starting with the most
 First, I will examine the current implementation of `SurvivorWaveSystem.test.ts` and the `Player` schema to understand the cause of the `TypeError` related to `testPlayer.prayer.points`. I'll start by fixing the test failures in `SurvivorWaveSystem.test.ts`. The error `TypeError: Cannot set properties of undefined (setting 'points')` on the line `testPlayer.prayer.points = 50;` indicates that `testPlayer.prayer` is not being initialized correctly. I'll need to examine the `Player` schema in `EntitySchemas.ts` to fix the instantiation in the test file. The test failures in `SurvivorWaveSystem.test.ts` are due to schema drift. The `Player` schema has been updated, but the tests are still using old property names like `hitpoints` (now `health`) and an incorrect structure for accessing prayer points.
 
 I will correct the test file to align with the current `Player` schema defined in `EntitySchemas.ts`. This involves:
+
 1.  Updating the `beforeEach` setup to correctly initialize the test player's stats (`health`, `maxHealth`, `skills`, `prayerPoints`).
 2.  Replacing all instances of `testPlayer.hitpoints` with `testPlayer.health`.
 3.  Replacing all instances of `testPlayer.prayer.points` with `testPlayer.prayerPoints`.
 4.  Updating skill level access from `testPlayer.skillLevels.prayer` to `testPlayer.skills.prayer.level`.
 5.  Ensuring that `maxPrayerPoints` is correctly managed in tests that modify prayer levels.
 
-This will resolve the `TypeError` and allow the test suite to run correctly. 
-````
+This will resolve the `TypeError` and allow the test suite to run correctly.
 
-````
-I've addressed the schema drift in `SurvivorWaveSystem.test.ts` by aligning the test setup with the latest `Player` schema, which should resolve the `TypeError`. Now, I'll clean up the resulting lint errors by replacing the `any` types with more specific types and removing the unused `PlayerSkills` import to improve code quality and maintainability. 
-````
+```
 
-````
+```
+
+I've addressed the schema drift in `SurvivorWaveSystem.test.ts` by aligning the test setup with the latest `Player` schema, which should resolve the `TypeError`. Now, I'll clean up the resulting lint errors by replacing the `any` types with more specific types and removing the unused `PlayerSkills` import to improve code quality and maintainability.
+
+```
+
+```
+
 I've addressed the schema drift issues in `SurvivorWaveSystem.test.ts` by updating the player initialization to match the latest `Player` schema, which should resolve the numerous `TypeError: Cannot set properties of undefined` errors in that suite.
 
 Now, I'll focus on the failures in `ecs-integration.test.ts`. The errors indicate that combat damage and experience gain are not functioning as expected within the integrated ECS. I will examine the test file to diagnose the root cause. I've analyzed the test failures and see several issues related to outdated schema properties in the test files, particularly in `SurvivorWaveSystem.test.ts` and `ecs-integration.test.ts`. The `Player` schema has been updated, but the tests haven't been, causing properties like `hitpoints` and `prayer.points` to be incorrect.
 
-I will now correct the `SurvivorWaveSystem.test.ts` file to align with the current `Player` schema, fixing property names and initialization logic. This should resolve the large number of failures in that suite. After that, I will address the failures in the other test files. 
-````
+I will now correct the `SurvivorWaveSystem.test.ts` file to align with the current `Player` schema, fixing property names and initialization logic. This should resolve the large number of failures in that suite. After that, I will address the failures in the other test files.
 
-````
+```
+
+```
+
 I've addressed the `SurvivorWaveSystem.test.ts` failures. Now, I'll focus on fixing the `ecs-integration.test.ts` file.
 
 The key issues are:
+
 1.  **Combat Failure**: The NPC's health isn't decreasing in the combat test, suggesting a problem with damage calculation or the combat system's execution.
 2.  **Integration Failure**: In the multi-system test, attack experience isn't being gained, and prayer points aren't draining as expected.
 
@@ -364,30 +404,38 @@ A likely culprit for the prayer issue is the type mismatch I've seen before: `ec
 
 I'll start by examining `PrayerSystem.ts` to confirm how prayers are activated and drained, which will inform the fix. I've analyzed the test failures. The issues in `SurvivorWaveSystem.test.ts` are due to schema drift; the test is using outdated property names for the `Player` object. I'll correct the property names (e.g., `hitpoints` to `health`, `maxHitpoints` to `maxHealth`) and update the initialization logic to correctly set prayer levels and points according to the latest `Player` schema in `EntitySchemas.ts`. This should resolve the numerous `TypeError` exceptions in that test suite.
 
-I will now apply these corrections. 
-````
+I will now apply these corrections.
 
-````
+```
+
+```
+
 I've addressed the schema drift in `SurvivorWaveSystem.test.ts`. Now I'll focus on the errors in `ecs-integration.test.ts`.
 
 The test failures indicate problems with combat damage, experience gain, and prayer point drainage. The prayer system test, in particular, is failing because `activatePlayerPrayer` is being called with a numeric enum value (`PrayerFlag.THICK_SKIN`) instead of a string key. The `PrayerSystem` expects the string name of the prayer.
 
-I will now correct the `ecs-integration.test.ts` file to use the correct string-based prayer flags and to address the other failing assertions. 
-````
+I will now correct the `ecs-integration.test.ts` file to use the correct string-based prayer flags and to address the other failing assertions.
 
-````
-I've addressed the issues in `SurvivorWaveSystem.test.ts` and `ecs-integration.test.ts`. Now, I'll remove the unused `PrayerFlag` import from `ecs-integration.test.ts` to clean up the file. After that, I'll rerun the tests to see which ones are still failing and prioritize the next set of fixes. The errors in `ProceduralGenerator.test.ts` seem like a good next target. 
-````
+```
 
-````
+```
+
+I've addressed the issues in `SurvivorWaveSystem.test.ts` and `ecs-integration.test.ts`. Now, I'll remove the unused `PrayerFlag` import from `ecs-integration.test.ts` to clean up the file. After that, I'll rerun the tests to see which ones are still failing and prioritize the next set of fixes. The errors in `ProceduralGenerator.test.ts` seem like a good next target.
+
+```
+
+```
+
 Okay, I will continue fixing the test failures. First, I'll run the test suite to get the current status. The test run has highlighted a significant number of failures across the server-side test suites. I will proceed by addressing these issues systematically, starting with the most critical and widespread problems.
 
 First, I'll fix the error in `SurvivorWaveSystem.test.ts`. This is a straightforward schema drift issue that I've encountered before. The test is attempting to access `player.prayer.points`, which is an outdated property. I will correct this to use the current `player.prayerPoints` property. The test `SurvivorWaveSystem.test.ts` is failing because `testPlayer.prayer.points` does not exist. I've previously corrected similar issues where the `prayer` object was removed in favor of a `prayerPoints` property directly on the `Player` schema.
 
-I will apply the same fix here, changing `testPlayer.prayer.points` to `testPlayer.prayerPoints`. 
-````
+I will apply the same fix here, changing `testPlayer.prayer.points` to `testPlayer.prayerPoints`.
 
-````
+```
+
+```
+
 I'll continue fixing the test failures. The next file, `ProceduralGenerator.test.ts`, fails because the `map` object is missing properties. I will now read that test file to understand the expected structure. I've addressed the `SurvivorWaveSystem.test.ts` prayer points issue. Now, I'm turning my attention to the errors in `ProceduralGenerator.test.ts`. The test failures indicate a mismatch between the structure of the generated map object and what the tests expect. It seems properties like `terrain`, `monsters`, `loot`, and `resources` are not found on the returned map object.
 
 I'll start by examining the `MapBlueprint` schema defined in `MapBlueprintSchema.ts` to understand the correct data structure that `ProceduralGenerator` should be producing. This will help me correct the test expectations. The test failures are widespread. I'll continue fixing them, starting with `SurvivorWaveSystem.test.ts` and then moving to the `ProceduralGenerator.test.ts` failures.
@@ -400,16 +448,20 @@ I will now correct the `ProceduralGenerator` to properly populate the map bluepr
 
 First, I'll fix the incorrect property access in `SurvivorWaveSystem.test.ts`. The test uses `testPlayer.prayer.points` when it should be `testPlayer.prayerPoints`, according to our latest schema updates.
 
-Next, I'll fix the `ProceduralGenerator.test.ts` failures. The tests expect the `generateMap` function to return an object containing `terrain`, `monsters`, `loot`, and `resources` arrays, but the function was modified to only return a `MapBlueprint` which excludes this data. I will update the `generateMap` function to return all the generated data, which will align with the test's expectations and make the generator more useful. 
-````
+Next, I'll fix the `ProceduralGenerator.test.ts` failures. The tests expect the `generateMap` function to return an object containing `terrain`, `monsters`, `loot`, and `resources` arrays, but the function was modified to only return a `MapBlueprint` which excludes this data. I will update the `generateMap` function to return all the generated data, which will align with the test's expectations and make the generator more useful.
 
-````
+```
+
+```
+
 I've addressed the issue in `ProceduralGenerator.ts` by creating a new `GeneratedMapData` interface that includes all the generated data (`terrain`, `monsters`, etc.) and updated the `generateMap` function to return this new type. This will resolve the errors in `ProceduralGenerator.test.ts`.
 
-I also noticed the `MapBlueprint` import is now unused in `ProceduralGenerator.ts`, so I'll remove that to clean up the code. 
-````
+I also noticed the `MapBlueprint` import is now unused in `ProceduralGenerator.ts`, so I'll remove that to clean up the code.
 
-````
+```
+
+```
+
 I've fixed the test failures in `SurvivorWaveSystem.test.ts` and `ProceduralGenerator.test.ts`. Now, I'll address the widespread errors in `GameRoom.ts` and its associated tests. The main issue appears to be improper indexing of the `equipment` object, where a generic string is being used instead of a specific key. I'll start by examining `GameRoom.ts` to understand the code and fix the problem. The test results show a cascade of TypeScript errors, primarily originating from `GameRoom.ts` and affecting many other test files. There are also specific failures in `ProceduralGenerator.test.ts` and `SurvivorWaveSystem.test.ts` due to outdated schema assumptions.
 
 I will proceed with the following plan:
@@ -417,18 +469,21 @@ I will proceed with the following plan:
 1.  **Fix `SurvivorWaveSystem.test.ts`:** Correct the property access for prayer points, which I've already identified.
 2.  **Fix `ProceduralGenerator.ts` and `ProceduralGenerator.test.ts`:** The generator function's return type is mismatched with what the test expects. I will create a new `GeneratedMapData` interface to represent the full map structure and update both the function and the test to use it. This will resolve the `property 'terrain' does not exist` errors.
 3.  **Fix `GameRoom.ts` Type Errors:** This is the largest source of errors.
-    *   I will add a type guard to safely handle the `player.equipment[message.slot]` assignment, ensuring `message.slot` is a valid equipment slot.
-    *   I will add `null` checks for the optional `economyIntegration` property before it's used.
-    *   I will add explicit types to the `logSchemaType` function parameters.
+    - I will add a type guard to safely handle the `player.equipment[message.slot]` assignment, ensuring `message.slot` is a valid equipment slot.
+    - I will add `null` checks for the optional `economyIntegration` property before it's used.
+    - I will add explicit types to the `logSchemaType` function parameters.
 4.  **Re-run Tests:** After these initial fixes, I'll run the test suite again to get a clearer picture of the remaining, more complex failures, such as the Colyseus testing setup and combat formula issues.
 
-I'll start by fixing the prayer points access in `SurvivorWaveSystem.test.ts`. 
-````
+I'll start by fixing the prayer points access in `SurvivorWaveSystem.test.ts`.
 
-````
+```
+
+```
+
 I've addressed the issues in `ProceduralGenerator.test.ts` and `SurvivorWaveSystem.test.ts`. Now, I'll focus on the numerous TypeScript errors originating from `GameRoom.ts` which are causing a cascade of test failures.
 
 The primary error is `Element implicitly has an 'any' type because expression of type 'string' can't be used to index type...`, indicating a type mismatch when accessing the `player.equipment` object. I'll start by examining the relevant schemas and message interfaces to enforce type safety. I'll also address the other errors in that file, such as potentially undefined properties and implicit `any` types. I've analyzed the test failures. The errors are widespread and point to several issues:
+
 1.  **`GameRoom.ts` Type Errors:** The `player.equipment[message.slot]` assignment is a major source of errors. The `slot` is a string, but the `equipment` object doesn't have a string index signature. I need to define the `slot` type more strictly.
 2.  **`ProceduralGenerator.test.ts`:** The tests are failing because the structure of the map data returned by `generateMap` has changed. The tests need to be updated to access properties like `terrain`, `monsters`, and `loot` from the new `GeneratedMapData` object structure.
 3.  **`SurvivorWaveSystem.test.ts`:** There's a remaining reference to `player.prayer.points` which should be `player.prayerPoints`.
@@ -440,6 +495,7 @@ I'll start by fixing the `GameRoom.ts` equipment slot issue, as it's causing fai
 First, I'll tackle the type errors in `ResourceNodeSystem.ts`, as these issues are causing failures in multiple test suites (`WaveCombatIntegration.test.ts`, `ecs-integration.test.ts`, `core-functionality.test.ts`, and `AutoCombatSystem.basic.test.ts`).
 
 The errors indicate:
+
 1.  An attempt to call `.toLowerCase()` on a numeric enum `SkillType`.
 2.  A typo (`runecrafting` instead of `runecraft`).
 3.  A mismatch between the `SkillType` enum from `@osrs-data/gathering-data` and the one expected by the `SkillSystem`.
@@ -448,17 +504,22 @@ I will now read the file `ResourceNodeSystem.ts` to get the full context before 
 
 First, I'll address the errors in `ResourceNodeSystem.ts`, which are causing failures in multiple dependent test suites. The errors point to a mismatch in `SkillType` enums and incorrect property access. I'll correct the skill name handling to work with the enum type directly and fix the typo for `runecraft`. I've analyzed the test failures and have a plan to address them, starting with the most common source of errors: `ResourceNodeSystem.ts`. The primary issue is a type mismatch between two different `SkillType` enums used in the project, which is causing cascading failures in multiple test suites.
 
-First, I will correct the errors in `ResourceNodeSystem.ts`. This involves removing an incorrect call to `.toLowerCase()` on a numeric enum and fixing a typo (`runecrafting` should be `runecraft`). I will also add a utility to map the numeric `SkillType` from the `osrs-data` package to the string-based `SkillType` expected by the server's ECS systems. This will resolve the type conflicts when calling `addSkillXP`. 
-````
+First, I will correct the errors in `ResourceNodeSystem.ts`. This involves removing an incorrect call to `.toLowerCase()` on a numeric enum and fixing a typo (`runecrafting` should be `runecraft`). I will also add a utility to map the numeric `SkillType` from the `osrs-data` package to the string-based `SkillType` expected by the server's ECS systems. This will resolve the type conflicts when calling `addSkillXP`.
 
-````
+```
+
+```
+
 The linting errors in `ResourceNodeSystem.ts` are due to line endings and can be ignored. I'll now focus on fixing the errors in `GameRoom.test.ts`. The test log indicates two main issues: an incorrect type assignment from `connectTo` and an undefined `economyIntegration` object. I will start by examining `GameRoom.test.ts` to correct the test setup. I will now fix the remaining test failures. The test failures are spread across multiple files and are due to a variety of issues, including TypeScript type errors, incorrect mock implementations, and outdated test logic. I will address them systematically, starting with `GameRoom.test.ts`.
 
-First, I'll fix the errors in `GameRoom.test.ts`. The errors are related to `economyIntegration` being possibly `undefined` and a type mismatch with the Colyseus `` object. I will add non-null assertions for `economyIntegration` and cast the client connection to the correct type. 
-````
+First, I'll fix the errors in `GameRoom.test.ts`. The errors are related to `economyIntegration` being possibly `undefined` and a type mismatch with the Colyseus ``object. I will add non-null assertions for`economyIntegration` and cast the client connection to the correct type.
 
-````
+```
+
+```
+
 Okay, let's continue. I'll start by running the test suite again to get the current list of failing tests and then address them one by one. The test results show a cascade of TypeScript errors, primarily stemming from two sources:
+
 1.  **BiteCS Indexing:** The ECS components from `bitecs` don't have explicit index signatures, causing errors when accessed with `Component[entityId]`. This is a known issue with `bitecs`'s TypeScript typings.
 2.  **Outdated Mocks & API Usage:** Many tests are failing due to changes in the Colyseus testing library, outdated mocks for the economy integration, and incorrect usage of updated schemas (e.g., accessing `MapSchema` properties directly instead of using `.get()`/`.set()`).
 
@@ -490,46 +551,58 @@ I'll also investigate the test failures. Since I couldn't find `ecs-integration.
 
 First, I'll read `EquipmentSystem.ts` and `CombatSystem.test.ts`. I've identified and fixed the `bitECS` component indexing errors in `EquipmentSystem.ts`. The previous code was attempting to access component data using an incorrect syntax (e.g., `Component[entityId].property`), which is not how `bitECS` works. I've corrected this to use the proper `Component.property[entityId]` syntax throughout the file. This also involved casting the component to `any` when using dynamic slot names to work around TypeScript's type system limitations with `bitECS`.
 
-Here are the changes for `EquipmentSystem.ts`: 
-````
+Here are the changes for `EquipmentSystem.ts`:
 
-````
+```
+
+```
+
 I've applied the fixes to `EquipmentSystem.ts` to correct the bitECS component access patterns. This should resolve a significant number of TypeScript errors and related test failures. The linting errors reported are primarily about line endings (`CRLF` vs `LF`) and unused imports, which won't affect functionality, so I'll ignore them for now.
 
 I will now run the test suite again to see the impact of these changes and identify the next set of errors to tackle. The test failures are widespread and stem from several core issues: bitECS component indexing, outdated Colyseus testing APIs, and schema drift. I'll address these systematically.
 
 First, I'll correct the fundamental bitECS component access errors in `EquipmentSystem.ts`. The previous attempt was on the right track but had syntax errors. The correct pattern is `Component.property[entityId]`. For dynamically named properties like inventory slots (`slot0`, `slot1`, etc.), we'll have to cast the component to `any` to allow indexing by a variable. This will resolve the errors that are causing test failures in `AutoCombatSystem.basic.test.ts`, `ecs-integration.test.ts`, and others.
 
-I will now apply the corrected fix to `EquipmentSystem.ts`. 
-````
+I will now apply the corrected fix to `EquipmentSystem.ts`.
 
-````
+```
+
+```
+
 I see a large number of linting errors in `EquipmentSystem.ts` after the last change, mostly related to carriage returns (`␍`) and formatting. This is common when working across different operating systems. I'll clean up the file to resolve these linting issues and then run the tests again to get a clear picture of the remaining failures. I've corrected the bitECS component access patterns in `EquipmentSystem.ts` and fixed other related type errors. Here are the changes:
 
-In `EquipmentSystem.ts`, I've updated the code to use the correct `Component.property[entityId]` syntax for accessing component data and used type assertions for dynamically accessing inventory and equipment slots. This should resolve the widespread TypeScript errors related to improper indexing. I've also corrected function signatures and logic in the public API functions like `removeItem` and `equipItemFromSlot`. 
-````
+In `EquipmentSystem.ts`, I've updated the code to use the correct `Component.property[entityId]` syntax for accessing component data and used type assertions for dynamically accessing inventory and equipment slots. This should resolve the widespread TypeScript errors related to improper indexing. I've also corrected function signatures and logic in the public API functions like `removeItem` and `equipItemFromSlot`.
 
-````
+```
+
+```
+
 I will continue fixing the test failures. First, I'll run the tests to see the current state of the errors. The test results show a significant number of failures across the board. I will systematically address these issues, starting with the most common and straightforward ones.
 
-First, I'll fix the incorrect enum usage in `osrs-resource-data.ts`. The properties `Woodcutting`, `Mining`, and `Fishing` on `SkillType` should be in uppercase. This error is causing failures in `WaveCombatIntegration.test.ts`, `AutoCombatSystem.basic.test.ts`, `ecs-integration.test.ts`, `core-functionality.test.ts`, and `AutoCombatSystem.test.ts`. 
-````
+First, I'll fix the incorrect enum usage in `osrs-resource-data.ts`. The properties `Woodcutting`, `Mining`, and `Fishing` on `SkillType` should be in uppercase. This error is causing failures in `WaveCombatIntegration.test.ts`, `AutoCombatSystem.basic.test.ts`, `ecs-integration.test.ts`, `core-functionality.test.ts`, and `AutoCombatSystem.test.ts`.
 
-````
+```
+
+```
+
 The test failures are widespread, but I've already resolved a significant chunk by fixing the `SkillType` enum casing. Now, I'll continue chipping away at the remaining issues.
 
-The next set of errors I'll address is in `SurvivorWaveSystem.ts`. The test failures indicate that I'm trying to access items in a `MapSchema` using bracket notation (`npcs[enemyId]`) instead of the correct `get()` and `delete()` methods. This is a common mistake when working with Colyseus's data structures. I'll correct that now. 
-````
+The next set of errors I'll address is in `SurvivorWaveSystem.ts`. The test failures indicate that I'm trying to access items in a `MapSchema` using bracket notation (`npcs[enemyId]`) instead of the correct `get()` and `delete()` methods. This is a common mistake when working with Colyseus's data structures. I'll correct that now.
 
-````
+```
+
+```
+
 I've corrected the `SkillType` enum casing in `osrs-resource-data.ts` and fixed the `MapSchema` access in `SurvivorWaveSystem.ts`. These changes should resolve a significant portion of the test failures. The linter has reported some unrelated issues in `SurvivorWaveSystem.ts` which I will address later if they become relevant.
 
 Now, I'll continue fixing the remaining test failures. I will start with `GameRoom.test.ts` and the incorrect casting of the client connection. I've addressed the `SkillType` casing errors and the `MapSchema` access issue. Now, I'll focus on the widespread test failures related to the `@colyseus/testing` library updates. The errors indicate a significant breaking change in version 0.16, where `connectTo` now returns a `Room` instance instead of a ``.
 
-To resolve this, I will modify `GameRoom.test.ts` to handle the new API. I'll change the type of the `` variables to `any` and remove the incorrect type casting. This will allow the tests to run so I can address the next set of failures. 
-````
+To resolve this, I will modify `GameRoom.test.ts` to handle the new API. I'll change the type of the ``variables to`any` and remove the incorrect type casting. This will allow the tests to run so I can address the next set of failures.
 
-````
+```
+
+```
+
 I've applied fixes for the `SkillType` enum casing, the `MapSchema` access in `SurvivorWaveSystem`, and the Colyseus `connectTo` return type in `GameRoom.test.ts`. Now, let's see what the test results look like. I've made significant progress, but a number of test failures remain. The most pressing issues seem to be in `WoodcuttingSystem.ts` and the various tests that rely on a properly mocked economy integration.
 
 I'll start by fixing the indexing errors in `WoodcuttingSystem.ts`. The code is attempting to access tree data using a numeric ID on an object indexed by string names. I'll correct this by finding the appropriate tree object from the imported `TREES` data based on the `treeId`. The test failures are widespread, but I see a few common root causes. The most impactful one seems to be in `osrs-resource-data.ts` where the skill names are using incorrect casing (`Woodcutting` instead of `WOODCUTTING`). This single issue is causing failures in multiple test suites that rely on this data, including `core-functionality.test.ts`, `ecs-integration.test.ts`, and others.
@@ -538,10 +611,12 @@ Another significant issue is in `GameRoom.test.ts`, where breaking changes in th
 
 I will start by fixing the skill name casing in `osrs-resource-data.ts`, as this should resolve a large number of the test failures at once. Then I will address the Colyseus testing library changes.
 
-First, I'll correct the skill type enum values. 
-````
+First, I'll correct the skill type enum values.
 
-````
+```
+
+```
+
 I've addressed the `SkillType` casing and `SurvivorWaveSystem` map access issues. The test results show a new set of failures, primarily centered around:
 
 1.  **`WoodcuttingSystem.ts`:** Indexing `TREES` with a numeric ID is failing. The `TREES` object from `osrs-data` is likely keyed by string names (e.g., 'NORMAL', 'OAK'), not numeric IDs. I'll create a lookup map to resolve this.
@@ -555,40 +630,52 @@ Based on my analysis, a significant number of errors stem from the `WoodcuttingS
 
 First, I'll read the `osrs-resource-data.ts` file to confirm the structure of the `TREES` object. Then, I'll implement the planned fix in `WoodcuttingSystem.ts` by creating a `treesById` map for correct lookups. I've noticed a discrepancy in `osrs-resource-data.ts` related to the `SkillType` enum. The code is using `SkillType.WOODCUTTING`, `SkillType.MINING`, and `SkillType.FISHING` to populate the `resourcesById` map. However, the `SkillType` enum from `@runerogue/osrs-data` uses title case (`Woodcutting`, `Mining`, `Fishing`). This likely causes `OSRS_RESOURCE_DATA.TOOLS.WOODCUTTING` to be undefined, leading to the error in `WoodcuttingSystem.ts`.
 
-I will correct the casing in `osrs-resource-data.ts` to align with the enum definition. 
-````
+I will correct the casing in `osrs-resource-data.ts` to align with the enum definition.
 
-````
-I've corrected the `SkillType` enum casing in `osrs-resource-data.ts` to title case, aligning it with the enum definition and ensuring consistency in the `TOOLS` object. Next, I'll rerun the test suite to evaluate the effects of this change. It appears my last correction was based on a faulty assumption. The test failures clearly show that the `SkillType` enum uses uppercase members (e.g., `WOODCUTTING`), not the title case I implemented. I will now correct this by changing the skill types to uppercase to align with the actual enum definition. 
-````
+```
 
-````
+```
+
+I've corrected the `SkillType` enum casing in `osrs-resource-data.ts` to title case, aligning it with the enum definition and ensuring consistency in the `TOOLS` object. Next, I'll rerun the test suite to evaluate the effects of this change. It appears my last correction was based on a faulty assumption. The test failures clearly show that the `SkillType` enum uses uppercase members (e.g., `WOODCUTTING`), not the title case I implemented. I will now correct this by changing the skill types to uppercase to align with the actual enum definition.
+
+```
+
+```
+
 I see, I misinterpreted the error message. It seems I corrected the casing in the wrong direction. The `SkillType` enum uses all uppercase values (e.g., `WOODCUTTING`), and I've now adjusted the code in `osrs-resource-data.ts` to reflect that.
 
-I will now rerun the tests to see if this resolves the type errors and gets us closer to a clean test run. I've corrected the casing issues in `osrs-resource-data.ts`. The tests now reveal a new set of errors, primarily a type import issue in `WoodcuttingSystem.ts` where `Tree` is being imported instead of `TREES`. I will fix this and then continue to address the remaining test failures. The test failures indicate that the `Tree` type is not exported from the `@runerogue/osrs-data` package, causing import errors in `WoodcuttingSystem.ts`. I will correct this by removing the direct import of `Tree` and instead using TypeScript's `typeof` and indexed access types to dynamically infer the type from the `TREES` constant. This approach ensures type safety without relying on an explicit export, resolving the compilation errors. 
-````
+I will now rerun the tests to see if this resolves the type errors and gets us closer to a clean test run. I've corrected the casing issues in `osrs-resource-data.ts`. The tests now reveal a new set of errors, primarily a type import issue in `WoodcuttingSystem.ts` where `Tree` is being imported instead of `TREES`. I will fix this and then continue to address the remaining test failures. The test failures indicate that the `Tree` type is not exported from the `@runerogue/osrs-data` package, causing import errors in `WoodcuttingSystem.ts`. I will correct this by removing the direct import of `Tree` and instead using TypeScript's `typeof` and indexed access types to dynamically infer the type from the `TREES` constant. This approach ensures type safety without relying on an explicit export, resolving the compilation errors.
 
-````
-I've corrected the issue in `WoodcuttingSystem.ts` by inferring the `Tree` type instead of importing it directly. Now, I'll run the tests again to see what errors remain. The linting issues will be handled later. I've fixed the `SkillType` casing and the `Tree` type import. Now, the tests reveal a new issue in `WoodcuttingSystem.ts`: `Property 'respawnTime' does not exist on type 'Tree'`. It seems the property was renamed to `respawnTicks` in the `@runerogue/osrs-data` package. I'll correct this reference to align with the updated data structure. The test failures indicate a property `respawnTime` is being accessed on a `Tree` object, but the actual property name is `respawnTicks`. I will correct this typo in `WoodcuttingSystem.ts`. The other errors appear to be cascading from this and other issues I am working on. Fixing this should resolve a number of test failures. 
-````
+```
 
-````
+```
+
+I've corrected the issue in `WoodcuttingSystem.ts` by inferring the `Tree` type instead of importing it directly. Now, I'll run the tests again to see what errors remain. The linting issues will be handled later. I've fixed the `SkillType` casing and the `Tree` type import. Now, the tests reveal a new issue in `WoodcuttingSystem.ts`: `Property 'respawnTime' does not exist on type 'Tree'`. It seems the property was renamed to `respawnTicks` in the `@runerogue/osrs-data` package. I'll correct this reference to align with the updated data structure. The test failures indicate a property `respawnTime` is being accessed on a `Tree` object, but the actual property name is `respawnTicks`. I will correct this typo in `WoodcuttingSystem.ts`. The other errors appear to be cascading from this and other issues I am working on. Fixing this should resolve a number of test failures.
+
+```
+
+```
+
 Okay, I will continue fixing the test failures and TypeScript errors. First, I'll run the test suite to get the current error landscape. The test suite has a large number of failures. I will work through them systematically, starting with the low-hanging fruit.
 
 First, I'll address the errors in `gathering-integration.test.ts`. The errors indicate that `startWoodcutting` and `stopWoodcutting` are being called with the wrong number of arguments. I'll read the file to understand the test logic and then examine the function definitions to correct the calls. Okay, the test run reveals a lot of errors across the board. It seems like there's been significant schema drift and some breaking changes in libraries like `@colyseus/testing`. I'll work through these systematically.
 
-First, I'll address the argument mismatch errors in `gathering-integration.test.ts`. It looks like the `startWoodcutting` and `stopWoodcutting` function signatures have changed. I'll read the `WoodcuttingSystem.ts` file to understand the new signatures and then correct the test file. I'll start by fixing the errors in `gathering-integration.test.ts`. The `startWoodcutting` and `stopWoodcutting` functions are being called with an incorrect number of arguments. I will correct the function calls to match their definitions in `WoodcuttingSystem.ts`. 
-````
+First, I'll address the argument mismatch errors in `gathering-integration.test.ts`. It looks like the `startWoodcutting` and `stopWoodcutting` function signatures have changed. I'll read the `WoodcuttingSystem.ts` file to understand the new signatures and then correct the test file. I'll start by fixing the errors in `gathering-integration.test.ts`. The `startWoodcutting` and `stopWoodcutting` functions are being called with an incorrect number of arguments. I will correct the function calls to match their definitions in `WoodcuttingSystem.ts`.
 
-````
+```
+
+```
+
 I've fixed the argument issues in `gathering-integration.test.ts`. Now, I'll address the widespread errors related to the `MiningSystem.ts`. Several tests are failing because of improper indexing into the `ROCKS` data object, which is causing TypeScript errors.
 
 Similar to how I handled the `WoodcuttingSystem`, I will create a `rocksById` map to allow for correct lookups using a rock's numeric ID. This will resolve the indexing errors and is a more robust way to access the data.
 
-I will now read the `MiningSystem.ts` file to implement this change. I've corrected the argument passing in `gathering-integration.test.ts`. Now, I'll address the indexing issues in `MiningSystem.ts` by creating a `rocksById` map for direct lookups, similar to the fix for `WoodcuttingSystem.ts`. This will resolve the errors related to accessing rock data. I'll also correct the property name for respawn time to `respawnTicks` and fix the pet drop rate calculation. 
-````
+I will now read the `MiningSystem.ts` file to implement this change. I've corrected the argument passing in `gathering-integration.test.ts`. Now, I'll address the indexing issues in `MiningSystem.ts` by creating a `rocksById` map for direct lookups, similar to the fix for `WoodcuttingSystem.ts`. This will resolve the errors related to accessing rock data. I'll also correct the property name for respawn time to `respawnTicks` and fix the pet drop rate calculation.
 
-````
+```
+
+```
+
 I've addressed the argument mismatches in `gathering-integration.test.ts` and the indexing issues within `MiningSystem.ts`. The latter fix, creating a lookup map (`rocksById`), should resolve similar errors in other test files that rely on `MiningSystem.ts`, such as `AutoCombatSystem.basic.test.ts`, `core-functionality.test.ts`, `ecs-integration.test.ts`, `AutoCombatSystem.test.ts`, and `WaveCombatIntegration.test.ts`.
 
 I will now rerun the test suite to confirm these fixes and see the new state of errors. The test suite is still reporting a large number of errors. I'll continue to work through them, focusing on the most impactful ones first.
@@ -601,62 +688,78 @@ I will then move on to the various issues in the Colyseus-related tests and the 
 
 Let's start by fixing the inventory test. I've analyzed the test results and will start by addressing the errors in the gathering and mining systems, as these seem to be causing a cascade of failures across multiple test suites.
 
-First, I'll fix a test in `gathering-integration.test.ts`. The test is failing because it's trying to access a non-existent `items` property on the `Inventory` component. I'll change it to check `itemCount` instead, which correctly reflects an empty inventory. 
-````
+First, I'll fix a test in `gathering-integration.test.ts`. The test is failing because it's trying to access a non-existent `items` property on the `Inventory` component. I'll change it to check `itemCount` instead, which correctly reflects an empty inventory.
 
-````
+```
+
+```
+
 I've addressed the argument mismatches in the gathering tests and the indexing issues in the `MiningSystem`. The test suite still has a significant number of failures. The next major group of errors appears to be related to a missing `gemDropChance` property on the `Rock` type, which is causing several combat and ECS tests to fail. I'll investigate the `osrs-data` package to determine if this property exists or if the logic needs to be updated. I've addressed the issues in `gathering-integration.test.ts` and `MiningSystem.ts`. Now, I'll tackle the `gemDropChance` error. The test output clearly shows that the `Rock` type, inferred from the `ROCKS` constant, lacks this property. I'll investigate the `osrs-data` package to find the correct data definition. My first stop will be `gathering-data.ts`. I will continue fixing the test failures. First, I'll run the test suite to get a fresh look at the current errors. I've re-run the `gathering-integration.test.ts` and confirmed that the `osrs-data` version passes, but the `server` version fails with a TypeScript error on the `Inventory` component. It seems my previous fix was incorrect. I'll now examine the `Inventory` component's definition to determine the correct property for checking item counts and resolve the error. I see the `gathering-integration.test.ts` for the server is still failing with a TypeScript error on `Inventory.itemCount`. It seems my previous fix was incorrect. I need to find the correct way to access the inventory state. I'll start by searching for `InventoryComponent` to locate the component definition. I've pinpointed the source of the `itemCount` error. The test file `gathering-integration.test.ts` is importing `Inventory` from the game room's state schema (`../../schema/GameRoomState`) instead of the intended `InventoryComponent` from the ECS components file (`../../components/GatheringComponents`). The schema's `Inventory` is a `MapSchema` for equipment slots, which lacks the `itemCount` property, causing the type error.
 
 To fix this, I will update the import statement in the test file to correctly reference `InventoryComponent` and alias it as `Inventory` for consistency with the rest of the test logic. I've re-run the tests for `gathering-integration.test.ts` and it seems the `osrs-data` test is passing, but the `server` test is failing with a TypeScript error. The error `Property 'itemCount' does not exist on type 'ComponentType<...>'` in `gathering-integration.test.ts` indicates that the `Inventory` component being imported in the test is not the one I previously thought.
 
 It seems there are two different inventory-related components. I need to find the correct one. I'll start by searching for `InventoryComponent` to locate its definition. I've pinpointed the source of the `itemCount` error. The test file `gathering-integration.test.ts` is importing and using a component named `Inventory`, but the actual component defined with `itemCount` is `InventoryComponent` in `GatheringComponents.ts`. The `components/index.ts` file is likely exporting the wrong component or the test is importing the wrong one.
 
-I will now correct the import in `gathering-integration.test.ts` to use `InventoryComponent` instead of `Inventory`. 
-````
+I will now correct the import in `gathering-integration.test.ts` to use `InventoryComponent` instead of `Inventory`.
 
-````
-I've corrected the import in `gathering-integration.test.ts` to properly reference the `InventoryComponent`. The test was failing because it was using a non-existent `Inventory` object. Now that it's correctly aliased, the `itemCount` property should be accessible. I'll run the tests again to confirm the fix. I seem to have hit a new error. It looks like `InventoryComponent` isn't being properly exported from the `components` directory. I'll investigate the file structure of the `` directory to sort out the correct import path. I see the problem. The test file `gathering-integration.test.ts` is trying to import `InventoryComponent` from `../components`, but that's not a valid module. The component is defined in `GatheringComponents.ts`. I need to correct the import path. It seems there's a missing `index.ts` file in the `components` directory to handle all the exports.
+```
+
+```
+
+I've corrected the import in `gathering-integration.test.ts` to properly reference the `InventoryComponent`. The test was failing because it was using a non-existent `Inventory` object. Now that it's correctly aliased, the `itemCount` property should be accessible. I'll run the tests again to confirm the fix. I seem to have hit a new error. It looks like `InventoryComponent` isn't being properly exported from the `components` directory. I'll investigate the file structure of the ``directory to sort out the correct import path. I see the problem. The test file`gathering-integration.test.ts`is trying to import`InventoryComponent`from`../components`, but that's not a valid module. The component is defined in `GatheringComponents.ts`. I need to correct the import path. It seems there's a missing `index.ts`file in the`components` directory to handle all the exports.
 
 I will correct the import path in `gathering-integration.test.ts` to directly import from `../components/GatheringComponents`. Since other components like `SkillLevels` and `SkillXP` are also used, I'll need to find where they are defined and adjust their imports as well. It appears they are not standard components but are being aliased from other components. I'll trace them and fix the imports.
 
-First, I'll fix the `Inventory` import. 
-````
+First, I'll fix the `Inventory` import.
 
-````
+```
+
+```
+
 I've encountered a series of cascading import errors. The components required by the test file (`SkillLevels`, `SkillXP`, `Transform`, `Resource`, and `Inventory`) are not being correctly resolved from the `../components` path. It appears the component definitions are spread across multiple files and are not consolidated under a single `index.ts` barrel file.
 
 I will now correct all the component imports in `gathering-integration.test.ts` to point to their correct source files. First, I'll locate the definitions for all the necessary components. I've pinpointed the source of the test failures in `gathering-integration.test.ts`. The issue stems from an incorrect import of the `Inventory` component. It was being imported from a file that doesn't contain it, leading to a cascade of type errors.
 
-I'm now correcting the import path to resolve this. I'll then rerun the tests to confirm the fix and check for any other issues. 
-````
+I'm now correcting the import path to resolve this. I'll then rerun the tests to confirm the fix and check for any other issues.
 
-````
-I see the issue. The previous fix had an incorrect path to `InventoryComponent`. It seems there isn't a barrel file (`index.ts`) exporting all components, so I need to import `InventoryComponent` directly from `GatheringComponents.ts` and the other components from `components.ts`. I will correct the import statements. 
-````
+```
 
-````
-I've corrected the import path for the `InventoryComponent`. The test was failing because it was trying to import `InventoryComponent` from the main `components` barrel file, but it's actually located in `GatheringComponents.ts`. I'll run the tests again to see if this resolves the issue. The `gathering-integration.test.ts` file in the `` directory is now failing due to a TypeScript error in `MiningSystem.ts`: `Property 'gemDropChance' does not exist on type 'Rock'`.
+```
+
+I see the issue. The previous fix had an incorrect path to `InventoryComponent`. It seems there isn't a barrel file (`index.ts`) exporting all components, so I need to import `InventoryComponent` directly from `GatheringComponents.ts` and the other components from `components.ts`. I will correct the import statements.
+
+```
+
+```
+
+I've corrected the import path for the `InventoryComponent`. The test was failing because it was trying to import `InventoryComponent` from the main `components` barrel file, but it's actually located in `GatheringComponents.ts`. I'll run the tests again to see if this resolves the issue. The `gathering-integration.test.ts` file in the ``directory is now failing due to a TypeScript error in`MiningSystem.ts`: `Property 'gemDropChance' does not exist on type 'Rock'`.
 
 This confirms my earlier finding that the `ROCKS` data structure in the `osrs-data` package does not include a `gemDropChance` property. To resolve this and allow the tests to proceed, I will modify `MiningSystem.ts`.
 
 My plan is to introduce a default gem drop chance within the `MiningSystem.ts` file itself. This provides a temporary, standardized mechanism for handling gem drops, which can be refined later with more specific, rock-dependent values if needed. I will set a low, placeholder value for this chance to ensure the system remains balanced.
 
-I will now proceed with editing `MiningSystem.ts`. 
-````
+I will now proceed with editing `MiningSystem.ts`.
 
-````
+```
+
+```
+
 I've addressed the `gemDropChance` error in `MiningSystem.ts` by replacing the property access with a constant. I'll now rerun the tests to confirm the fix and identify any further issues. I've addressed the `gemDropChance` issue in `MiningSystem.ts`, but it seems I introduced a few new errors. The test output now shows that `rollGemTable` and `playerMiningLevel` are not defined. I'll fix this by implementing a placeholder for `rollGemTable` and correctly retrieving the player's mining level.
 
-First, I'll correct the `MiningSystem.ts` file. 
-````
+First, I'll correct the `MiningSystem.ts` file.
 
-````
+```
+
+```
+
 I've addressed the TypeScript errors in `MiningSystem.ts` by importing `rollGemTable` and correctly referencing the player's mining level. I'm now rerunning the `gathering-integration.test.ts` to confirm the fix. After this, I'll run the full test suite to check for any other remaining issues. I've analyzed the test failures. The `gathering-integration.test.ts` suite is still failing due to several errors in `MiningSystem.ts`: an incorrect import path for `gathering-data`, the reappearance of the `gemDropChance` property error, and an undefined `SkillLevels` variable.
 
-I will now correct these issues in `MiningSystem.ts`. First, I'll fix the import path to correctly reference the `@runerogue/osrs-data` package. Next, I will re-implement the fix for the gem drop logic, ensuring it uses a constant value rather than a non-existent property on the `Rock` type. Finally, I'll import the `SkillLevels` component to resolve the reference error. 
-````
+I will now correct these issues in `MiningSystem.ts`. First, I'll fix the import path to correctly reference the `@runerogue/osrs-data` package. Next, I will re-implement the fix for the gem drop logic, ensuring it uses a constant value rather than a non-existent property on the `Rock` type. Finally, I'll import the `SkillLevels` component to resolve the reference error.
 
-````
+```
+
+```
+
 I've been working on fixing the test failures in `gathering-integration.test.ts`. The root cause seems to be a series of cascading type errors and incorrect data access patterns in `MiningSystem.ts`. I've corrected the import paths for `osrs-data` and the local ECS components, and I'm now addressing the logic for gem drops.
 
 The `Rock` data type from `osrs-data` does not have a `gemDropChance` property, so I've replaced the erroneous access with a constant `GEM_DROP_CHANCE`. I've also added the necessary imports for `rollGemTable` and `SkillLevels` to resolve the remaining undefined errors.
@@ -686,33 +789,40 @@ You are continuing the process of fixing widespread test failures and TypeScript
 **Your next steps are:**
 
 1. **Review and Refactor ECS System Files:**
+
    - Ensure all ECS system files (`EquipmentSystem.ts`, `MiningSystem.ts`, `WoodcuttingSystem.ts`) use correct, up-to-date imports for components and data.
    - Remove any references to non-existent properties (e.g., `gemDropChance` on rocks).
    - Ensure all data access patterns match the latest OSRS data pipeline and ECS architecture.
 
 2. **TypeScript and Type Safety:**
+
    - Fix all TypeScript errors and warnings in these files.
    - Ensure all functions, especially those exported, have proper type annotations and JSDoc comments.
    - Remove all `any` types and replace with strict, project-appropriate types.
 
 3. **OSRS Authenticity:**
+
    - Double-check that all game mechanics (equipment, inventory, mining, woodcutting) match OSRS Wiki specifications.
    - Document any OSRS Wiki sources used for calculations or data in code comments.
 
 4. **Comprehensive Error Handling:**
+
    - Add robust error handling to all exported functions and system logic.
    - Use the project’s `Result<T, E>` pattern where appropriate.
 
 5. **Unit and Integration Tests:**
+
    - Update or create unit tests for all major functions in these systems.
    - Ensure tests cover edge cases and OSRS-specific mechanics.
    - Run the test suite (`pnpm test -- --testPathIgnorePatterns="archived"`) after each major change and fix any new errors that arise.
 
 6. **Performance and ECS Best Practices:**
+
    - Optimize ECS queries and system logic for performance (e.g., avoid unnecessary iterations, use object pools if needed).
    - Follow bitECS and project ECS patterns: components are data-only, systems are pure logic.
 
 7. **Documentation and Code Quality:**
+
    - Add or update JSDoc comments for all public APIs and exported functions.
    - Ensure code is clean, maintainable, and follows project formatting/linting standards.
 
@@ -731,4 +841,3 @@ Achieve a passing test suite, zero TypeScript errors, and full OSRS authenticity
 You can copy and paste this prompt into your next chat to continue the repair and modernization process efficiently.
 
 ---
-

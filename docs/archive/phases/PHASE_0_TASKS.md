@@ -1,6 +1,7 @@
 # Phase 0: Foundation & Data Pipeline - Task Specifications
 
 ## Task 1: ✅ COMPLETE - Project Structure Definition
+
 **Status:** COMPLETE  
 **Output:** `RUNEROGUE_PROJECT_STRUCTURE.md`  
 **Master Orchestrator:** Defined complete monorepo architecture for AI agent development.
@@ -21,35 +22,40 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 **Specific Requirements:**
 
 1. **Combat Formulas Implementation:**
+
    - Max Hit formula (Strength bonus, Prayer effects, Equipment bonuses)
-   - Accuracy formula (Attack vs Defence calculations) 
+   - Accuracy formula (Attack vs Defence calculations)
    - Attack speed calculations for different weapon types
 
 2. **Initial Enemy Data (5 enemies):**
+
    - Goblin (level 2)
    - Cow (level 2)
-   - Chicken (level 1) 
+   - Chicken (level 1)
    - Giant Rat (level 1)
    - Zombie (level 13)
 
 3. **Player Base Stats:**
+
    - Base combat stats (Attack: 1, Strength: 1, Defence: 1, Hitpoints: 10)
    - Combat level calculation
    - Base equipment stats (no equipment = 0 bonuses)
 
 4. **Data API Structure:**
    - `/api/combat/max-hit` - Calculate max hit for given stats
-   - `/api/combat/accuracy` - Calculate hit probability  
+   - `/api/combat/accuracy` - Calculate hit probability
    - `/api/enemies/{id}` - Get enemy stats
    - `/api/formulas/validate` - Validate calculations against Wiki
 
 **Technical Implementation:**
+
 - Package: `packages/osrs-data/`
 - Use OSRS MCP tools for wiki access
 - Node.js/TypeScript with Jest testing
 - JSON data files stored in `packages/osrs-data/data/`
 
 **Acceptance Criteria:**
+
 - [ ] Combat calculations match OSRS Wiki formulas exactly
 - [ ] All 5 enemy stat blocks complete and accurate
 - [ ] JSON API endpoints return structured data
@@ -58,6 +64,7 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 - [ ] API server runs with proper error handling
 
 **Wiki References:**
+
 - https://oldschool.runescape.wiki/w/Combat_level
 - https://oldschool.runescape.wiki/w/Damage_per_second/Melee
 - Individual enemy pages for stat verification
@@ -81,18 +88,21 @@ Set up the foundational multiplayer server infrastructure using Colyseus that wi
 **Specific Requirements:**
 
 1. **Colyseus Server Setup:**
+
    - Node.js/TypeScript Colyseus server
    - Single GameRoom class: `RuneRogueRoom`
    - Basic room schema for player connections
    - Express.js server wrapper
 
 2. **Connection Logging:**
+
    - Log when players join the room
    - Log when players leave the room
    - Log basic room state (player count)
    - Structured logging with timestamps
 
 3. **Basic Room Management:**
+
    - Room creation on demand
    - Maximum 4 players per room (Discord group limit)
    - Room cleanup when empty
@@ -105,6 +115,7 @@ Set up the foundational multiplayer server infrastructure using Colyseus that wi
    - Docker configuration for future deployment
 
 **Technical Implementation:**
+
 - Package: `packages/game-server/`
 - Colyseus ^0.15.0 with TypeScript
 - Express.js for HTTP endpoints
@@ -112,6 +123,7 @@ Set up the foundational multiplayer server infrastructure using Colyseus that wi
 - Structured logging with winston or similar
 
 **Acceptance Criteria:**
+
 - [ ] Colyseus server starts successfully on port 2567
 - [ ] GameRoom accepts player connections
 - [ ] Connection/disconnection events are properly logged
@@ -140,18 +152,21 @@ Establish the comprehensive testing framework that will validate all OSRS calcul
 **Specific Requirements:**
 
 1. **Test Framework Setup:**
+
    - Jest configuration for monorepo testing
    - Test utilities for OSRS formula validation
    - Mock data generators for consistent testing
    - Performance benchmarks for calculations
 
 2. **OSRS Formula Validation Tests:**
+
    - Combat max hit validation against known examples
    - Combat accuracy validation against known examples
    - Enemy stat verification against Wiki data
    - Combat level calculation verification
 
 3. **Cross-Package Integration Tests:**
+
    - osrs-data API response validation
    - game-server room functionality tests
    - End-to-end calculation pipeline tests
@@ -163,12 +178,14 @@ Establish the comprehensive testing framework that will validate all OSRS calcul
    - Performance monitoring
 
 **Technical Implementation:**
+
 - Root-level Jest configuration
 - Package-specific test configurations
 - Shared test utilities in `packages/shared/`
 - Integration with GitHub Actions (future)
 
 **Test Data Examples:**
+
 ```typescript
 // Known OSRS calculation examples to validate against
 const OSRS_TEST_CASES = [
@@ -176,17 +193,20 @@ const OSRS_TEST_CASES = [
     name: "Base player max hit",
     strength: 10,
     strengthBonus: 0,
-    expectedMaxHit: 1
+    expectedMaxHit: 1,
   },
   {
     name: "Goblin combat level",
-    attack: 1, defence: 1, hitpoints: 5,
-    expectedCombatLevel: 2
-  }
+    attack: 1,
+    defence: 1,
+    hitpoints: 5,
+    expectedCombatLevel: 2,
+  },
 ];
 ```
 
 **Acceptance Criteria:**
+
 - [ ] Jest runs successfully across all packages
 - [ ] OSRS formula validation tests pass
 - [ ] Integration tests verify cross-package functionality
@@ -196,7 +216,8 @@ const OSRS_TEST_CASES = [
 - [ ] Clear test failure reporting with OSRS Wiki references
 - [ ] Mock data generators for repeatable tests
 
-**Dependencies:** 
+**Dependencies:**
+
 - Depends on Task 2 (osrs-data) for initial test data
 - Depends on Task 3 (game-server) for integration tests
 
@@ -211,8 +232,9 @@ const OSRS_TEST_CASES = [
 **Independent:** Task 3 (can run parallel with Task 2)
 
 **Phase 0 Goals:**
+
 - ✅ Establish project architecture
-- 🔄 Create OSRS data foundation  
+- 🔄 Create OSRS data foundation
 - 🔄 Setup multiplayer infrastructure
 - 🔄 Implement quality assurance framework
 
@@ -220,4 +242,4 @@ const OSRS_TEST_CASES = [
 All Phase 0 tasks must be complete before Phase 1 begins. The data pipeline, server infrastructure, and testing framework form the foundation for gameplay implementation.
 
 **Next Phase Preview:**
-Phase 1 will implement the core gameplay vertical slice with player movement, basic combat, and the first enemy interaction. 
+Phase 1 will implement the core gameplay vertical slice with player movement, basic combat, and the first enemy interaction.

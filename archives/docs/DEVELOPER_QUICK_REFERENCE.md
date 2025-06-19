@@ -129,10 +129,10 @@ Example of adding a player skill:
 ```typescript
 // In GameRoom.ts schema section
 class PlayerSkills extends Schema {
-  @type('number') mining: number = 1;
-  @type('number') fishing: number = 1;
+  @type("number") mining: number = 1;
+  @type("number") fishing: number = 1;
   // Add new skill
-  @type('number') woodcutting: number = 1;
+  @type("number") woodcutting: number = 1;
 }
 ```
 
@@ -147,18 +147,18 @@ Example of a new endpoint:
 
 ```typescript
 // In src/server/routes/items.ts
-import express from 'express';
-import { authMiddleware } from '../auth/middleware';
+import express from "express";
+import { authMiddleware } from "../auth/middleware";
 
 const router = express.Router();
 
-router.get('/:itemId', authMiddleware, async (req, res) => {
+router.get("/:itemId", authMiddleware, async (req, res) => {
   try {
     const itemId = req.params.itemId;
     // Fetch item logic
-    res.json({ id: itemId, name: 'Sample Item' });
+    res.json({ id: itemId, name: "Sample Item" });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -167,9 +167,9 @@ export const itemsRouter = router;
 
 ```typescript
 // In src/server/index.ts
-import { itemsRouter } from './routes/items';
+import { itemsRouter } from "./routes/items";
 // ...
-app.use('/items', itemsRouter);
+app.use("/items", itemsRouter);
 ```
 
 ### 3. Working with the Economy System

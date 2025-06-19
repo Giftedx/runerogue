@@ -12,15 +12,13 @@ export default defineConfig({
   },
   server: {
     https:
-      (
-        process.env.NODE_ENV === "development" &&
-        fs.existsSync(path.resolve(__dirname, "key.pem"))
-      ) ?
-        {
-          key: fs.readFileSync(path.resolve(__dirname, "key.pem")),
-          cert: fs.readFileSync(path.resolve(__dirname, "cert.pem")),
-        }
-      : undefined,
+      process.env.NODE_ENV === "development" &&
+      fs.existsSync(path.resolve(__dirname, "key.pem"))
+        ? {
+            key: fs.readFileSync(path.resolve(__dirname, "key.pem")),
+            cert: fs.readFileSync(path.resolve(__dirname, "cert.pem")),
+          }
+        : undefined,
     port: 5173,
     host: true,
     headers: {

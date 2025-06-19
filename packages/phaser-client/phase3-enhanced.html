@@ -284,19 +284,22 @@
       <div>Players: <span id="player-counter">0</span></div>
       <div>Enemies: <span id="enemy-counter">0</span></div>
       <div>Effects: <span id="effect-counter">0</span></div>
-    </div>    <!-- External Libraries -->
+    </div>
+    <!-- External Libraries -->
     <script src="https://unpkg.com/phaser@3.80.1/dist/phaser.min.js"></script>
-    
+
     <!-- Colyseus with module approach -->
     <script type="module">
-      import { Client } from 'https://cdn.skypack.dev/colyseus.js@latest';
+      import { Client } from "https://cdn.skypack.dev/colyseus.js@latest";
       window.ColyseusClient = Client;
     </script>
-    
+
     <!-- Fallback Colyseus -->
-    <script src="https://unpkg.com/colyseus.js@0.15.0/dist/colyseus.js" 
-            onerror="console.warn('Colyseus CDN failed, using fallback')"
-            onload="console.log('Colyseus loaded from CDN')"></script>
+    <script
+      src="https://unpkg.com/colyseus.js@0.15.0/dist/colyseus.js"
+      onerror="console.warn('Colyseus CDN failed, using fallback')"
+      onload="console.log('Colyseus loaded from CDN')"
+    ></script>
 
     <!-- OSRS Combat Effects Manager -->
     <script src="assets/osrs/CombatEffectsManager.js"></script>
@@ -305,12 +308,12 @@
     <script>
       // Wait for Colyseus to load before loading game client
       function loadGameClient() {
-        if (typeof Colyseus !== 'undefined') {
-          const script = document.createElement('script');
-          script.src = 'phase3-enhanced-client.js';
+        if (typeof Colyseus !== "undefined") {
+          const script = document.createElement("script");
+          script.src = "phase3-enhanced-client.js";
           document.head.appendChild(script);
         } else {
-          console.log('Waiting for Colyseus to load...');
+          console.log("Waiting for Colyseus to load...");
           setTimeout(loadGameClient, 100);
         }
       }
@@ -330,7 +333,7 @@
 
           if (now - this.lastUpdate >= 1000) {
             this.fps = Math.round(
-              (this.frameCount * 1000) / (now - this.lastUpdate)
+              (this.frameCount * 1000) / (now - this.lastUpdate),
             );
             this.frameCount = 0;
             this.lastUpdate = now;
@@ -392,19 +395,17 @@
           case "F1":
             event.preventDefault();
             document.getElementById("feature-list").style.display =
-              document.getElementById("feature-list").style.display === "none" ?
-                "block"
-              : "none";
+              document.getElementById("feature-list").style.display === "none"
+                ? "block"
+                : "none";
             break;
           case "F2":
             event.preventDefault();
             document.getElementById("performance-monitor").style.display =
-              (
-                document.getElementById("performance-monitor").style.display ===
-                "none"
-              ) ?
-                "block"
-              : "none";
+              document.getElementById("performance-monitor").style.display ===
+              "none"
+                ? "block"
+                : "none";
             break;
           case "F5":
             event.preventDefault();

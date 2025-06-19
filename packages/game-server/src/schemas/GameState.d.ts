@@ -17,38 +17,38 @@ import { Schema, MapSchema } from "@colyseus/schema";
  * This class is extended by Player and Enemy schemas.
  */
 export declare class Character extends Schema {
-    id: string;
-    x: number;
-    y: number;
-    health: number;
-    maxHealth: number;
-    lastAttackTime: number;
-    targetId: string;
-    inCombat: boolean;
-    attackLevel: number;
-    strengthLevel: number;
-    defenceLevel: number;
-    hitpointsLevel: number;
+  id: string;
+  x: number;
+  y: number;
+  health: number;
+  maxHealth: number;
+  lastAttackTime: number;
+  targetId: string;
+  inCombat: boolean;
+  attackLevel: number;
+  strengthLevel: number;
+  defenceLevel: number;
+  hitpointsLevel: number;
 }
 export declare class Player extends Character {
-    name: string;
-    connected: boolean;
-    lastMoveTime: number;
-    prayerLevel: number;
-    prayerPoints: number;
-    isDead: boolean;
+  name: string;
+  connected: boolean;
+  lastMoveTime: number;
+  prayerLevel: number;
+  prayerPoints: number;
+  isDead: boolean;
 }
 export declare class Enemy extends Character {
-    type: string;
-    aiState: string;
-    alive: boolean;
+  type: string;
+  aiState: string;
+  alive: boolean;
 }
 export declare class GameState extends Schema {
-    players: MapSchema<Player, string>;
-    enemies: MapSchema<Enemy, string>;
-    gameTime: number;
-    gameStarted: boolean;
-    waveNumber: number;
-    enemiesKilled: number;
-    lastSpawnTime: number;
+  players: MapSchema<Player, string>;
+  enemies: MapSchema<Enemy, string>;
+  gameTime: number;
+  gameStarted: boolean;
+  waveNumber: number;
+  enemiesKilled: number;
+  lastSpawnTime: number;
 }

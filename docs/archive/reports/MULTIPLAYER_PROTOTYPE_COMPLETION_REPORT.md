@@ -32,7 +32,7 @@ this.onMessage("player_movement", (client, message) => {
       timestamp: now,
       isRunning: player.isRunning,
     },
-    { except: client }
+    { except: client },
   );
 });
 ```
@@ -70,9 +70,9 @@ this.waveManager = new WaveManager(
       npc.x,
       npc.y,
       combatLevel,
-      true
+      true,
     );
-  }
+  },
 );
 ```
 

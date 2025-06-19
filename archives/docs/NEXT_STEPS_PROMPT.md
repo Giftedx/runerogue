@@ -90,13 +90,13 @@ The Model Context Protocol (MCP) enables AI models like GitHub Copilot to intera
 
 ```javascript
 // runerogue-mcp-server.js
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
 
 // Environment variables for security
-require('dotenv').config();
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
@@ -104,19 +104,19 @@ app.use(bodyParser.json());
 
 // Authentication middleware
 const authenticate = (req, res, next) => {
-  const apiKey = req.headers['x-api-key'];
+  const apiKey = req.headers["x-api-key"];
   if (!apiKey || apiKey !== process.env.MCP_API_KEY) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
   next();
 };
 
 // Rate limiting middleware
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later',
+  message: "Too many requests from this IP, please try again later",
 });
 
 app.use(limiter);
@@ -139,31 +139,32 @@ Below are detailed implementations for our custom MCP tools, including both the 
 ```javascript
 // Tool definition with detailed description and examples
 const generateDocsToolDefinition = {
-  name: 'generate_docs',
+  name: "generate_docs",
   description:
-    'Generate comprehensive documentation for a specified module in the RuneRogue project',
+    "Generate comprehensive documentation for a specified module in the RuneRogue project",
   parameters: {
     module_path: {
-      type: 'string',
-      description: "Path to the module to document (e.g., 'agents/osrs_agent_system.py')",
+      type: "string",
+      description:
+        "Path to the module to document (e.g., 'agents/osrs_agent_system.py')",
     },
     output_format: {
-      type: 'string',
-      enum: ['markdown', 'rst'],
-      description: 'Output format for the documentation',
+      type: "string",
+      enum: ["markdown", "rst"],
+      description: "Output format for the documentation",
     },
     include_examples: {
-      type: 'boolean',
-      description: 'Whether to include usage examples in the documentation',
+      type: "boolean",
+      description: "Whether to include usage examples in the documentation",
       default: true,
     },
   },
   examples: [
     {
-      description: 'Generate markdown documentation for the OSRS agent system',
+      description: "Generate markdown documentation for the OSRS agent system",
       parameters: {
-        module_path: 'agents/osrs_agent_system.py',
-        output_format: 'markdown',
+        module_path: "agents/osrs_agent_system.py",
+        output_format: "markdown",
         include_examples: true,
       },
     },
@@ -171,46 +172,57 @@ const generateDocsToolDefinition = {
 };
 
 // Handler implementation
-app.post('/tools/generate_docs', async (req, res) => {
+app.post("/tools/generate_docs", async (req, res) => {
   try {
-    const { module_path, output_format, include_examples } = req.body.parameters;
+    const { module_path, output_format, include_examples } =
+      req.body.parameters;
 
     // Validate parameters
     if (!module_path) {
-      return res.status(400).json({ error: 'module_path is required' });
+      return res.status(400).json({ error: "module_path is required" });
     }
 
     // Generate a unique job ID for tracking
     const jobId = uuidv4();
 
     // Log the request
-    console.log(`[${jobId}] Documentation generation started for ${module_path}`);
+    console.log(
+      `[${jobId}] Documentation generation started for ${module_path}`,
+    );
 
     // Start the documentation generation process asynchronously
-    const { spawn } = require('child_process');
-    const scriptPath = './scripts/generate_osrs_docs.py';
+    const { spawn } = require("child_process");
+    const scriptPath = "./scripts/generate_osrs_docs.py";
 
-    const args = [scriptPath, '--module', module_path, '--format', output_format || 'markdown'];
+    const args = [
+      scriptPath,
+      "--module",
+      module_path,
+      "--format",
+      output_format || "markdown",
+    ];
 
     if (include_examples) {
-      args.push('--examples');
+      args.push("--examples");
     }
 
-    const process = spawn('python', args);
+    const process = spawn("python", args);
 
-    let outputData = '';
-    let errorData = '';
+    let outputData = "";
+    let errorData = "";
 
-    process.stdout.on('data', data => {
+    process.stdout.on("data", (data) => {
       outputData += data.toString();
     });
 
-    process.stderr.on('data', data => {
+    process.stderr.on("data", (data) => {
       errorData += data.toString();
     });
 
-    process.on('close', code => {
-      console.log(`[${jobId}] Documentation generation completed with code ${code}`);
+    process.on("close", (code) => {
+      console.log(
+        `[${jobId}] Documentation generation completed with code ${code}`,
+      );
 
       // Store the result for later retrieval
       // In a production environment, use a database or cache
@@ -227,22 +239,24 @@ app.post('/tools/generate_docs', async (req, res) => {
     // Return immediately with the job ID
     res.json({
       jobId,
-      status: 'processing',
+      status: "processing",
       message: `Documentation generation started for ${module_path}`,
     });
   } catch (error) {
-    console.error('Error in generate_docs handler:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    console.error("Error in generate_docs handler:", error);
+    res
+      .status(500)
+      .json({ error: "Internal server error", details: error.message });
   }
 });
 
 // Add an endpoint to check job status
-app.get('/jobs/:jobId', (req, res) => {
+app.get("/jobs/:jobId", (req, res) => {
   const { jobId } = req.params;
   const jobResult = global.jobResults?.[jobId];
 
   if (!jobResult) {
-    return res.status(404).json({ error: 'Job not found' });
+    return res.status(404).json({ error: "Job not found" });
   }
 
   res.json(jobResult);
@@ -254,31 +268,32 @@ app.get('/jobs/:jobId', (req, res) => {
 ```javascript
 // Tool definition with detailed description and examples
 const runTestsToolDefinition = {
-  name: 'run_tests',
-  description: 'Run tests for the specified module or the entire RuneRogue project',
+  name: "run_tests",
+  description:
+    "Run tests for the specified module or the entire RuneRogue project",
   parameters: {
     module_path: {
-      type: 'string',
+      type: "string",
       description: "Path to the module to test, or 'all' for all tests",
     },
     test_type: {
-      type: 'string',
-      enum: ['unit', 'integration', 'all'],
-      description: 'Type of tests to run',
-      default: 'all',
+      type: "string",
+      enum: ["unit", "integration", "all"],
+      description: "Type of tests to run",
+      default: "all",
     },
     verbose: {
-      type: 'boolean',
-      description: 'Whether to show detailed test output',
+      type: "boolean",
+      description: "Whether to show detailed test output",
       default: false,
     },
   },
   examples: [
     {
-      description: 'Run all tests for the OSRS agent system',
+      description: "Run all tests for the OSRS agent system",
       parameters: {
-        module_path: 'tests/test_osrs_agent_system.py',
-        test_type: 'all',
+        module_path: "tests/test_osrs_agent_system.py",
+        test_type: "all",
         verbose: true,
       },
     },
@@ -286,7 +301,7 @@ const runTestsToolDefinition = {
 };
 
 // Handler implementation
-app.post('/tools/run_tests', async (req, res) => {
+app.post("/tools/run_tests", async (req, res) => {
   try {
     const { module_path, test_type, verbose } = req.body.parameters;
 
@@ -294,40 +309,42 @@ app.post('/tools/run_tests', async (req, res) => {
     const jobId = uuidv4();
 
     // Log the request
-    console.log(`[${jobId}] Test execution started for ${module_path || 'all modules'}`);
+    console.log(
+      `[${jobId}] Test execution started for ${module_path || "all modules"}`,
+    );
 
     // Start the test execution process asynchronously
-    const { spawn } = require('child_process');
+    const { spawn } = require("child_process");
 
     const args = [];
 
-    if (module_path && module_path !== 'all') {
+    if (module_path && module_path !== "all") {
       args.push(module_path);
     }
 
     // Add test type filtering if needed
-    if (test_type && test_type !== 'all') {
+    if (test_type && test_type !== "all") {
       args.push(`-k=${test_type}`);
     }
 
     if (verbose) {
-      args.push('-v');
+      args.push("-v");
     }
 
-    const process = spawn('pytest', args);
+    const process = spawn("pytest", args);
 
-    let outputData = '';
-    let errorData = '';
+    let outputData = "";
+    let errorData = "";
 
-    process.stdout.on('data', data => {
+    process.stdout.on("data", (data) => {
       outputData += data.toString();
     });
 
-    process.stderr.on('data', data => {
+    process.stderr.on("data", (data) => {
       errorData += data.toString();
     });
 
-    process.on('close', code => {
+    process.on("close", (code) => {
       console.log(`[${jobId}] Test execution completed with code ${code}`);
 
       // Store the result for later retrieval
@@ -344,12 +361,14 @@ app.post('/tools/run_tests', async (req, res) => {
     // Return immediately with the job ID
     res.json({
       jobId,
-      status: 'processing',
-      message: `Test execution started for ${module_path || 'all modules'}`,
+      status: "processing",
+      message: `Test execution started for ${module_path || "all modules"}`,
     });
   } catch (error) {
-    console.error('Error in run_tests handler:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    console.error("Error in run_tests handler:", error);
+    res
+      .status(500)
+      .json({ error: "Internal server error", details: error.message });
   }
 });
 ```
@@ -359,39 +378,40 @@ app.post('/tools/run_tests', async (req, res) => {
 ```javascript
 // Tool definition with detailed description and examples
 const runLintingToolDefinition = {
-  name: 'run_linting',
-  description: 'Run linting checks on the specified module or the entire RuneRogue project',
+  name: "run_linting",
+  description:
+    "Run linting checks on the specified module or the entire RuneRogue project",
   parameters: {
     module_path: {
-      type: 'string',
+      type: "string",
       description: "Path to the module to lint, or 'all' for all modules",
     },
     fix: {
-      type: 'boolean',
-      description: 'Whether to automatically fix linting issues',
+      type: "boolean",
+      description: "Whether to automatically fix linting issues",
       default: false,
     },
     report_format: {
-      type: 'string',
-      enum: ['text', 'json', 'html'],
-      description: 'Format for the linting report',
-      default: 'text',
+      type: "string",
+      enum: ["text", "json", "html"],
+      description: "Format for the linting report",
+      default: "text",
     },
   },
   examples: [
     {
-      description: 'Run linting on the OSRS agent system and fix issues',
+      description: "Run linting on the OSRS agent system and fix issues",
       parameters: {
-        module_path: 'agents/osrs_agent_system.py',
+        module_path: "agents/osrs_agent_system.py",
         fix: true,
-        report_format: 'text',
+        report_format: "text",
       },
     },
   ],
 };
 
 // Handler implementation
-app.post('/tools/run_linting', async (req, res) => {
+app.post("/tools/run_linting", async (req, res) => {
   try {
     const { module_path, fix, report_format } = req.body.parameters;
 
@@ -399,22 +419,24 @@ app.post('/tools/run_linting', async (req, res) => {
     const jobId = uuidv4();
 
     // Log the request
-    console.log(`[${jobId}] Linting started for ${module_path || 'all modules'}`);
+    console.log(
+      `[${jobId}] Linting started for ${module_path || "all modules"}`,
+    );
 
     // Start the linting process asynchronously
-    const { spawn } = require('child_process');
+    const { spawn } = require("child_process");
 
     const args = [];
 
-    if (module_path && module_path !== 'all') {
+    if (module_path && module_path !== "all") {
       args.push(module_path);
     } else {
-      args.push('.');
+      args.push(".");
     }
 
     // Add fix flag if requested
     if (fix) {
-      args.push('--fix');
+      args.push("--fix");
     }
 
     // Add report format
@@ -422,20 +444,20 @@ app.post('/tools/run_linting', async (req, res) => {
       args.push(`--format=${report_format}`);
     }
 
-    const process = spawn('flake8', args);
+    const process = spawn("flake8", args);
 
-    let outputData = '';
-    let errorData = '';
+    let outputData = "";
+    let errorData = "";
 
-    process.stdout.on('data', data => {
+    process.stdout.on("data", (data) => {
       outputData += data.toString();
     });
 
-    process.stderr.on('data', data => {
+    process.stderr.on("data", (data) => {
       errorData += data.toString();
     });
 
-    process.on('close', code => {
+    process.on("close", (code) => {
       console.log(`[${jobId}] Linting completed with code ${code}`);
 
       // Store the result for later retrieval
@@ -452,12 +474,14 @@ app.post('/tools/run_linting', async (req, res) => {
     // Return immediately with the job ID
     res.json({
       jobId,
-      status: 'processing',
-      message: `Linting started for ${module_path || 'all modules'}`,
+      status: "processing",
+      message: `Linting started for ${module_path || "all modules"}`,
     });
   } catch (error) {
-    console.error('Error in run_linting handler:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    console.error("Error in run_linting handler:", error);
+    res
+      .status(500)
+      .json({ error: "Internal server error", details: error.message });
   }
 });
 ```
@@ -466,24 +490,28 @@ app.post('/tools/run_linting', async (req, res) => {
 
 ```javascript
 // Register all tools with the MCP server
-app.get('/mcp/tools', (req, res) => {
+app.get("/mcp/tools", (req, res) => {
   res.json({
-    tools: [generateDocsToolDefinition, runTestsToolDefinition, runLintingToolDefinition],
+    tools: [
+      generateDocsToolDefinition,
+      runTestsToolDefinition,
+      runLintingToolDefinition,
+    ],
   });
 });
 
 // Register the MCP server with GitHub Copilot
 // This endpoint provides metadata about the MCP server
-app.get('/mcp/info', (req, res) => {
+app.get("/mcp/info", (req, res) => {
   res.json({
-    name: 'RuneRogue MCP Server',
-    version: '1.0.0',
-    description: 'Custom MCP server for RuneRogue project automation',
+    name: "RuneRogue MCP Server",
+    version: "1.0.0",
+    description: "Custom MCP server for RuneRogue project automation",
     contact: {
-      name: 'RuneRogue Team',
-      url: 'https://github.com/Giftedx/runerogue',
+      name: "RuneRogue Team",
+      url: "https://github.com/Giftedx/runerogue",
     },
-    tools: ['generate_docs', 'run_tests', 'run_linting'],
+    tools: ["generate_docs", "run_tests", "run_linting"],
   });
 });
 ```
@@ -505,7 +533,7 @@ app.get('/mcp/info', (req, res) => {
 const apiKeyManager = {
   rotateKeys: async () => {
     // Generate a new API key
-    const newKey = crypto.randomBytes(32).toString('hex');
+    const newKey = crypto.randomBytes(32).toString("hex");
 
     // Store the new key securely (e.g., in a database)
     await storeNewKey(newKey);
@@ -521,12 +549,14 @@ const apiKeyManager = {
     };
   },
 
-  validateKey: async providedKey => {
+  validateKey: async (providedKey) => {
     // Retrieve valid keys from secure storage
     const validKeys = await getValidKeys();
 
     // Check if the provided key is valid and not expired
-    return validKeys.some(k => k.key === providedKey && new Date() < k.expires);
+    return validKeys.some(
+      (k) => k.key === providedKey && new Date() < k.expires,
+    );
   },
 };
 
@@ -542,9 +572,9 @@ const rateLimitConfig = {
 
     // Return a standardized error response
     res.status(429).json({
-      error: 'Too many requests',
-      message: 'Rate limit exceeded. Please try again later.',
-      retryAfter: res.getHeader('Retry-After'),
+      error: "Too many requests",
+      message: "Rate limit exceeded. Please try again later.",
+      retryAfter: res.getHeader("Retry-After"),
     });
   },
 };
@@ -572,10 +602,10 @@ app.use((err, req, res, next) => {
 
   // Send a standardized error response
   res.status(statusCode).json({
-    error: statusCode === 500 ? 'Internal Server Error' : err.message,
+    error: statusCode === 500 ? "Internal Server Error" : err.message,
     requestId: req.id,
     // Only include stack trace in development
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
@@ -597,7 +627,7 @@ class ValidationError extends APIError {
 }
 
 class AuthenticationError extends APIError {
-  constructor(message = 'Authentication failed') {
+  constructor(message = "Authentication failed") {
     super(message, 401);
   }
 }
@@ -817,11 +847,11 @@ GITHUB_TOKEN = your_github_personal_access_token;
 const keyRotationSchedule = {
   // Set up a cron job to rotate keys automatically
   setupKeyRotation: () => {
-    const cron = require('node-cron');
+    const cron = require("node-cron");
 
     // Schedule key rotation every 30 days
-    cron.schedule('0 0 1 * *', async () => {
-      console.log('Performing scheduled API key rotation');
+    cron.schedule("0 0 1 * *", async () => {
+      console.log("Performing scheduled API key rotation");
       try {
         // Generate and store new key
         const newKey = await apiKeyManager.rotateKeys();
@@ -830,14 +860,14 @@ const keyRotationSchedule = {
         console.log(`API key rotated successfully. Expires: ${newKey.expires}`);
 
         // Notify administrators
-        await notifyAdmins('API key rotated successfully', {
+        await notifyAdmins("API key rotated successfully", {
           expirationDate: newKey.expires,
           rotationDate: new Date(),
         });
       } catch (error) {
-        console.error('Failed to rotate API key:', error);
+        console.error("Failed to rotate API key:", error);
         // Send alert to administrators
-        await alertAdmins('API key rotation failed', error);
+        await alertAdmins("API key rotation failed", error);
       }
     });
   },
@@ -852,9 +882,9 @@ const keyRotationSchedule = {
 const accessControlRules = {
   // Define roles and their permissions
   roles: {
-    admin: ['read', 'write', 'execute', 'configure'],
-    developer: ['read', 'execute'],
-    viewer: ['read'],
+    admin: ["read", "write", "execute", "configure"],
+    developer: ["read", "execute"],
+    viewer: ["read"],
   },
 
   // Check if a user has permission for a specific action
@@ -865,14 +895,14 @@ const accessControlRules = {
   },
 
   // Middleware to check permissions for specific endpoints
-  checkPermission: action => {
+  checkPermission: (action) => {
     return (req, res, next) => {
       // Get user from authentication middleware
       const user = req.user;
 
       if (!accessControlRules.hasPermission(user, action)) {
         return res.status(403).json({
-          error: 'Forbidden',
+          error: "Forbidden",
           message: `You don't have permission to ${action} this resource`,
         });
       }

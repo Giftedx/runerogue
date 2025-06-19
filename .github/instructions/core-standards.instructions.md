@@ -218,7 +218,7 @@ export class CombatCalculator {
    */
   static calculateHitChance(
     attacker: CombatStats,
-    defender: CombatStats
+    defender: CombatStats,
   ): number {
     const attackRoll = this.calculateAttackRoll(attacker);
     const defenceRoll = this.calculateDefenceRoll(defender);
@@ -282,7 +282,7 @@ export class CombatCalculator {
 // Safe calculation with error handling
 export function calculateDamage(
   attacker: CombatStats,
-  defender: CombatStats
+  defender: CombatStats,
 ): Result<number, GameError> {
   // Validate inputs
   if (!attacker || !defender) {
@@ -412,7 +412,7 @@ export function createPlayer(
   world: GameWorld,
   x: number,
   y: number,
-  sessionId: string
+  sessionId: string,
 ): number {
   const eid = addEntity(world);
 
@@ -517,7 +517,7 @@ export class GameRoom extends Room<GameState> {
 
       const distance = Math.sqrt(
         Math.pow(data.x - player.position.x, 2) +
-          Math.pow(data.y - player.position.y, 2)
+          Math.pow(data.y - player.position.y, 2),
       );
 
       // Calculate max allowed distance based on time elapsed
@@ -769,7 +769,7 @@ export class GameError extends Error {
   constructor(
     message: string,
     public code: string,
-    public context?: Record<string, unknown>
+    public context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "GameError";
@@ -840,7 +840,7 @@ export async function validateAction(action: PlayerAction): Promise<void> {
 
 export async function executeAction(
   client: GameClient,
-  action: PlayerAction
+  action: PlayerAction,
 ): Promise<void> {
   // Execute the action based on type
   switch (action.type) {
@@ -859,7 +859,7 @@ export async function executeAction(
 export async function handlePlayerAction(
   client: GameClient,
   action: PlayerAction,
-  logger: Logger = createLogger()
+  logger: Logger = createLogger(),
 ): Promise<void> {
   const span = logger.startSpan("handlePlayerAction", {
     playerId: client.sessionId,

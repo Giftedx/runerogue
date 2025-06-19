@@ -25,7 +25,7 @@ Here's the solution to fix these issues:
 
 Fix the parsing error by removing the malformed comment and duplicate JSDoc blocks, and remove the duplicate default export.
 
-````typescript
+```typescript
 /**
  * MiningSystem - OSRS-authentic ECS system for mining.
  * Handles rock interaction, depletion, respawn, and item/XP rewards using real OSRS data.
@@ -36,9 +36,16 @@ Fix the parsing error by removing the malformed comment and duplicate JSDoc bloc
  *
  * This system implements complete OSRS mechanics for levels 1-50.
  */
-import { defineSystem, defineQuery, IWorld } from 'bitecs';
-import { ResourceNode, SkillLevels, SkillXP, Inventory, Player, Gathering } from '../components';
-import type { Result, GameError } from '@runerogue/shared';
+import { defineSystem, defineQuery, IWorld } from "bitecs";
+import {
+  ResourceNode,
+  SkillLevels,
+  SkillXP,
+  Inventory,
+  Player,
+  Gathering,
+} from "../components";
+import type { Result, GameError } from "@runerogue/shared";
 import {
   ROCKS,
   MINING_TOOLS,
@@ -47,7 +54,7 @@ import {
   calculateMiningSuccess,
   ROCK_GOLEM_PET_DROP_RATES,
   rollGemTable,
-} from '@runerogue/osrs-data/src/skills/gathering-data';
+} from "@runerogue/osrs-data/src/skills/gathering-data";
 
 // ...existing code...
 
@@ -55,7 +62,6 @@ import {
  * Export system for ECS registration
  */
 export default MiningSystem;
-````
+```
 
 ---
-

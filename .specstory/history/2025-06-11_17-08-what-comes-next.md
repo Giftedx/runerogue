@@ -77,4 +77,3 @@ This completes your VS Code settings with:
 These additions complement your existing AI-enhanced setup and are specifically tailored for the RuneRogue project development workflow.
 
 ---
-

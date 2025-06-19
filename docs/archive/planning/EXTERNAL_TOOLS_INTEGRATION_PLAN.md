@@ -93,7 +93,7 @@ export class OSRSReboxedClient {
 
   async getMonsterDatabase(): Promise<MonsterData[]> {
     const response = await fetch(
-      `${this.baseUrl}monsters/monsters-complete.json`
+      `${this.baseUrl}monsters/monsters-complete.json`,
     );
     return response.json();
   }
@@ -161,7 +161,7 @@ export class AuthenticCombatSystem {
 
   async calculateDamage(
     attacker: Player,
-    defender: Player
+    defender: Player,
   ): Promise<CombatResult> {
     // Get weapon data from external sources
     const weaponData = await this.getWeaponData(attacker.equipment.weapon);
@@ -281,10 +281,10 @@ describe("External Data Integration", () => {
     const ourCalculation = await combat.calculateItemStats("dragon_scimitar");
 
     expect(ourCalculation.attackBonus).toEqual(
-      reboxedItem.equipment.attack_stab
+      reboxedItem.equipment.attack_stab,
     );
     expect(ourCalculation.strengthBonus).toEqual(
-      reboxedItem.equipment.melee_strength
+      reboxedItem.equipment.melee_strength,
     );
   });
 

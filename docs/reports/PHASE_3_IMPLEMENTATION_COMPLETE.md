@@ -90,12 +90,7 @@ this.broadcast("damage_dealt", {
   targetMaxHealth: target.maxHealth,
   hitSuccess: hitSuccess,
   accuracy: Math.round(accuracy * 100),
-  effectType:
-    hitSuccess ?
-      damage > 0 ?
-        "damage"
-      : "zero"
-    : "miss",
+  effectType: hitSuccess ? (damage > 0 ? "damage" : "zero") : "miss",
   position: { x: target.x, y: target.y },
 });
 ```

@@ -12,21 +12,27 @@ This document outlines the steps to migrate and deprecate the legacy Flask endpo
 ## Migration Steps
 
 1. **Identify Deprecated Endpoints:**
+
    - List all Flask endpoints that are deprecated.
 
 2. **Develop Replacement Endpoints:**
+
    - Implement new endpoints in the TypeScript Game Server and Python MCP server where applicable.
 
 3. **Dual Operation:**
+
    - Run legacy and new endpoints in parallel while clients transition.
 
 4. **Client Notifications:**
+
    - Update client documentation and notify stakeholders of upcoming changes.
 
 5. **Testing:**
+
    - Conduct comprehensive integration testing to ensure consistency between old and new endpoints.
 
 6. **Gradual Decommissioning:**
+
    - Slowly disable legacy endpoints while monitoring performance and user feedback.
 
 7. **Rollback Strategy:**

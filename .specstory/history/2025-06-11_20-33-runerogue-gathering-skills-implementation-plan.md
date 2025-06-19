@@ -19,26 +19,27 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Ensure a clean and consistent codebase before proceeding with extensive testing and feature completion.
 
 1.  **Normalize Line Endings (CRLF to LF)**:
-    *   **Task**: Identify and convert files with CRLF line endings to LF.
-    *   **Files of Interest (Known)**:
-        *   CookingSystem.ts
-        *   FiremakingSystem.ts
-    *   **Action**:
-        *   Use a tool or script to find all `.ts` files in src with CRLF endings.
-        *   Convert these files to LF line endings.
-        *   Verify the conversion using `git diff` or an editor setting that shows line endings.
-    *   **Rationale**: Mixed line endings can cause issues with linters, version control, and cross-platform development. Standardizing to LF is a common practice.
-    *   **Tooling**: `grep_search` (to find files if necessary, though likely not needed if paths are known), `read_file` and `insert_edit_into_file` (if manual conversion is required, though IDE/tooling is better for this). The agent should be instructed to use its editor's capabilities or a common utility like `dos2unix` if it can run terminal commands for file manipulation (though direct file editing is preferred if possible).
+
+    - **Task**: Identify and convert files with CRLF line endings to LF.
+    - **Files of Interest (Known)**:
+      - CookingSystem.ts
+      - FiremakingSystem.ts
+    - **Action**:
+      - Use a tool or script to find all `.ts` files in src with CRLF endings.
+      - Convert these files to LF line endings.
+      - Verify the conversion using `git diff` or an editor setting that shows line endings.
+    - **Rationale**: Mixed line endings can cause issues with linters, version control, and cross-platform development. Standardizing to LF is a common practice.
+    - **Tooling**: `grep_search` (to find files if necessary, though likely not needed if paths are known), `read_file` and `insert_edit_into_file` (if manual conversion is required, though IDE/tooling is better for this). The agent should be instructed to use its editor's capabilities or a common utility like `dos2unix` if it can run terminal commands for file manipulation (though direct file editing is preferred if possible).
 
 2.  **Run Linters and Type Checkers**:
-    *   **Task**: Execute existing linting and type-checking scripts to catch any outstanding basic issues.
-    *   **Commands (from `development-workflow.instructions.md`)**:
-        *   `pnpm type-check`
-        *   `pnpm lint`
-    *   **Action**:
-        *   Run these commands and address any reported errors. This will help confirm the line ending normalization was successful and catch other minor issues.
-    *   **Rationale**: Ensures code quality and adherence to project standards before more complex work.
-    *   **Tooling**: `run_in_terminal`.
+    - **Task**: Execute existing linting and type-checking scripts to catch any outstanding basic issues.
+    - **Commands (from `development-workflow.instructions.md`)**:
+      - `pnpm type-check`
+      - `pnpm lint`
+    - **Action**:
+      - Run these commands and address any reported errors. This will help confirm the line ending normalization was successful and catch other minor issues.
+    - **Rationale**: Ensures code quality and adherence to project standards before more complex work.
+    - **Tooling**: `run_in_terminal`.
 
 ---
 
@@ -47,50 +48,53 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Achieve 95%+ test coverage for game logic and 100% OSRS calculation validation for all five gathering skills up to level 50.
 
 **General Test Structure (for each system below)**:
-*   Use Jest as per jest.config.js and jest.setup.js.
-*   Follow testing standards from `core-standards.instructions.md` and `test.instructions.md`.
-*   Mock dependencies like `PlayerActionEventComponent`, `InventoryComponent`, `SkillLevelComponent`, `EquipmentComponent`, `ResourceNodeComponent` as needed for unit tests.
-*   For integration tests, set up a minimal ECS world with the relevant entities and components.
+
+- Use Jest as per jest.config.js and jest.setup.js.
+- Follow testing standards from `core-standards.instructions.md` and `test.instructions.md`.
+- Mock dependencies like `PlayerActionEventComponent`, `InventoryComponent`, `SkillLevelComponent`, `EquipmentComponent`, `ResourceNodeComponent` as needed for unit tests.
+- For integration tests, set up a minimal ECS world with the relevant entities and components.
 
 1.  **CookingSystem Tests (`server-ts/src/server/ecs/systems/CookingSystem.test.ts`)**:
-    *   **Unit Tests**:
-        *   Test successful cooking of various foods (e.g., Shrimp, Trout, Salmon, Tuna, Lobster) at different cooking levels and with different cooking spots (fire, range).
-        *   Test burn mechanics: correct burn rates for each food type at various levels, ensuring items are removed/replaced correctly.
-        *   Test XP calculation: verify correct XP awarded for successful cooks and (if applicable) burns, matching OSRS Wiki.
-        *   Test inventory checks: cooking stops if inventory is full and cannot hold the cooked product.
-        *   Test tool/item requirements: e.g., needing a specific item to cook on a range if that's a mechanic.
-        *   Test pet drop logic: `Rawkarambwan` (Phoenix) pet drop simulation with correct probabilities.
-        *   Test edge cases: attempting to cook non-cookable items, cooking with insufficient levels.
-    *   **Integration Tests**:
-        *   Simulate a player entity attempting to cook: verify `PlayerActionEventComponent` is processed, `InventoryComponent` is updated (raw food removed, cooked/burnt food added), `SkillLevelComponent` (Cooking XP) is updated.
-        *   Test interaction with different cooking spots (if modeled as entities or via event properties).
-    *   **OSRS Validation**: Ensure all XP values, burn chances, and level requirements strictly match OSRS Wiki data for items up to level 50 Cooking.
+
+    - **Unit Tests**:
+      - Test successful cooking of various foods (e.g., Shrimp, Trout, Salmon, Tuna, Lobster) at different cooking levels and with different cooking spots (fire, range).
+      - Test burn mechanics: correct burn rates for each food type at various levels, ensuring items are removed/replaced correctly.
+      - Test XP calculation: verify correct XP awarded for successful cooks and (if applicable) burns, matching OSRS Wiki.
+      - Test inventory checks: cooking stops if inventory is full and cannot hold the cooked product.
+      - Test tool/item requirements: e.g., needing a specific item to cook on a range if that's a mechanic.
+      - Test pet drop logic: `Rawkarambwan` (Phoenix) pet drop simulation with correct probabilities.
+      - Test edge cases: attempting to cook non-cookable items, cooking with insufficient levels.
+    - **Integration Tests**:
+      - Simulate a player entity attempting to cook: verify `PlayerActionEventComponent` is processed, `InventoryComponent` is updated (raw food removed, cooked/burnt food added), `SkillLevelComponent` (Cooking XP) is updated.
+      - Test interaction with different cooking spots (if modeled as entities or via event properties).
+    - **OSRS Validation**: Ensure all XP values, burn chances, and level requirements strictly match OSRS Wiki data for items up to level 50 Cooking.
 
 2.  **FiremakingSystem Tests (`server-ts/src/server/ecs/systems/FiremakingSystem.test.ts`)**:
-    *   **Unit Tests**:
-        *   Test successful lighting of all log types up to level 50 Firemaking (Normal, Oak, Willow, Maple, Yew).
-        *   Test XP calculation: verify correct XP awarded for lighting each log type.
-        *   Test tinderbox requirement: action fails if no tinderbox is in inventory (or equipped, if applicable).
-        *   Test log consumption: logs are correctly removed from inventory upon successful lighting.
-        *   Test fire duration/depletion: if fires are entities that expire, test this logic (though "depletion logic" in summary might refer to log consumption or ground item ashes).
-        *   Test pet drop logic: `Pyromancer_outfit_piece` (Phoenix) pet drop simulation with correct probabilities. (Note: The summary mentioned "pet drop", Phoenix is the Firemaking pet).
-        *   Test inventory checks: e.g., cannot light a fire if no logs.
-        *   Test ground item creation: ashes appear after fire burns out (if this is the "depletion logic").
-    *   **Integration Tests**:
-        *   Simulate a player entity attempting to light a fire: verify `PlayerActionEventComponent` is processed, `InventoryComponent` (logs, tinderbox) is updated, `SkillLevelComponent` (Firemaking XP) is updated.
-        *   Test creation of a fire entity/`ResourceNodeComponent` (for the fire itself or ashes) at the player's location.
-        *   Test interaction with existing fires (e.g., cannot light a fire on an existing one).
-    *   **OSRS Validation**: Ensure all XP values, level requirements, and success mechanics strictly match OSRS Wiki data for logs up to level 50 Firemaking.
+
+    - **Unit Tests**:
+      - Test successful lighting of all log types up to level 50 Firemaking (Normal, Oak, Willow, Maple, Yew).
+      - Test XP calculation: verify correct XP awarded for lighting each log type.
+      - Test tinderbox requirement: action fails if no tinderbox is in inventory (or equipped, if applicable).
+      - Test log consumption: logs are correctly removed from inventory upon successful lighting.
+      - Test fire duration/depletion: if fires are entities that expire, test this logic (though "depletion logic" in summary might refer to log consumption or ground item ashes).
+      - Test pet drop logic: `Pyromancer_outfit_piece` (Phoenix) pet drop simulation with correct probabilities. (Note: The summary mentioned "pet drop", Phoenix is the Firemaking pet).
+      - Test inventory checks: e.g., cannot light a fire if no logs.
+      - Test ground item creation: ashes appear after fire burns out (if this is the "depletion logic").
+    - **Integration Tests**:
+      - Simulate a player entity attempting to light a fire: verify `PlayerActionEventComponent` is processed, `InventoryComponent` (logs, tinderbox) is updated, `SkillLevelComponent` (Firemaking XP) is updated.
+      - Test creation of a fire entity/`ResourceNodeComponent` (for the fire itself or ashes) at the player's location.
+      - Test interaction with existing fires (e.g., cannot light a fire on an existing one).
+    - **OSRS Validation**: Ensure all XP values, level requirements, and success mechanics strictly match OSRS Wiki data for logs up to level 50 Firemaking.
 
 3.  **Review and Augment Existing Skill System Tests**:
-    *   **Systems**: `WoodcuttingSystem`, `MiningSystem`, `FishingSystem`.
-    *   **Task**: Review existing tests for these systems.
-    *   **Action**:
-        *   Ensure tests cover all trees, rocks, fish, tools (axes, pickaxes, fishing tools), and bait relevant up to level 50 for each skill.
-        *   Verify comprehensive testing of depletion/respawn mechanics, tool checks (inventory/equipment), inventory full checks, and pet/rare drop logic (Beaver, Rock Golem, Heron).
-        *   Ensure 100% OSRS calculation validation for XP and item outputs.
-        *   Add any missing test cases to achieve 95%+ overall coverage.
-    *   **Rationale**: Maintain high quality and OSRS authenticity for already "completed" systems.
+    - **Systems**: `WoodcuttingSystem`, `MiningSystem`, `FishingSystem`.
+    - **Task**: Review existing tests for these systems.
+    - **Action**:
+      - Ensure tests cover all trees, rocks, fish, tools (axes, pickaxes, fishing tools), and bait relevant up to level 50 for each skill.
+      - Verify comprehensive testing of depletion/respawn mechanics, tool checks (inventory/equipment), inventory full checks, and pet/rare drop logic (Beaver, Rock Golem, Heron).
+      - Ensure 100% OSRS calculation validation for XP and item outputs.
+      - Add any missing test cases to achieve 95%+ overall coverage.
+    - **Rationale**: Maintain high quality and OSRS authenticity for already "completed" systems.
 
 ---
 
@@ -99,42 +103,45 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Ensure all server-side actions and state changes for gathering skills are accurately and promptly reflected on the client for all players.
 
 1.  **Identify State Changes for Synchronization**:
-    *   **Systems**: `CookingSystem`, `FiremakingSystem` (primarily, but also review others).
-    *   **Action**: For each system, list all player-initiated actions and their resulting state changes that need to be visible to the acting player and other nearby players. Examples:
-        *   **Cooking**:
-            *   Animation of player cooking.
-            *   Successful cook: item appears/changes in inventory, XP gain message/UI update.
-            *   Item burn: item appears/changes in inventory, different visual/sound cue, XP gain message/UI update.
-            *   Skill level up: notification.
-        *   **Firemaking**:
-            *   Animation of player lighting fire.
-            *   Successful fire: log removed from inventory, fire appears in the game world, XP gain message/UI update.
-            *   Fire burning out / ashes appearing.
-            *   Skill level up: notification.
-        *   **Shared**: Inventory updates (items added/removed), XP gains, pet drops (global announcement/visual).
-    *   **Rationale**: Clear identification is crucial before implementation.
+
+    - **Systems**: `CookingSystem`, `FiremakingSystem` (primarily, but also review others).
+    - **Action**: For each system, list all player-initiated actions and their resulting state changes that need to be visible to the acting player and other nearby players. Examples:
+      - **Cooking**:
+        - Animation of player cooking.
+        - Successful cook: item appears/changes in inventory, XP gain message/UI update.
+        - Item burn: item appears/changes in inventory, different visual/sound cue, XP gain message/UI update.
+        - Skill level up: notification.
+      - **Firemaking**:
+        - Animation of player lighting fire.
+        - Successful fire: log removed from inventory, fire appears in the game world, XP gain message/UI update.
+        - Fire burning out / ashes appearing.
+        - Skill level up: notification.
+      - **Shared**: Inventory updates (items added/removed), XP gains, pet drops (global announcement/visual).
+    - **Rationale**: Clear identification is crucial before implementation.
 
 2.  **Ensure Colyseus State Schema Updates**:
-    *   **File**: `server-ts/src/server/rooms/GameRoomState.ts` (or equivalent where Colyseus schema is defined).
-    *   **Action**:
-        *   Verify that the `GameRoomState` schema includes all necessary fields to represent the state changes identified above (e.g., player inventories, skill levels, temporary world objects like fires, player animations/actions).
-        *   If new schema fields are needed (e.g., for active fires with locations and timers), add them.
-        *   Ensure changes to these schema fields are correctly triggered by the respective ECS systems.
-    *   **Rationale**: Colyseus schema is the source of truth for client updates.
+
+    - **File**: `server-ts/src/server/rooms/GameRoomState.ts` (or equivalent where Colyseus schema is defined).
+    - **Action**:
+      - Verify that the `GameRoomState` schema includes all necessary fields to represent the state changes identified above (e.g., player inventories, skill levels, temporary world objects like fires, player animations/actions).
+      - If new schema fields are needed (e.g., for active fires with locations and timers), add them.
+      - Ensure changes to these schema fields are correctly triggered by the respective ECS systems.
+    - **Rationale**: Colyseus schema is the source of truth for client updates.
 
 3.  **Verify Client-Side Handling**:
-    *   **Client Code**: client (React UI) and client (Phaser rendering).
-    *   **Action**:
-        *   Trace how schema changes from the server are received and processed by the client.
-        *   Ensure Phaser rendering correctly displays visual changes (e.g., player animations, new fire objects, depletion of resources).
-        *   Ensure React UI components correctly update (e.g., inventory display, skill progress bars, XP pop-ups, chat messages for pet drops).
-    *   **Rationale**: The client must accurately reflect the game state.
+
+    - **Client Code**: client (React UI) and client (Phaser rendering).
+    - **Action**:
+      - Trace how schema changes from the server are received and processed by the client.
+      - Ensure Phaser rendering correctly displays visual changes (e.g., player animations, new fire objects, depletion of resources).
+      - Ensure React UI components correctly update (e.g., inventory display, skill progress bars, XP pop-ups, chat messages for pet drops).
+    - **Rationale**: The client must accurately reflect the game state.
 
 4.  **Test Multiplayer Scenarios**:
-    *   **Action**: Manually test scenarios with multiple simulated clients/players:
-        *   Player A cooks/lights a fire. Verify Player B sees the correct animations, world changes (fire appears), and receives relevant game messages (e.g., if Player A gets a pet).
-        *   Simultaneous actions by multiple players.
-    *   **Rationale**: Ensures synchronization works correctly in a multiplayer context.
+    - **Action**: Manually test scenarios with multiple simulated clients/players:
+      - Player A cooks/lights a fire. Verify Player B sees the correct animations, world changes (fire appears), and receives relevant game messages (e.g., if Player A gets a pet).
+      - Simultaneous actions by multiple players.
+    - **Rationale**: Ensures synchronization works correctly in a multiplayer context.
 
 ---
 
@@ -143,25 +150,26 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Provide comprehensive and accurate documentation for all implemented gathering skills.
 
 1.  **JSDoc Comments**:
-    *   **Files**: `CookingSystem.ts`, `FiremakingSystem.ts`, and any related new/modified components or utility functions. Also review `WoodcuttingSystem.ts`, `MiningSystem.ts`, `FishingSystem.ts`.
-    *   **Action**:
-        *   Write/update JSDoc for all classes, methods, functions, and significant type definitions.
-        *   Explain parameters, return values, and the purpose of each code block.
-        *   Include OSRS Wiki references for specific mechanics or formulas where applicable.
-        *   Provide simple `@example` usage snippets for public-facing system functions or event handlers.
-    *   **Standard**: Follow guidelines in `core-standards.instructions.md`.
-    *   **Rationale**: Essential for maintainability and onboarding new developers.
+
+    - **Files**: `CookingSystem.ts`, `FiremakingSystem.ts`, and any related new/modified components or utility functions. Also review `WoodcuttingSystem.ts`, `MiningSystem.ts`, `FishingSystem.ts`.
+    - **Action**:
+      - Write/update JSDoc for all classes, methods, functions, and significant type definitions.
+      - Explain parameters, return values, and the purpose of each code block.
+      - Include OSRS Wiki references for specific mechanics or formulas where applicable.
+      - Provide simple `@example` usage snippets for public-facing system functions or event handlers.
+    - **Standard**: Follow guidelines in `core-standards.instructions.md`.
+    - **Rationale**: Essential for maintainability and onboarding new developers.
 
 2.  **Update Project Documentation (Markdown Files)**:
-    *   **Files**:
-        *   RUNEROGUE_PROJECT_STRUCTURE.md (or similar architectural overview).
-        *   OSRS mechanics documentation (e.g., a new file like `docs/osrs/gathering-skills.md` or updates to existing ones).
-        *   README.md if high-level features are mentioned.
-    *   **Action**:
-        *   Reflect the addition and current state (level 50 implementation) of all five gathering skills.
-        *   Detail the scope of implementation for each skill (e.g., "Woodcutting implemented up to Yew trees, supporting all axes up to Rune, with Beaver pet drop").
-        *   List key OSRS Wiki pages used as primary references for each skill's mechanics.
-    *   **Rationale**: Keeps project documentation aligned with the actual codebase.
+    - **Files**:
+      - RUNEROGUE_PROJECT_STRUCTURE.md (or similar architectural overview).
+      - OSRS mechanics documentation (e.g., a new file like `docs/osrs/gathering-skills.md` or updates to existing ones).
+      - README.md if high-level features are mentioned.
+    - **Action**:
+      - Reflect the addition and current state (level 50 implementation) of all five gathering skills.
+      - Detail the scope of implementation for each skill (e.g., "Woodcutting implemented up to Yew trees, supporting all axes up to Rune, with Beaver pet drop").
+      - List key OSRS Wiki pages used as primary references for each skill's mechanics.
+    - **Rationale**: Keeps project documentation aligned with the actual codebase.
 
 ---
 
@@ -170,25 +178,27 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Ensure all gathering skill systems perform efficiently under typical load conditions, meeting 60fps client / 20 TPS server targets.
 
 1.  **Identify Key ECS Queries and Systems**:
-    *   **Action**: For each of the five gathering skill systems, list the main bitECS queries they perform (e.g., querying for players with specific action events, querying for resource nodes).
-    *   **Rationale**: Focuses profiling efforts on critical code paths.
+
+    - **Action**: For each of the five gathering skill systems, list the main bitECS queries they perform (e.g., querying for players with specific action events, querying for resource nodes).
+    - **Rationale**: Focuses profiling efforts on critical code paths.
 
 2.  **Profile Under Load**:
-    *   **Action**:
-        *   Set up a test scenario with multiple (e.g., 4+) simulated players actively using various gathering skills simultaneously.
-        *   Use Node.js profiling tools (e.g., built-in profiler, Chrome DevTools for Node) to measure server-side performance of the ECS systems.
-        *   Monitor server tick rate (target: 20 TPS).
-        *   Monitor client frame rate (target: 60 FPS) if client-side impact is suspected.
-    *   **Tools**: As per `development-workflow.instructions.md` (`pnpm profile`).
-    *   **Rationale**: Simulates real-world usage to find bottlenecks.
+
+    - **Action**:
+      - Set up a test scenario with multiple (e.g., 4+) simulated players actively using various gathering skills simultaneously.
+      - Use Node.js profiling tools (e.g., built-in profiler, Chrome DevTools for Node) to measure server-side performance of the ECS systems.
+      - Monitor server tick rate (target: 20 TPS).
+      - Monitor client frame rate (target: 60 FPS) if client-side impact is suspected.
+    - **Tools**: As per `development-workflow.instructions.md` (`pnpm profile`).
+    - **Rationale**: Simulates real-world usage to find bottlenecks.
 
 3.  **Optimize Bottlenecks**:
-    *   **Action**: If performance targets are not met:
-        *   Analyze profiling data to identify slow queries or system logic.
-        *   Refactor inefficient queries (e.g., ensure proper indexing if applicable, reduce query frequency).
-        *   Optimize system logic (e.g., cache results, reduce redundant computations).
-        *   Consider batching updates to Colyseus state if frequent small updates are causing overhead.
-    *   **Rationale**: Ensures a smooth gameplay experience.
+    - **Action**: If performance targets are not met:
+      - Analyze profiling data to identify slow queries or system logic.
+      - Refactor inefficient queries (e.g., ensure proper indexing if applicable, reduce query frequency).
+      - Optimize system logic (e.g., cache results, reduce redundant computations).
+      - Consider batching updates to Colyseus state if frequent small updates are causing overhead.
+    - **Rationale**: Ensures a smooth gameplay experience.
 
 ---
 
@@ -197,21 +207,21 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Perform a meticulous cross-check of all implemented gathering skill mechanics against OSRS Wiki to ensure 100% authenticity up to level 50.
 
 1.  **Systematic Data and Mechanics Review**:
-    *   **Action**: For each skill (Woodcutting, Mining, Fishing, Cooking, Firemaking):
-        *   Create a checklist of all items (tools, resources, products, pets), XP rates, level requirements, success/failure chances (e.g., burn rates), depletion/respawn times, and special mechanics (e.g., bird nests, gem finds, clue scrolls from fishing) relevant up to level 50.
-        *   Methodically verify each item on the checklist by:
-            *   Comparing implemented values directly against OSRS Wiki pages.
-            *   Testing in-game actions and observing outcomes (XP gained, items received, success/failure).
-            *   Using the OSRS data pipeline (osrs-data) for validation where possible.
-    *   **Example Areas for Cooking**:
-        *   Shrimp (Lvl 1): XP, burn rate at Lvl 1 vs Lvl 34 (stop burn).
-        *   Trout (Lvl 15): XP, burn rate at Lvl 15 vs Lvl 50 (stop burn).
-        *   Lobster (Lvl 40): XP, burn rate at Lvl 40 vs Lvl 74 (stop burn).
-    *   **Example Areas for Firemaking**:
-        *   Normal Logs (Lvl 1): XP.
-        *   Willow Logs (Lvl 30): XP.
-        *   Maple Logs (Lvl 45): XP.
-    *   **Rationale**: This is a critical requirement as per `core-standards.instructions.md`.
+    - **Action**: For each skill (Woodcutting, Mining, Fishing, Cooking, Firemaking):
+      - Create a checklist of all items (tools, resources, products, pets), XP rates, level requirements, success/failure chances (e.g., burn rates), depletion/respawn times, and special mechanics (e.g., bird nests, gem finds, clue scrolls from fishing) relevant up to level 50.
+      - Methodically verify each item on the checklist by:
+        - Comparing implemented values directly against OSRS Wiki pages.
+        - Testing in-game actions and observing outcomes (XP gained, items received, success/failure).
+        - Using the OSRS data pipeline (osrs-data) for validation where possible.
+    - **Example Areas for Cooking**:
+      - Shrimp (Lvl 1): XP, burn rate at Lvl 1 vs Lvl 34 (stop burn).
+      - Trout (Lvl 15): XP, burn rate at Lvl 15 vs Lvl 50 (stop burn).
+      - Lobster (Lvl 40): XP, burn rate at Lvl 40 vs Lvl 74 (stop burn).
+    - **Example Areas for Firemaking**:
+      - Normal Logs (Lvl 1): XP.
+      - Willow Logs (Lvl 30): XP.
+      - Maple Logs (Lvl 45): XP.
+    - **Rationale**: This is a critical requirement as per `core-standards.instructions.md`.
 
 ---
 
@@ -220,20 +230,22 @@ Summarized conversation historyOkay, I've reviewed the pending tasks and the ove
 **Objective:** Conduct a final quality assurance pass to ensure the implemented features are production-ready.
 
 1.  **Code Review**:
-    *   **Action**: Perform a self-review or peer review of all code related to the five gathering skills.
-    *   **Focus**: Adherence to coding standards, clarity, maintainability, error handling, logging, and JSDoc completion.
-    *   **Rationale**: Catches any remaining issues and ensures consistency.
+
+    - **Action**: Perform a self-review or peer review of all code related to the five gathering skills.
+    - **Focus**: Adherence to coding standards, clarity, maintainability, error handling, logging, and JSDoc completion.
+    - **Rationale**: Catches any remaining issues and ensures consistency.
 
 2.  **Gameplay Testing**:
-    *   **Action**: Manually play through scenarios involving each gathering skill.
-    *   **Focus**: User experience, intuitiveness, absence of bugs, correct visual and audio feedback, and overall "feel" of authenticity.
-    *   **Rationale**: Validates the player-facing aspects of the implementation.
+
+    - **Action**: Manually play through scenarios involving each gathering skill.
+    - **Focus**: User experience, intuitiveness, absence of bugs, correct visual and audio feedback, and overall "feel" of authenticity.
+    - **Rationale**: Validates the player-facing aspects of the implementation.
 
 3.  **Final Sanity Checks**:
-    *   Confirm all lint/type errors are resolved.
-    *   Confirm all tests are passing.
-    *   Confirm documentation is up-to-date.
-    *   Confirm project builds successfully (`pnpm build:prod`).
+    - Confirm all lint/type errors are resolved.
+    - Confirm all tests are passing.
+    - Confirm documentation is up-to-date.
+    - Confirm project builds successfully (`pnpm build:prod`).
 
 This detailed plan should equip the next AI agent with a clear roadmap to finalize the gathering skills implementation to the required standards.
 
@@ -262,6 +274,7 @@ packages/osrs-data/src/skills/            # OSRS authentic data sources
 ```
 
 **Expected files to find:**
+
 - `WoodcuttingSystem.ts`, `MiningSystem.ts`, `FishingSystem.ts`
 - `CookingSystem.ts`, `FiremakingSystem.ts` (possibly incomplete)
 - Related components like `ResourceNodeComponent`, `SkillLevelComponent`, etc.
@@ -280,6 +293,7 @@ server-ts/src/server/ecs/systems/FiremakingSystem.ts
 ```
 
 **Commands to fix:**
+
 ```bash
 # Using dos2unix if available
 dos2unix server-ts/src/server/ecs/systems/CookingSystem.ts
@@ -309,16 +323,18 @@ pnpm lint
 **Task:** Examine and document the ECS components used by gathering skills.
 
 **Expected components:**
+
 ```typescript
 // Components to look for and understand:
-PlayerActionEventComponent   // Triggers for skill actions
-ResourceNodeComponent        // Trees, rocks, fishing spots, etc.
-SkillLevelComponent          // Player skill levels/XP
-InventoryComponent           // Player inventory contents
-EquipmentComponent           // Player equipped items
+PlayerActionEventComponent; // Triggers for skill actions
+ResourceNodeComponent; // Trees, rocks, fishing spots, etc.
+SkillLevelComponent; // Player skill levels/XP
+InventoryComponent; // Player inventory contents
+EquipmentComponent; // Player equipped items
 ```
 
 **Questions to answer:**
+
 - How are resource nodes represented? (Entity with ResourceNodeComponent?)
 - How are skill actions initiated? (PlayerActionEventComponent with action type?)
 - Where is player state stored? (Separate components or aggregated?)
@@ -328,6 +344,7 @@ EquipmentComponent           // Player equipped items
 **Task:** Examine the logic flow in existing skill systems to understand patterns.
 
 **Files to analyze:**
+
 ```
 server-ts/src/server/ecs/systems/WoodcuttingSystem.ts
 server-ts/src/server/ecs/systems/MiningSystem.ts
@@ -335,6 +352,7 @@ server-ts/src/server/ecs/systems/FishingSystem.ts
 ```
 
 **Common patterns to identify:**
+
 - How do systems query for entities with pending actions?
 - How are tool requirements checked?
 - How are success chances calculated?
@@ -354,6 +372,7 @@ packages/osrs-data/src/items/
 ```
 
 **Expected data:**
+
 - Tool types and effectiveness
 - Resource types and properties
 - XP values for various actions
@@ -365,6 +384,7 @@ packages/osrs-data/src/items/
 **Task:** Create a comprehensive checklist of all OSRS Wiki references needed for verification.
 
 **Key OSRS Wiki pages:**
+
 - [Woodcutting training](https://oldschool.runescape.wiki/w/Woodcutting_training)
 - [Mining training](https://oldschool.runescape.wiki/w/Mining_training)
 - [Fishing training](https://oldschool.runescape.wiki/w/Fishing_training)
@@ -373,6 +393,7 @@ packages/osrs-data/src/items/
 - [Experience](https://oldschool.runescape.wiki/w/Experience)
 
 **Required data points:**
+
 - Create a spreadsheet mapping each resource to its level requirement, XP value, and tool requirements
 - Document success formulas with exact mathematical representations
 - Document respawn timers and resource depletion chances
@@ -386,10 +407,11 @@ packages/osrs-data/src/items/
 **File:** `CookingSystem.ts`
 
 **Core requirements:**
+
 ```typescript
 /**
  * CookingSystem processes cooking actions from players.
- * It handles the cooking of various food items at different 
+ * It handles the cooking of various food items at different
  * cooking spots (fires, ranges) according to OSRS mechanics.
  */
 export class CookingSystem {
@@ -406,7 +428,7 @@ export class CookingSystem {
     // 6. Check for pet drops
     // 7. Update player state (animation, etc.)
   }
-  
+
   /**
    * Calculates if cooking was successful based on OSRS formulas
    * @param foodType - Type of food being cooked
@@ -414,13 +436,18 @@ export class CookingSystem {
    * @param cookingSpot - Type of cooking spot (fire or range)
    * @returns Whether the cooking was successful (true) or burnt (false)
    */
-  calculateCookingSuccess(foodType: string, cookingLevel: number, cookingSpot: 'fire' | 'range'): boolean {
+  calculateCookingSuccess(
+    foodType: string,
+    cookingLevel: number,
+    cookingSpot: "fire" | "range",
+  ): boolean {
     // OSRS-authentic cooking success calculation
   }
 }
 ```
 
 **Required food items (up to level 50):**
+
 - Shrimp (level 1)
 - Sardine (level 1)
 - Herring (level 5)
@@ -443,43 +470,44 @@ export class CookingSystem {
 **File:** `server-ts/src/server/ecs/systems/CookingSystem.test.ts`
 
 **Test cases:**
+
 ```typescript
-describe('CookingSystem', () => {
+describe("CookingSystem", () => {
   // Setup test world with necessary components
-  
-  describe('calculateCookingSuccess', () => {
-    test('shrimp at level 1 has correct burn chance', () => {
+
+  describe("calculateCookingSuccess", () => {
+    test("shrimp at level 1 has correct burn chance", () => {
       // OSRS Wiki states ~50% burn rate at level 1
     });
-    
-    test('shrimp never burns at level 34+', () => {
+
+    test("shrimp never burns at level 34+", () => {
       // OSRS Wiki states shrimp stops burning at level 34
     });
-    
+
     // Test each food type at minimum level and stop-burn level
   });
-  
-  describe('cooking process', () => {
-    test('successfully cooks food with correct requirements', () => {
+
+  describe("cooking process", () => {
+    test("successfully cooks food with correct requirements", () => {
       // Setup player with raw food and cooking action
       // Run system update
       // Verify inventory changes and XP gain
     });
-    
-    test('burns food according to chance formula', () => {
+
+    test("burns food according to chance formula", () => {
       // Mock success calculation to ensure burn
       // Verify burnt food is added to inventory
     });
-    
-    test('cooking on range vs fire affects burn chance', () => {
+
+    test("cooking on range vs fire affects burn chance", () => {
       // Compare success rates between range and fire
     });
-    
-    test('fails if player lacks requirements', () => {
+
+    test("fails if player lacks requirements", () => {
       // Test with insufficient cooking level
     });
-    
-    test('cooking awards correct XP', () => {
+
+    test("cooking awards correct XP", () => {
       // Verify XP matches OSRS values
     });
   });
@@ -495,6 +523,7 @@ describe('CookingSystem', () => {
 **File:** `FiremakingSystem.ts`
 
 **Core requirements:**
+
 ```typescript
 /**
  * FiremakingSystem processes firemaking actions from players.
@@ -516,7 +545,7 @@ export class FiremakingSystem {
     // 8. Update player state (animation, etc.)
     // 9. Check for Phoenix pet drop
   }
-  
+
   /**
    * Creates a fire entity at the specified position
    * @param world - The bitECS world instance
@@ -533,6 +562,7 @@ export class FiremakingSystem {
 ```
 
 **Required log types (up to level 50):**
+
 - Regular logs (level 1)
 - Achey logs (level 1)
 - Oak logs (level 15)
@@ -548,39 +578,40 @@ export class FiremakingSystem {
 **File:** `server-ts/src/server/ecs/systems/FiremakingSystem.test.ts`
 
 **Test cases:**
+
 ```typescript
-describe('FiremakingSystem', () => {
+describe("FiremakingSystem", () => {
   // Setup test world with necessary components
-  
-  describe('firemaking process', () => {
-    test('successfully creates fire with correct requirements', () => {
+
+  describe("firemaking process", () => {
+    test("successfully creates fire with correct requirements", () => {
       // Setup player with logs and tinderbox
       // Create firemaking action
       // Run system update
       // Verify fire entity created and logs consumed
     });
-    
-    test('awards correct XP based on log type', () => {
+
+    test("awards correct XP based on log type", () => {
       // Test each log type and verify XP matches OSRS Wiki
     });
-    
-    test('fails if player lacks requirements', () => {
+
+    test("fails if player lacks requirements", () => {
       // Test without logs
       // Test without tinderbox
       // Test with insufficient level
     });
-    
-    test('cannot create fire on occupied tile', () => {
+
+    test("cannot create fire on occupied tile", () => {
       // Create a fire, then try to create another at same position
     });
-    
-    test('fire expires after correct duration', () => {
+
+    test("fire expires after correct duration", () => {
       // Create fire
       // Fast-forward game ticks
       // Verify fire is removed/replaced with ashes
     });
-    
-    test('phoenix pet drop chance calculation', () => {
+
+    test("phoenix pet drop chance calculation", () => {
       // Mock RNG to test pet drop logic
     });
   });
@@ -596,16 +627,18 @@ describe('FiremakingSystem', () => {
 **File:** `server-ts/src/server/game/World.ts` (or equivalent main world setup)
 
 **Integration points:**
+
 ```typescript
 // Check that systems are registered in the correct order
-world.addSystem('woodcutting', woodcuttingSystem);
-world.addSystem('mining', miningSystem);
-world.addSystem('fishing', fishingSystem);
-world.addSystem('cooking', cookingSystem);
-world.addSystem('firemaking', firemakingSystem);
+world.addSystem("woodcutting", woodcuttingSystem);
+world.addSystem("mining", miningSystem);
+world.addSystem("fishing", fishingSystem);
+world.addSystem("cooking", cookingSystem);
+world.addSystem("firemaking", firemakingSystem);
 ```
 
 **Verify system dependencies:**
+
 - ResourceNodeSystem (for managing resource nodes)
 - InventorySystem (for item changes)
 - ExperienceSystem (for XP gains)
@@ -617,17 +650,18 @@ world.addSystem('firemaking', firemakingSystem);
 **File:** `server-ts/src/server/rooms/GameRoomState.ts`
 
 **Synchronization requirements:**
+
 ```typescript
 export class GameRoomState extends Schema {
   @type({ map: Player })
   players = new MapSchema<Player>();
-  
+
   @type({ map: ResourceNode })
   resourceNodes = new MapSchema<ResourceNode>();
-  
+
   @type({ map: WorldObject })
   worldObjects = new MapSchema<WorldObject>(); // For fires, etc.
-  
+
   // Ensure these schemas include all necessary properties:
   // - Player: inventory, skills, equipment, actions
   // - ResourceNode: type, state (depleted/available), respawn timer
@@ -636,6 +670,7 @@ export class GameRoomState extends Schema {
 ```
 
 **Client update handling:**
+
 ```typescript
 // In GameRoom.ts or equivalent
 private broadcastChanges(): void {
@@ -643,16 +678,16 @@ private broadcastChanges(): void {
   const updatedPlayers = getUpdatedPlayers(this.world);
   const updatedNodes = getUpdatedResourceNodes(this.world);
   const updatedObjects = getUpdatedWorldObjects(this.world);
-  
+
   // Update Colyseus state
   updatedPlayers.forEach(player => {
     // Update player state in this.state.players
   });
-  
+
   updatedNodes.forEach(node => {
     // Update resource node state in this.state.resourceNodes
   });
-  
+
   updatedObjects.forEach(object => {
     // Update world object state in this.state.worldObjects
   });
@@ -664,6 +699,7 @@ private broadcastChanges(): void {
 **Task:** Verify client-side rendering of gathering skill actions and effects.
 
 **Check points:**
+
 - Player animations for each gathering action
 - Visual feedback for successful/failed actions
 - Resource node state changes (depletion/respawn)
@@ -679,6 +715,7 @@ private broadcastChanges(): void {
 **Task:** Ensure comprehensive unit test coverage for all gathering skills.
 
 **Files to test:**
+
 - `WoodcuttingSystem.test.ts`
 - `MiningSystem.test.ts`
 - `FishingSystem.test.ts`
@@ -686,6 +723,7 @@ private broadcastChanges(): void {
 - `FiremakingSystem.test.ts`
 
 **Test coverage targets:**
+
 - 95%+ coverage for all system logic
 - 100% coverage for OSRS calculations
 - All edge cases tested (inventory full, insufficient level, etc.)
@@ -695,17 +733,18 @@ private broadcastChanges(): void {
 **Task:** Create integration tests that verify interaction between systems.
 
 **Integration test scenarios:**
+
 ```typescript
-describe('Gathering Skills Integration', () => {
-  test('complete gathering workflow', () => {
+describe("Gathering Skills Integration", () => {
+  test("complete gathering workflow", () => {
     // 1. Player cuts logs (Woodcutting)
     // 2. Player catches fish (Fishing)
     // 3. Player lights fire with logs (Firemaking)
     // 4. Player cooks fish on fire (Cooking)
     // Verify all state changes are correct
   });
-  
-  test('resource depletion and respawn', () => {
+
+  test("resource depletion and respawn", () => {
     // Deplete a resource node
     // Verify respawn timer starts
     // Fast-forward time
@@ -721,20 +760,21 @@ describe('Gathering Skills Integration', () => {
 **File:** `server-ts/src/tests/osrs-validation/gathering-skills.test.ts`
 
 **Verification tests:**
+
 ```typescript
-describe('OSRS Validation', () => {
-  describe('Woodcutting', () => {
+describe("OSRS Validation", () => {
+  describe("Woodcutting", () => {
     // Test XP values for each tree type
     // Test success chances with different axes
     // Test beaver pet drop rates
   });
-  
-  describe('Mining', () => {
+
+  describe("Mining", () => {
     // Test XP values for each rock type
     // Test success chances with different pickaxes
     // Test golem pet drop rates
   });
-  
+
   // Similar for other skills
 });
 ```
@@ -746,38 +786,39 @@ describe('OSRS Validation', () => {
 **Task:** Add comprehensive JSDoc comments to all gathering skill-related code.
 
 **Example for CookingSystem:**
+
 ```typescript
 /**
  * Represents the Cooking skill system in RuneRogue.
  * Handles the process of cooking raw food items with OSRS-authentic mechanics.
- * 
+ *
  * Based on OSRS Wiki: https://oldschool.runescape.wiki/w/Cooking
  */
 export class CookingSystem {
   /**
    * Calculates if cooking will be successful or result in burnt food.
-   * 
+   *
    * Formula from OSRS Wiki: (level - burnLevel) / (noburn - burnLevel)
-   * 
+   *
    * @param foodType - The type of food being cooked
    * @param cookingLevel - The player's current cooking level
    * @param cookingSpot - The type of cooking spot being used
    * @param cookingGauntlets - Whether the player has cooking gauntlets equipped
    * @returns True if cooking succeeds, false if food burns
-   * 
+   *
    * @example
    * // Check if player will successfully cook shrimp
    * const success = cookingSystem.calculateCookingSuccess('shrimp', 5, 'fire', false);
    */
   calculateCookingSuccess(
-    foodType: string, 
-    cookingLevel: number, 
-    cookingSpot: 'fire' | 'range', 
-    cookingGauntlets: boolean
+    foodType: string,
+    cookingLevel: number,
+    cookingSpot: "fire" | "range",
+    cookingGauntlets: boolean,
   ): boolean {
     // Implementation
   }
-  
+
   // Document all other methods...
 }
 ```
@@ -789,13 +830,16 @@ export class CookingSystem {
 **File:** `docs/systems/gathering-skills.md`
 
 **Content outline:**
+
 ```markdown
 # Gathering Skills Implementation
 
 ## Overview
+
 This document describes the implementation of OSRS-authentic gathering skills in RuneRogue.
 
 ## Skills Covered
+
 - Woodcutting
 - Mining
 - Fishing
@@ -803,7 +847,9 @@ This document describes the implementation of OSRS-authentic gathering skills in
 - Firemaking
 
 ## System Architecture
+
 Each gathering skill uses the following ECS pattern:
+
 1. Player initiates action via `PlayerActionEventComponent`
 2. Skill system validates requirements (level, tools, resources)
 3. System calculates success based on OSRS formulas
@@ -812,7 +858,9 @@ Each gathering skill uses the following ECS pattern:
 6. Changes are synchronized to clients via Colyseus
 
 ## OSRS Authenticity
+
 All calculations precisely match OSRS mechanics:
+
 - XP values
 - Success formulas
 - Tool requirements and effects
@@ -820,9 +868,11 @@ All calculations precisely match OSRS mechanics:
 - Pet drop chances
 
 ## Code Examples
+
 (Provide examples of typical usage for each skill system)
 
 ## References
+
 (List all OSRS Wiki pages used as references)
 ```
 
@@ -833,6 +883,7 @@ All calculations precisely match OSRS mechanics:
 **Task:** Profile gathering skill systems under load to identify bottlenecks.
 
 **Profiling steps:**
+
 ```bash
 # Start the server with profiling
 NODE_ENV=production node --prof server-ts/dist/index.js
@@ -844,6 +895,7 @@ node --prof-process isolate-*-v8.log > profiling-results.txt
 ```
 
 **Key metrics to monitor:**
+
 - Server tick rate (target: 20 TPS)
 - System execution time per tick
 - Memory usage patterns
@@ -854,6 +906,7 @@ node --prof-process isolate-*-v8.log > profiling-results.txt
 **Task:** Optimize identified bottlenecks in gathering skill systems.
 
 **Common optimization techniques:**
+
 ```typescript
 // Use efficient ECS queries
 const query = defineQuery([
@@ -874,6 +927,7 @@ private pendingUpdates: StateChange[] = [];
 ```
 
 **Monitoring improvement:**
+
 - Before/after benchmarks of system execution time
 - Before/after measurements of network traffic
 - Visual smoothness of gameplay (60fps target)
@@ -885,6 +939,7 @@ private pendingUpdates: StateChange[] = [];
 **Task:** Perform final code quality review of all gathering skill implementations.
 
 **Review checklist:**
+
 - TypeScript best practices followed
 - No `any` types used
 - Proper error handling implemented
@@ -898,6 +953,7 @@ private pendingUpdates: StateChange[] = [];
 **Task:** Verify all gathering skills are fully implemented up to level 50.
 
 **Verification checklist:**
+
 - All required resources implemented
 - All tools and equipment effects implemented
 - All level requirements correctly enforced
@@ -911,6 +967,7 @@ private pendingUpdates: StateChange[] = [];
 **Task:** Perform end-to-end testing of the complete gathering skill implementation.
 
 **Testing scenarios:**
+
 - Multiple players using different gathering skills simultaneously
 - Edge cases (inventory full, skill level up during action)
 - Long-duration stress test (resource respawning, fire lifetime)
@@ -921,4 +978,3 @@ private pendingUpdates: StateChange[] = [];
 This detailed plan provides a comprehensive roadmap for completing the RuneRogue gathering skills implementation with 100% OSRS authenticity. By following these steps methodically, the next AI agent will be able to deliver a robust, well-tested, and fully documented implementation that meets all project requirements.
 
 ---
-

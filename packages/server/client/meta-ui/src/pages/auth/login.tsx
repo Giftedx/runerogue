@@ -42,7 +42,10 @@ const LoginPage: React.FC = () => {
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or{' '}
-              <Link href="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">
+              <Link
+                href="/auth/register"
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
                 create a new account
               </Link>
             </p>
@@ -53,7 +56,7 @@ const LoginPage: React.FC = () => {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
-            
+
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="form-label">

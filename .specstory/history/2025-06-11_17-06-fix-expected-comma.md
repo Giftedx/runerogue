@@ -20,7 +20,7 @@ The problem is on line 308 where there's an empty string `""` that should be rem
 
 Remove the incomplete empty string entry to fix the JSON syntax error.
 
-````jsonc
+```jsonc
 // ...existing code...
     "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
         {
@@ -28,9 +28,8 @@ Remove the incomplete empty string entry to fix the JSON syntax error.
         }
     ]
 }
-````
+```
 
 The fix removes the trailing empty string `""` after the file path, which was causing the JSON parser to expect a comma. The corrected structure properly closes the object within the array.
 
 ---
-

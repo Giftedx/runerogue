@@ -9,39 +9,39 @@ jobs:
     # Only run if assigned to GitHub Copilot SWE Agent
     if: github.event.assignee.login == 'Copilot'
     runs-on: [self-hosted, Linux, X64]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch all history for proper analysis
-      
+          fetch-depth: 0 # Fetch all history for proper analysis
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-          cache: 'pip'
-      
+          python-version: "3.10"
+          cache: "pip"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install PyGithub  # Required for the task processor script
-      
+
       - name: Process task with agent task processor
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Processing task with agent task processor"
           python scripts/process_agent_task.py --issue-number ${{ github.event.issue.number }} --repo ${{ github.repository }}
-      
+
       - name: Update issue with workflow details
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issueNumber = context.issue.number;
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

@@ -48,7 +48,7 @@ describe("OSRS Combat Formula Implementation", () => {
         stats,
         equipment,
         prayerMultiplier,
-        styleBonus
+        styleBonus,
       );
       expect(maxHit).toBe(10);
     });
@@ -79,7 +79,7 @@ describe("OSRS Combat Formula Implementation", () => {
         stats,
         equipment,
         prayerMultiplier,
-        styleBonus
+        styleBonus,
       );
       expect(maxHit).toBe(10);
     });
@@ -148,7 +148,7 @@ describe("OSRS Combat Formula Implementation", () => {
         1.0, // No attacker prayer
         1.0, // No defender prayer
         3, // Accurate style (+3 attack)
-        0 // No defender style bonus
+        0, // No defender style bonus
       );
 
       // Expected calculation:
@@ -197,7 +197,7 @@ describe("OSRS Combat Formula Implementation", () => {
         1.0,
         1.0,
         0,
-        0
+        0,
       );
 
       // Should be around 0.5 when attack and defence are roughly equal
@@ -238,7 +238,7 @@ describe("OSRS Combat Formula Implementation", () => {
         weakAttacker,
         noEquipment,
         strongDefender,
-        strongDefenseEquipment
+        strongDefenseEquipment,
       );
 
       expect(accuracy).toBeGreaterThanOrEqual(0);
@@ -365,7 +365,7 @@ describe("OSRS Combat Formula Implementation", () => {
         1.0,
         1.0,
         3, // Aggressive style
-        0
+        0,
       );
       const attackSpeed = getAttackSpeed("dragon_scimitar");
 

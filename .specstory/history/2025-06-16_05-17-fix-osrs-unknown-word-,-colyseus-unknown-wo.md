@@ -13,4 +13,3 @@ _**Assistant**_
 I'll help you fix the spelling/word recognition issues in the architecture instructions file. These appear to be technical terms and acronyms that are being flagged as unknown words. The best
 
 ---
-

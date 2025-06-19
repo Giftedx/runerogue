@@ -121,7 +121,7 @@
     <script>
       console.log("🚀 RuneRogue Phase 3: Standalone Demo");
       console.log(
-        "📋 Features: Combat Effects, Health Orbs, XP Counter, Mini-map"
+        "📋 Features: Combat Effects, Health Orbs, XP Counter, Mini-map",
       );
       console.log("⚡ Performance Target: 60fps with visual effects");
 
@@ -219,7 +219,7 @@
         });
 
         console.log(
-          "✅ Demo ready! Click to move around and watch combat effects"
+          "✅ Demo ready! Click to move around and watch combat effects",
         );
       }
 
@@ -289,7 +289,7 @@
           player.x,
           player.y,
           enemy.x,
-          enemy.y
+          enemy.y,
         );
 
         if (distance < 200) {
@@ -303,7 +303,7 @@
               enemy.x,
               enemy.y - 20,
               damage,
-              "damage"
+              "damage",
             );
 
             // XP splat
@@ -311,7 +311,7 @@
               player.x,
               player.y - 30,
               xpGain,
-              "Attack"
+              "Attack",
             );
           }
 
@@ -352,7 +352,7 @@
               player.x,
               player.y,
               enemy.x,
-              enemy.y
+              enemy.y,
             );
 
             if (distance < 100 && Math.random() < 0.01) {
@@ -366,13 +366,13 @@
         const game = window.phaserGame;
         if (game) {
           document.getElementById("fps-counter").textContent = Math.round(
-            game.loop.actualFps
+            game.loop.actualFps,
           );
           document.getElementById("enemy-counter").textContent = enemies.length;
           document.getElementById("effect-counter").textContent =
-            combatEffectsManager ?
-              combatEffectsManager.getActiveEffectCount()
-            : 0;
+            combatEffectsManager
+              ? combatEffectsManager.getActiveEffectCount()
+              : 0;
         }
       }
 
@@ -384,7 +384,7 @@
             console.log("📋 Phase 3 Features:");
             console.log("• Combat Visual Effects - ✅ Implemented");
             console.log(
-              "• Essential UI Components - ✅ Health orb, XP counter"
+              "• Essential UI Components - ✅ Health orb, XP counter",
             );
             console.log("• Multiplayer Integration - ⚠️ Standalone demo");
             console.log("• Performance Optimization - ✅ 60fps target");
@@ -392,7 +392,7 @@
           case "F2":
             // Toggle performance monitor
             const perfContainer = document.getElementById(
-              "performance-container"
+              "performance-container",
             );
             perfContainer.classList.toggle("hidden");
             break;

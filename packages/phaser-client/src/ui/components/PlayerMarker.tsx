@@ -26,7 +26,7 @@ export const PlayerMarker: React.FC<PlayerMarkerProps> = ({
     {
       "bg-yellow-400 ring-2 ring-white": isCurrentPlayer,
       "bg-red-500": !isCurrentPlayer,
-    }
+    },
   );
 
   const markerStyle = {

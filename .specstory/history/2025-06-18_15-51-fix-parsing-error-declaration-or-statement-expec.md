@@ -22,7 +22,7 @@ The file has duplicate code at the end that needs to be removed. The `MiningSyst
 
 Remove the duplicate code at the end of the file.
 
-````typescript
+```typescript
 // ...existing code...
 
     // Decrement timer and process mining attempt when timer reaches zero
@@ -41,9 +41,8 @@ Remove the duplicate code at the end of the file.
  * Export system for ECS registration
  */
 export default MiningSystem;
-````
+```
 
 The duplicate lines (247-254) that were causing the parsing error have been removed. The file now properly ends with the closing of the `MiningSystem` function and its export statement.
 
 ---
-

@@ -81,16 +81,16 @@ function testMagicCombat() {
   const tests = [
     testFileExists(
       "packages/server/src/server/ecs/systems/MagicCombatSystem.ts",
-      "MagicCombatSystem exists"
+      "MagicCombatSystem exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/MagicCombatSystem.ts",
       ["MagicCombat", "defineComponent", "calculateMagicMaxHit", "castSpell"],
-      "MagicCombatSystem has required functions"
+      "MagicCombatSystem has required functions",
     ),
     testFileExists(
       "packages/osrs-data/src/skills/magic.ts",
-      "Magic data file exists"
+      "Magic data file exists",
     ),
     testFileContent(
       "packages/osrs-data/src/skills/magic.ts",
@@ -99,7 +99,7 @@ function testMagicCombat() {
         "calculateMagicMaxHit",
         "calculateMagicAccuracy",
       ],
-      "Magic data has OSRS formulas"
+      "Magic data has OSRS formulas",
     ),
   ];
 
@@ -116,7 +116,7 @@ function testRangedCombat() {
   const tests = [
     testFileExists(
       "packages/server/src/server/ecs/systems/RangedCombatSystem.ts",
-      "RangedCombatSystem exists"
+      "RangedCombatSystem exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/RangedCombatSystem.ts",
@@ -126,16 +126,16 @@ function testRangedCombat() {
         "calculateRangedMaxHit",
         "shootProjectile",
       ],
-      "RangedCombatSystem has required functions"
+      "RangedCombatSystem has required functions",
     ),
     testFileExists(
       "packages/osrs-data/src/skills/ranged.ts",
-      "Ranged data file exists"
+      "Ranged data file exists",
     ),
     testFileContent(
       "packages/osrs-data/src/skills/ranged.ts",
       ["calculateRangedMaxHit", "calculateRangedAccuracy", "RangedWeapon"],
-      "Ranged data has OSRS formulas"
+      "Ranged data has OSRS formulas",
     ),
   ];
 
@@ -152,7 +152,7 @@ function testSmithing() {
   const tests = [
     testFileExists(
       "packages/server/src/server/ecs/systems/SmithingSystem.ts",
-      "SmithingSystem exists"
+      "SmithingSystem exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/SmithingSystem.ts",
@@ -162,7 +162,7 @@ function testSmithing() {
         "startSmithing",
         "processSmithing",
       ],
-      "SmithingSystem has required functions"
+      "SmithingSystem has required functions",
     ),
   ];
 
@@ -179,12 +179,12 @@ function testEquipment() {
   const tests = [
     testFileExists(
       "packages/server/src/server/ecs/systems/EquipmentSystem.ts",
-      "EquipmentSystem exists"
+      "EquipmentSystem exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/EquipmentSystem.ts",
       ["Inventory", "Item", "equipItem", "calculateBonuses"],
-      "EquipmentSystem has required functions"
+      "EquipmentSystem has required functions",
     ),
   ];
 
@@ -201,12 +201,12 @@ function testConsumables() {
   const tests = [
     testFileExists(
       "packages/server/src/server/ecs/systems/ConsumableSystem.ts",
-      "ConsumableSystem exists"
+      "ConsumableSystem exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/ConsumableSystem.ts",
       ["ActiveEffects", "consumeFood", "consumePotion", "OSRS_FOOD"],
-      "ConsumableSystem has required functions"
+      "ConsumableSystem has required functions",
     ),
   ];
 
@@ -223,12 +223,12 @@ function testXPSystem() {
   const tests = [
     testFileExists(
       "packages/server/src/server/ecs/systems/XPSystem.ts",
-      "XPSystem exists"
+      "XPSystem exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/XPSystem.ts",
       ["LevelUpEvents", "OSRS_XP_TABLE", "grantXP", "calculateCombatLevel"],
-      "XPSystem has required functions"
+      "XPSystem has required functions",
     ),
   ];
 
@@ -246,11 +246,11 @@ function testDataFiles() {
     testFileExists("packages/osrs-data/src/skills/magic.ts", "Magic data file"),
     testFileExists(
       "packages/osrs-data/src/skills/ranged.ts",
-      "Ranged data file"
+      "Ranged data file",
     ),
     testFileExists(
       "packages/osrs-data/src/skills/gathering-data.ts",
-      "Gathering data file"
+      "Gathering data file",
     ),
   ];
 
@@ -267,7 +267,7 @@ function testIntegration() {
   const tests = [
     testFileExists(
       "packages/server/src/server/game/ECSIntegration.ts",
-      "ECS Integration file exists"
+      "ECS Integration file exists",
     ),
     testFileContent(
       "packages/server/src/server/game/ECSIntegration.ts",
@@ -279,11 +279,11 @@ function testIntegration() {
         "ConsumableSystem",
         "XPSystem",
       ],
-      "ECS Integration includes Phase 4 systems"
+      "ECS Integration includes Phase 4 systems",
     ),
     testFileExists(
       "packages/server/src/server/ecs/systems/index.ts",
-      "Systems index file exists"
+      "Systems index file exists",
     ),
     testFileContent(
       "packages/server/src/server/ecs/systems/index.ts",
@@ -295,7 +295,7 @@ function testIntegration() {
         "ConsumableSystem",
         "XPSystem",
       ],
-      "Systems index exports Phase 4 systems"
+      "Systems index exports Phase 4 systems",
     ),
   ];
 

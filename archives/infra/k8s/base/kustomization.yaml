@@ -2,14 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- namespace.yaml
-- deployment.yaml
-- service.yaml
-- ingress.yaml
-- configmap.yaml
-- secret.yaml
-- rbac.yaml
-- hpa.yaml
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - configmap.yaml
+  - secret.yaml
+  - rbac.yaml
+  - hpa.yaml
 
 namePrefix: runerogue-
 namespace: runerogue
@@ -19,5 +19,5 @@ commonLabels:
   version: v1.0.0
 
 images:
-- name: runerogue
-  newTag: latest
+  - name: runerogue
+    newTag: latest

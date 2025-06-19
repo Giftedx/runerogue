@@ -17,4 +17,4 @@ This package is currently undergoing a significant **code cleanup and refactorin
 
 ## Recommendation
 
-All new server development should happen here. Please be mindful of the ongoing cleanup and ensure any new code adheres to the project's standards, using the shared schemas and ECS patterns. 
+All new server development should happen here. Please be mindful of the ongoing cleanup and ensure any new code adheres to the project's standards, using the shared schemas and ECS patterns.

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       title:
-        description: 'Issue title'
+        description: "Issue title"
         required: true
-        default: '[AGENT TASK] Test Copilot Agent'
+        default: "[AGENT TASK] Test Copilot Agent"
       description:
-        description: 'Task description'
+        description: "Task description"
         required: true
-        default: 'This is a test task for GitHub Copilot Agent'
+        default: "This is a test task for GitHub Copilot Agent"
 
 jobs:
   create-issue:
@@ -115,7 +115,7 @@ jobs:
               console.log(`Error creating issue: ${error.message}`);
               throw error;
             }
-      
+
       - name: Output Issue Details
         run: |
           echo "Issue created: ${{ steps.create-issue.outputs.result }}"

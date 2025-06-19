@@ -6,7 +6,7 @@
     <title>RuneRogue - Test Client</title>
     <style>
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
         margin: 0;
@@ -145,12 +145,21 @@
           placeholder="ws://localhost:3001"
           value="ws://localhost:3001"
         />
-        <input type="text" id="username" placeholder="Player Name" value="TestPlayer" />
+        <input
+          type="text"
+          id="username"
+          placeholder="Player Name"
+          value="TestPlayer"
+        />
         <button id="connectBtn" onclick="connect()">Connect to Game</button>
-        <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>
+          Disconnect
+        </button>
 
         <h3>🎯 Game Actions</h3>
-        <button id="moveBtn" onclick="movePlayer()" disabled>Move Random</button>
+        <button id="moveBtn" onclick="movePlayer()" disabled>
+          Move Random
+        </button>
         <button id="attackBtn" onclick="attackTarget()" disabled>Attack</button>
         <button id="interactBtn" onclick="interact()" disabled>Interact</button>
       </div>
@@ -172,9 +181,9 @@
       let room = null;
       let players = new Map();
 
-      function log(message, type = 'info') {
-        const logDiv = document.getElementById('gameLog');
-        const entry = document.createElement('div');
+      function log(message, type = "info") {
+        const logDiv = document.getElementById("gameLog");
+        const entry = document.createElement("div");
         entry.className = `log-entry ${type}`;
         entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
         logDiv.appendChild(entry);
@@ -182,28 +191,28 @@
       }
 
       function updateConnectionStatus(status, text) {
-        const statusDiv = document.getElementById('connectionStatus');
-        const statusText = document.getElementById('statusText');
+        const statusDiv = document.getElementById("connectionStatus");
+        const statusText = document.getElementById("statusText");
         statusDiv.className = `status ${status}`;
         statusText.textContent = text;
       }
 
       function updateButtons(connected) {
-        document.getElementById('connectBtn').disabled = connected;
-        document.getElementById('disconnectBtn').disabled = !connected;
-        document.getElementById('moveBtn').disabled = !connected;
-        document.getElementById('attackBtn').disabled = !connected;
-        document.getElementById('interactBtn').disabled = !connected;
+        document.getElementById("connectBtn").disabled = connected;
+        document.getElementById("disconnectBtn").disabled = !connected;
+        document.getElementById("moveBtn").disabled = !connected;
+        document.getElementById("attackBtn").disabled = !connected;
+        document.getElementById("interactBtn").disabled = !connected;
       }
 
       function updatePlayersList() {
-        const playersDiv = document.getElementById('playersList');
+        const playersDiv = document.getElementById("playersList");
         if (players.size === 0) {
-          playersDiv.innerHTML = 'No players connected';
+          playersDiv.innerHTML = "No players connected";
           return;
         }
 
-        let html = '';
+        let html = "";
         players.forEach((player, sessionId) => {
           html += `
                     <div class="player-item">
@@ -217,27 +226,29 @@
 
       async function connect() {
         try {
-          const serverUrl = document.getElementById('serverUrl').value;
-          const username = document.getElementById('username').value;
+          const serverUrl = document.getElementById("serverUrl").value;
+          const username = document.getElementById("username").value;
 
           if (!username.trim()) {
-            log('Please enter a username', 'error');
+            log("Please enter a username", "error");
             return;
           }
 
-          log(`Connecting to ${serverUrl}...`, 'info');
-          updateConnectionStatus('connecting', 'Connecting...');
+          log(`Connecting to ${serverUrl}...`, "info");
+          updateConnectionStatus("connecting", "Connecting...");
 
           client = new Colyseus.Client(serverUrl);
-          room = await client.joinOrCreate('runerogue', { username: username.trim() });
+          room = await client.joinOrCreate("runerogue", {
+            username: username.trim(),
+          });
 
-          log(`Connected successfully as ${username}!`, 'success');
-          updateConnectionStatus('connected', `Connected as ${username}`);
+          log(`Connected successfully as ${username}!`, "success");
+          updateConnectionStatus("connected", `Connected as ${username}`);
           updateButtons(true);
 
           // Set up room event handlers
-          room.onStateChange(state => {
-            log('Game state updated', 'info');
+          room.onStateChange((state) => {
+            log("Game state updated", "info");
 
             // Update players list
             players.clear();
@@ -247,21 +258,21 @@
             updatePlayersList();
           });
 
-          room.onMessage('*', (type, message) => {
-            log(`Message [${type}]: ${JSON.stringify(message)}`, 'info');
+          room.onMessage("*", (type, message) => {
+            log(`Message [${type}]: ${JSON.stringify(message)}`, "info");
           });
 
           room.onError((code, message) => {
-            log(`Room error ${code}: ${message}`, 'error');
+            log(`Room error ${code}: ${message}`, "error");
           });
 
-          room.onLeave(code => {
-            log(`Left room with code ${code}`, 'warning');
+          room.onLeave((code) => {
+            log(`Left room with code ${code}`, "warning");
             disconnect();
           });
         } catch (error) {
-          log(`Connection failed: ${error.message}`, 'error');
-          updateConnectionStatus('disconnected', 'Connection failed');
+          log(`Connection failed: ${error.message}`, "error");
+          updateConnectionStatus("disconnected", "Connection failed");
           updateButtons(false);
         }
       }
@@ -276,10 +287,10 @@
         }
 
         players.clear();
-        updateConnectionStatus('disconnected', 'Disconnected');
+        updateConnectionStatus("disconnected", "Disconnected");
         updateButtons(false);
         updatePlayersList();
-        log('Disconnected from game', 'info');
+        log("Disconnected from game", "info");
       }
 
       function movePlayer() {
@@ -288,49 +299,52 @@
         const x = Math.floor(Math.random() * 100);
         const y = Math.floor(Math.random() * 100);
 
-        room.send('input', {
-          type: 'move',
+        room.send("input", {
+          type: "move",
           x: x,
           y: y,
         });
 
-        log(`Sending move command to (${x}, ${y})`, 'info');
+        log(`Sending move command to (${x}, ${y})`, "info");
       }
 
       function attackTarget() {
         if (!room || players.size < 2) {
-          log('Need at least 2 players to attack', 'warning');
+          log("Need at least 2 players to attack", "warning");
           return;
         }
 
         // Attack random player
-        const otherPlayers = Array.from(players.keys()).filter(id => id !== room.sessionId);
+        const otherPlayers = Array.from(players.keys()).filter(
+          (id) => id !== room.sessionId,
+        );
         if (otherPlayers.length === 0) return;
 
-        const targetId = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+        const targetId =
+          otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
 
-        room.send('input', {
-          type: 'attack',
+        room.send("input", {
+          type: "attack",
           targetId: targetId,
         });
 
-        log(`Attacking player ${targetId}`, 'info');
+        log(`Attacking player ${targetId}`, "info");
       }
 
       function interact() {
         if (!room) return;
 
-        room.send('input', {
-          type: 'interact',
+        room.send("input", {
+          type: "interact",
         });
 
-        log('Sending interact command', 'info');
+        log("Sending interact command", "info");
       }
 
       // Auto-connect on page load for testing
-      window.addEventListener('load', () => {
-        log('RuneRogue Test Client loaded', 'success');
-        log('Ready to connect to game server', 'info');
+      window.addEventListener("load", () => {
+        log("RuneRogue Test Client loaded", "success");
+        log("Ready to connect to game server", "info");
       });
     </script>
   </body>

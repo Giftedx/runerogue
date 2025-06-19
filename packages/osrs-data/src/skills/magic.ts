@@ -379,7 +379,7 @@ export function calculateMagicMaxHit(
   magicLevel: number,
   spell: Spell,
   magicBonus: number = 0,
-  prayerMultiplier: number = 1.0
+  prayerMultiplier: number = 1.0,
 ): number {
   // OSRS magic damage calculation
   // Base max hit is the spell's max hit
@@ -404,7 +404,7 @@ export function calculateMagicAccuracy(
   attackBonus: number,
   targetDefenceLevel: number,
   targetMagicDefence: number,
-  prayerMultiplier: number = 1.0
+  prayerMultiplier: number = 1.0,
 ): number {
   // Effective magic level
   const effectiveMagicLevel = Math.floor(magicLevel * prayerMultiplier) + 8;
@@ -444,11 +444,11 @@ export function getAvailableSpells(magicLevel: number): Spell[] {
  */
 export function hasRequiredRunes(
   inventory: Array<{ itemId: number; quantity: number }>,
-  spell: Spell
+  spell: Spell,
 ): boolean {
   return spell.runes.every((requirement) => {
     const runeItem = inventory.find(
-      (item) => item.itemId === requirement.runeId
+      (item) => item.itemId === requirement.runeId,
     );
     return runeItem && runeItem.quantity >= requirement.amount;
   });
@@ -459,11 +459,11 @@ export function hasRequiredRunes(
  */
 export function consumeRunes(
   inventory: Array<{ itemId: number; quantity: number }>,
-  spell: Spell
+  spell: Spell,
 ): void {
   spell.runes.forEach((requirement) => {
     const runeItem = inventory.find(
-      (item) => item.itemId === requirement.runeId
+      (item) => item.itemId === requirement.runeId,
     );
     if (runeItem) {
       runeItem.quantity -= requirement.amount;

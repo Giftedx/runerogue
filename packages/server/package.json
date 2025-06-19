@@ -19,7 +19,7 @@
     "test-mcp-discovery": "tsx src/assets/test-mcp-discovery.ts",
     "run-mcp-extraction": "tsx src/assets/practical-mcp-extraction.ts",
     "comprehensive-extract": "tsx src/assets/comprehensive-osrs-extractor.ts",
-    "lint": "eslint . --ext .ts --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
+    "lint": "eslint . \"**/*.ts\"",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,json,md}\"",
     "type-check": "tsc --noEmit --project tsconfig.json",

@@ -27,6 +27,7 @@ You are a specialist in real-time multiplayer game development, focusing on Rune
 ## Colyseus Patterns
 
 ### Room State Management
+
 ```typescript
 export class GameRoomState extends Schema {
   @type({ map: PlayerSchema }) players = new MapSchema<PlayerSchema>();
@@ -36,13 +37,14 @@ export class GameRoomState extends Schema {
 ```
 
 ### Message Handling
+
 ```typescript
 onMessage("move", (client, message) => {
   // Validate input
   if (!this.isValidMovement(client.sessionId, message)) {
     return;
   }
-  
+
   // Apply to authoritative state
   const player = this.state.players.get(client.sessionId);
   player.position.x = message.x;
@@ -51,23 +53,26 @@ onMessage("move", (client, message) => {
 ```
 
 ### State Broadcasting
+
 ```typescript
 // Efficient delta updates
 this.broadcast("stateUpdate", {
   players: this.getPlayerDeltas(),
   enemies: this.getEnemyDeltas(),
-  timestamp: Date.now()
+  timestamp: Date.now(),
 });
 ```
 
 ## Network Architecture
 
 ### Client-Server Flow
+
 1. **Client Input** → Validation → **Server Authority**
 2. **Server State** → Delta Compression → **All Clients**
 3. **Client Prediction** → Reconciliation → **Smooth Gameplay**
 
 ### Anti-cheat Validation
+
 - Movement speed limits
 - Attack range verification
 - Cooldown enforcement

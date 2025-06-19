@@ -20,7 +20,7 @@ The file has duplicate code at the end - there are two copies of the export stat
 
 Remove the duplicate export statements and function ending at the bottom of the file.
 
-````typescript
+```typescript
 // ...existing code...
 
     // Decrement timer and process mining attempt when timer reaches zero
@@ -39,9 +39,8 @@ Remove the duplicate export statements and function ending at the bottom of the 
  * Export system for ECS registration
  */
 export default MiningSystem;
-````
+```
 
 The issue was that the last few lines of the `MiningSystem` function and the export statement were duplicated. I've removed the duplicate code, keeping only one instance of the closing bracket, return statement, and export.
 
 ---
-

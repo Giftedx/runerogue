@@ -49,7 +49,7 @@ export const App: React.FC = () => {
 
           await discordActivity.updateActivity(
             "Playing RuneRogue",
-            "In the wilderness"
+            "In the wilderness",
           );
 
           setState((prev) => ({
@@ -61,12 +61,12 @@ export const App: React.FC = () => {
           console.log("Discord Activity initialized successfully");
         } else {
           console.warn(
-            "Discord Activity initialization failed, continuing without Discord features"
+            "Discord Activity initialization failed, continuing without Discord features",
           );
         }
       } else {
         console.log(
-          "Not in Discord environment, skipping Discord initialization"
+          "Not in Discord environment, skipping Discord initialization",
         );
       }
     } catch (error) {
@@ -101,7 +101,7 @@ export const App: React.FC = () => {
       if (state.isDiscordInitialized) {
         await discordActivity.updateActivity(
           "Connected to server",
-          "Ready to play"
+          "Ready to play",
         );
       }
     } catch (error) {
@@ -179,12 +179,9 @@ export const App: React.FC = () => {
       <LoadingScreen
         message="Initializing RuneRogue..."
         subtitle={
-          (
-            !state.isDiscordInitialized &&
-            discordActivity.isDiscordEnvironment()
-          ) ?
-            "Setting up Discord integration..."
-          : "Connecting to game server..."
+          !state.isDiscordInitialized && discordActivity.isDiscordEnvironment()
+            ? "Setting up Discord integration..."
+            : "Connecting to game server..."
         }
       />
     );

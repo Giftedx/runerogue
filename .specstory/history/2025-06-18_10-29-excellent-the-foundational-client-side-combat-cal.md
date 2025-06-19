@@ -8,7 +8,7 @@ Excellent. The foundational client-side combat calculation is in place. Now, we 
 
 Here is the prompt for our next session. It outlines the critical steps to refactor the current implementation, move logic to the server, and add the necessary UI feedback for a polished player experience.
 
-***
+---
 
 ### RuneRogue Development Prompt
 
@@ -16,15 +16,17 @@ Here is the prompt for our next session. It outlines the critical steps to refac
 
 **Current State Analysis:**
 The current implementation successfully uses the `osrs-data` package to calculate damage within a client-side ECS. However, it has several critical limitations that deviate from the project architecture:
+
 1.  **Client-Authoritative:** The client decides if an attack occurs and calculates the damage, which is a major security and state-synchronization issue.
 2.  **No Attack Speed:** Attacks can be triggered on every frame by holding the spacebar, which does not respect OSRS tick-based weapon speeds.
 3.  **No Server Sync:** The damage dealt is only visible in the client's console; it is not sent to the server or synchronized with other players.
 4.  **No UI Feedback:** There are no visual indicators of combat (animations, damage numbers, etc.).
 
 **Architectural Mandate (from documentation):**
--   **Server Authority:** All game logic must be validated and executed on the server (game-server). The client sends intents (e.g., "I want to attack this target"), and the server processes the outcome.
--   **OSRS Authenticity:** Combat mechanics, especially attack speed (e.g., 4 ticks for a scimitar), must be precisely implemented.
--   **ECS Design:** Logic should remain in systems, operating on data-only components.
+
+- **Server Authority:** All game logic must be validated and executed on the server (game-server). The client sends intents (e.g., "I want to attack this target"), and the server processes the outcome.
+- **OSRS Authenticity:** Combat mechanics, especially attack speed (e.g., 4 ticks for a scimitar), must be precisely implemented.
+- **ECS Design:** Logic should remain in systems, operating on data-only components.
 
 ---
 
@@ -33,13 +35,14 @@ The current implementation successfully uses the `osrs-data` package to calculat
 The server must be the single source of truth for all combat events.
 
 **Tasks:**
+
 1.  **Create `Attack` Message Handler:** In RuneRogueRoom.ts, create a new message handler for `room.onMessage("attack", ...)`. This handler will receive the target's entity ID from the client.
 2.  **Implement Server-Side Combat System:** Create a new ECS system within the `game-server` that:
-    *   Receives the attack request from the message handler.
-    *   Validates the request (e.g., Is the attacker in range? Is the attacker's weapon off cooldown?).
-    *   Uses the existing `calculateAccuracy` and `calculateMaxHit` functions from `@runerogue/osrs-data` to determine the outcome.
-    *   Applies the damage to the target's `health` component in the server's authoritative state.
-3.  **Implement Attack Speed (Cooldown):** Add a `lastAttackTick` component or similar mechanism to the player's state on the server. The server must reject attack requests that arrive before the player's weapon cooldown (e.g., 4 ticks * 600ms) has passed.
+    - Receives the attack request from the message handler.
+    - Validates the request (e.g., Is the attacker in range? Is the attacker's weapon off cooldown?).
+    - Uses the existing `calculateAccuracy` and `calculateMaxHit` functions from `@runerogue/osrs-data` to determine the outcome.
+    - Applies the damage to the target's `health` component in the server's authoritative state.
+3.  **Implement Attack Speed (Cooldown):** Add a `lastAttackTick` component or similar mechanism to the player's state on the server. The server must reject attack requests that arrive before the player's weapon cooldown (e.g., 4 ticks \* 600ms) has passed.
 4.  **Update `Player` and `Enemy` Schemas:** Ensure the schemas in `packages/game-server/src/rooms/schema/RuneRogueState.ts` contain all necessary combat stats (`attack`, `strength`, `defence`, `health`, `maxHealth`) to be synchronized with the client.
 
 ---
@@ -49,6 +52,7 @@ The server must be the single source of truth for all combat events.
 The client must be refactored to send attack intents and render the results from the server, not calculate them.
 
 **Tasks:**
+
 1.  **Send Attack Message:** Modify the input handler in GameScene.ts. Instead of adding a `MeleeAttack` component locally, it should now call `this.room.send("attack", { targetId: ... })`.
 2.  **Implement Client-Side Cooldown:** To prevent spamming the server, add a client-side check to ensure an attack message can only be sent when the weapon is off cooldown. This provides a responsive user experience while the server provides the final validation.
 3.  **Remove Client-Side Combat Calculation:** The `meleeCombatSystem` in the `phaser-client` should be removed or repurposed. Its responsibility for calculating damage is now deprecated.
@@ -60,18 +64,20 @@ The client must be refactored to send attack intents and render the results from
 The player needs to see the results of combat.
 
 **Tasks:**
+
 1.  **Create Damage Splat System:** Create a new client-side ECS system (`damageSplatSystem.ts`).
-    *   This system will monitor the `Health` component of all entities.
-    *   When it detects a change in an entity's `Health.current` value, it will spawn a temporary "damage splat" (a rising text object with the damage amount) at the entity's position.
+    - This system will monitor the `Health` component of all entities.
+    - When it detects a change in an entity's `Health.current` value, it will spawn a temporary "damage splat" (a rising text object with the damage amount) at the entity's position.
 2.  **Create Health Bars:** Implement floating health bars above all entities (players and enemies) that have a `Health` component. The health bar should be a Phaser graphics object that visually represents `Health.current / Health.max`.
 3.  **Update React UI:** Ensure the player's `HealthBar` in the React UI updates in real-time by listening to the Zustand store, which should be updated with the authoritative health value from the Colyseus room state.
 
 **Acceptance Criteria:**
--   Pressing the spacebar sends an "attack" message to the server, respecting a 4-tick (2.4s) cooldown on both the client and server.
--   The server calculates the damage and updates the target's health in the `RuneRogueState`.
--   All clients receive the health update, and the target entity's health bar changes.
--   A red damage splat showing the damage dealt appears above the target on all clients.
--   The client's local `meleeCombatSystem.ts` no longer calculates damage.
+
+- Pressing the spacebar sends an "attack" message to the server, respecting a 4-tick (2.4s) cooldown on both the client and server.
+- The server calculates the damage and updates the target's health in the `RuneRogueState`.
+- All clients receive the health update, and the target entity's health bar changes.
+- A red damage splat showing the damage dealt appears above the target on all clients.
+- The client's local `meleeCombatSystem.ts` no longer calculates damage.
 
 ---
 
@@ -92,14 +98,14 @@ First, I'll locate the core server-side and client-side files mentioned in the p
 
 First, I'll find the server-side files that need to be modified.
 
- Hello! As a code search expert, I've analyzed your request to refactor the combat system. Here are the relevant files and code snippets from your workspace to help you with this task.
+Hello! As a code search expert, I've analyzed your request to refactor the combat system. Here are the relevant files and code snippets from your workspace to help you with this task.
 
 ### 1. Server-Side Combat Logic
 
 Here are the files for implementing the server-authoritative combat loop.
 
-*   **`RuneRogueRoom.ts`**: This is where you'll add the `onMessage("attack", ...)` handler.
-     I will begin by exploring the core files on both the client and server that are mentioned in the prompt. This will help me gather the necessary context to understand the current combat implementation before the requested refactoring.
+- **`RuneRogueRoom.ts`**: This is where you'll add the `onMessage("attack", ...)` handler.
+  I will begin by exploring the core files on both the client and server that are mentioned in the prompt. This will help me gather the necessary context to understand the current combat implementation before the requested refactoring.
 
 I'll start by reading the main server room logic, the client's main game scene, and the data file containing the OSRS combat formulas. I will also search for the client-side combat system, the server-side state schema, and any UI components related to health. Hello! As a code search expert, I've analyzed your request to refactor the combat system. To help you with this, I've gathered all the relevant files and context from the codebase. Here is a summary of the files that will be instrumental for your task, broken down by the phases you've outlined.
 
@@ -107,30 +113,31 @@ I'll start by reading the main server room logic, the client's main game scene, 
 
 This phase focuses on establishing the server as the authority for combat. The following files are key to implementing the attack message handler, server-side combat system, and updating the game state.
 
-*   **`packages/game-server/src/rooms/RuneRogueRoom.ts`**: This is the main room file where you'll add the `onMessage("attack", ...)` handler. It already contains a deprecated implementation of `handlePlayerAttack` and OSRS calculation methods which can serve as a reference.
-*   **`packages/game-server/src/schemas/GameState.ts`**: This file defines the server's authoritative state, including `Player` and `Enemy` schemas. You will need to ensure these schemas contain all the necessary combat-related stats (`attack`, `strength`, `defence`, `health`, `maxHealth`).
-*   **`packages/osrs-data/src/calculators/combat.ts`**: This file contains the canonical OSRS combat formulas (`calculateAccuracy`, `calculateMaxHit`) that your server-side combat system will use.
+- **`packages/game-server/src/rooms/RuneRogueRoom.ts`**: This is the main room file where you'll add the `onMessage("attack", ...)` handler. It already contains a deprecated implementation of `handlePlayerAttack` and OSRS calculation methods which can serve as a reference.
+- **`packages/game-server/src/schemas/GameState.ts`**: This file defines the server's authoritative state, including `Player` and `Enemy` schemas. You will need to ensure these schemas contain all the necessary combat-related stats (`attack`, `strength`, `defence`, `health`, `maxHealth`).
+- **`packages/osrs-data/src/calculators/combat.ts`**: This file contains the canonical OSRS combat formulas (`calculateAccuracy`, `calculateMaxHit`) that your server-side combat system will use.
 
 ### **Phase 2: Client-Side Refactoring**
 
 For this phase, you'll adjust the client to send attack "intents" to the server rather than handling combat logic itself.
 
-*   **`packages/phaser-client/src/scenes/GameScene.ts`**: You'll modify the input handler in this scene. The current implementation adds a `MeleeAttack` component; you will change it to send an "attack" message to the server.
-*   **`packages/phaser-client/src/ecs/systems/combat.ts`**: This is the client-side combat system that currently handles damage calculation. As per your instructions, this system will be deprecated or removed.
-*   **`packages/phaser-client/src/ecs/components.ts`**: This file defines the `MeleeAttack` and `Health` components used by the current client-side ECS. You'll be removing the logic that uses `MeleeAttack` and instead reacting to changes in the `Health` component from the server.
+- **`packages/phaser-client/src/scenes/GameScene.ts`**: You'll modify the input handler in this scene. The current implementation adds a `MeleeAttack` component; you will change it to send an "attack" message to the server.
+- **`packages/phaser-client/src/ecs/systems/combat.ts`**: This is the client-side combat system that currently handles damage calculation. As per your instructions, this system will be deprecated or removed.
+- **`packages/phaser-client/src/ecs/components.ts`**: This file defines the `MeleeAttack` and `Health` components used by the current client-side ECS. You'll be removing the logic that uses `MeleeAttack` and instead reacting to changes in the `Health` component from the server.
 
 ### **Phase 3: UI/FX and Visual Feedback**
 
 To provide players with clear feedback, you'll implement health bars and damage splats.
 
-*   **`packages/phaser-client/src/ui/components/HealthBar.tsx`**: This is the React component for the player's health bar in the main UI.
-*   **`packages/phaser-client/src/stores/gameStore.ts`**: This Zustand store manages the UI state, including the player's health. It will need to be updated based on the authoritative state from the server to keep the `HealthBar` component in sync.
+- **`packages/phaser-client/src/ui/components/HealthBar.tsx`**: This is the React component for the player's health bar in the main UI.
+- **`packages/phaser-client/src/stores/gameStore.ts`**: This Zustand store manages the UI state, including the player's health. It will need to be updated based on the authoritative state from the server to keep the `HealthBar` component in sync.
 
 Below are the full contents of these files for your review.
 
 ### File Contents:
 
 #### `packages/game-server/src/rooms/RuneRogueRoom.ts`
+
 ```typescript
 /**
  * @deprecated LEGACY ROOM - This is a simplified, non-ECS prototype implementation.
@@ -654,6 +661,7 @@ export class RuneRogueRoom extends Room<GameState> {
 ```
 
 #### `packages/game-server/src/schemas/GameState.ts`
+
 ```typescript
 /**
  * @deprecated LEGACY SCHEMAS - This is a simplified, non-ECS prototype implementation.
@@ -722,6 +730,7 @@ export class GameState extends Schema {
 ```
 
 #### `packages/osrs-data/src/calculators/combat.ts`
+
 ```typescript
 /**
  * OSRS Combat Calculations
@@ -748,7 +757,7 @@ export function calculateMaxHit(
   stats: OSRSCombatStats,
   equipment: OSRSEquipmentBonuses,
   prayerMultiplier: number = 1.0,
-  styleBonus: number = 0
+  styleBonus: number = 0,
 ): number {
   // OSRS max hit formula
   // Effective strength = floor(strength * prayerMultiplier) + styleBonus + 8
@@ -757,7 +766,7 @@ export function calculateMaxHit(
   const effectiveStrength =
     Math.floor(stats.strength * prayerMultiplier) + styleBonus + 8;
   const maxHit = Math.floor(
-    0.5 + (effectiveStrength * (equipment.strengthBonus + 64)) / 640
+    0.5 + (effectiveStrength * (equipment.strengthBonus + 64)) / 640,
   );
 
   return maxHit;
@@ -785,7 +794,7 @@ export function calculateAccuracy(
   attackerPrayerMultiplier: number = 1.0,
   defenderPrayerMultiplier: number = 1.0,
   attackerStyleBonus: number = 0,
-  defenderStyleBonus: number = 0
+  defenderStyleBonus: number = 0,
 ): number {
   // OSRS accuracy formula
   // Effective attack = floor(attack * prayerMultiplier) + styleBonus + 8
@@ -884,6 +893,7 @@ export function getAttackSpeed(weaponType: string): number {
 ```
 
 #### `packages/phaser-client/src/scenes/GameScene.ts`
+
 ```typescript
 import Phaser from "phaser";
 import {
@@ -951,7 +961,7 @@ export default class GameScene extends Phaser.Scene {
         addComponent(world, Target, playerEid);
         Target.eid[playerEid] = closestEnemy.eid;
         console.log(
-          `Player ${playerEid} is attacking enemy ${closestEnemy.eid}`
+          `Player ${playerEid} is attacking enemy ${closestEnemy.eid}`,
         );
       }
     });
@@ -1154,7 +1164,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   private findClosestEnemy(
-    playerId: number
+    playerId: number,
   ): { eid: number; dist: number } | null {
     const playerX = Position.x[playerId];
     const playerY = Position.y[playerId];
@@ -1171,7 +1181,7 @@ export default class GameScene extends Phaser.Scene {
         playerX,
         playerY,
         enemyX,
-        enemyY
+        enemyY,
       );
 
       if (dist < closestDist) {
@@ -1199,6 +1209,7 @@ export default class GameScene extends Phaser.Scene {
 ```
 
 #### `packages/phaser-client/src/ecs/systems/combat.ts`
+
 ```typescript
 import { defineQuery, IWorld, removeComponent } from "bitecs";
 import { Health, MeleeAttack, Player, Stats, Target } from "../components";
@@ -1256,7 +1267,7 @@ export const createMeleeCombatSystem = () => {
         attackerStats,
         attackerEquipment,
         defenderStats,
-        defenderEquipment
+        defenderEquipment,
       );
       const maxHit = calculateMaxHit(attackerStats, attackerEquipment);
 
@@ -1271,7 +1282,7 @@ export const createMeleeCombatSystem = () => {
       Health.current[targetId] = Math.max(0, Health.current[targetId] - damage);
 
       console.log(
-        `Attacker ${attackerId} hit Target ${targetId} for ${damage} damage. Accuracy: ${accuracy.toFixed(2)}, Max Hit: ${maxHit}. Target Health: ${Health.current[targetId]}`
+        `Attacker ${attackerId} hit Target ${targetId} for ${damage} damage. Accuracy: ${accuracy.toFixed(2)}, Max Hit: ${maxHit}. Target Health: ${Health.current[targetId]}`,
       );
 
       // 6. Remove MeleeAttack component to prevent attacking every frame
@@ -1286,6 +1297,7 @@ export const createMeleeCombatSystem = () => {
 ```
 
 #### `packages/phaser-client/src/ecs/components.ts`
+
 ```typescript
 import { defineComponent, Types } from "bitecs";
 
@@ -1387,6 +1399,7 @@ export const allComponents = [
 ```
 
 #### `packages/phaser-client/src/ui/components/HealthBar.tsx`
+
 ```typescript
 import React from "react";
 import { useGameStore } from "../../stores/gameStore";
@@ -1423,7 +1436,8 @@ export const HealthBar: React.FC = () => {
 ```
 
 #### `packages/phaser-client/src/stores/gameStore.ts`
-```typescript
+
+````typescript
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { Player, Enemy } from "@/types";
@@ -1564,38 +1578,38 @@ First, I'll update the game state schemas to include the necessary combat attrib
 
 First, I'll focus on establishing the server as the single source of truth for all combat events.
 
-I will start by modifying the `Player` and `Enemy` schemas in `packages/shared/src/schemas/game.ts` to include all necessary combat-related stats. This ensures that the client will have the information needed to render the game state accurately. The `lastAttackTick` property will be crucial for implementing the OSRS-accurate attack speed. 
+I will start by modifying the `Player` and `Enemy` schemas in `packages/shared/src/schemas/game.ts` to include all necessary combat-related stats. This ensures that the client will have the information needed to render the game state accurately. The `lastAttackTick` property will be crucial for implementing the OSRS-accurate attack speed.
 ````
 
-````
+```
 Okay, the schemas have been updated. Now, let's move on to the core server-side logic.
 
 I will now implement the server-side combat system. This involves creating a new message handler for "attack" messages in `RuneRogueRoom.ts`, adding a new combat system to the `game-server`, and implementing an attack cooldown mechanism to enforce OSRS-accurate weapon speeds. The server will validate attack requests, calculate damage using the official `@runerogue/osrs-data` package, and apply it to the authoritative state.
 
-First, I'll create a new file for our combat system. 
-````
+First, I'll create a new file for our combat system.
+```
 
-````
+```
 With the server-side framework for combat established, I will now refactor the client to align with the server-authoritative architecture. The client's role will shift from calculating combat outcomes to sending attack intents and rendering the server's responses.
 
 First, I will modify the client's input handling. Instead of triggering a local combat system, pressing the spacebar will now send an "attack" message to the server, including the target's ID. A client-side cooldown will be added to prevent spamming the server with requests, ensuring a responsive user experience while the server remains the ultimate authority.
 
 Consequently, the existing `meleeCombatSystem.ts` on the client, which previously handled damage calculation, will be removed as its function is now managed by the server. Phase 1 is complete. Now, I'll proceed with Phase 2, focusing on client-side refactoring.
 
-First, I will adjust the client's input handling in `GameScene.ts`. The current implementation adds a `MeleeAttack` component locally. I will change this to send an "attack" message to the server, including the target's entity ID. To improve user experience and prevent network spam, I'll also introduce a client-side cooldown that mirrors the server's 4-tick attack speed. This provides immediate feedback to the player while the server performs the final validation. 
-````
+First, I will adjust the client's input handling in `GameScene.ts`. The current implementation adds a `MeleeAttack` component locally. I will change this to send an "attack" message to the server, including the target's entity ID. To improve user experience and prevent network spam, I'll also introduce a client-side cooldown that mirrors the server's 4-tick attack speed. This provides immediate feedback to the player while the server performs the final validation.
+```
 
-````
+```
 Okay, the server-side combat logic is now in place and the client is sending attack intents. The next step is to remove the deprecated client-side damage calculation and then build the visual feedback systems.
 
 ### Phase 2: Client-Side Refactoring (Conclusion)
 
 I will now remove the old `meleeCombatSystem.ts` from the `phaser-client` and update the main ECS pipeline to exclude it. This completes the transition to a fully server-authoritative combat model.
 
- 
-````
 
-````
+```
+
+```
 With the server now authoritatively handling combat calculations and the client refactored to send attack intents, I will proceed with Phase 3 to provide essential visual feedback to the player.
 
 ### Phase 3: UI/FX and Visual Feedback
@@ -1608,26 +1622,26 @@ I will now implement the client-side systems required to display the results of 
 
 3.  **React UI Health Bar:** Finally, I will ensure the main player's health bar in the React UI is correctly synchronized with the game state, providing a persistent and clear indicator of the player's own health.
 
-I will start by creating the `damageSplatSystem.ts` and integrating it into the client's ECS pipeline. 
-````
+I will start by creating the `damageSplatSystem.ts` and integrating it into the client's ECS pipeline.
+```
 
-````
+```
 I have implemented the server-authoritative combat logic, refactored the client to send attack intents, and created the damage splat system for visual feedback.
 
 Now, I will create floating health bars for all entities and ensure the main player's health bar in the React UI is updated in real-time.
 
 First, I'll create a new client-side ECS system to manage and render floating health bars in Phaser. This will provide immediate visual feedback for all entities in the game world. Then, I will ensure the main player's health is correctly synchronized with the React UI through the Zustand store.
 
-I will start by creating the `healthBarSystem.ts` file. 
-````
+I will start by creating the `healthBarSystem.ts` file.
+```
 
-````
+```
 I have completed the server-side and client-side refactoring for the combat loop. Now, I will implement the final phase: updating the UI to reflect the player's health changes in real-time.
 
-First, I'll update the Zustand store in `gameStore.ts` to include a `setHealth` function. This will allow other parts of the application to update the player's health state. 
-````
+First, I'll update the Zustand store in `gameStore.ts` to include a `setHealth` function. This will allow other parts of the application to update the player's health state.
+```
 
-````
+```
 I have completed the requested refactoring. The combat logic is now server-authoritative, respecting OSRS attack speeds, and the client provides clear visual feedback for all combat events.
 
 Here is a summary of the changes:
@@ -1666,3 +1680,4 @@ _**Assistant**_
 
 ---
 
+```

@@ -1,162 +1,178 @@
 /**
- * Definitive fix for Colyseus ArraySchema/MapSchema registration warnings
+ * Definitive fix for Colyseus ArraySchema/MapSchema registration warnings.
  *
- * The issue: Colyseus shows warning "Class 'ArraySchema' is not registered on TypeRegistry"
- * Root cause: ArraySchema and MapSchema are container types that need to be registered
- * Solution: Register them directly in the TypeRegistry before they're used
+ * The issue: Colyseus shows warning "Class 'ArraySchema' is not registered on TypeRegistry".
+ * This is because ArraySchema and MapSchema are container types that need to be explicitly registered.
+ * This script handles the registration in a way that is robust against different Colyseus versions.
+ *
+ * @file This file contains the fix for ArraySchema and MapSchema registration.
  */
 
 import { ArraySchema, MapSchema } from '@colyseus/schema';
 
-// Ensure Symbol.metadata exists globally first
+// Polyfill Symbol.metadata if it doesn't exist.
 if (!Symbol.metadata) {
-  (Symbol as unknown as { metadata: symbol }).metadata = Symbol.for('Symbol.metadata');
+  (Symbol as { metadata?: symbol }).metadata = Symbol.for('Symbol.metadata');
 }
 
 /**
- * Register ArraySchema and MapSchema in Colyseus TypeRegistry
+ * Represents a schema constructor with an optional metadata symbol.
+ * This is used to safely access and assign `Symbol.metadata`.
+ * @ignore
  */
-function registerContainerTypes(): void {
+type SchemaConstructor = {
+  new (...args: unknown[]): unknown;
+} & {
+  [Symbol.metadata]?: {
+    properties: unknown;
+    indexes: unknown;
+    schemas: unknown;
+  };
+};
+
+/**
+ * Dynamically finds and imports the Colyseus TypeRegistry.
+ * It searches in common locations to support different package structures.
+ *
+ * @returns {Promise<any | null>} A promise that resolves to the TypeRegistry or null if not found.
+ * @ignore
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function findTypeRegistry(): Promise<any | null> {
   try {
-    // Import the TypeRegistry from Colyseus
-    const schemaModule = require('@colyseus/schema');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const schemaModule: any = await import('@colyseus/schema');
+    if (schemaModule.TypeRegistry) return schemaModule.TypeRegistry;
+    if (schemaModule.types?.TypeRegistry) return schemaModule.types.TypeRegistry;
 
-    // Find the TypeRegistry (may be in different locations depending on version)
-    let TypeRegistry;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const typesModule: any = await import('@colyseus/schema/build/src/types');
+    if (typesModule.TypeRegistry) return typesModule.TypeRegistry;
+  } catch {
+    // Fallback for other structures
+  }
 
-    if (schemaModule.TypeRegistry) {
-      TypeRegistry = schemaModule.TypeRegistry;
-    } else if (schemaModule.types?.TypeRegistry) {
-      TypeRegistry = schemaModule.types.TypeRegistry;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const typeRegistryModule: any = await import('@colyseus/schema/build/src/types/TypeRegistry');
+    if (typeRegistryModule.TypeRegistry) return typeRegistryModule.TypeRegistry;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.warn(`⚠️ Could not find TypeRegistry. Details: ${message}`);
+  }
+
+  return null;
+}
+
+/**
+ * Registers a schema (like ArraySchema or MapSchema) with the TypeRegistry.
+ * It tries different registration methods for compatibility.
+ *
+ * @param {any} TypeRegistry - The found TypeRegistry.
+ * @param {string} name - The name of the schema to register.
+ * @param {SchemaConstructor} schema - The schema constructor.
+ * @ignore
+ */
+function registerSchema(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TypeRegistry: any,
+  name: string,
+  schema: SchemaConstructor
+): void {
+  try {
+    if (typeof TypeRegistry.register === 'function') {
+      TypeRegistry.register(name, schema);
+    } else if (typeof TypeRegistry.add === 'function') {
+      TypeRegistry.add(name, schema);
+    } else if (typeof TypeRegistry.set === 'function') {
+      TypeRegistry.set(name, schema);
+    } else if (typeof TypeRegistry === 'object') {
+      TypeRegistry[name] = schema;
     } else {
-      // Try to get it from the build directory
-      try {
-        const typesModule = require('@colyseus/schema/build/src/types');
-        TypeRegistry = typesModule.TypeRegistry;
-      } catch {
-        // Try another common location
-        try {
-          const typeRegistryModule = require('@colyseus/schema/build/src/types/TypeRegistry');
-          TypeRegistry = typeRegistryModule.TypeRegistry;
-        } catch {
-          console.warn('⚠️ Could not find TypeRegistry to register ArraySchema/MapSchema');
-          return;
-        }
-      }
+      console.warn(`⚠️ Unknown TypeRegistry interface - cannot register ${name}`);
+      return;
     }
+    console.log(`✅ ${name} registered in TypeRegistry.`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`⚠️ Failed to register ${name}:`, message);
+  }
+}
 
+/**
+ * Registers ArraySchema and MapSchema with the Colyseus TypeRegistry.
+ * This prevents warnings about unregistered container types.
+ * @returns {Promise<void>}
+ * @ignore
+ */
+async function registerContainerTypes(): Promise<void> {
+  try {
+    const TypeRegistry = await findTypeRegistry();
     if (!TypeRegistry) {
-      console.warn('⚠️ TypeRegistry not found - cannot register container types');
+      console.warn('⚠️ TypeRegistry not found - cannot register container types.');
       return;
     }
 
-    // Ensure ArraySchema has metadata
-    if (!ArraySchema[Symbol.metadata]) {
-      ArraySchema[Symbol.metadata] = {
-        properties: {},
-        indexes: {},
-        schemas: {},
-      };
-    }
+    const schemas: [string, SchemaConstructor][] = [
+      ['ArraySchema', ArraySchema as SchemaConstructor],
+      ['MapSchema', MapSchema as SchemaConstructor],
+    ];
 
-    // Ensure MapSchema has metadata
-    if (!MapSchema[Symbol.metadata]) {
-      MapSchema[Symbol.metadata] = {
-        properties: {},
-        indexes: {},
-        schemas: {},
-      };
-    }
-
-    // Register ArraySchema in the TypeRegistry
-    if (TypeRegistry.register && typeof TypeRegistry.register === 'function') {
-      try {
-        TypeRegistry.register('ArraySchema', ArraySchema);
-        console.log('✅ ArraySchema registered in TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to register ArraySchema:', error.message);
+    for (const [name, schema] of schemas) {
+      if (!schema[Symbol.metadata]) {
+        schema[Symbol.metadata] = { properties: {}, indexes: {}, schemas: {} };
       }
-
-      try {
-        TypeRegistry.register('MapSchema', MapSchema);
-        console.log('✅ MapSchema registered in TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to register MapSchema:', error.message);
-      }
-    } else if (TypeRegistry.add && typeof TypeRegistry.add === 'function') {
-      // Alternative method name
-      try {
-        TypeRegistry.add('ArraySchema', ArraySchema);
-        console.log('✅ ArraySchema added to TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to add ArraySchema:', error.message);
-      }
-
-      try {
-        TypeRegistry.add('MapSchema', MapSchema);
-        console.log('✅ MapSchema added to TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to add MapSchema:', error.message);
-      }
-    } else if (TypeRegistry.set && typeof TypeRegistry.set === 'function') {
-      // Another alternative method
-      try {
-        TypeRegistry.set('ArraySchema', ArraySchema);
-        console.log('✅ ArraySchema set in TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to set ArraySchema:', error.message);
-      }
-
-      try {
-        TypeRegistry.set('MapSchema', MapSchema);
-        console.log('✅ MapSchema set in TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to set MapSchema:', error.message);
-      }
-    } else if (typeof TypeRegistry === 'object') {
-      // Direct property assignment as fallback
-      try {
-        TypeRegistry['ArraySchema'] = ArraySchema;
-        TypeRegistry['MapSchema'] = MapSchema;
-        console.log('✅ ArraySchema/MapSchema assigned directly to TypeRegistry');
-      } catch (error) {
-        console.warn('⚠️ Failed to assign to TypeRegistry:', error.message);
-      }
-    } else {
-      console.warn('⚠️ Unknown TypeRegistry interface - cannot register container types');
+      registerSchema(TypeRegistry, name, schema);
     }
   } catch (error) {
-    console.error('❌ Failed to register container types in TypeRegistry:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`❌ Failed to register container types: ${message}`);
   }
 }
 
 /**
- * Apply entity decorator to ArraySchema and MapSchema as alternative approach
+ * Applies the `@entity` decorator to ArraySchema and MapSchema as a fallback.
+ * This can also help satisfy Colyseus's registration requirements.
+ * @returns {Promise<void>}
+ * @ignore
  */
-function applyEntityDecorators(): void {
+async function applyEntityDecorators(): Promise<void> {
   try {
-    // Get the entity decorator
-    const schemaModule = require('@colyseus/schema');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const schemaModule: any = await import('@colyseus/schema');
     const entity = schemaModule.entity;
 
-    if (entity && typeof entity === 'function') {
-      // Apply @entity decorator to ArraySchema
+    if (typeof entity === 'function') {
       entity(ArraySchema);
       console.log('✅ @entity decorator applied to ArraySchema');
-
-      // Apply @entity decorator to MapSchema
       entity(MapSchema);
       console.log('✅ @entity decorator applied to MapSchema');
     } else {
-      console.warn('⚠️ @entity decorator not found');
+      console.warn('⚠️ Could not find @entity decorator to apply.');
     }
   } catch (error) {
-    console.warn('⚠️ Failed to apply @entity decorators:', error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`❌ Failed to apply entity decorators: ${message}`);
   }
 }
 
-// Apply both fixes
-registerContainerTypes();
-applyEntityDecorators();
+/**
+ * Applies a comprehensive fix to prevent Colyseus schema registration warnings.
+ * It first tries to register container types directly and then applies entity decorators.
+ * This function is executed automatically when the module is imported.
+ *
+ * @export
+ * @returns {Promise<void>}
+ */
+export async function applyArraySchemaRegistryFix(): Promise<void> {
+  console.log('🛠️ Applying definitive ArraySchema/MapSchema registration fix...');
+  await registerContainerTypes();
+  await applyEntityDecorators();
+  console.log('✅ Definitive schema registration fix applied.');
+}
 
-export const arraySchemaRegistryFixApplied = true;
+// Automatically apply the fix when this module is imported.
+applyArraySchemaRegistryFix().catch(error => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`❌ Fatal error applying ArraySchema/MapSchema fix: ${message}`);
+});

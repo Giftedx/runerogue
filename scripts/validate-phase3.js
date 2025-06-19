@@ -43,7 +43,7 @@ async function testServer() {
           console.log("   ❌ Game server health check failed");
         }
         resolve();
-      }
+      },
     );
 
     req.on("error", () => {
@@ -83,7 +83,7 @@ async function testClient() {
           console.log("   ❌ Client server returned error status");
         }
         resolve();
-      }
+      },
     );
 
     req.on("error", () => {
@@ -193,7 +193,7 @@ function generateReport() {
   const successRate = Math.round((passedTests / totalTests) * 100);
 
   console.log(
-    `Overall Success Rate: ${successRate}% (${passedTests}/${totalTests})`
+    `Overall Success Rate: ${successRate}% (${passedTests}/${totalTests})`,
   );
   console.log("");
 
@@ -202,7 +202,7 @@ function generateReport() {
   console.log(`🌐 Client Server:   ${results.client ? "✅ PASS" : "❌ FAIL"}`);
   console.log(`📦 Assets:          ${results.assets ? "✅ PASS" : "❌ FAIL"}`);
   console.log(
-    `🔧 Implementation:  ${results.implementation ? "✅ PASS" : "❌ FAIL"}`
+    `🔧 Implementation:  ${results.implementation ? "✅ PASS" : "❌ FAIL"}`,
   );
   console.log("");
 
@@ -231,12 +231,12 @@ function generateReport() {
     console.log("🔧 Next Steps:");
     if (!results.server) {
       console.log(
-        "   1. Start game server: cd packages/game-server && pnpm dev"
+        "   1. Start game server: cd packages/game-server && pnpm dev",
       );
     }
     if (!results.client) {
       console.log(
-        "   2. Start client server: cd packages/phaser-client && node serve.js"
+        "   2. Start client server: cd packages/phaser-client && node serve.js",
       );
     }
     if (!results.assets) {

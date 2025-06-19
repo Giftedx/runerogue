@@ -11,8 +11,8 @@ export interface PlayerData {
   health: number;
   level: number;
   experience: number;
-  inventory: { itemId: string; quantity: number; }[];
-  equipment: { slot: string; itemId: string; };
+  inventory: { itemId: string; quantity: number }[];
+  equipment: { slot: string; itemId: string };
   lastLogin: Date;
   createdAt: Date;
 }
@@ -29,8 +29,8 @@ export class PlayerEntity implements PlayerData {
   health: number;
   level: number;
   experience: number;
-  inventory: { itemId: string; quantity: number; }[];
-  equipment: { slot: string; itemId: string; };
+  inventory: { itemId: string; quantity: number }[];
+  equipment: { slot: string; itemId: string };
   lastLogin: Date;
   createdAt: Date;
 

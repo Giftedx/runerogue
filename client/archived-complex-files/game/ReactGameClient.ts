@@ -30,7 +30,7 @@ export class ReactGameClient {
    */
   async connect(
     serverUrl: string,
-    roomName: string = "runerogue"
+    roomName: string = "runerogue",
   ): Promise<void> {
     try {
       console.log(`Connecting to game server at ${serverUrl}...`);
@@ -127,7 +127,7 @@ export class ReactGameClient {
    */
   on<K extends keyof GameClientEvents>(
     event: K,
-    handler: GameClientEvents[K]
+    handler: GameClientEvents[K],
   ): void {
     this.events[event] = handler;
   }

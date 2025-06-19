@@ -20,7 +20,7 @@ The issue is that "Vite" is being flagged as an unknown word, but it's actually 
 
 Fix the unknown word issue by adding a comment to clarify that Vite is a build tool name.
 
-````markdown
+```markdown
 ---
 applyTo: "**"
 ---
@@ -54,4 +54,4 @@ RuneRogue is an OSRS-inspired multiplayer roguelike survival game designed as a 
 - **Godot** - Alternative game client (in client/godot)
 
 ---
-
+```

@@ -11,7 +11,7 @@
 
 class UltimatePreloadScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'UltimatePreloadScene' });
+    super({ key: "UltimatePreloadScene" });
   }
 
   preload() {
@@ -30,26 +30,26 @@ class UltimatePreloadScene extends Phaser.Scene {
     const centerY = this.cameras.main.height / 2;
 
     // Background
-    this.cameras.main.setBackgroundColor('#0d1b0d');
+    this.cameras.main.setBackgroundColor("#0d1b0d");
 
     // Title
     this.loadingTitle = this.add
-      .text(centerX, centerY - 100, '🛡️ RuneRogue Enhanced', {
-        fontFamily: 'Arial',
-        fontSize: '36px',
-        color: '#4CAF50',
-        stroke: '#000000',
+      .text(centerX, centerY - 100, "🛡️ RuneRogue Enhanced", {
+        fontFamily: "Arial",
+        fontSize: "36px",
+        color: "#4CAF50",
+        stroke: "#000000",
         strokeThickness: 4,
       })
       .setOrigin(0.5);
 
     // Subtitle
     this.add
-      .text(centerX, centerY - 60, 'Phase 3 Visual Enhancement Complete', {
-        fontFamily: 'Arial',
-        fontSize: '18px',
-        color: '#ffffff',
-        stroke: '#000000',
+      .text(centerX, centerY - 60, "Phase 3 Visual Enhancement Complete", {
+        fontFamily: "Arial",
+        fontSize: "18px",
+        color: "#ffffff",
+        stroke: "#000000",
         strokeThickness: 2,
       })
       .setOrigin(0.5);
@@ -59,49 +59,55 @@ class UltimatePreloadScene extends Phaser.Scene {
     this.loadingBarBg.setStrokeStyle(2, 0x666666);
 
     // Loading bar fill
-    this.loadingBar = this.add.rectangle(centerX - 200, centerY, 0, 16, 0x4caf50);
+    this.loadingBar = this.add.rectangle(
+      centerX - 200,
+      centerY,
+      0,
+      16,
+      0x4caf50,
+    );
     this.loadingBar.setOrigin(0, 0.5);
 
     // Loading text
     this.loadingText = this.add
-      .text(centerX, centerY + 40, 'Loading assets...', {
-        fontFamily: 'Arial',
-        fontSize: '16px',
-        color: '#ffffff',
+      .text(centerX, centerY + 40, "Loading assets...", {
+        fontFamily: "Arial",
+        fontSize: "16px",
+        color: "#ffffff",
       })
       .setOrigin(0.5);
 
     // Progress percentage
     this.progressText = this.add
-      .text(centerX, centerY + 70, '0%', {
-        fontFamily: 'Arial',
-        fontSize: '14px',
-        color: '#aaaaaa',
+      .text(centerX, centerY + 70, "0%", {
+        fontFamily: "Arial",
+        fontSize: "14px",
+        color: "#aaaaaa",
       })
       .setOrigin(0.5);
   }
 
   setupLoadHandlers() {
-    this.load.on('progress', percentage => {
+    this.load.on("progress", (percentage) => {
       this.loadingBar.width = 400 * percentage;
-      this.progressText.setText(Math.round(percentage * 100) + '%');
+      this.progressText.setText(Math.round(percentage * 100) + "%");
 
       // Update loading messages
       if (percentage < 0.3) {
-        this.loadingText.setText('Generating player sprites...');
+        this.loadingText.setText("Generating player sprites...");
       } else if (percentage < 0.6) {
-        this.loadingText.setText('Creating enemy assets...');
+        this.loadingText.setText("Creating enemy assets...");
       } else if (percentage < 0.9) {
-        this.loadingText.setText('Preparing UI elements...');
+        this.loadingText.setText("Preparing UI elements...");
       } else {
-        this.loadingText.setText('Finalizing game world...');
+        this.loadingText.setText("Finalizing game world...");
       }
     });
 
-    this.load.on('complete', () => {
-      this.loadingText.setText('Ready to play!');
+    this.load.on("complete", () => {
+      this.loadingText.setText("Ready to play!");
       this.time.delayedCall(1000, () => {
-        this.scene.start('UltimateGameScene');
+        this.scene.start("UltimateGameScene");
       });
     });
   }
@@ -110,23 +116,29 @@ class UltimatePreloadScene extends Phaser.Scene {
     const generator = new SpriteGenerator();
 
     // Generate player class sprites
-    const classes = ['warrior', 'mage', 'ranger'];
-    classes.forEach(className => {
+    const classes = ["warrior", "mage", "ranger"];
+    classes.forEach((className) => {
       const sprite = generator.generatePlayerSprite(className, 32);
       this.load.image(`player_${className}`, sprite);
     });
 
     // Generate enemy sprites
-    const enemies = ['goblin', 'skeleton', 'orc'];
-    enemies.forEach(enemyType => {
+    const enemies = ["goblin", "skeleton", "orc"];
+    enemies.forEach((enemyType) => {
       const sprite = generator.generateEnemySprite(enemyType, 32);
       this.load.image(`enemy_${enemyType}`, sprite);
     });
 
     // Generate UI elements
-    this.load.image('health_bar_bg', generator.generateUISprite('healthBarBg', 32, 6));
-    this.load.image('health_bar_fill', generator.generateUISprite('healthBarFill', 32, 6));
-    this.load.image('button', generator.generateUISprite('button', 100, 30));
+    this.load.image(
+      "health_bar_bg",
+      generator.generateUISprite("healthBarBg", 32, 6),
+    );
+    this.load.image(
+      "health_bar_fill",
+      generator.generateUISprite("healthBarFill", 32, 6),
+    );
+    this.load.image("button", generator.generateUISprite("button", 100, 30));
   }
 
   create() {
@@ -136,7 +148,7 @@ class UltimatePreloadScene extends Phaser.Scene {
 
 class UltimateGameScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'UltimateGameScene' });
+    super({ key: "UltimateGameScene" });
     this.client = null;
     this.room = null;
     this.playerSprites = new Map();
@@ -162,7 +174,7 @@ class UltimateGameScene extends Phaser.Scene {
 
   setupGameWorld() {
     // Enhanced background with gradient
-    this.cameras.main.setBackgroundColor('#0d1b0d');
+    this.cameras.main.setBackgroundColor("#0d1b0d");
 
     // Create animated grid background
     this.createAnimatedGrid();
@@ -194,7 +206,7 @@ class UltimateGameScene extends Phaser.Scene {
       duration: 3000,
       yoyo: true,
       repeat: -1,
-      ease: 'Sine.easeInOut',
+      ease: "Sine.easeInOut",
     });
   }
 
@@ -218,7 +230,7 @@ class UltimateGameScene extends Phaser.Scene {
       y: y + Phaser.Math.Between(-100, 100),
       alpha: { from: 0.5, to: 0 },
       duration: Phaser.Math.Between(3000, 8000),
-      ease: 'Sine.easeInOut',
+      ease: "Sine.easeInOut",
       onComplete: () => {
         particle.destroy();
         // Create a new particle
@@ -242,11 +254,11 @@ class UltimateGameScene extends Phaser.Scene {
 
     // Add game title with glow effect
     const title = this.add
-      .text(400, 30, '🛡️ RuneRogue Enhanced', {
-        fontFamily: 'Arial',
-        fontSize: '28px',
-        color: '#4CAF50',
-        stroke: '#000000',
+      .text(400, 30, "🛡️ RuneRogue Enhanced", {
+        fontFamily: "Arial",
+        fontSize: "28px",
+        color: "#4CAF50",
+        stroke: "#000000",
         strokeThickness: 3,
       })
       .setOrigin(0.5);
@@ -257,13 +269,13 @@ class UltimateGameScene extends Phaser.Scene {
 
     // Connection status with enhanced styling
     this.connectionStatus = this.add
-      .text(400, 65, 'Initializing connection...', {
-        fontFamily: 'Arial',
-        fontSize: '16px',
-        color: '#ffffff',
-        stroke: '#000000',
+      .text(400, 65, "Initializing connection...", {
+        fontFamily: "Arial",
+        fontSize: "16px",
+        color: "#ffffff",
+        stroke: "#000000",
         strokeThickness: 2,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
         padding: { x: 10, y: 5 },
       })
       .setOrigin(0.5);
@@ -272,26 +284,35 @@ class UltimateGameScene extends Phaser.Scene {
 
   async initializeConnection() {
     try {
-      this.client = new Colyseus.Client('ws://localhost:3001');
-      this.connectionStatus.setText('🔌 Connecting to server...');
+      this.client = new Colyseus.Client("ws://localhost:3001");
+      this.connectionStatus.setText("🔌 Connecting to server...");
       this.connectionStatus.setTint(0xffaa00);
 
-      this.room = await this.client.joinOrCreate('runerogue', {
+      this.room = await this.client.joinOrCreate("runerogue", {
         username: `Enhanced_${Math.floor(Math.random() * 1000)}`,
       });
 
       this.localPlayerId = this.room.sessionId;
-      this.connectionStatus.setText('✅ Connected to RuneRogue!');
+      this.connectionStatus.setText("✅ Connected to RuneRogue!");
       this.connectionStatus.setTint(0x00ff00);
 
-      this.uiManager.addChatMessage('Connected to RuneRogue Enhanced!', '#00ff00');
-      this.uiManager.addChatMessage('Welcome to Phase 3 Visual Enhancement!', '#4CAF50');
+      this.uiManager.addChatMessage(
+        "Connected to RuneRogue Enhanced!",
+        "#00ff00",
+      );
+      this.uiManager.addChatMessage(
+        "Welcome to Phase 3 Visual Enhancement!",
+        "#4CAF50",
+      );
 
       this.setupRoomHandlers();
     } catch (error) {
-      this.connectionStatus.setText('❌ Connection failed');
+      this.connectionStatus.setText("❌ Connection failed");
       this.connectionStatus.setTint(0xff0000);
-      this.uiManager.addChatMessage('Connection failed: ' + error.message, '#ff0000');
+      this.uiManager.addChatMessage(
+        "Connection failed: " + error.message,
+        "#ff0000",
+      );
     }
   }
 
@@ -299,13 +320,19 @@ class UltimateGameScene extends Phaser.Scene {
     this.room.state.players.onAdd((player, playerId) => {
       this.createEnhancedPlayerSprite(playerId, player);
       this.updateMinimap();
-      this.uiManager.addChatMessage(`${player.username || 'Player'} joined the game`, '#ffff00');
+      this.uiManager.addChatMessage(
+        `${player.username || "Player"} joined the game`,
+        "#ffff00",
+      );
     });
 
     this.room.state.players.onRemove((player, playerId) => {
       this.removePlayerSprite(playerId);
       this.updateMinimap();
-      this.uiManager.addChatMessage(`${player.username || 'Player'} left the game`, '#ffaa00');
+      this.uiManager.addChatMessage(
+        `${player.username || "Player"} left the game`,
+        "#ffaa00",
+      );
     });
 
     this.room.state.players.onChange((player, playerId) => {
@@ -332,28 +359,34 @@ class UltimateGameScene extends Phaser.Scene {
       this.updateEnhancedEnemySprite(enemyId, enemy);
     });
 
-    this.room.onMessage('playerAttack', data => {
-      this.handleCombatMessage(data, 'player');
+    this.room.onMessage("playerAttack", (data) => {
+      this.handleCombatMessage(data, "player");
     });
 
-    this.room.onMessage('enemyAttack', data => {
-      this.handleCombatMessage(data, 'enemy');
+    this.room.onMessage("enemyAttack", (data) => {
+      this.handleCombatMessage(data, "enemy");
     });
   }
 
   handleCombatMessage(data, type) {
     const attacker =
-      this.playerSprites.get(data.attackerId) || this.enemySprites.get(data.attackerId);
-    const target = this.playerSprites.get(data.targetId) || this.enemySprites.get(data.targetId);
+      this.playerSprites.get(data.attackerId) ||
+      this.enemySprites.get(data.attackerId);
+    const target =
+      this.playerSprites.get(data.targetId) ||
+      this.enemySprites.get(data.targetId);
 
     if (attacker && target) {
       this.animationManager.playCombatAnimation(attacker, target, data.damage);
 
       const message =
-        type === 'player'
+        type === "player"
           ? `⚔️ Player deals ${data.damage} damage!`
           : `👹 Enemy attacks for ${data.damage} damage!`;
-      this.uiManager.addChatMessage(message, type === 'player' ? '#00ff00' : '#ff4444');
+      this.uiManager.addChatMessage(
+        message,
+        type === "player" ? "#00ff00" : "#ff4444",
+      );
     }
   }
 
@@ -376,15 +409,20 @@ class UltimateGameScene extends Phaser.Scene {
     this.playerSprites.set(playerId, sprite);
 
     // Enhanced name display
-    const nameText = this.add.text(x, y - 50, this.getDisplayName(player, playerId), {
-      fontFamily: 'Arial',
-      fontSize: '14px',
-      color: playerId === this.localPlayerId ? '#00ff00' : '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 3,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      padding: { x: 6, y: 3 },
-    });
+    const nameText = this.add.text(
+      x,
+      y - 50,
+      this.getDisplayName(player, playerId),
+      {
+        fontFamily: "Arial",
+        fontSize: "14px",
+        color: playerId === this.localPlayerId ? "#00ff00" : "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 3,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        padding: { x: 6, y: 3 },
+      },
+    );
     nameText.setOrigin(0.5);
     nameText.setDepth(20);
     this.nameTexts.set(playerId, nameText);
@@ -395,14 +433,14 @@ class UltimateGameScene extends Phaser.Scene {
   }
 
   getPlayerSpriteKey(player) {
-    const playerClass = player.class || 'warrior';
+    const playerClass = player.class || "warrior";
     return `player_${playerClass}`;
   }
 
   getDisplayName(player, playerId) {
     let name = player.username || `Player${playerId.substr(0, 4)}`;
     if (playerId === this.localPlayerId) {
-      name += ' (You)';
+      name += " (You)";
     }
     return name;
   }
@@ -411,11 +449,11 @@ class UltimateGameScene extends Phaser.Scene {
     const container = this.add.container(x, y);
 
     // Enhanced background with border
-    const bg = this.add.sprite(0, 0, 'health_bar_bg');
+    const bg = this.add.sprite(0, 0, "health_bar_bg");
     bg.setOrigin(0.5);
 
     // Health fill with gradient effect
-    const fill = this.add.sprite(-15, 0, 'health_bar_fill');
+    const fill = this.add.sprite(-15, 0, "health_bar_fill");
     fill.setOrigin(0, 0.5);
 
     container.add([bg, fill]);
@@ -434,7 +472,14 @@ class UltimateGameScene extends Phaser.Scene {
       const y = player.y * 32 + 300;
 
       // Use animation manager for smooth movement
-      this.animationManager.playWalkAnimation(sprite, sprite.x, sprite.y, x, y, 200);
+      this.animationManager.playWalkAnimation(
+        sprite,
+        sprite.x,
+        sprite.y,
+        x,
+        y,
+        200,
+      );
 
       // Animate name and health bar
       this.tweens.add({
@@ -442,7 +487,7 @@ class UltimateGameScene extends Phaser.Scene {
         x: x,
         y: [y - 50, y - 35],
         duration: 200,
-        ease: 'Power2',
+        ease: "Power2",
       });
 
       this.updateHealthBar(playerId, player.health, player.maxHealth);
@@ -468,7 +513,7 @@ class UltimateGameScene extends Phaser.Scene {
   }
 
   getEnemySpriteKey(enemy) {
-    return `enemy_${enemy.entityType || 'goblin'}`;
+    return `enemy_${enemy.entityType || "goblin"}`;
   }
 
   updateEnhancedEnemySprite(enemyId, enemy) {
@@ -532,7 +577,12 @@ class UltimateGameScene extends Phaser.Scene {
   createDeathExplosion(x, y) {
     // Create explosive death effect
     for (let i = 0; i < 12; i++) {
-      const particle = this.add.circle(x, y, Phaser.Math.Between(2, 5), 0xff4444);
+      const particle = this.add.circle(
+        x,
+        y,
+        Phaser.Math.Between(2, 5),
+        0xff4444,
+      );
       particle.setDepth(30);
 
       const angle = (i / 12) * Math.PI * 2;
@@ -545,7 +595,7 @@ class UltimateGameScene extends Phaser.Scene {
         alpha: 0,
         scale: 0.1,
         duration: Phaser.Math.Between(500, 1200),
-        ease: 'Power3',
+        ease: "Power3",
         onComplete: () => particle.destroy(),
       });
     }
@@ -573,7 +623,7 @@ class UltimateGameScene extends Phaser.Scene {
       targets: healthBar.fill,
       scaleX: healthPercent,
       duration: 300,
-      ease: 'Power2',
+      ease: "Power2",
     });
 
     // Color based on health percentage
@@ -586,13 +636,16 @@ class UltimateGameScene extends Phaser.Scene {
 
   updateMinimap() {
     if (this.room) {
-      this.uiManager.updateMinimap(this.room.state.players, this.room.state.enemies);
+      this.uiManager.updateMinimap(
+        this.room.state.players,
+        this.room.state.enemies,
+      );
     }
   }
 
   setupInput() {
     // Enhanced click to move with visual feedback
-    this.input.on('pointerdown', pointer => {
+    this.input.on("pointerdown", (pointer) => {
       if (!this.room) return;
 
       const worldX = Math.floor((pointer.worldX - 400) / 32);
@@ -601,15 +654,18 @@ class UltimateGameScene extends Phaser.Scene {
       // Visual feedback for click
       this.showClickFeedback(pointer.worldX, pointer.worldY);
 
-      this.room.send('movePlayer', { x: worldX, y: worldY });
-      this.uiManager.addChatMessage(`Moving to (${worldX}, ${worldY})`, '#aaaaaa');
+      this.room.send("movePlayer", { x: worldX, y: worldY });
+      this.uiManager.addChatMessage(
+        `Moving to (${worldX}, ${worldY})`,
+        "#aaaaaa",
+      );
     });
 
     // Enhanced keyboard controls
     let lastMoveTime = 0;
     const moveDelay = 150;
 
-    this.input.keyboard.on('keydown', event => {
+    this.input.keyboard.on("keydown", (event) => {
       if (!this.room || Date.now() - lastMoveTime < moveDelay) return;
 
       const player = this.room.state.players.get(this.localPlayerId);
@@ -620,27 +676,30 @@ class UltimateGameScene extends Phaser.Scene {
       let action = null;
 
       switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
+        case "ArrowUp":
+        case "KeyW":
           dy = -1;
           break;
-        case 'ArrowDown':
-        case 'KeyS':
+        case "ArrowDown":
+        case "KeyS":
           dy = 1;
           break;
-        case 'ArrowLeft':
-        case 'KeyA':
+        case "ArrowLeft":
+        case "KeyA":
           dx = -1;
           break;
-        case 'ArrowRight':
-        case 'KeyD':
+        case "ArrowRight":
+        case "KeyD":
           dx = 1;
           break;
-        case 'Space':
-          action = 'attack';
+        case "Space":
+          action = "attack";
           break;
-        case 'Enter':
-          this.uiManager.addChatMessage('Chat system ready for enhancement!', '#ffff00');
+        case "Enter":
+          this.uiManager.addChatMessage(
+            "Chat system ready for enhancement!",
+            "#ffff00",
+          );
           lastMoveTime = Date.now();
           return;
       }
@@ -648,11 +707,11 @@ class UltimateGameScene extends Phaser.Scene {
       if (dx !== 0 || dy !== 0) {
         const newX = player.x + dx;
         const newY = player.y + dy;
-        this.room.send('movePlayer', { x: newX, y: newY });
+        this.room.send("movePlayer", { x: newX, y: newY });
         lastMoveTime = Date.now();
-      } else if (action === 'attack') {
-        this.room.send('attackNearestEnemy');
-        this.uiManager.addChatMessage('⚔️ Attacking nearest enemy!', '#ff4444');
+      } else if (action === "attack") {
+        this.room.send("attackNearestEnemy");
+        this.uiManager.addChatMessage("⚔️ Attacking nearest enemy!", "#ff4444");
         lastMoveTime = Date.now();
       }
     });
@@ -668,7 +727,7 @@ class UltimateGameScene extends Phaser.Scene {
       scaleY: 2,
       alpha: 0,
       duration: 500,
-      ease: 'Power2',
+      ease: "Power2",
       onComplete: () => feedback.destroy(),
     });
   }
@@ -695,11 +754,11 @@ const ultimateConfig = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  parent: 'phaser-game',
-  backgroundColor: '#0d1b0d',
+  parent: "phaser-game",
+  backgroundColor: "#0d1b0d",
   scene: [UltimatePreloadScene, UltimateGameScene],
   physics: {
-    default: 'arcade',
+    default: "arcade",
     arcade: {
       debug: false,
     },
@@ -715,12 +774,12 @@ const ultimateConfig = {
 };
 
 // Initialize the ultimate enhanced game
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Starting RuneRogue Ultimate Enhanced Client...');
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 Starting RuneRogue Ultimate Enhanced Client...");
 
   // Create ultimate status overlay
-  const statusOverlay = document.createElement('div');
-  statusOverlay.id = 'ultimate-status';
+  const statusOverlay = document.createElement("div");
+  statusOverlay.id = "ultimate-status";
   statusOverlay.innerHTML = `
     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1000;">
       <!-- Top status bar -->
@@ -746,6 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start the ultimate game
   const ultimateGame = new Phaser.Game(ultimateConfig);
 
-  console.log('✅ RuneRogue Ultimate Enhanced Client ready!');
-  console.log('🎮 Phase 3 Visual Enhancement Complete!');
+  console.log("✅ RuneRogue Ultimate Enhanced Client ready!");
+  console.log("🎮 Phase 3 Visual Enhancement Complete!");
 });

@@ -20,7 +20,7 @@ I'll update the Frontend section to provide better context for Vite, making it c
 
 Update the Frontend section to clarify that Vite is a build tool name and provide better context.
 
-````markdown
+```markdown
 ---
 applyTo: "**"
 ---
@@ -56,9 +56,8 @@ RuneRogue is an OSRS-inspired multiplayer roguelike survival game designed as a 
 - **Vite** - Modern frontend build tool for web clients
 
 // ...existing code...
-````
+```
 
 The change removes the HTML comment and makes it part of the main description, which should resolve the spelling checker issue while maintaining the same information.
 
 ---
-

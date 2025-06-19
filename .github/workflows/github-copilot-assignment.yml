@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to assign'
+        description: "Issue number to assign"
         required: true
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     if: |
       (github.event_name == 'issues' && (contains(github.event.issue.labels.*.name, 'copilot') || contains(github.event.issue.labels.*.name, 'ai-task'))) ||
       github.event_name == 'workflow_dispatch'
-    
+
     steps:
       - name: Get issue number
         id: get-issue
@@ -25,14 +25,14 @@ jobs:
           else
             echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
           fi
-      
+
       - name: Assign to GitHub Copilot
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issueNumber = parseInt(process.env.ISSUE_NUMBER);
-            
+
             try {
               console.log(`Assigning issue #${issueNumber} to GitHub Copilot SWE Agent...`);
               

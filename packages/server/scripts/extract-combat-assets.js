@@ -7,86 +7,83 @@
  * @license CC BY-NC-SA 3.0 (Attribution required for OSRS Wiki content)
  */
 
-const axios = require("axios");
-const fs = require("fs-extra");
-const path = require("path");
-const crypto = require("crypto");
+const axios = require('axios');
+const fs = require('fs-extra');
+const path = require('path');
+const crypto = require('crypto');
 
 // Configuration
-const WIKI_API = "https://oldschool.runescape.wiki/api.php";
-const WIKI_IMAGE_BASE = "https://oldschool.runescape.wiki/images/";
-const ASSET_CACHE_DIR = path.join(
-  __dirname,
-  "../packages/server/assets/osrs-cache"
-);
-const MANIFEST_PATH = path.join(ASSET_CACHE_DIR, "manifest.json");
+const WIKI_API = 'https://oldschool.runescape.wiki/api.php';
+const WIKI_IMAGE_BASE = 'https://oldschool.runescape.wiki/images/';
+const ASSET_CACHE_DIR = path.join(__dirname, '../packages/server/assets/osrs-cache');
+const MANIFEST_PATH = path.join(ASSET_CACHE_DIR, 'manifest.json');
 
 // Combat assets to extract (discovered from OSRS Wiki)
 const COMBAT_ASSETS = [
   // Damage Hitsplats
   {
-    name: "Damage_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Standard damage hitsplat",
+    name: 'Damage_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Standard damage hitsplat',
   },
   {
-    name: "Zero_damage_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Zero damage (blocked/missed)",
+    name: 'Zero_damage_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Zero damage (blocked/missed)',
   },
   {
-    name: "Heal_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Healing effect hitsplat",
+    name: 'Heal_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Healing effect hitsplat',
   },
   {
-    name: "Poison_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Poison damage hitsplat",
+    name: 'Poison_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Poison damage hitsplat',
   },
   {
-    name: "Venom_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Venom damage hitsplat",
+    name: 'Venom_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Venom damage hitsplat',
   },
 
   // Additional combat effects to try
   {
-    name: "Max_hit_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Maximum damage hitsplat",
+    name: 'Max_hit_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Maximum damage hitsplat',
   },
   {
-    name: "Prayer_hitsplat.png",
-    category: "effects/hitsplats",
-    description: "Prayer point change",
+    name: 'Prayer_hitsplat.png',
+    category: 'effects/hitsplats',
+    description: 'Prayer point change',
   },
 
   // Projectiles (common ones to try)
   {
-    name: "Arrow.png",
-    category: "effects/projectiles",
-    description: "Basic arrow projectile",
+    name: 'Arrow.png',
+    category: 'effects/projectiles',
+    description: 'Basic arrow projectile',
   },
   {
-    name: "Bronze_arrow.png",
-    category: "effects/projectiles",
-    description: "Bronze arrow projectile",
+    name: 'Bronze_arrow.png',
+    category: 'effects/projectiles',
+    description: 'Bronze arrow projectile',
   },
   {
-    name: "Iron_arrow.png",
-    category: "effects/projectiles",
-    description: "Iron arrow projectile",
+    name: 'Iron_arrow.png',
+    category: 'effects/projectiles',
+    description: 'Iron arrow projectile',
   },
   {
-    name: "Magic_dart.png",
-    category: "effects/projectiles",
-    description: "Magic dart spell projectile",
+    name: 'Magic_dart.png',
+    category: 'effects/projectiles',
+    description: 'Magic dart spell projectile',
   },
   {
-    name: "Fire_bolt.png",
-    category: "effects/projectiles",
-    description: "Fire bolt spell projectile",
+    name: 'Fire_bolt.png',
+    category: 'effects/projectiles',
+    description: 'Fire bolt spell projectile',
   },
 ];
 
@@ -97,14 +94,14 @@ async function getWikiImageUrl(filename) {
   try {
     const response = await axios.get(WIKI_API, {
       params: {
-        action: "query",
-        format: "json",
+        action: 'query',
+        format: 'json',
         titles: `File:${filename}`,
-        prop: "imageinfo",
-        iiprop: "url",
+        prop: 'imageinfo',
+        iiprop: 'url',
       },
       headers: {
-        "User-Agent": "RuneRogue/1.0 (Asset Extraction Bot)",
+        'User-Agent': 'RuneRogue/1.0 (Asset Extraction Bot)',
       },
       timeout: 15000,
     });
@@ -112,7 +109,7 @@ async function getWikiImageUrl(filename) {
     const pages = response.data.query.pages;
     const pageId = Object.keys(pages)[0];
 
-    if (pageId === "-1") {
+    if (pageId === '-1') {
       return null; // File not found
     }
 
@@ -134,9 +131,9 @@ async function getWikiImageUrl(filename) {
 async function downloadAsset(imageUrl, localPath) {
   try {
     const response = await axios.get(imageUrl, {
-      responseType: "arraybuffer",
+      responseType: 'arraybuffer',
       headers: {
-        "User-Agent": "RuneRogue/1.0 (Asset Extraction Bot)",
+        'User-Agent': 'RuneRogue/1.0 (Asset Extraction Bot)',
       },
       timeout: 30000,
     });
@@ -150,7 +147,7 @@ async function downloadAsset(imageUrl, localPath) {
     await fs.writeFile(localPath, buffer);
 
     // Calculate hash for integrity
-    const hash = crypto.createHash("sha256").update(buffer).digest("hex");
+    const hash = crypto.createHash('sha256').update(buffer).digest('hex');
 
     return {
       success: true,
@@ -174,7 +171,7 @@ async function loadManifest() {
       return new Map(Object.entries(content));
     }
   } catch (error) {
-    console.warn("Could not load existing manifest:", error.message);
+    console.warn('Could not load existing manifest:', error.message);
   }
   return new Map();
 }
@@ -186,9 +183,9 @@ async function saveManifest(manifest) {
   try {
     const manifestObj = Object.fromEntries(manifest);
     await fs.writeJson(MANIFEST_PATH, manifestObj, { spaces: 2 });
-    console.log("✅ Manifest updated successfully");
+    console.log('✅ Manifest updated successfully');
   } catch (error) {
-    console.error("❌ Error saving manifest:", error.message);
+    console.error('❌ Error saving manifest:', error.message);
   }
 }
 
@@ -196,11 +193,11 @@ async function saveManifest(manifest) {
  * Main extraction function
  */
 async function extractCombatAssets() {
-  console.log("🎮 RuneRogue Combat Assets Extraction");
-  console.log("=====================================");
+  console.log('🎮 RuneRogue Combat Assets Extraction');
+  console.log('=====================================');
   console.log(`📁 Asset cache directory: ${ASSET_CACHE_DIR}`);
   console.log(`📋 Assets to extract: ${COMBAT_ASSETS.length}`);
-  console.log("");
+  console.log('');
 
   // Ensure cache directory exists
   await fs.ensureDir(ASSET_CACHE_DIR);
@@ -225,7 +222,7 @@ async function extractCombatAssets() {
     if (await fs.pathExists(localPath)) {
       console.log(`   ✓ Already cached: ${cacheKey}`);
       skippedCount++;
-      console.log("");
+      console.log('');
       continue;
     }
 
@@ -236,7 +233,7 @@ async function extractCombatAssets() {
     if (!imageUrl) {
       console.log(`   ❌ Not found on Wiki: ${name}`);
       failureCount++;
-      console.log("");
+      console.log('');
       continue;
     }
 
@@ -252,7 +249,7 @@ async function extractCombatAssets() {
 
       // Add to manifest
       manifest.set(cacheKey, {
-        name: name.replace(".png", ""),
+        name: name.replace('.png', ''),
         category,
         description,
         originalUrl: imageUrl,
@@ -262,7 +259,7 @@ async function extractCombatAssets() {
         extractedAt: new Date().toISOString(),
         variants: [
           {
-            resolution: "original",
+            resolution: 'original',
             path: path.relative(ASSET_CACHE_DIR, localPath),
             format: result.format,
           },
@@ -275,32 +272,32 @@ async function extractCombatAssets() {
       failureCount++;
     }
 
-    console.log("");
+    console.log('');
 
     // Small delay to be respectful to the Wiki
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   // Save manifest
   await saveManifest(manifest);
 
   // Summary
-  console.log("📊 EXTRACTION SUMMARY");
-  console.log("====================");
+  console.log('📊 EXTRACTION SUMMARY');
+  console.log('====================');
   console.log(`✅ Successfully extracted: ${successCount} assets`);
   console.log(`⏭️  Already cached: ${skippedCount} assets`);
   console.log(`❌ Failed to extract: ${failureCount} assets`);
   console.log(`📁 Total cache size: ${manifest.size} assets`);
-  console.log("");
+  console.log('');
 
   if (successCount > 0) {
-    console.log("🎉 New combat assets are ready for integration!");
+    console.log('🎉 New combat assets are ready for integration!');
     console.log(`📍 Location: ${ASSET_CACHE_DIR}`);
-    console.log("");
-    console.log("Next steps:");
-    console.log("1. Integrate assets into Phaser client");
-    console.log("2. Implement damage splat rendering");
-    console.log("3. Test multiplayer combat feedback");
+    console.log('');
+    console.log('Next steps:');
+    console.log('1. Integrate assets into Phaser client');
+    console.log('2. Implement damage splat rendering');
+    console.log('3. Test multiplayer combat feedback');
   }
 
   return {
@@ -313,13 +310,13 @@ async function extractCombatAssets() {
 // Run extraction if this script is executed directly
 if (require.main === module) {
   extractCombatAssets()
-    .then((result) => {
+    .then(result => {
       if (result.failed > 0) {
         process.exit(1);
       }
     })
-    .catch((error) => {
-      console.error("💥 Fatal error during extraction:", error);
+    .catch(error => {
+      console.error('💥 Fatal error during extraction:', error);
       process.exit(1);
     });
 }

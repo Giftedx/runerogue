@@ -18,6 +18,7 @@ Here's a comprehensive prompt for the next chat to carry out the remaining imple
 I'm working on RuneRogue, an OSRS-inspired multiplayer roguelike survival game. The foundation is complete with OSRS data pipeline, Colyseus server, and bitECS architecture all working with 13/13 tests passing.
 
 ## Current Status
+
 - ✅ OSRS formulas and data API complete
 - ✅ Colyseus multiplayer infrastructure ready
 - ✅ bitECS with 14 components and 10 systems
@@ -27,54 +28,68 @@ I'm working on RuneRogue, an OSRS-inspired multiplayer roguelike survival game. 
 ## Next Implementation Tasks
 
 ### 1. Complete Phaser-Colyseus Integration
+
 Connect the Phaser client to Colyseus server:
+
 - Implement room connection in `server-ts/src/client/scenes/GameScene.ts`
 - Add state synchronization listeners
 - Handle player join/leave events
 - Implement input handling that sends to server
 
 ### 2. Render Synchronized Game State
+
 Update Phaser rendering to display server state:
+
 - Create sprite management for players/enemies
 - Implement smooth position interpolation
 - Add health/prayer bar rendering
 - Display damage numbers when combat occurs
 
 ### 3. Implement Basic UI
+
 Create the game interface:
+
 - Health and prayer bars for each player
 - XP counter and level display
 - Simple inventory/equipment slots
 - Game timer and wave counter
 
 ### 4. Add Enemy AI and Spawning
+
 Complete the enemy system:
+
 - Implement pathfinding towards players
 - Add wave-based spawning logic
 - Create different enemy types from OSRS data
 - Balance difficulty progression
 
 ### 5. Polish Movement and Combat
+
 Enhance game feel:
+
 - Add client-side prediction for movement
 - Implement attack animations
 - Add hit splats for damage display
 - Include death animations and respawning
 
 ### 6. Discord Activity Integration
+
 Set up Discord integration:
+
 - Configure activity manifest
 - Implement Discord SDK initialization
 - Handle party/invite system
 - Add activity-specific UI elements
 
 ## Code Structure
+
 - Client code: `server-ts/src/client/`
 - Server systems: `server-ts/src/server/ecs/systems/`
 - Shared types: `packages/shared/`
 - OSRS data: `packages/osrs-data/`
 
 ## Key Requirements
+
 - Maintain 60fps with 4 players
 - Keep OSRS combat mechanics authentic
 - Ensure smooth multiplayer synchronization
@@ -103,6 +118,7 @@ Looking at the actual files, I can see the architecture is quite different from 
 ## Actual Architecture Components
 
 ### ECS Components (server-ts/src/server/ecs/components/)
+
 ```typescript
 // Components are simple number IDs, not structs
 export const Position = 0;
@@ -112,18 +128,22 @@ export const Combat = 3;
 // ... etc
 
 // Used with defineComponent from bitECS
-defineComponent({
-  x: Types.f32,
-  y: Types.f32
-}, world);
+defineComponent(
+  {
+    x: Types.f32,
+    y: Types.f32,
+  },
+  world,
+);
 ```
 
 ### Colyseus Room Structure
+
 ```typescript
 // server-ts/src/server/colyseus/rooms/GameRoom.ts
 export class GameRoom extends Room<GameState> {
   gameEngine: GameEngine;
-  
+
   onCreate(options: any) {
     this.setState(new GameState());
     this.gameEngine = new GameEngine(this.state);
@@ -133,12 +153,14 @@ export class GameRoom extends Room<GameState> {
 ```
 
 ### Client Structure (server-ts/src/client/)
+
 - Using Phaser 3 for rendering
 - Scenes: BootScene, GameScene
 - Assets and configuration in place
 - No React UI components yet (mentioned in prompt but not implemented)
 
 ### Shared Types (packages/shared/)
+
 ```typescript
 export interface PlayerData {
   id: string;
@@ -150,6 +172,7 @@ export interface PlayerData {
 ```
 
 The actual implementation is more modular with:
+
 - Separate packages for OSRS data, game server, and shared types
 - ECS components as simple numeric IDs
 - GameEngine class managing the ECS world
@@ -172,6 +195,7 @@ I'll analyze the RuneRogue codebase to understand the current implementation sta
 ## Current Codebase Analysis
 
 ### Project Structure
+
 The project is a monorepo using Turborepo with the following packages:
 
 ```
@@ -192,18 +216,22 @@ runerogue/
 ### Key Implementation Status
 
 #### ✅ Complete Components:
+
 1. **OSRS Data Pipeline** (``)
+
    - Combat formulas implemented
    - Equipment stats system
    - Prayer calculations
    - XP and leveling logic
 
 2. **ECS Architecture** (`server-ts/src/server/ecs/`)
+
    - 14 components defined (Position, Velocity, Health, Combat, etc.)
    - 10 systems implemented (Movement, Combat, Health, Prayer, etc.)
    - Proper component definitions using bitECS
 
 3. **Multiplayer Infrastructure** (`server-ts/src/server/colyseus/`)
+
    - GameRoom with state management
    - Player join/leave handling
    - Message handlers for input
@@ -214,7 +242,9 @@ runerogue/
    - Entity management
 
 #### 🔄 In Progress:
+
 1. **Client-Server Integration**
+
    - Phaser scenes created but not connected to Colyseus
    - State synchronization not implemented
    - Input handling needs connection
@@ -225,12 +255,14 @@ runerogue/
    - UI elements not implemented
 
 ### Current Test Coverage
+
 - 13 tests passing across the codebase
 - OSRS calculations thoroughly tested
 - ECS systems have basic tests
 - Client code lacks tests
 
 ### Next Implementation Priority
+
 Based on the codebase analysis, the immediate next steps should be:
 
 1. **Connect Phaser to Colyseus** in `GameScene.ts`
@@ -295,8 +327,9 @@ pnpm-lock.yaml
 pnpm-workspace.yaml
 README.md
 SECURITY.md
-+ tsconfig.json
-+ tsconfig.test.json
+
+- tsconfig.json
+- tsconfig.test.json
 
 ---
 
@@ -313,14 +346,16 @@ I'm working on RuneRogue, an OSRS-inspired multiplayer roguelike survival game. 
 
 ## Actual Project Structure
 ```
+
 runerogue/
-├── packages/           # Monorepo packages (if any)
-├── client/            # Main client application
-├── scripts/           # Build and utility scripts
-├── docs/             # Documentation
-├── config/           # Configuration files
-├── external-repos/   # External dependencies
+├── packages/ # Monorepo packages (if any)
+├── client/ # Main client application
+├── scripts/ # Build and utility scripts
+├── docs/ # Documentation
+├── config/ # Configuration files
+├── external-repos/ # External dependencies
 └── Root config files (jest, lerna, pnpm-workspace, etc.)
+
 ```
 
 ## Current Status (Please verify)
@@ -376,6 +411,7 @@ I'm working on RuneRogue, an OSRS-inspired multiplayer roguelike survival game. 
 ## Actual Project Structure
 
 ## Current Status (Please verify)
+
 - 🔍 Need to check `packages/` directory for actual implementations
 - 🔍 Need to examine `client/` directory structure
 - 🔍 Monorepo setup with pnpm workspaces
@@ -383,7 +419,9 @@ I'm working on RuneRogue, an OSRS-inspired multiplayer roguelike survival game. 
 - 🔍 Lerna for package management
 
 ## Investigation Needed
+
 Before implementing next steps, need to:
+
 1. Check what's actually in the `packages/` directory
 2. Examine the `client/` directory structure
 3. Look for any server implementation
@@ -391,6 +429,7 @@ Before implementing next steps, need to:
 5. Check test coverage and what's been implemented
 
 ## Questions to Answer
+
 - Is there an OSRS data package implemented?
 - Where is the server code (Colyseus, ECS)?
 - What's the client technology (Phaser, React)?
@@ -398,7 +437,9 @@ Before implementing next steps, need to:
 - What's the current implementation status?
 
 ## Next Steps (After Investigation)
+
 Once we understand the actual codebase:
+
 1. Identify what's built vs what needs building
 2. Set up missing infrastructure
 3. Implement core game loop
@@ -406,6 +447,7 @@ Once we understand the actual codebase:
 5. Create client-server integration
 
 Please analyze the actual codebase structure, particularly:
+
 - Contents of `packages/` directory
 - Client implementation in `client/`
 - Any existing server code
@@ -427,6 +469,7 @@ I'll analyze the actual RuneRogue codebase to understand what's currently implem
 ### What's Actually Implemented ✅
 
 1. **Monorepo Structure** with pnpm workspaces:
+
    - `` - OSRS formulas and data (partially working)
    - `` - Basic Colyseus server setup
    - `` - Main implementation with ECS and rooms
@@ -435,11 +478,13 @@ I'll analyze the actual RuneRogue codebase to understand what's currently implem
    - `` - React UI application
 
 2. **Working Colyseus Server** (`working-server.ts`):
+
    - WebSocket transport properly configured
    - CleanGameRoom implementation
    - Basic multiplayer infrastructure
 
 3. **ECS Components** (`components.ts`):
+
    - 20+ components defined with bitECS
    - Position, Health, SkillLevels, Combat, Prayer, etc.
    - Proper TypeScript types with bitECS Types
@@ -451,11 +496,13 @@ I'll analyze the actual RuneRogue codebase to understand what's currently implem
 ### Current Issues 🔧
 
 1. **Test Configuration Problems**:
+
    - Jest not configured for TypeScript/ESM properly
    - Many archived/legacy test files with broken imports
    - 79 failed tests, 27 passing
 
 2. **Build System Issues**:
+
    - TypeScript compilation errors
    - Mixed JS/TS files causing import problems
    - Missing Jest configuration for monorepo
@@ -468,6 +515,7 @@ I'll analyze the actual RuneRogue codebase to understand what's currently implem
 ### Next Implementation Priority
 
 1. **Fix Build System**:
+
    ```bash
    # Configure Jest properly for TypeScript
    # Clean up legacy test files
@@ -475,11 +523,13 @@ I'll analyze the actual RuneRogue codebase to understand what's currently implem
    ```
 
 2. **Connect Client to Server**:
+
    - Implement Colyseus client connection in Phaser
    - Add state synchronization
    - Create basic player movement
 
 3. **Implement Game Loop**:
+
    - Start ECS systems in CleanGameRoom
    - Add enemy spawning
    - Implement basic combat
@@ -494,6 +544,7 @@ I'll analyze the actual RuneRogue codebase to understand what's currently implem
 The foundation exists but needs debugging and integration. The server architecture is sound, but the testing infrastructure needs fixing before implementing new features.
 
 Would you like me to:
+
 1. Fix the Jest configuration and build system first?
 2. Focus on connecting the Phaser client to the working server?
 3. Clean up the legacy test files and get a clean test suite running?
@@ -510,7 +561,6 @@ update all docs to relect the actual code and files
 
 _**Assistant**_
 
-I'll analyze the actual codebase structure and update the documentation to reflect reality. Let me start by examining the project structure and contents. 
+I'll analyze the actual codebase structure and update the documentation to reflect reality. Let me start by examining the project structure and contents.
 
 ---
-

@@ -26,12 +26,12 @@ export class RuneRogueRoom extends Room<GameState> {
     strength: number,
     strengthBonus: number = 0,
     prayerMultiplier: number = 1.0,
-    styleBonus: number = 0
+    styleBonus: number = 0,
   ): number {
     const effectiveStrength =
       Math.floor(strength * prayerMultiplier) + styleBonus + 8;
     const maxHit = Math.floor(
-      0.5 + (effectiveStrength * (strengthBonus + 64)) / 640
+      0.5 + (effectiveStrength * (strengthBonus + 64)) / 640,
     );
     return maxHit;
   }
@@ -44,7 +44,7 @@ export class RuneRogueRoom extends Room<GameState> {
     attackerEquipmentBonus: number = 0,
     defenderDefence: number,
     defenderEquipmentBonus: number = 0,
-    prayerMultiplier: number = 1.0
+    prayerMultiplier: number = 1.0,
   ): number {
     const effectiveAttack = Math.floor(attackerAttack * prayerMultiplier) + 8;
     const maxAttackRoll = effectiveAttack * (attackerEquipmentBonus + 64);
@@ -64,7 +64,7 @@ export class RuneRogueRoom extends Room<GameState> {
 
     console.log(
       `[${new Date().toISOString()}] RuneRogueRoom created with options:`,
-      options
+      options,
     );
 
     // Set up message handlers
@@ -108,7 +108,7 @@ export class RuneRogueRoom extends Room<GameState> {
    */
   private handlePlayerMovement(client: Client, data: { x: number; y: number }) {
     console.log(
-      `🏃 handlePlayerMovement called: ${client.sessionId} -> (${data.x}, ${data.y})`
+      `🏃 handlePlayerMovement called: ${client.sessionId} -> (${data.x}, ${data.y})`,
     );
 
     const player = this.state.players.get(client.sessionId);
@@ -127,7 +127,7 @@ export class RuneRogueRoom extends Room<GameState> {
     // Anti-cheat: Validate movement speed (only after first move)
     if (distance > maxDistance && player.lastMoveTime > 0 && timeDelta < 5) {
       console.log(
-        `[ANTI-CHEAT] Player ${client.sessionId} rejected for speed: ${distance} > ${maxDistance} (timeDelta: ${timeDelta}s)`
+        `[ANTI-CHEAT] Player ${client.sessionId} rejected for speed: ${distance} > ${maxDistance} (timeDelta: ${timeDelta}s)`,
       );
       client.send("movement_rejected", {
         reason: "too_fast",
@@ -188,7 +188,7 @@ export class RuneRogueRoom extends Room<GameState> {
 
   onJoin(client: Client, options: any) {
     console.log(
-      `[${new Date().toISOString()}] Player joined room '${this.roomId}' - Player ID: ${client.sessionId}`
+      `[${new Date().toISOString()}] Player joined room '${this.roomId}' - Player ID: ${client.sessionId}`,
     );
 
     // Create new player
@@ -220,7 +220,7 @@ export class RuneRogueRoom extends Room<GameState> {
     });
 
     console.log(
-      `[${new Date().toISOString()}] Room '${this.roomId}' state - Players: ${this.clients.length}/${this.maxClients}`
+      `[${new Date().toISOString()}] Room '${this.roomId}' state - Players: ${this.clients.length}/${this.maxClients}`,
     );
   }
 
@@ -235,25 +235,27 @@ export class RuneRogueRoom extends Room<GameState> {
    */
   onLeave(client: Client, consented: boolean) {
     console.log(
-      `[${new Date().toISOString()}] Player left room '${this.roomId}' - Player ID: ${client.sessionId} (consented: ${consented})`
+      `[${new Date().toISOString()}] Player left room '${this.roomId}' - Player ID: ${client.sessionId} (consented: ${consented})`,
     );
 
     // Colyseus reconnection support: allow player to reconnect for 30 seconds
-    this.allowReconnection(client, 30).then(() => {
-      // Reconnection succeeded, do nothing (player state is preserved)
-      console.log(
-        `[${new Date().toISOString()}] Player reconnected to room '${this.roomId}' - Player ID: ${client.sessionId}`
-      );
-    }).catch(() => {
-      // Reconnection window expired, remove player
-      this.state.players.delete(client.sessionId);
-      console.log(
-        `[${new Date().toISOString()}] Player permanently left room '${this.roomId}' - Player ID: ${client.sessionId}`
-      );
-      console.log(
-        `[${new Date().toISOString()}] Room '${this.roomId}' state - Players: ${this.clients.length}/${this.maxClients}`
-      );
-    });
+    this.allowReconnection(client, 30)
+      .then(() => {
+        // Reconnection succeeded, do nothing (player state is preserved)
+        console.log(
+          `[${new Date().toISOString()}] Player reconnected to room '${this.roomId}' - Player ID: ${client.sessionId}`,
+        );
+      })
+      .catch(() => {
+        // Reconnection window expired, remove player
+        this.state.players.delete(client.sessionId);
+        console.log(
+          `[${new Date().toISOString()}] Player permanently left room '${this.roomId}' - Player ID: ${client.sessionId}`,
+        );
+        console.log(
+          `[${new Date().toISOString()}] Room '${this.roomId}' state - Players: ${this.clients.length}/${this.maxClients}`,
+        );
+      });
   }
 
   onDispose() {
@@ -340,7 +342,7 @@ export class RuneRogueRoom extends Room<GameState> {
         attacker.attackLevel,
         0, // No equipment bonus for now
         target.defenceLevel,
-        0 // No equipment bonus for now
+        0, // No equipment bonus for now
       );
 
       // Roll for hit success
@@ -385,12 +387,7 @@ export class RuneRogueRoom extends Room<GameState> {
         targetMaxHealth: target.maxHealth,
         hitSuccess: hitSuccess,
         accuracy: Math.round(accuracy * 100),
-        effectType:
-          hitSuccess ?
-            damage > 0 ?
-              "damage"
-            : "zero"
-          : "miss",
+        effectType: hitSuccess ? (damage > 0 ? "damage" : "zero") : "miss",
         position: {
           x: target.x,
           y: target.y,
@@ -412,7 +409,7 @@ export class RuneRogueRoom extends Room<GameState> {
       }
 
       console.log(
-        `Player ${attacker.id} ${hitSuccess ? "hit" : "missed"} ${target.type} for ${damage} damage (${Math.round(accuracy * 100)}% accuracy, ${target.health}/${target.maxHealth} HP)`
+        `Player ${attacker.id} ${hitSuccess ? "hit" : "missed"} ${target.type} for ${damage} damage (${Math.round(accuracy * 100)}% accuracy, ${target.health}/${target.maxHealth} HP)`,
       );
     } catch (error) {
       console.error("Error calculating OSRS damage:", error);
@@ -448,7 +445,7 @@ export class RuneRogueRoom extends Room<GameState> {
     });
 
     console.log(
-      `${attacker.type} dealt ${damage} damage to player ${target.id} (${target.health}/${target.maxHealth} HP)`
+      `${attacker.type} dealt ${damage} damage to player ${target.id} (${target.health}/${target.maxHealth} HP)`,
     );
   }
 
@@ -495,7 +492,7 @@ export class RuneRogueRoom extends Room<GameState> {
    */
   private getDistance(
     entity1: { x: number; y: number },
-    entity2: { x: number; y: number }
+    entity2: { x: number; y: number },
   ): number {
     return Math.abs(entity1.x - entity2.x) + Math.abs(entity1.y - entity2.y);
   }

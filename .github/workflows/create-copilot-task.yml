@@ -4,21 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       title:
-        description: 'Issue title'
+        description: "Issue title"
         required: true
       task_type:
-        description: 'Task type (Testing, Documentation, Linting, Feature, Bug)'
+        description: "Task type (Testing, Documentation, Linting, Feature, Bug)"
         required: true
-        default: 'Documentation'
+        default: "Documentation"
       priority:
-        description: 'Priority (High, Medium, Low)'
+        description: "Priority (High, Medium, Low)"
         required: true
-        default: 'Medium'
+        default: "Medium"
       description:
-        description: 'Task description'
+        description: "Task description"
         required: true
       acceptance_criteria:
-        description: 'Acceptance criteria (comma-separated list)'
+        description: "Acceptance criteria (comma-separated list)"
         required: true
 
 jobs:
@@ -51,35 +51,35 @@ jobs:
               });
               console.log('Copilot label created.');
             }
-            
+
             // Parse acceptance criteria into a list
             const criteriaList = context.payload.inputs.acceptance_criteria
               .split(',')
               .map(item => item.trim())
               .filter(item => item.length > 0)
               .map(item => `- [ ] ${item}`);
-            
+
             // Format the issue body using the Copilot Agent task template
             const issueBody = `## Task Type:
             ${context.payload.inputs.task_type}
-            
+
             ## Priority:
             ${context.payload.inputs.priority}
-            
+
             ## Description:
             ${context.payload.inputs.description}
-            
+
             ## Acceptance Criteria:
             ${criteriaList.join('\n')}
-            
+
             ## Environment:
             - [ ] Development
             - [ ] Testing
             - [ ] Production
-            
+
             ## Additional Information:
             Created via GitHub Actions workflow at ${new Date().toISOString()}`;
-            
+
             // Create the issue
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
@@ -88,9 +88,9 @@ jobs:
               body: issueBody,
               labels: ['copilot']
             });
-            
+
             console.log(`Created issue #${issue.data.number}`);
-            
+
             // Assign to GitHub Copilot
             await github.rest.issues.addAssignees({
               owner: context.repo.owner,
@@ -98,9 +98,9 @@ jobs:
               issue_number: issue.data.number,
               assignees: ['Copilot']
             });
-            
+
             console.log(`Assigned issue #${issue.data.number} to GitHub Copilot SWE Agent`);
-            
+
             // Add a comment to indicate the assignment was done automatically
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -112,13 +112,13 @@ jobs:
               
               [View Workflow Status](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
             });
-            
+
             // Set outputs for use in subsequent steps
             return { 
               issue_number: issue.data.number,
               issue_url: issue.data.html_url
             };
-            
+
       - name: Output issue details
         run: |
           echo "Created issue #${{ fromJSON(steps.create-issue.outputs.result).issue_number }}"

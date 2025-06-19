@@ -1,7 +1,7 @@
 ---
 name: Copilot Agent Task
 about: Create a task for GitHub Copilot Agent
-title: '[AGENT TASK] '
+title: "[AGENT TASK] "
 labels: copilot
 assignees: github-copilot[bot]
 ---

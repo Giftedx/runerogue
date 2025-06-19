@@ -363,13 +363,13 @@ export function calculateRangedMaxHit(
   rangedLevel: number,
   rangedStrength: number,
   prayerMultiplier: number = 1.0,
-  styleBonus: number = 0
+  styleBonus: number = 0,
 ): number {
   // OSRS ranged max hit formula
   const effectiveRanged =
     Math.floor(rangedLevel * prayerMultiplier) + styleBonus + 8;
   const maxHit = Math.floor(
-    0.5 + (effectiveRanged * (rangedStrength + 64)) / 640
+    0.5 + (effectiveRanged * (rangedStrength + 64)) / 640,
   );
 
   return Math.max(1, maxHit);
@@ -384,7 +384,7 @@ export function calculateRangedAccuracy(
   targetDefenceLevel: number,
   targetRangedDefence: number,
   prayerMultiplier: number = 1.0,
-  styleBonus: number = 0
+  styleBonus: number = 0,
 ): number {
   // Effective ranged level
   const effectiveRangedLevel =
@@ -425,7 +425,7 @@ export function getAttackSpeedModifier(style: RangedAttackStyle): number {
  */
 export function canUseAmmunition(
   weapon: RangedWeapon,
-  ammo: Ammunition
+  ammo: Ammunition,
 ): boolean {
   return weapon.ammunitionType === ammo.type;
 }
@@ -434,7 +434,7 @@ export function canUseAmmunition(
  * Get weapon by ID
  */
 export function getRangedWeaponById(
-  weaponId: number
+  weaponId: number,
 ): RangedWeapon | undefined {
   return RANGED_WEAPONS.find((weapon) => weapon.id === weaponId);
 }
@@ -465,7 +465,7 @@ export function getAvailableAmmunition(rangedLevel: number): Ammunition[] {
  */
 export function calculateTotalRangedStrength(
   weapon: RangedWeapon,
-  ammo: Ammunition | null = null
+  ammo: Ammunition | null = null,
 ): number {
   let totalStrength = weapon.strengthBonus;
 

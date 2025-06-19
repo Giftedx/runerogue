@@ -211,14 +211,14 @@ CONFIG_FILE=config/config.yml  # Configuration file path
 # config/config.yml
 debug: false
 dry_run: false
-log_level: 'INFO'
+log_level: "INFO"
 timeout: 30
 port: 5000
 
 # Scraping configuration
 scraper:
   user_agents:
-    - 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
   retry_attempts: 3
   backoff_factor: 2
 

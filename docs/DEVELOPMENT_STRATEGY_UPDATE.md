@@ -2,7 +2,7 @@
 
 **From:** Master Orchestrator  
 **To:** All Active Agents  
-**Re:** Competitive Intelligence & Strategic Focus  
+**Re:** Competitive Intelligence & Strategic Focus
 
 ---
 
@@ -17,7 +17,7 @@ We've analyzed [Giftedx/runerogue](https://github.com/Giftedx/runerogue) - anoth
 ## ✅ WHAT WE'RE DOING RIGHT
 
 1. **Focused Scope** - Vampire Survivors gameplay, not full OSRS
-2. **Clear Phases** - Sequential, not 9 parallel modules  
+2. **Clear Phases** - Sequential, not 9 parallel modules
 3. **Platform Innovation** - Discord-native, not another client
 4. **Specialized Agents** - Clear ownership and boundaries
 5. **New Multiplayer Robustness:** Seamless reconnection, real-time performance validation, and authentic OSRS movement in the browser client.
@@ -29,12 +29,14 @@ We've analyzed [Giftedx/runerogue](https://github.com/Giftedx/runerogue) - anoth
 ### **For All Agents:**
 
 1. **Use Feature Branches**
+
    ```bash
    git checkout -b agent/osrs-data/combat-formulas
    git checkout -b agent/backend-infra/colyseus-setup
    ```
 
 2. **Track TODOs Consistently**
+
    ```typescript
    // TODO(osrs-data): Implement prayer bonus calculations
    // TODO(backend-infra): Add rate limiting to rooms
@@ -52,12 +54,14 @@ We've analyzed [Giftedx/runerogue](https://github.com/Giftedx/runerogue) - anoth
 ## 🚫 WHAT NOT TO DO
 
 ### **Scope Creep Warnings:**
+
 - ❌ NO Grand Exchange implementation (Phase 0-1)
 - ❌ NO PvP systems (not our focus)
 - ❌ NO Complex skill trees (keep it simple)
 - ❌ NO Procedural maps (fixed arenas work fine)
 
 ### **Stay Focused On:**
+
 - ✅ Combat that feels like OSRS
 - ✅ Waves like Vampire Survivors
 - ✅ Quick Discord sessions
@@ -70,6 +74,7 @@ We've analyzed [Giftedx/runerogue](https://github.com/Giftedx/runerogue) - anoth
 **"5-minute OSRS combat sessions on Discord"**
 
 While others build complex MMOs, we're building the perfect game for:
+
 - Discord communities during voice chats
 - OSRS fans on work breaks
 - Casual sessions with deep mechanics
@@ -79,16 +84,19 @@ While others build complex MMOs, we're building the perfect game for:
 ## 💡 STRATEGIC REMINDERS
 
 ### **agent/osrs-data:**
+
 - Focus on combat mechanics, not full skill system
 - 5 enemies is enough for Phase 0
 - Accuracy > Completeness
 
 ### **agent/backend-infra:**
+
 - 4-player rooms perfect for Discord groups
 - Performance > Features
 - Simple > Complex
 
 ### **Future Phases:**
+
 - Phase 1: Core game loop (movement, combat, waves)
 - Phase 2: Basic progression (levels, unlocks)
 - Phase 3: Discord integration polish
@@ -99,11 +107,13 @@ While others build complex MMOs, we're building the perfect game for:
 ## 📈 SUCCESS METRICS THAT MATTER
 
 **Forget:**
+
 - Feature count
 - System complexity
 - Full OSRS compliance
 
 **Focus:**
+
 - Time to first playable build
 - Fun factor in 5 minutes
 - Discord integration smoothness
@@ -121,4 +131,4 @@ The other RuneRogue proves market interest but also shows the danger of scope cr
 
 **Keep building, stay focused, ship fast!**
 
-*- Master Orchestrator* 
+_- Master Orchestrator_

@@ -14,4 +14,4 @@ This package contains a simplified, alternative implementation of the RuneRogue 
 
 This package should be considered **deprecated** and is kept for historical reference only. All new server development should be done in the `@runerogue/server` package, which contains the active, canonical implementation of the game's backend.
 
-The contents of this package are pending review for potential migration of useful concepts before being archived or deleted. 
+The contents of this package are pending review for potential migration of useful concepts before being archived or deleted.

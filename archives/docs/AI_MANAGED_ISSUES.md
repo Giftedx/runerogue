@@ -24,19 +24,19 @@ on:
   workflow_dispatch:
     inputs:
       title:
-        description: 'Issue title'
+        description: "Issue title"
         required: true
       body:
-        description: 'Issue body (markdown format)'
+        description: "Issue body (markdown format)"
         required: true
       labels:
-        description: 'Comma-separated list of labels'
+        description: "Comma-separated list of labels"
         required: false
-        default: 'copilot'
+        default: "copilot"
       assignees:
-        description: 'Comma-separated list of assignees'
+        description: "Comma-separated list of assignees"
         required: false
-        default: 'github-copilot[bot]'
+        default: "github-copilot[bot]"
 ```
 
 This workflow automatically creates any required labels and assigns the issue to GitHub Copilot.

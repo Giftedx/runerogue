@@ -1,3 +1,5 @@
+/* globals window */
+
 /**
  * Discord Activity Validation Script
  *

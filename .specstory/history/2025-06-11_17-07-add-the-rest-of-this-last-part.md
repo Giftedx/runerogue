@@ -29,4 +29,3 @@ Add the closing brackets for the pull request description instructions configura
 The file was missing the closing `}` for the object inside the array and the final closing `}` for the root JSON object.
 
 ---
-

@@ -15,11 +15,14 @@
 **Assignee:** `github-copilot[bot]`
 
 **Issue Body:**
-```markdown
+
+````markdown
 ## Task Type
+
 - [x] Feature - Implement a new feature
 
 ## Priority
+
 - [x] High
 
 ## Description
@@ -33,26 +36,30 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 ## Specific Requirements
 
 ### 1. Combat Formulas Implementation
+
 - **Max Hit formula** (Strength bonus, Prayer effects, Equipment bonuses)
-- **Accuracy formula** (Attack vs Defence calculations) 
+- **Accuracy formula** (Attack vs Defence calculations)
 - **Attack speed calculations** for different weapon types
 - Must match OSRS Wiki formulas **EXACTLY**
 
 ### 2. Initial Enemy Data (5 enemies required)
+
 - **Goblin** (level 2) - Complete stat block from Wiki
 - **Cow** (level 2) - Complete stat block from Wiki
 - **Chicken** (level 1) - Complete stat block from Wiki
-- **Giant Rat** (level 1) - Complete stat block from Wiki  
+- **Giant Rat** (level 1) - Complete stat block from Wiki
 - **Zombie** (level 13) - Complete stat block from Wiki
 
 ### 3. Player Base Stats
+
 - Base combat stats (Attack: 1, Strength: 1, Defence: 1, Hitpoints: 10)
 - Combat level calculation implementation
 - Base equipment stats (no equipment = 0 bonuses)
 
 ### 4. Data API Structure
+
 - `GET /api/combat/max-hit` - Calculate max hit for given stats
-- `GET /api/combat/accuracy` - Calculate hit probability  
+- `GET /api/combat/accuracy` - Calculate hit probability
 - `GET /api/enemies/{id}` - Get enemy stats by ID
 - `GET /api/formulas/validate` - Validate calculations against Wiki
 - `GET /health` - API health check
@@ -60,14 +67,16 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 ## Relevant Code References
 
 **Package Structure (Already Created):**
+
 - `packages/osrs-data/src/scrapers/` - Wiki scraping utilities
-- `packages/osrs-data/src/parsers/` - Data parsing & validation  
+- `packages/osrs-data/src/parsers/` - Data parsing & validation
 - `packages/osrs-data/src/calculators/` - OSRS formula implementations
 - `packages/osrs-data/src/api/` - Data service API endpoints
 - `packages/osrs-data/data/` - Generated JSON data files
 - `packages/osrs-data/tests/` - Validation tests
 
 **Key Files to Create:**
+
 - `src/calculators/combat.ts` - Combat formulas
 - `src/scrapers/wiki-scraper.ts` - OSRS Wiki scraper
 - `src/api/server.ts` - Express API server
@@ -76,11 +85,13 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 ## Custom MCP Tool Options
 
 **Use these MCP tools for Wiki access:**
+
 - `mcp_osrs_osrs_wiki_search` - Search for specific pages
-- `mcp_osrs_osrs_wiki_parse_page` - Extract page content  
+- `mcp_osrs_osrs_wiki_parse_page` - Extract page content
 - `mcp_osrs_search_npctypes` - Search NPC definitions
 
 **Wiki References:**
+
 - https://oldschool.runescape.wiki/w/Combat_level
 - https://oldschool.runescape.wiki/w/Damage_per_second/Melee
 - https://oldschool.runescape.wiki/w/Goblin
@@ -92,7 +103,7 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 ## Acceptance Criteria
 
 - [ ] Combat max hit calculations match OSRS Wiki formulas exactly
-- [ ] Combat accuracy calculations match OSRS Wiki formulas exactly  
+- [ ] Combat accuracy calculations match OSRS Wiki formulas exactly
 - [ ] All 5 enemy stat blocks are complete and accurate
 - [ ] JSON API endpoints return valid, structured data
 - [ ] Unit tests validate all calculations against known OSRS examples
@@ -111,21 +122,24 @@ Create the foundational OSRS Wiki data pipeline that serves as the canonical sou
 ## Examples
 
 **Expected Max Hit Calculation:**
+
 ```typescript
 // Player with 10 Strength, no equipment, no prayers
 const maxHit = calculateMaxHit({
   strength: 10,
   strengthBonus: 0,
-  prayerMultiplier: 1.0
+  prayerMultiplier: 1.0,
 });
 // Expected result: 1 (verified against OSRS Wiki)
 ```
+````
 
 **Expected Enemy Data Structure:**
+
 ```json
 {
   "id": "goblin",
-  "name": "Goblin", 
+  "name": "Goblin",
   "combatLevel": 2,
   "hitpoints": 5,
   "attackLevel": 1,
@@ -145,14 +159,15 @@ const maxHit = calculateMaxHit({
 ## Related Issues
 
 - **Blocks:** Phase 1 gameplay implementation
-- **Required by:** agent/gameplay-systems combat calculations  
+- **Required by:** agent/gameplay-systems combat calculations
 - **Required by:** agent/qa-tester validation tests
 - **Works with:** agent/backend-infra (independent parallel work)
 
 **Dependencies:** None (foundational task)
 **Estimated Duration:** 3-4 days
 **Phase:** Phase 0 - Foundation & Data Pipeline
-```
+
+````
 
 ---
 
@@ -257,10 +272,12 @@ Set up the foundational multiplayer server infrastructure using Colyseus that wi
 ## Examples
 
 **Expected Room Connection Log:**
-```
+````
+
 [2024-01-15 10:30:45] INFO: Player connected to room 'game_001' - Player ID: player_abc123
 [2024-01-15 10:30:45] INFO: Room 'game_001' state - Players: 1/4
-```
+
+````
 
 **Expected Health Check Response:**
 ```json
@@ -271,7 +288,7 @@ Set up the foundational multiplayer server infrastructure using Colyseus that wi
   "totalPlayers": 7,
   "timestamp": "2024-01-15T10:30:45.123Z"
 }
-```
+````
 
 ## Task Priority
 
@@ -286,6 +303,7 @@ Set up the foundational multiplayer server infrastructure using Colyseus that wi
 **Dependencies:** None (independent infrastructure task)
 **Estimated Duration:** 2-3 days  
 **Phase:** Phase 0 - Foundation & Data Pipeline
+
 ```
 
 ---
@@ -308,6 +326,7 @@ When both tasks complete successfully with passing tests → Phase 1 begins
 
 ---
 
-**Master Orchestrator Status:** ✅ AGENT TASKS READY FOR DEPLOYMENT  
-**Action Required:** Create GitHub Issues using above specifications  
-**Timeline:** Phase 0 completion target: 7 days from deployment 
+**Master Orchestrator Status:** ✅ AGENT TASKS READY FOR DEPLOYMENT
+**Action Required:** Create GitHub Issues using above specifications
+**Timeline:** Phase 0 completion target: 7 days from deployment
+```

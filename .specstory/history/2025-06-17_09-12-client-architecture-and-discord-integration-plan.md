@@ -104,7 +104,7 @@ Finally, we'll stabilize the codebase:
 For the next chat, please use this prompt to continue development:
 
 ```
-I'd like to implement the client architecture for RuneRogue with a Phaser + React integration. 
+I'd like to implement the client architecture for RuneRogue with a Phaser + React integration.
 
 Please:
 
@@ -142,7 +142,4 @@ continue agentically
 
 _**Assistant**_
 
-
-
 ---
-

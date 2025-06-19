@@ -1,6 +1,6 @@
 // src/auth/auth.ts
 
-import { User } from './models';
+import { User } from "./models";
 // In a real application, you would import bcryptjs for password hashing
 // import bcrypt from 'bcryptjs';
 
@@ -13,7 +13,6 @@ import { User } from './models';
 const users: Map<string, User> = new Map();
 
 export class AuthService {
-
   /**
    * Registers a new user.
    * @param username The user's chosen username.
@@ -21,10 +20,20 @@ export class AuthService {
    * @param password The user's plain-text password.
    * @returns The newly created user, or null if registration fails (e.g., username/email taken).
    */
-  public async register(username: string, email: string, password: string): Promise<User | null> {
+  public async register(
+    username: string,
+    email: string,
+    password: string,
+  ): Promise<User | null> {
     // In a real app, check if username or email already exists in DB
-    if (Array.from(users.values()).some(u => u.username === username || u.email === email)) {
-      console.warn(`Registration failed: Username or email already exists for ${username}/${email}`);
+    if (
+      Array.from(users.values()).some(
+        (u) => u.username === username || u.email === email,
+      )
+    ) {
+      console.warn(
+        `Registration failed: Username or email already exists for ${username}/${email}`,
+      );
       return null;
     }
 
@@ -52,7 +61,9 @@ export class AuthService {
    * @returns The authenticated user, or null if authentication fails.
    */
   public async login(username: string, password: string): Promise<User | null> {
-    const user = Array.from(users.values()).find(u => u.username === username);
+    const user = Array.from(users.values()).find(
+      (u) => u.username === username,
+    );
     if (!user) {
       console.warn(`Login failed: User ${username} not found.`);
       return null;
@@ -82,10 +93,12 @@ export class AuthService {
     return `mock_jwt_token_for_${user.id}`; // Mock token
   }
 
-  public validateToken(token: string): { userId: string; username: string } | null {
+  public validateToken(
+    token: string,
+  ): { userId: string; username: string } | null {
     // try { return jwt.verify(token, process.env.JWT_SECRET); } catch (e) { return null; }
-    if (token.startsWith('mock_jwt_token_for_')) {
-      const userId = token.replace('mock_jwt_token_for_', '');
+    if (token.startsWith("mock_jwt_token_for_")) {
+      const userId = token.replace("mock_jwt_token_for_", "");
       const user = users.get(userId);
       if (user) return { userId: user.id, username: user.username };
     }
