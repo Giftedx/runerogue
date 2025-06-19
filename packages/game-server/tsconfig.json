@@ -10,15 +10,15 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "**/*.ts",
-    "**/*.js"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "__mocks__"
+    "__mocks__",
+    "*.js"
   ],
   "references": [
     {

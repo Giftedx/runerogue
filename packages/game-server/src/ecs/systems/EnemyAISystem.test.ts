@@ -6,16 +6,16 @@
 
 import { GameState, Player, Enemy } from "../../schemas/GameState";
 import { EnemyAISystem } from "./EnemyAISystem";
-import {
-  OSRS_TICK_MS,
-  WEAPON_SPEEDS,
-} from "../../../../../packages/shared/src/constants";
+import { OSRS_TICK_MS } from "@runerogue/osrs-data";
+import { describe, it, expect, vi, beforeEach } from "@jest/globals";
+import { createWorld, addEntity, addComponent, removeEntity } from "bitecs";
+import { Position, Velocity, Health, EntityType, Target } from "../components";
 
 // Mock the GameRoom and its state
 const mockRoom = {
   state: new GameState(),
   handleAttack: jest.fn(),
-};
+} as unknown as GameRoom;
 
 describe("EnemyAISystem", () => {
   let enemyAISystem: EnemyAISystem;
@@ -32,7 +32,7 @@ describe("EnemyAISystem", () => {
   beforeEach(() => {
     state = new GameState();
     // Casting to any to satisfy the constructor while using a simplified mock
-    enemyAISystem = new EnemyAISystem(state, mockRoom as any);
+    enemyAISystem = new EnemyAISystem(state, mockRoom);
     state.gameStarted = true;
     mockRoom.handleAttack.mockClear();
     jest.clearAllTimers();
@@ -97,14 +97,14 @@ describe("EnemyAISystem", () => {
     state.enemies.set(enemy.id, enemy);
 
     const initialDistance = Math.sqrt(
-      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
+      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
     );
 
     // Simulate one game tick
     enemyAISystem.execute(OSRS_TICK_MS);
 
     const newDistance = Math.sqrt(
-      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
+      Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
     );
 
     // The enemy should move 1 tile per tick
@@ -150,7 +150,7 @@ describe("EnemyAISystem", () => {
     enemy.aiState = "ATTACKING";
     enemy.targetId = player.id;
     // Set last attack time to be recent
-    enemy.lastAttackTime = Date.now() - 1000;
+    enemy.lastAttackTime = Date.now() - (attackSpeed as number) - 100;
     state.enemies.set(enemy.id, enemy);
 
     enemyAISystem.execute(16);
@@ -194,6 +194,40 @@ describe("EnemyAISystem", () => {
     enemy.aiState = "ATTACKING";
     enemy.targetId = player.id;
     state.enemies.set(enemy.id, enemy);
+
+    enemyAISystem.execute(16);
+
+    expect(enemy.aiState).toBe("IDLE");
+    expect(enemy.targetId).toBe("");
+  });
+
+  it("should handle entities without required components", () => {
+    const mockState = {} as GameState;
+    const mockWorld = createWorldFromState(mockState);
+
+    enemyAISystem = new EnemyAISystem(mockState, mockRoom);
+
+    enemyAISystem.execute(16);
+
+    expect(true).toBe(true); // If no errors, test passes
+  });
+
+  it("should handle missing enemy in map", () => {
+    const player = new Player();
+    player.id = "player1";
+    player.x = 5;
+    player.y = 6;
+    state.players.set(player.id, player);
+
+    const enemy = new Enemy();
+    enemy.id = "enemy1";
+    enemy.x = 5;
+    enemy.y = 5;
+    enemy.aiState = "ATTACKING";
+    enemy.targetId = player.id;
+    state.enemies.set(enemy.id, enemy);
+
+    Target.entity[enemy] = 999 as number; // Cast to number explicitly
 
     enemyAISystem.execute(16);
 

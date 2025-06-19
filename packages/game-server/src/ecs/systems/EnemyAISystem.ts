@@ -4,8 +4,15 @@
  * @author RuneRogue Development Team
  */
 
-import { System, World } from "@colyseus/ecs";
-import { GameState, Enemy, Player } from "../../schemas/GameState";
+import { defineSystem, defineQuery, hasComponent, type World } from "bitecs";
+import type {
+  Position,
+  Velocity,
+  Health,
+  EntityType,
+  Target,
+} from "../components";
+import type { GameState, Enemy, Player } from "../../schemas/GameState";
 import { WEAPON_SPEEDS } from "../../../../shared/src/types/osrs";
 
 // OSRS tick duration (0.6s per tick)
@@ -34,7 +41,7 @@ export class EnemyAISystem extends System {
    * Executes the system logic for each enemy entity on every game tick.
    * @param delta The time elapsed since the last update.
    */
-  execute(delta: number): void {
+  execute(_delta: number): void {
     if (!this.state.gameStarted) return;
 
     this.state.enemies.forEach((enemy) => {
@@ -61,7 +68,7 @@ export class EnemyAISystem extends System {
     this.state.players.forEach((player: Player) => {
       if (player.isDead) return;
       const distance = Math.sqrt(
-        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
+        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
       );
       if (distance < AGGRESSION_RADIUS && distance < minDistance) {
         minDistance = distance;
@@ -87,12 +94,13 @@ export class EnemyAISystem extends System {
       enemy.aiState = "IDLE";
       return;
     }
-    const distance = Math.sqrt(
-      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2),
-    );
+    const dx = target.x - enemy.x;
+    const dy = target.y - enemy.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
     // Move towards target if not in melee range
     if (distance > MELEE_RANGE) {
-      const angle = Math.atan2(target.y - enemy.y, target.x - enemy.x);
+      const angle = Math.atan2(dy, dx);
       const speed = 1 / OSRS_TICK_MS; // 1 tile per tick
       enemy.x += Math.cos(angle) * speed * OSRS_TICK_MS;
       enemy.y += Math.sin(angle) * speed * OSRS_TICK_MS;
@@ -103,10 +111,33 @@ export class EnemyAISystem extends System {
       enemy.lastAttackTime = now;
       // This is where the server would trigger the combat calculation.
       // For now, we'll just log it.
-      console.log(`Enemy ${enemy.id} attacks Player ${target.id}`);
+      console.info(`Enemy ${enemy.id} attacks Player ${target.id}`);
       // In a real implementation, you would call a method in your game room
       // to handle the damage calculation and state update.
       // e.g., this.room.handleAttack(enemy, target);
     }
   }
 }
+
+export const createEnemyAISystem = (
+  playerMap: MapSchema<Player>,
+  enemyMap: MapSchema<Enemy>,
+  worldBounds: { width: number; height: number }
+) => {
+  return defineSystem((world: World, _delta: number) => {
+    // ...existing code...
+
+    if (target !== 0) {
+      // ...existing code...
+    }
+
+    if (enemy && !enemy.target) {
+      console.warn(
+        `[EnemyAI] Enemy ${enemy.id} target player ${playerId} not found`
+      );
+      // ...existing code...
+    }
+
+    return world;
+  });
+};

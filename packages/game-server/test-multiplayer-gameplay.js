@@ -34,6 +34,14 @@ class TestPlayer {
       console.log(`❌ ${this.name} movement rejected:`, data.reason);
     });
 
+    this.room.onMessage("damage", (_data) => {
+      // Handle damage message
+    });
+
+    this.room.onMessage("*", (type, _data) => {
+      console.log(`[Room 1] Message:`, type);
+    });
+
     // Track state changes
     this.room.onStateChange((state) => {
       if (state.gameStarted !== this.lastGameState) {
@@ -86,7 +94,7 @@ class TestPlayer {
 
       this.move(
         Math.max(0, Math.min(30, this.position.x + deltaX)),
-        Math.max(0, Math.min(30, this.position.y + deltaY)),
+        Math.max(0, Math.min(30, this.position.y + deltaY))
       );
 
       this.lastMoveTime = currentTime;
@@ -95,7 +103,7 @@ class TestPlayer {
 }
 
 async function runMultiplayerTest() {
-  console.log("🎮 ===== RuneRogue Multiplayer Test ===== 🎮\\n");
+  console.log("🎮 ===== RuneRogue Multiplayer Test ===== 🎮\n");
 
   // Create test players
   const players = [
@@ -106,14 +114,14 @@ async function runMultiplayerTest() {
 
   try {
     // Phase 1: Connect all players
-    console.log("\\n📡 Phase 1: Connecting players...");
+    console.log("\n📡 Phase 1: Connecting players...");
     for (const player of players) {
       await player.connect();
       await new Promise((resolve) => setTimeout(resolve, 500)); // Stagger connections
     }
 
     // Phase 2: Move players around
-    console.log("\\n🏃 Phase 2: Testing movement...");
+    console.log("\n🏃 Phase 2: Testing movement...");
     players[0].move(5, 5); // Alice moves slowly
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -124,12 +132,12 @@ async function runMultiplayerTest() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Phase 3: Start game
-    console.log("\\n🚀 Phase 3: Starting game...");
+    console.log("\n🚀 Phase 3: Starting game...");
     players[0].startGame(); // Alice starts the game
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Phase 4: Simulate gameplay
-    console.log("\\n⚔️ Phase 4: Simulating combat phase...");
+    console.log("\n⚔️ Phase 4: Simulating combat phase...");
 
     // Move players around for a few seconds
     const gameplayDuration = 5000; // 5 seconds of gameplay
@@ -141,13 +149,13 @@ async function runMultiplayerTest() {
     clearInterval(intervalId);
 
     // Phase 5: Disconnect players
-    console.log("\\n👋 Phase 5: Disconnecting players...");
+    console.log("\n👋 Phase 5: Disconnecting players...");
     for (let i = 0; i < players.length; i++) {
       players[i].disconnect();
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    console.log("\\n✅ Multiplayer test completed successfully!");
+    console.log("\n✅ Multiplayer test completed successfully!");
   } catch (error) {
     console.error("❌ Test failed:", error);
   } finally {

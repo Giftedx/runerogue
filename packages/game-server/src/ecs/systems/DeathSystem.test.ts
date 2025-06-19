@@ -4,15 +4,16 @@
  * @author Your Name
  */
 
-import { GameState, Player, Enemy } from "../../schemas/GameState";
+import type { GameState } from "../../schemas/GameState";
+import { Player, Enemy } from "../../schemas/GameState";
 import { DeathSystem } from "./DeathSystem";
-import { GameRoom } from "../../../server/rooms/RuneRogueGameRoom";
+import type { GameRoom } from "../../../server/rooms/RuneRogueGameRoom";
 
 // A simplified mock of the GameRoom for testing purposes
 const mockRoom = {
   state: new GameState(),
   broadcast: jest.fn(),
-};
+} as unknown as GameRoom;
 
 describe("DeathSystem", () => {
   let deathSystem: DeathSystem;
@@ -28,9 +29,8 @@ describe("DeathSystem", () => {
 
   beforeEach(() => {
     state = new GameState();
-    // We cast to `any` then to `GameRoom` to satisfy TypeScript's type system
-    // with our simplified mock object.
-    deathSystem = new DeathSystem(state, mockRoom as any as GameRoom);
+    // We cast to GameRoom directly since we have proper type definition
+    deathSystem = new DeathSystem(state, mockRoom);
     state.gameStarted = true;
     state.enemiesKilled = 0;
     mockRoom.broadcast.mockClear();
@@ -132,5 +132,11 @@ describe("DeathSystem", () => {
       // The kill count should not be incremented again
       expect(state.enemiesKilled).toBe(0);
     });
+  });
+
+  it("should handle entities without health component", () => {
+    const mockState = createMockState() as unknown as GameState;
+    const world = createWorldFromState(mockState);
+    // ...existing code...
   });
 });

@@ -23,9 +23,9 @@ class DeathSystem extends ecs_1.System {
   }
   /**
    * Executes the system logic for each entity on every game tick.
-   * @param {number} delta - The time elapsed since the last update.
+   * @param {number} _delta - The time elapsed since the last update.
    */
-  execute(delta) {
+  execute(_delta) {
     if (!this.state.gameStarted) return;
     // Check for dead players
     this.state.players.forEach((player) => {

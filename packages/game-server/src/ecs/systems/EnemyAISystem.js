@@ -22,9 +22,9 @@ class EnemyAISystem extends ecs_1.System {
   }
   /**
    * Executes the system logic for each enemy entity on every game tick.
-   * @param {number} delta - The time elapsed since the last update.
+   * @param {number} _delta - The time elapsed since the last update.
    */
-  execute(delta) {
+  execute(_delta) {
     if (!this.state.gameStarted) return;
     this.state.enemies.forEach((enemy) => {
       if (!enemy.alive) {
@@ -52,7 +52,7 @@ class EnemyAISystem extends ecs_1.System {
     this.state.players.forEach((player) => {
       if (player.isDead) return;
       const distance = Math.sqrt(
-        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2),
+        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
       );
       if (distance < AGGRESSION_RADIUS && distance < minDistance) {
         minDistance = distance;
@@ -77,7 +77,7 @@ class EnemyAISystem extends ecs_1.System {
       return;
     }
     const distance = Math.sqrt(
-      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2),
+      Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2)
     );
     // 2. Move towards target if not in melee range
     if (distance > MELEE_RANGE) {

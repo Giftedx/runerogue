@@ -4,9 +4,10 @@
  * @author Your Name
  */
 
-import { System, World } from "@colyseus/ecs";
-import { GameState, Player, Enemy } from "../../schemas/GameState";
-import { RuneRogueRoom } from "../../rooms/RuneRogueRoom";
+import { defineSystem, type World } from "bitecs";
+import type { GameState, Enemy, Player } from "../../schemas/GameState";
+import type { GameRoom } from "../../../server/rooms/RuneRogueGameRoom";
+import { type MapSchema } from "@colyseus/schema";
 
 const RESPAWN_TIME = 5000; // 5 seconds
 const ENEMY_REMOVAL_DELAY = 1000; // 1 second for death animation
@@ -15,14 +16,23 @@ const ENEMY_REMOVAL_DELAY = 1000; // 1 second for death animation
  * @class DeathSystem
  * @classdesc A system that manages entity death, including player respawning and enemy removal.
  */
-export class DeathSystem extends System {
+export class DeathSystem {
   private state: GameState;
-  private room: RuneRogueRoom;
+  private room: GameRoom;
+  private playerMap: MapSchema<Player>;
+  private enemyMap: MapSchema<Enemy>;
 
-  constructor(world: World, state: GameState, room: RuneRogueRoom) {
-    super(world);
+  constructor(
+    world: World,
+    state: GameState,
+    room: GameRoom,
+    playerMap: MapSchema<Player>,
+    enemyMap: MapSchema<Enemy>
+  ) {
     this.state = state;
     this.room = room;
+    this.playerMap = playerMap;
+    this.enemyMap = enemyMap;
   }
 
   /**
@@ -33,17 +43,53 @@ export class DeathSystem extends System {
     if (!this.state.gameStarted) return;
 
     // Check for dead players
-    this.state.players.forEach((player) => {
-      if (player.health <= 0 && !player.isDead) {
-        this.handlePlayerDeath(player);
-      }
-    });
+    const deadPlayers = this.getDeadPlayers();
+    if (deadPlayers.length > 0) {
+      console.info(
+        "[DeathSystem] Processing dead players:",
+        deadPlayers.length
+      );
+
+      deadPlayers.forEach((eid) => {
+        const player = this.playerMap.get(eid);
+        if (player) {
+          this.handlePlayerDeath(player);
+          console.info(
+            `[DeathSystem] Player ${player.id} died at position (${player.x}, ${player.y})`
+          );
+        }
+      });
+    }
 
     // Check for dead enemies
-    this.state.enemies.forEach((enemy) => {
-      if (enemy.health <= 0 && enemy.alive) {
-        this.handleEnemyDeath(enemy);
-      }
+    const deadEnemies = this.getDeadEnemies();
+    if (deadEnemies.length > 0) {
+      console.info(
+        "[DeathSystem] Processing dead enemies:",
+        deadEnemies.length
+      );
+
+      deadEnemies.forEach((eid) => {
+        const enemy = this.enemyMap.get(eid);
+        if (enemy) {
+          this.handleEnemyDeath(enemy);
+          console.info(`[DeathSystem] Enemy ${enemy.id} died`);
+        }
+      });
+    }
+  }
+
+  private getDeadPlayers(): string[] {
+    return Array.from(this.playerMap.keys()).filter((eid) => {
+      const player = this.playerMap.get(eid);
+      return player && player.health <= 0 && !player.isDead;
+    });
+  }
+
+  private getDeadEnemies(): string[] {
+    return Array.from(this.enemyMap.keys()).filter((eid) => {
+      const enemy = this.enemyMap.get(eid);
+      return enemy && enemy.health <= 0 && enemy.alive;
     });
   }
 
@@ -53,9 +99,8 @@ export class DeathSystem extends System {
    */
   private handlePlayerDeath(player: Player): void {
     player.isDead = true;
-    this.room.broadcast("entityDied", { entityId: player.id, isPlayer: true });
-
-    console.log(`Player ${player.name} has died.`);
+    console.info(`Player ${player.name} has died`);
+    console.info(`Starting respawn timer for player ${player.name}`);
 
     // Respawn timer
     setTimeout(() => {
@@ -65,6 +110,9 @@ export class DeathSystem extends System {
       player.y = 0;
       console.log(`Player ${player.name} has respawned.`);
     }, RESPAWN_TIME);
+
+    // Broadcast death event
+    this.room.broadcast("entityDied", { entityId: player.id, isPlayer: true });
   }
 
   /**
@@ -73,14 +121,29 @@ export class DeathSystem extends System {
    */
   private handleEnemyDeath(enemy: Enemy): void {
     enemy.alive = false;
-    this.room.broadcast("entityDied", { entityId: enemy.id, isPlayer: false });
+    console.info(`Enemy ${enemy.id} has died`);
+    console.info(`Enemy killed. Total: ${this.state.enemiesKilled + 1}`);
+    this.state.enemiesKilled++;
 
-    console.log(`Enemy ${enemy.id} has died.`);
+    // TODO: Handle drops
+    console.info("TODO: Implement enemy drops");
 
     // Delayed removal for animation
     setTimeout(() => {
       this.state.enemies.delete(enemy.id);
       console.log(`Enemy ${enemy.id} removed from game.`);
     }, ENEMY_REMOVAL_DELAY);
+
+    // Broadcast death event
+    this.room.broadcast("entityDied", { entityId: enemy.id, isPlayer: false });
   }
 }
+
+export const createDeathSystem = (
+  playerMap: MapSchema<Player>,
+  enemyMap: MapSchema<Enemy>
+) => {
+  return defineSystem((world: World) => {
+    // ...existing code...
+  });
+};

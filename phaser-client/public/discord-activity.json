@@ -1,0 +1,22 @@
+{
+  "name": "RuneRogue",
+  "description": "A real-time multiplayer RuneScape-inspired roguelike game with turn-based combat, resource gathering, and anti-cheat validation.",
+  "developer": {
+    "name": "RuneRogue Team"
+  },
+  "url": "https://localhost:5174",
+  "type": "iframe",
+  "iframe": {
+    "url": "https://localhost:5174",
+    "width": 1024,
+    "height": 768
+  },
+  "scopes": ["activities.read", "applications.commands"],
+  "orientation": "landscape",
+  "categories": ["Games"],
+  "tags": ["multiplayer", "roguelike", "mmorpg", "turn-based", "retro"],
+  "privacy_policy_url": "https://localhost:5174/privacy",
+  "terms_of_service_url": "https://localhost:5174/terms",
+  "supported_platforms": ["desktop", "mobile"],
+  "version": "1.0.0"
+}
