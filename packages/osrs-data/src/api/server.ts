@@ -5,12 +5,14 @@
  * @author agent/osrs-data (The Lorekeeper)
  */
 
-import express, { type Request, type Response } from "express";
+import express, { type Express } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 
-const app = express();
+import { type Request, type Response } from "express";
+
+const app: Express = express();
 const PORT = process.env.PORT ?? 3001;
 
 // Middleware

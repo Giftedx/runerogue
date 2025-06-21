@@ -1,22 +1,22 @@
 import { Room, type Client } from "colyseus";
-import { World } from "@colyseus/ecs";
+import { createWorld, type IWorld } from "bitecs";
 
 import { GameRoomState, PlayerSchema } from "@runerogue/shared";
 
 // Systems
-import { MovementSystem } from "../ecs/systems/MovementSystem";
-import { EnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
-import { EnemyAISystem } from "../ecs/systems/EnemyAISystem";
-import { CombatSystem } from "../ecs/systems/CombatSystem";
+import { createMovementSystem } from "../ecs/systems/MovementSystem";
+import { createEnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
+import { createEnemyAISystem } from "../ecs/systems/EnemyAISystem";
+import { createCombatSystem } from "../ecs/systems/CombatSystem";
 
 // Components
 import {
   Position,
   Velocity,
   Health,
-  EntityType,
   Target,
   Combat,
+  Player,
 } from "../ecs/components";
 import { addEntity, addComponent, removeEntity } from "bitecs";
 
@@ -25,37 +25,52 @@ interface JoinOptions {
 }
 
 export class GameRoom extends Room<GameRoomState> {
-  world = new World();
+  private world: IWorld = createWorld();
+  private systems: ((world: IWorld) => IWorld)[] = [];
 
   onCreate() {
     this.state = new GameRoomState();
 
     // Register systems
-    this.world.registerSystem(MovementSystem);
-    this.world.registerSystem(EnemyAISystem);
-    this.world.registerSystem(CombatSystem);
-    this.world.registerSystem(EnemySpawnSystem);
+    this.systems.push(createMovementSystem());
+    this.systems.push(createEnemyAISystem());
+    this.systems.push(createCombatSystem(this));
+    this.systems.push(createEnemySpawnSystem(this));
 
     // Set up the game loop
-    this.setSimulationInterval((deltaTime) => {
-      this.world.execute(deltaTime);
+    this.setSimulationInterval((_deltaTime) => {
+      for (const system of this.systems) {
+        system(this.world);
+      }
     });
 
     // Handle player messages
-    this.onMessage("move", (_client, _data: { x: number; y: number }) => {
-      // This needs to be implemented correctly.
-      // It should probably update a component that a system then reads.
+    this.onMessage("move", (client, data: { x: number; y: number }) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player?.ecsId) {
+        // This is a simple direct manipulation for now.
+        // A better approach would be to have an Input component
+        // that the MovementSystem reads.
+        Velocity.x[player.ecsId] = data.x;
+        Velocity.y[player.ecsId] = data.y;
+      }
     });
 
-    this.onMessage("attack", (_client, _data: { targetId: string }) => {
-      // This needs to be implemented correctly.
+    this.onMessage("attack", (client, data: { targetId: string }) => {
+      const player = this.state.players.get(client.sessionId);
+      const target = this.state.enemies.get(data.targetId);
+
+      if (player?.ecsId && target?.ecsId) {
+        // Set the player's target
+        Target.eid[player.ecsId] = target.ecsId;
+      }
     });
   }
 
   onJoin(client: Client, options: JoinOptions) {
-    const player = new PlayerSchema();
-    player.id = client.sessionId;
-    player.name = options.name ?? `Player ${this.clients.length}`;
+    const playerSchema = new PlayerSchema();
+    playerSchema.id = client.sessionId;
+    playerSchema.name = options.name ?? `Player ${this.clients.length}`;
 
     const eid = addEntity(this.world);
 
@@ -68,18 +83,18 @@ export class GameRoom extends Room<GameRoomState> {
     Health.current[eid] = 10;
     Health.max[eid] = 10;
 
-    addComponent(this.world, EntityType, eid);
-    EntityType.isPlayer[eid] = 1;
+    addComponent(this.world, Player, eid);
 
     addComponent(this.world, Target, eid);
     addComponent(this.world, Combat, eid);
     Combat.attack[eid] = 1;
     Combat.strength[eid] = 1;
     Combat.defence[eid] = 1;
+    Combat.attackSpeed[eid] = 2400; // 4 ticks
 
-    player.ecsId = eid;
+    playerSchema.ecsId = eid;
 
-    this.state.players.set(client.sessionId, player);
+    this.state.players.set(client.sessionId, playerSchema);
   }
 
   onLeave(client: Client, _consented: boolean) {

@@ -4,28 +4,16 @@
  * @author RuneRogue Development Team
  */
 
-import { defineQuery, defineSystem } from "bitecs";
-import { System } from "@colyseus/ecs";
-
-import type { GameRoomState } from "@runerogue/shared";
-import { Position, Velocity, Health, EntityType, Target } from "../components";
-
-const AGGRESSION_RADIUS = 4; // tiles
-const MELEE_RANGE = 1; // tiles
+import { defineQuery, defineSystem, hasComponent, type IWorld } from "bitecs";
+import { Position, Target, Velocity, Player, Enemy } from "../components";
 
 /**
  * A system that controls enemy AI, including aggression, targeting, pathfinding, and attacking.
  * @class EnemyAISystem
  */
 export class EnemyAISystem extends System<GameRoomState> {
-  private enemyQuery = defineQuery([
-    Position,
-    Velocity,
-    Health,
-    EntityType,
-    Target,
-  ]);
-  private playerQuery = defineQuery([Position, Health, EntityType]);
+  private enemyQuery = defineQuery([Position, Velocity, Target, Enemy]);
+  private playerQuery = defineQuery([Position, Player]);
 
   /**
    * Executes the system logic for each enemy entity on every game tick.
@@ -36,108 +24,108 @@ export class EnemyAISystem extends System<GameRoomState> {
     const players = this.playerQuery(this.world);
 
     for (const eid of enemies) {
-      const enemySchema = this.room.state.enemies.get(String(eid));
-      if (!enemySchema || enemySchema.health.current <= 0) {
-        continue;
+      // If enemy has no target, find the closest player
+      if (!hasComponent(this.world, Target, eid) || Target.eid[eid] === 0) {
+        let closestPlayerEid = 0;
+        let minDistance = Infinity;
+
+        for (const playerEid of players) {
+          const distance = Math.hypot(
+            Position.x[playerEid] - Position.x[eid],
+            Position.y[playerEid] - Position.y[eid]
+          );
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPlayerEid = playerEid;
+          }
+        }
+
+        if (closestPlayerEid !== 0) {
+          Target.eid[eid] = closestPlayerEid;
+        }
       }
 
-      const targetId = Target.eid[eid];
+      // Move enemy towards its target
+      const targetEid = Target.eid[eid];
+      if (targetEid !== 0) {
+        const targetPositionX = Position.x[targetEid];
+        const targetPositionY = Position.y[targetEid];
 
-      if (targetId === 0) {
-        this.findTarget(eid, players);
-      } else {
-        this.attackTarget(eid, targetId);
-      }
-    }
-  }
+        const dx = targetPositionX - Position.x[eid];
+        const dy = targetPositionY - Position.y[eid];
+        const distance = Math.hypot(dx, dy);
 
-  /**
-   * Finds the closest player within the aggression radius and sets it as the enemy's target.
-   * @param enemyEid The entity ID of the enemy.
-   * @param players An array of player entity IDs.
-   */
-  private findTarget(enemyEid: number, players: number[]): void {
-    let closestPlayerEid = 0;
-    let minDistance = Infinity;
-
-    const enemyX = Position.x[enemyEid];
-    const enemyY = Position.y[enemyEid];
-
-    for (const playerEid of players) {
-      const playerSchema = this.room.state.players.get(String(playerEid));
-      if (!playerSchema || playerSchema.health.current <= 0) {
-        continue;
-      }
-
-      const playerX = Position.x[playerEid];
-      const playerY = Position.y[playerEid];
-
-      const distance = Math.sqrt(
-        Math.pow(playerX - enemyX, 2) + Math.pow(playerY - enemyY, 2)
-      );
-
-      if (distance < AGGRESSION_RADIUS && distance < minDistance) {
-        minDistance = distance;
-        closestPlayerEid = playerEid;
+        if (distance > 1) {
+          // Normalize vector
+          Velocity.x[eid] = dx / distance;
+          Velocity.y[eid] = dy / distance;
+        } else {
+          Velocity.x[eid] = 0;
+          Velocity.y[eid] = 0;
+        }
       }
     }
 
-    if (closestPlayerEid !== 0) {
-      Target.eid[enemyEid] = closestPlayerEid;
-    }
-  }
-
-  /**
-   * Handles the enemy's movement and attack logic when a target is acquired.
-   * @param enemyEid The entity ID of the enemy.
-   * @param targetEid The entity ID of the target player.
-   */
-  private attackTarget(enemyEid: number, targetEid: number): void {
-    const targetSchema = this.room.state.players.get(String(targetEid));
-    if (!targetSchema || targetSchema.health.current <= 0) {
-      Target.eid[enemyEid] = 0; // Clear target
-      return;
-    }
-
-    const enemyX = Position.x[enemyEid];
-    const enemyY = Position.y[enemyEid];
-    const targetX = Position.x[targetEid];
-    const targetY = Position.y[targetEid];
-
-    const dx = targetX - enemyX;
-    const dy = targetY - enemyY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    // Move towards target if not in melee range
-    if (distance > MELEE_RANGE) {
-      const angle = Math.atan2(dy, dx);
-      const speed = 1; // 1 tile per tick
-      Velocity.x[enemyEid] = Math.cos(angle) * speed;
-      Velocity.y[enemyEid] = Math.sin(angle) * speed;
-    } else {
-      Velocity.x[enemyEid] = 0;
-      Velocity.y[enemyEid] = 0;
-    }
+    return this.world;
   }
 }
 
-export const createEnemyAISystem = (
-  playerMap: MapSchema<Player>,
-  enemyMap: MapSchema<Enemy>,
-  worldBounds: { width: number; height: number }
-) => {
-  return defineSystem((world: World, _delta: number) => {
-    // ...existing code...
+/**
+ * @function createEnemyAISystem
+ * @description A system that controls enemy AI behavior, such as finding and moving towards targets.
+ * @returns A BiteCS system.
+ */
+export const createEnemyAISystem = () => {
+  const enemyQuery = defineQuery([Position, Velocity, Target, Enemy]);
+  const playerQuery = defineQuery([Position, Player]);
 
-    if (target !== 0) {
-      // ...existing code...
-    }
+  return defineSystem((world: IWorld) => {
+    const enemies = enemyQuery(world);
+    const players = playerQuery(world);
 
-    if (enemy && !enemy.target) {
-      console.warn(
-        `[EnemyAI] Enemy ${enemy.id} target player ${playerId} not found`
-      );
-      // ...existing code...
+    for (const eid of enemies) {
+      // If enemy has no target, find the closest player
+      if (!hasComponent(world, Target, eid) || Target.eid[eid] === 0) {
+        let closestPlayerEid = 0;
+        let minDistance = Infinity;
+
+        for (const playerEid of players) {
+          const distance = Math.hypot(
+            Position.x[playerEid] - Position.x[eid],
+            Position.y[playerEid] - Position.y[eid]
+          );
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPlayerEid = playerEid;
+          }
+        }
+
+        if (closestPlayerEid !== 0) {
+          Target.eid[eid] = closestPlayerEid;
+        }
+      }
+
+      // Move enemy towards its target
+      const targetEid = Target.eid[eid];
+      if (targetEid !== 0) {
+        const targetPositionX = Position.x[targetEid];
+        const targetPositionY = Position.y[targetEid];
+
+        const dx = targetPositionX - Position.x[eid];
+        const dy = targetPositionY - Position.y[eid];
+        const distance = Math.hypot(dx, dy);
+
+        if (distance > 1) {
+          // Normalize vector
+          Velocity.x[eid] = dx / distance;
+          Velocity.y[eid] = dy / distance;
+        } else {
+          Velocity.x[eid] = 0;
+          Velocity.y[eid] = 0;
+        }
+      }
     }
 
     return world;

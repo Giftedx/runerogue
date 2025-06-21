@@ -4,31 +4,28 @@
  * @author RuneRogue Development Team
  */
 
-import { defineQuery } from "bitecs";
-import { System } from "@colyseus/ecs";
-import type { GameRoomState } from "@runerogue/shared";
+import { defineQuery, defineSystem, type IWorld } from "bitecs";
 import { Position, Velocity } from "../components";
 
 /**
- * The MovementSystem is responsible for updating the position of entities
- * based on their velocity.
+ * @function createMovementSystem
+ * @description A system that updates entity positions based on their velocity.
+ * @returns A BiteCS system.
  */
-export class MovementSystem extends System<GameRoomState> {
-  private query = defineQuery([Position, Velocity]);
+export const createMovementSystem = () => {
+  const query = defineQuery([Position, Velocity]);
 
-  /**
-   * Executes the movement logic for all applicable entities.
-   * @param delta The time elapsed since the last update, in milliseconds.
-   */
-  execute(delta: number): void {
-    const entities = this.query(this.world);
-    const speedFactor = delta / 1000; // Convert delta to seconds for speed calculation
+  return defineSystem((world: IWorld) => {
+    const entities = query(world);
+    // In a real game, you'd use the delta time provided by the game loop
+    // for frame-rate independent movement.
+    // const speedFactor = delta / 1000;
 
     for (const eid of entities) {
-      // This is a simple linear movement. In a real scenario,
-      // you might have more complex logic for speed, acceleration, and collision.
-      Position.x[eid] += Velocity.x[eid] * speedFactor;
-      Position.y[eid] += Velocity.y[eid] * speedFactor;
+      Position.x[eid] += Velocity.x[eid];
+      Position.y[eid] += Velocity.y[eid];
     }
-  }
-}
+
+    return world;
+  });
+};
