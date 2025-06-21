@@ -37,6 +37,6 @@
     "directory": "packages/shared"
   },
   "dependencies": {
-    "@colyseus/schema": "^2.0.2"
+    "@colyseus/schema": "^3.0.42"
   }
 }
