@@ -4,10 +4,7 @@
  */
 
 export * from "./Combat";
-export * from "./Enemy";
-export * from "./Health";
 export * from "./Movement";
-export * from "./Player";
 export * from "./Stats";
 export * from "./Target";
 

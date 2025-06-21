@@ -6,8 +6,16 @@
 
 import { defineQuery, defineSystem, type IWorld } from "bitecs";
 import { calculateMaxHit, calculateAccuracy } from "@runerogue/osrs-data";
+import { Prayer as PrayerComponent } from "../components/Prayer";
+import {
+  PRAYER_EFFECTS,
+  Prayer as PrayerEnum,
+  CombatStyle,
+} from "@runerogue/shared";
 import { Position, Health, Target, Combat } from "../components";
 import type { GameRoom } from "../../rooms/GameRoom";
+import { gameEventEmitter, GameEventType } from "../../events/GameEventEmitter";
+import type { CombatEvent } from "../../events/types";
 
 // Extend IWorld to include our custom properties
 export interface CombatWorld extends IWorld {
@@ -25,9 +33,9 @@ const targetableQuery = defineQuery([Position, Health]);
 /**
  * Calculate distance between two points
  * @param x1 - X coordinate of first point
- * @param y1 - Y coordinate of first point
+ * @param y1 - Y Coordinate of first point
  * @param x2 - X coordinate of second point
- * @param y2 - Y coordinate of second point
+ * @param y2 - Y Coordinate of second point
  * @returns Distance in pixels
  */
 function getDistance(x1: number, y1: number, x2: number, y2: number): number {
@@ -74,28 +82,104 @@ export const createCombatSystem = (room: GameRoom) => {
       // Update attack timer
       Combat.lastAttackTime[eid] = currentTime;
 
-      // Calculate combat using OSRS formulas
+      /**
+       * Helper to decode the active prayer bitmask and sum the OSRS-accurate multipliers for a stat.
+       * @param {number} activeMask - Bitmask of active prayers
+       * @param {keyof PrayerEffect} bonusKey - The stat bonus to sum (e.g., 'attackBonus')
+       * @returns {number} The total multiplier (e.g., 1.15 for +15%)
+       */
+      function getPrayerMultiplier(
+        activeMask: number,
+        bonusKey: keyof (typeof PRAYER_EFFECTS)[PrayerEnum.THICK_SKIN]
+      ): number {
+        let total = 0;
+        let bit = 0;
+        for (const prayerKey of Object.keys(PrayerEnum)) {
+          if ((activeMask & (1 << bit)) !== 0) {
+            const prayer = PrayerEnum[prayerKey as keyof typeof PrayerEnum];
+            const effect = PRAYER_EFFECTS[prayer];
+            if (effect && typeof effect[bonusKey] === "number") {
+              total += effect[bonusKey] as number;
+            }
+          }
+          bit++;
+        }
+        return 1 + total;
+      }
+
+      // ECS: Read all stats and bonuses from components
+      const attackerActiveMask = PrayerComponent.activeMask?.[eid] ?? 0;
+      const defenderActiveMask = PrayerComponent.activeMask?.[targetEid] ?? 0;
+
+      // OSRS: Calculate prayer multipliers
+      const attackerAttackPrayer = getPrayerMultiplier(
+        attackerActiveMask,
+        "attackBonus"
+      );
+      const attackerStrengthPrayer = getPrayerMultiplier(
+        attackerActiveMask,
+        "strengthBonus"
+      );
+      const attackerDefencePrayer = getPrayerMultiplier(
+        attackerActiveMask,
+        "defenceBonus"
+      );
+      const defenderDefencePrayer = getPrayerMultiplier(
+        defenderActiveMask,
+        "defenceBonus"
+      );
+
+      // TODO: Support for attack style (currently hardcoded to AGGRESSIVE)
+      const style = CombatStyle.AGGRESSIVE;
+      const styleBonus = 3; // AGGRESSIVE = +3 strength
+
+      // ECS: Read equipment bonuses
+      const attackerEquipment = {
+        attackBonus: Combat.attackBonus[eid] || 0,
+        strengthBonus: Combat.strengthBonus[eid] || 0,
+        defenceBonus: Combat.defenceBonus[eid] || 0,
+        prayerBonus: Combat.prayerBonus[eid] || 0,
+      };
+      const defenderEquipment = {
+        attackBonus: Combat.attackBonus[targetEid] || 0,
+        strengthBonus: Combat.strengthBonus[targetEid] || 0,
+        defenceBonus: Combat.defenceBonus[targetEid] || 0,
+        prayerBonus: Combat.prayerBonus[targetEid] || 0,
+      };
+
+      // ECS: Read base stats
       const attackerStats = {
-        attackLevel: Combat.attack[eid] || 1,
-        strengthLevel: Combat.strength[eid] || 1,
-        defenceLevel: Combat.defence[eid] || 1,
-        attackBonus: 0, // TODO: Equipment bonuses
-        strengthBonus: 0,
-        defenceBonus: 0,
-        attackStyle: "aggressive" as const,
-        combatType: "melee" as const,
-        prayers: [] as string[],
+        attack: Combat.attack[eid] || 1,
+        strength: Combat.strength[eid] || 1,
+        defence: Combat.defence[eid] || 1,
+        hitpoints: Health.current[eid] || 10,
+        prayer: 1, // Not used in OSRS max hit/accuracy, but required by interface
       };
-
       const defenderStats = {
-        defenceLevel: Combat.defence[targetEid] || 1,
-        defenceBonus: 0, // TODO: Equipment bonuses
-        prayers: [] as string[],
+        attack: Combat.attack[targetEid] || 1,
+        strength: Combat.strength[targetEid] || 1,
+        defence: Combat.defence[targetEid] || 1,
+        hitpoints: Health.current[targetEid] || 10,
+        prayer: 1,
       };
 
-      // Calculate hit chance and damage
-      const accuracy = calculateAccuracy(attackerStats, defenderStats);
-      const maxHit = calculateMaxHit(attackerStats);
+      // Calculate hit chance and damage using OSRS formulas
+      const accuracy = calculateAccuracy(
+        attackerStats,
+        attackerEquipment,
+        defenderStats,
+        defenderEquipment,
+        attackerAttackPrayer,
+        defenderDefencePrayer,
+        styleBonus,
+        0 // defender style bonus (not used here)
+      );
+      const maxHit = calculateMaxHit(
+        attackerStats,
+        attackerEquipment,
+        attackerStrengthPrayer,
+        styleBonus
+      );
 
       // Roll for hit
       if (Math.random() < accuracy) {
@@ -108,6 +192,16 @@ export const createCombatSystem = (room: GameRoom) => {
         // Emit damage event for client feedback
         room.broadcast("damage", { target: targetEid, damage, attacker: eid });
 
+        // Emit OSRS-authentic CombatEvent for analytics/UI
+        const event: CombatEvent = {
+          attacker: eid,
+          defender: targetEid,
+          damage,
+          hit: true,
+          timestamp: Date.now(),
+        };
+        gameEventEmitter.emitGameEvent(GameEventType.Combat, event);
+
         if (Health.current[targetEid] <= 0) {
           world.entitiesToRemove.add(targetEid);
         }
@@ -118,6 +212,15 @@ export const createCombatSystem = (room: GameRoom) => {
           damage: 0,
           attacker: eid,
         });
+        // Emit miss event
+        const event: CombatEvent = {
+          attacker: eid,
+          defender: targetEid,
+          damage: 0,
+          hit: false,
+          timestamp: Date.now(),
+        };
+        gameEventEmitter.emitGameEvent(GameEventType.Combat, event);
       }
     }
 

@@ -45,6 +45,11 @@ export const Combat = defineComponent({
   magicBonus: Types.i16,
   magicDamageBonus: Types.f32, // Percentage
 
+  /**
+   * @property {number} prayerBonus - The total prayer bonus from equipment (for authentic OSRS prayer drain calculations).
+   */
+  prayerBonus: Types.i16,
+
   // Combat Settings
   attackSpeed: Types.f32, // Time between attacks in milliseconds
   attackRange: Types.f32,

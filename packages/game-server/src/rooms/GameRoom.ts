@@ -24,6 +24,7 @@ import {
   Player as PlayerComponent,
   Stats,
 } from "../ecs/components";
+import { createPrayerSystem } from "../ecs/systems/PrayerSystem";
 
 interface JoinOptions {
   name?: string;
@@ -46,9 +47,60 @@ export class GameRoom extends Room<GameRoomState> {
     const combatSystem = createCombatSystem(this);
     const enemySpawnSystem = createEnemySpawnSystem(this);
     const stateUpdateSystem = createStateUpdateSystem(this);
+    // --- OSRS-authentic PrayerSystem integration ---
+    // Import OSRS prayer constants and effects
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const {
+      PRAYER_EFFECTS,
+      Prayer,
+    } = require("@runerogue/shared/src/types/osrs");
+
+    /**
+     * Decodes the active prayer bitmask and sums the OSRS-accurate drain rates for all active prayers.
+     * @param {number} activeMask - Bitmask of active prayers
+     * @returns {number} Total drain rate (points per minute)
+     */
+    function getDrainRate(activeMask: number): number {
+      let totalDrain = 0;
+      let bit = 0;
+      for (const prayerKey of Object.keys(Prayer)) {
+        if ((activeMask & (1 << bit)) !== 0) {
+          const prayer = Prayer[prayerKey as keyof typeof Prayer];
+          const effect = PRAYER_EFFECTS[prayer];
+          if (effect && typeof effect.drainRate === "number") {
+            // OSRS drainRate is points per 3 seconds; convert to points per minute
+            totalDrain += effect.drainRate * 20;
+          }
+        }
+        bit++;
+      }
+      return totalDrain;
+    }
+
+    /**
+     * Reads the equipment prayer bonus for an entity from the ECS Combat component.
+     * @param {number} eid - Entity ID
+     * @returns {number} Prayer bonus from equipment
+     */
+    function getPrayerBonus(eid: number): number {
+      // Defensive: If Combat.prayerBonus is undefined, treat as 0
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { Combat } = require("../ecs/components/Combat");
+        return Combat.prayerBonus[eid] ?? 0;
+      } catch (err) {
+        return 0;
+      }
+    }
+
+    const prayerSystem = createPrayerSystem({
+      getDrainRate,
+      getPrayerBonus,
+    });
 
     this.systems = [
       movementSystem,
+      prayerSystem,
       combatSystem,
       enemySpawnSystem,
       stateUpdateSystem,

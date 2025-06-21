@@ -1,6 +1,6 @@
 import { Server } from "colyseus";
 import express from "express";
-import { RuneRogueRoom } from "../rooms/RuneRogueRoom";
+import { GameRoom } from "../rooms/GameRoom";
 
 /**
  * @file Basic test file for game-server package
@@ -18,6 +18,6 @@ describe("GameServer Package", () => {
   });
 
   it("should be able to import room classes", () => {
-    expect(RuneRogueRoom).toBeDefined();
+    expect(GameRoom).toBeDefined();
   });
 });
