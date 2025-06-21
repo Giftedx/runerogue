@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 /**
  * Shared Utilities Package - Main Entry Point
  * Common types, constants, and utilities for RuneRogue
@@ -14,6 +16,9 @@ export * from "./schemas/GameRoomState";
 
 // Export Result and GameError types for strict error handling
 export * from "./result";
+
+// Export constants
+export * from "./constants";
 
 // Version info
 export const SHARED_VERSION = "1.0.0";

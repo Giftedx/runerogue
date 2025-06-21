@@ -5,13 +5,13 @@
  * @author agent/osrs-data (The Lorekeeper)
  */
 
-import express from "express";
+import express, { type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 
-const app: express.Express = express();
-const PORT = process.env.PORT || 3001;
+const app = express();
+const PORT = process.env.PORT ?? 3001;
 
 // Middleware
 app.use(helmet());
@@ -20,7 +20,7 @@ app.use(compression());
 app.use(express.json());
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "healthy",
     package: "@runerogue/osrs-data",
@@ -40,8 +40,8 @@ app.get("/health", (req, res) => {
  */
 export function startServer(): void {
   app.listen(PORT, () => {
-    console.log(`OSRS Data API server running on port ${PORT}`);
-    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.info(`OSRS Data API server running on port ${PORT}`);
+    console.info(`Health check: http://localhost:${PORT}/health`);
   });
 }
 

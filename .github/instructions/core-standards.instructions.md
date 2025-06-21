@@ -71,25 +71,168 @@ export const ATTACK_STYLE_BONUSES = {
 // Prayer bonus multipliers
 export const PRAYER_BONUSES = {
   // Attack prayers
-  CLARITY_OF_THOUGHT: { attack: 1.05, strength: 1.0, defence: 1.0 },
-  IMPROVED_REFLEXES: { attack: 1.1, strength: 1.0, defence: 1.0 },
-  INCREDIBLE_REFLEXES: { attack: 1.15, strength: 1.0, defence: 1.0 },
+  CLARITY_OF_THOUGHT: {
+    attack: 1.05,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  IMPROVED_REFLEXES: {
+    attack: 1.1,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  INCREDIBLE_REFLEXES: {
+    attack: 1.15,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
 
   // Strength prayers
-  BURST_OF_STRENGTH: { attack: 1.0, strength: 1.05, defence: 1.0 },
-  SUPERHUMAN_STRENGTH: { attack: 1.0, strength: 1.1, defence: 1.0 },
-  ULTIMATE_STRENGTH: { attack: 1.0, strength: 1.15, defence: 1.0 },
+  BURST_OF_STRENGTH: {
+    attack: 1.0,
+    strength: 1.05,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  SUPERHUMAN_STRENGTH: {
+    attack: 1.0,
+    strength: 1.1,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  ULTIMATE_STRENGTH: {
+    attack: 1.0,
+    strength: 1.15,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
 
   // Defence prayers
-  THICK_SKIN: { attack: 1.0, strength: 1.0, defence: 1.05 },
-  ROCK_SKIN: { attack: 1.0, strength: 1.0, defence: 1.1 },
-  STEEL_SKIN: { attack: 1.0, strength: 1.0, defence: 1.15 },
+  THICK_SKIN: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.05,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  ROCK_SKIN: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.1,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  STEEL_SKIN: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.15,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+
+  // Ranged prayers
+  SHARP_EYE: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.05,
+    rangedStrength: 1.05,
+    magic: 1.0,
+  },
+  HAWK_EYE: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.1,
+    rangedStrength: 1.1,
+    magic: 1.0,
+  },
+  EAGLE_EYE: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.15,
+    rangedStrength: 1.15,
+    magic: 1.0,
+  },
+
+  // Magic prayers
+  MYSTIC_WILL: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.05,
+  },
+  MYSTIC_LORE: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.1,
+  },
+  MYSTIC_MIGHT: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.0,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.15,
+  },
 
   // Combined prayers
-  CHIVALRY: { attack: 1.15, strength: 1.18, defence: 1.2 },
-  PIETY: { attack: 1.2, strength: 1.23, defence: 1.25 },
-  RIGOUR: { ranged: 1.2, rangedStrength: 1.23, defence: 1.25 },
-  AUGURY: { magic: 1.25, defence: 1.25 },
+  CHIVALRY: {
+    attack: 1.15,
+    strength: 1.18,
+    defence: 1.2,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  PIETY: {
+    attack: 1.2,
+    strength: 1.23,
+    defence: 1.25,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.0,
+  },
+  RIGOUR: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.25,
+    ranged: 1.2,
+    rangedStrength: 1.23,
+    magic: 1.0,
+  },
+  AUGURY: {
+    attack: 1.0,
+    strength: 1.0,
+    defence: 1.25,
+    ranged: 1.0,
+    rangedStrength: 1.0,
+    magic: 1.25,
+  },
 } as const;
 
 // Prayer drain rates (points per minute)
@@ -190,7 +333,7 @@ export class CombatCalculator {
     // Apply prayer bonuses
     for (const prayer of attacker.prayers) {
       const bonus = PRAYER_BONUSES[prayer as keyof typeof PRAYER_BONUSES];
-      if (bonus && bonus.strength > 1.0) {
+      if (bonus && "strength" in bonus && bonus.strength > 1.0) {
         effectiveStrength = Math.floor(effectiveStrength * bonus.strength);
         break; // Only one strength prayer can be active
       }
@@ -218,7 +361,7 @@ export class CombatCalculator {
    */
   static calculateHitChance(
     attacker: CombatStats,
-    defender: CombatStats,
+    defender: CombatStats
   ): number {
     const attackRoll = this.calculateAttackRoll(attacker);
     const defenceRoll = this.calculateDefenceRoll(defender);
@@ -236,7 +379,7 @@ export class CombatCalculator {
     // Apply prayer bonuses
     for (const prayer of attacker.prayers) {
       const bonus = PRAYER_BONUSES[prayer as keyof typeof PRAYER_BONUSES];
-      if (bonus && bonus.attack > 1.0) {
+      if (bonus && "attack" in bonus && bonus.attack > 1.0) {
         effectiveAttack = Math.floor(effectiveAttack * bonus.attack);
         break; // Only one attack prayer can be active
       }
@@ -260,7 +403,7 @@ export class CombatCalculator {
     // Apply prayer bonuses
     for (const prayer of defender.prayers) {
       const bonus = PRAYER_BONUSES[prayer as keyof typeof PRAYER_BONUSES];
-      if (bonus && bonus.defence > 1.0) {
+      if (bonus && "defence" in bonus && bonus.defence > 1.0) {
         effectiveDefence = Math.floor(effectiveDefence * bonus.defence);
         break; // Only one defence prayer can be active
       }
@@ -282,7 +425,7 @@ export class CombatCalculator {
 // Safe calculation with error handling
 export function calculateDamage(
   attacker: CombatStats,
-  defender: CombatStats,
+  defender: CombatStats
 ): Result<number, GameError> {
   // Validate inputs
   if (!attacker || !defender) {
@@ -292,13 +435,77 @@ export function calculateDamage(
     };
   }
 
-  if (attacker.attackLevel < 1 || attacker.attackLevel > 99) {
+  // Validate attacker levels
+  const attackerLevels = [
+    { name: "attackLevel", value: attacker.attackLevel },
+    { name: "strengthLevel", value: attacker.strengthLevel },
+    { name: "defenceLevel", value: attacker.defenceLevel },
+  ];
+
+  for (const { name, value } of attackerLevels) {
+    if (value < 1 || value > 99) {
+      return {
+        success: false,
+        error: {
+          type: "VALIDATION_ERROR",
+          message: `${name} must be between 1 and 99`,
+          details: { [name]: value },
+        },
+      };
+    }
+  }
+
+  // Validate defender levels
+  const defenderLevels = [
+    { name: "defenceLevel", value: defender.defenceLevel },
+  ];
+
+  for (const { name, value } of defenderLevels) {
+    if (value < 1 || value > 99) {
+      return {
+        success: false,
+        error: {
+          type: "VALIDATION_ERROR",
+          message: `Defender ${name} must be between 1 and 99`,
+          details: { [name]: value },
+        },
+      };
+    }
+  }
+
+  // Validate combat types
+  const validCombatTypes = ["melee", "ranged", "magic"];
+  if (!validCombatTypes.includes(attacker.combatType)) {
     return {
       success: false,
       error: {
         type: "VALIDATION_ERROR",
-        message: "Attack level must be between 1 and 99",
-        details: { attackLevel: attacker.attackLevel },
+        message: "Invalid combat type",
+        details: { combatType: attacker.combatType },
+      },
+    };
+  }
+
+  // Validate attack styles
+  const validAttackStyles = [
+    "accurate",
+    "aggressive",
+    "defensive",
+    "controlled",
+  ];
+  if (
+    !validAttackStyles.includes(attacker.attackStyle) ||
+    !validAttackStyles.includes(defender.attackStyle)
+  ) {
+    return {
+      success: false,
+      error: {
+        type: "VALIDATION_ERROR",
+        message: "Invalid attack style",
+        details: {
+          attackerStyle: attacker.attackStyle,
+          defenderStyle: defender.attackStyle,
+        },
       },
     };
   }
@@ -395,12 +602,25 @@ export const createMovementSystem = () => {
 
     for (let i = 0; i < entities.length; i++) {
       const eid = entities[i];
+
+      // Store previous position for collision rollback
+      const prevX = Position.x[eid];
+      const prevY = Position.y[eid];
+
       Position.x[eid] += Velocity.x[eid] * deltaTime;
       Position.y[eid] += Velocity.y[eid] * deltaTime;
 
       // Clamp to world bounds
       Position.x[eid] = Math.max(0, Math.min(1000, Position.x[eid]));
       Position.y[eid] = Math.max(0, Math.min(1000, Position.y[eid]));
+
+      // If position was clamped, stop velocity in that direction
+      if (Position.x[eid] === 0 || Position.x[eid] === 1000) {
+        Velocity.x[eid] = 0;
+      }
+      if (Position.y[eid] === 0 || Position.y[eid] === 1000) {
+        Velocity.y[eid] = 0;
+      }
     }
 
     return world;
@@ -412,7 +632,7 @@ export function createPlayer(
   world: GameWorld,
   x: number,
   y: number,
-  sessionId: string,
+  sessionId: string
 ): number {
   const eid = addEntity(world);
 
@@ -517,7 +737,7 @@ export class GameRoom extends Room<GameState> {
 
       const distance = Math.sqrt(
         Math.pow(data.x - player.position.x, 2) +
-          Math.pow(data.y - player.position.y, 2),
+          Math.pow(data.y - player.position.y, 2)
       );
 
       // Calculate max allowed distance based on time elapsed
@@ -634,7 +854,7 @@ describe("CombatCalculator", () => {
 
       // Expected max hit from OSRS Wiki for these stats
       // effectiveStrength = 10 + 8 + 3 (aggressive) = 21
-      // maxHit = floor(0.5 + 21 * (8 + 64) / 640) = floor(0.5 + 21 * 72 / 640) = floor(2.8625) = 2
+      // maxHit = floor(0.5 + 21 * (8 + 64) / 640) = floor(0.5 + 1512 / 640) = floor(2.8625) = 2
       const expectedMaxHit = 2;
       const calculatedMaxHit = CombatCalculator.calculateMaxHit(attacker);
 
@@ -667,11 +887,11 @@ describe("CombatCalculator", () => {
       // Calculate expected values
       // Without prayer: effectiveStrength = 50 + 8 + 3 = 61
       // With prayer: effectiveStrength = floor((50 + 8) * 1.15) + 3 = floor(66.7) + 3 = 69
-      const expectedWithoutPrayer = Math.floor(0.5 + (61 * (50 + 64)) / 640); // 10
-      const expectedWithPrayer = Math.floor(0.5 + (69 * (50 + 64)) / 640); // 12
+      const expectedWithoutPrayer = Math.floor(0.5 + (61 * (50 + 64)) / 640); // floor(0.5 + 6954/640) = floor(11.37) = 11
+      const expectedWithPrayer = Math.floor(0.5 + (69 * (50 + 64)) / 640); // floor(0.5 + 7866/640) = floor(12.79) = 12
 
-      expect(maxHitWithoutPrayer).toBe(expectedWithoutPrayer);
-      expect(maxHitWithPrayer).toBe(expectedWithPrayer);
+      expect(maxHitWithoutPrayer).toBe(11);
+      expect(maxHitWithPrayer).toBe(12);
     });
 
     it("should handle Piety prayer correctly", () => {
@@ -688,7 +908,7 @@ describe("CombatCalculator", () => {
       };
 
       // effectiveStrength = floor((80 + 8) * 1.23) + 3 = floor(108.24) + 3 = 111
-      // maxHit = floor(0.5 + 111 * (100 + 64) / 640) = floor(28.925) = 28
+      // maxHit = floor(0.5 + 111 * (100 + 64) / 640) = floor(0.5 + 18204/640) = floor(28.94) = 28
       const expectedMaxHit = 28;
       const calculatedMaxHit = CombatCalculator.calculateMaxHit(attacker);
 
@@ -769,7 +989,7 @@ export class GameError extends Error {
   constructor(
     message: string,
     public code: string,
-    public context?: Record<string, unknown>,
+    public context?: Record<string, unknown>
   ) {
     super(message);
     this.name = "GameError";
@@ -840,7 +1060,7 @@ export async function validateAction(action: PlayerAction): Promise<void> {
 
 export async function executeAction(
   client: GameClient,
-  action: PlayerAction,
+  action: PlayerAction
 ): Promise<void> {
   // Execute the action based on type
   switch (action.type) {
@@ -859,7 +1079,7 @@ export async function executeAction(
 export async function handlePlayerAction(
   client: GameClient,
   action: PlayerAction,
-  logger: Logger = createLogger(),
+  logger: Logger = createLogger()
 ): Promise<void> {
   const span = logger.startSpan("handlePlayerAction", {
     playerId: client.sessionId,
@@ -997,6 +1217,8 @@ export class PerformanceMonitor {
         });
       }
     }
+
+    this.reset();
   }
 
   reset(): void {
@@ -1056,13 +1278,21 @@ jobs:
         run: pnpm lint
 
       - name: Test
-        run: pnpm test --coverage
+        run: pnpm test --coverage --testPathIgnorePatterns="archived"
 
       - name: Performance Test
         run: pnpm test:performance
 
       - name: Build
         run: pnpm build
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+
+      - name: Check bundle size
+        run: pnpm size-limit
 ```
 
 ### Monitoring

@@ -1,14 +1,14 @@
+import { Server } from "colyseus";
+import express from "express";
+import { RuneRogueRoom } from "../rooms/RuneRogueRoom";
+
 /**
  * @file Basic test file for game-server package
  * @description Ensures the package can be tested and imported properly
  */
 
 describe("GameServer Package", () => {
-  it("should be able to import package dependencies", async () => {
-    // Test import of key dependencies without triggering graceful-fs conflicts
-    const { Server } = await import("colyseus");
-    const express = await import("express");
-
+  it("should be able to import package dependencies", () => {
     expect(Server).toBeDefined();
     expect(express).toBeDefined();
   });
@@ -17,9 +17,7 @@ describe("GameServer Package", () => {
     expect(true).toBe(true);
   });
 
-  it("should be able to import room classes", async () => {
-    // Test specific game-server components without main entry point
-    const { RuneRogueRoom } = await import("../rooms/RuneRogueRoom");
+  it("should be able to import room classes", () => {
     expect(RuneRogueRoom).toBeDefined();
   });
 });

@@ -4,19 +4,11 @@
  * @author RuneRogue Development Team
  */
 
-import { defineSystem, defineQuery, hasComponent, type World } from "bitecs";
-import type {
-  Position,
-  Velocity,
-  Health,
-  EntityType,
-  Target,
-} from "../components";
-import type { GameState, Enemy, Player } from "../../schemas/GameState";
-import { WEAPON_SPEEDS } from "../../../../shared/src/types/osrs";
+import { defineQuery, defineSystem } from "bitecs";
+import { System } from "@colyseus/ecs";
 
-// OSRS tick duration (0.6s per tick)
-const OSRS_TICK_MS = 600;
+import type { GameRoomState } from "@runerogue/shared";
+import { Position, Velocity, Health, EntityType, Target } from "../components";
 
 const AGGRESSION_RADIUS = 4; // tiles
 const MELEE_RANGE = 1; // tiles
@@ -25,96 +17,106 @@ const MELEE_RANGE = 1; // tiles
  * A system that controls enemy AI, including aggression, targeting, pathfinding, and attacking.
  * @class EnemyAISystem
  */
-export class EnemyAISystem extends System {
-  private state: GameState;
-
-  /**
-   * @param world ECS World
-   * @param state Game state
-   */
-  constructor(world: World, state: GameState) {
-    super(world);
-    this.state = state;
-  }
+export class EnemyAISystem extends System<GameRoomState> {
+  private enemyQuery = defineQuery([
+    Position,
+    Velocity,
+    Health,
+    EntityType,
+    Target,
+  ]);
+  private playerQuery = defineQuery([Position, Health, EntityType]);
 
   /**
    * Executes the system logic for each enemy entity on every game tick.
    * @param delta The time elapsed since the last update.
    */
   execute(_delta: number): void {
-    if (!this.state.gameStarted) return;
+    const enemies = this.enemyQuery(this.world);
+    const players = this.playerQuery(this.world);
 
-    this.state.enemies.forEach((enemy) => {
-      if (!enemy.alive) return;
-      const now = Date.now();
-      switch (enemy.aiState) {
-        case "IDLE":
-          this.findTarget(enemy);
-          break;
-        case "ATTACKING":
-          this.attackTarget(enemy, now);
-          break;
+    for (const eid of enemies) {
+      const enemySchema = this.room.state.enemies.get(String(eid));
+      if (!enemySchema || enemySchema.health.current <= 0) {
+        continue;
       }
-    });
+
+      const targetId = Target.eid[eid];
+
+      if (targetId === 0) {
+        this.findTarget(eid, players);
+      } else {
+        this.attackTarget(eid, targetId);
+      }
+    }
   }
 
   /**
    * Finds the closest player within the aggression radius and sets it as the enemy's target.
-   * @param enemy The enemy entity.
+   * @param enemyEid The entity ID of the enemy.
+   * @param players An array of player entity IDs.
    */
-  private findTarget(enemy: Enemy): void {
-    let closestPlayer: Player | null = null;
+  private findTarget(enemyEid: number, players: number[]): void {
+    let closestPlayerEid = 0;
     let minDistance = Infinity;
-    this.state.players.forEach((player: Player) => {
-      if (player.isDead) return;
+
+    const enemyX = Position.x[enemyEid];
+    const enemyY = Position.y[enemyEid];
+
+    for (const playerEid of players) {
+      const playerSchema = this.room.state.players.get(String(playerEid));
+      if (!playerSchema || playerSchema.health.current <= 0) {
+        continue;
+      }
+
+      const playerX = Position.x[playerEid];
+      const playerY = Position.y[playerEid];
+
       const distance = Math.sqrt(
-        Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+        Math.pow(playerX - enemyX, 2) + Math.pow(playerY - enemyY, 2)
       );
+
       if (distance < AGGRESSION_RADIUS && distance < minDistance) {
         minDistance = distance;
-        closestPlayer = player;
+        closestPlayerEid = playerEid;
       }
-    });
-    if (closestPlayer) {
-      // Player.id is defined as string in schema
-      enemy.targetId = (closestPlayer as Player).id;
-      enemy.aiState = "ATTACKING";
+    }
+
+    if (closestPlayerEid !== 0) {
+      Target.eid[enemyEid] = closestPlayerEid;
     }
   }
 
   /**
    * Handles the enemy's movement and attack logic when a target is acquired.
-   * @param enemy The enemy entity.
-   * @param now The current timestamp.
+   * @param enemyEid The entity ID of the enemy.
+   * @param targetEid The entity ID of the target player.
    */
-  private attackTarget(enemy: Enemy, now: number): void {
-    const target = this.state.players.get(enemy.targetId);
-    if (!target || target.isDead) {
-      enemy.targetId = "";
-      enemy.aiState = "IDLE";
+  private attackTarget(enemyEid: number, targetEid: number): void {
+    const targetSchema = this.room.state.players.get(String(targetEid));
+    if (!targetSchema || targetSchema.health.current <= 0) {
+      Target.eid[enemyEid] = 0; // Clear target
       return;
     }
-    const dx = target.x - enemy.x;
-    const dy = target.y - enemy.y;
+
+    const enemyX = Position.x[enemyEid];
+    const enemyY = Position.y[enemyEid];
+    const targetX = Position.x[targetEid];
+    const targetY = Position.y[targetEid];
+
+    const dx = targetX - enemyX;
+    const dy = targetY - enemyY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // Move towards target if not in melee range
     if (distance > MELEE_RANGE) {
       const angle = Math.atan2(dy, dx);
-      const speed = 1 / OSRS_TICK_MS; // 1 tile per tick
-      enemy.x += Math.cos(angle) * speed * OSRS_TICK_MS;
-      enemy.y += Math.sin(angle) * speed * OSRS_TICK_MS;
-    }
-    // Attack target if in melee range and attack is off cooldown
-    const attackSpeed = WEAPON_SPEEDS.SLOW * OSRS_TICK_MS; // Example: slow weapon
-    if (distance <= MELEE_RANGE && now - enemy.lastAttackTime > attackSpeed) {
-      enemy.lastAttackTime = now;
-      // This is where the server would trigger the combat calculation.
-      // For now, we'll just log it.
-      console.info(`Enemy ${enemy.id} attacks Player ${target.id}`);
-      // In a real implementation, you would call a method in your game room
-      // to handle the damage calculation and state update.
-      // e.g., this.room.handleAttack(enemy, target);
+      const speed = 1; // 1 tile per tick
+      Velocity.x[enemyEid] = Math.cos(angle) * speed;
+      Velocity.y[enemyEid] = Math.sin(angle) * speed;
+    } else {
+      Velocity.x[enemyEid] = 0;
+      Velocity.y[enemyEid] = 0;
     }
   }
 }

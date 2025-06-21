@@ -1,34 +1,52 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "target": "es2022",
     "lib": [
       "es2022",
       "dom"
     ],
-    "types": [
-      "node",
-      "jest"
-    ],
     "esModuleInterop": true,
     "allowJs": true,
-    "strict": false,
-    "noImplicitAny": false,
-    "resolveJsonModule": true
+    "strict": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "types": [
+      "jest",
+      "node"
+    ],
+    "paths": {
+      "@runerogue/shared": [
+        "packages/shared/src"
+      ],
+      "@runerogue/shared/*": [
+        "packages/shared/src/*"
+      ],
+      "@runerogue/osrs-data": [
+        "packages/osrs-data/src"
+      ],
+      "@runerogue/osrs-data/*": [
+        "packages/osrs-data/src/*"
+      ],
+      "@runerogue/game-server": [
+        "packages/game-server/src"
+      ],
+      "@runerogue/game-server/*": [
+        "packages/game-server/src/*"
+      ]
+    }
   },
   "include": [
     "packages/**/*.ts",
-    "packages/**/*.js",
     "packages/**/*.cjs",
-    "packages/**/*.mjs",
-    "jest.setup.js",
-    "jest.config.cjs"
+    "packages/**/*.json",
+    "jest.setup.js"
   ],
   "exclude": [
-    "node_modules",
-    "dist",
-    "build"
+    "node_modules"
   ]
 }

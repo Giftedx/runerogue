@@ -9,161 +9,146 @@
  * @author agent/backend-infra (The Architect)
  */
 
-import { Room, type Client } from "colyseus";
-import { GameState, Player, Enemy } from "../schemas/GameState";
-import { World } from "../world/World";
+import { Room, type Client, type Delayed } from "colyseus";
+import {
+  GameRoomState,
+  PlayerSchema,
+  EnemySchema,
+} from "../../../shared/src/schemas/GameRoomState";
 
+/**
+ * @interface JoinOptions
+ * @description Options for a client joining a room.
+ * @property {string} [playerName] - The player's desired display name.
+ */
 interface JoinOptions {
   playerName?: string;
 }
 
-interface CreateOptions {
-  // No options are currently used, but this provides a type for the future
-}
+/**
+ * @type CreateOptions
+ * @description Options for creating a new room. Currently empty.
+ */
+type CreateOptions = Record<string, never>;
 
-export class RuneRogueRoom extends Room<GameState> {
+export class RuneRogueRoom extends Room<GameRoomState, JoinOptions> {
   maxClients = 4;
-  patchRate = 50;
+  patchRate = 50; // in milliseconds, 20 times per second
   autoDispose = true;
 
-  private gameLoop: NodeJS.Timeout | undefined;
-  public world: World | undefined;
+  private gameLoop?: Delayed;
 
-  onCreate(options: CreateOptions) {
-    console.info("RuneRogueRoom created!", options);
-    this.setState(new GameState());
-    this.world = new World();
+  /**
+   * @method onCreate
+   * @description Called when the room is created.
+   * @param {CreateOptions} _options - The options passed from the client.
+   */
+  onCreate(_options: CreateOptions) {
+    this.state = new GameRoomState();
 
-    this.setPatchRate(this.patchRate);
+    // Set up the game loop
     this.gameLoop = this.clock.setInterval(() => {
       this.update();
-    }, 1000);
+    }, 1000 / this.patchRate);
 
-    this.onMessage("attack", (client, message: { targetId: string }) => {
+    this.onMessage(
+      "move",
+      (client: Client, message: { x: number; y: number }) => {
+        const player = this.state.players.get(client.sessionId);
+        if (player) {
+          player.position.x += message.x;
+          player.position.y += message.y;
+        }
+      }
+    );
+
+    this.onMessage("attack", (client: Client, message: { enemyId: string }) => {
       const player = this.state.players.get(client.sessionId);
-      const target = this.state.enemies.get(message.targetId);
+      const target = this.state.enemies.get(message.enemyId);
+
       if (player && target) {
-        player.target = target;
-        console.info(
-          `Player ${player.id} is now targeting ${target.type} ${target.id}`
-        );
+        // Simple damage calculation
+        const damage = Math.floor(Math.random() * 10) + 1;
+        target.health.current -= damage;
+
+        this.broadcast("damageDealt", {
+          playerId: client.sessionId,
+          enemyId: message.enemyId,
+          damage,
+          targetHealth: target.health.current,
+          targetMaxHealth: target.health.max,
+          enemyType: target.type,
+        });
+
+        if (target.health.current <= 0) {
+          this.state.enemies.delete(message.enemyId);
+        }
       }
     });
-
-    this.spawnEnemies();
   }
 
+  /**
+   * @method onJoin
+   * @description Called when a client joins the room.
+   * @param {Client} client - The client that joined.
+   * @param {JoinOptions} options - The options passed from the client.
+   */
   onJoin(client: Client, options: JoinOptions) {
-    console.info(`Player ${client.sessionId} joined!`);
-    const player = new Player();
+    console.info(
+      `${client.sessionId} joined! Name: ${options.playerName ?? "Guest"}`
+    );
+
+    const player = new PlayerSchema();
     player.id = client.sessionId;
     player.name = options.playerName ?? "Player";
-    player.x = Math.floor(Math.random() * 10);
-    player.y = Math.floor(Math.random() * 10);
+    player.position.x = Math.floor(Math.random() * 800);
+    player.position.y = Math.floor(Math.random() * 600);
     this.state.players.set(client.sessionId, player);
+
+    // Spawn an enemy when a player joins
+    const enemyId = `e-${this.state.enemies.size + 1}`;
+    const enemy = new EnemySchema();
+    enemy.id = enemyId;
+    enemy.position.x = Math.floor(Math.random() * 800);
+    enemy.position.y = Math.floor(Math.random() * 600);
+    this.state.enemies.set(enemyId, enemy);
   }
 
-  update() {
-    this.processGameTick();
-  }
+  /**
+   * @method onLeave
+   * @description Called when a client leaves the room.
+   * @param {Client} client - The client that left.
+   */
+  onLeave(client: Client) {
+    const player = this.state.players.get(client.sessionId);
 
-  onLeave(client: Client, consented: boolean) {
-    try {
-      if (this.state.players.has(client.sessionId)) {
-        this.state.players.delete(client.sessionId);
-        console.info(`Player ${client.sessionId} left.`);
-      }
-    } catch (e) {
-      console.error("Error during onLeave:", e);
+    console.info(
+      `${client.sessionId} left! Name: ${player?.name ?? "Unknown"}`
+    );
+    this.state.players.delete(client.sessionId);
+
+    // Clear the game loop if no players are left
+    if (this.clients.length === 0) {
+      this.gameLoop?.clear();
+
+      console.info("Room is empty, shutting down game loop.");
     }
   }
 
+  /**
+   * @method onDispose
+   * @description Called when the room is disposed.
+   */
   onDispose() {
-    console.info("Disposing RuneRogueRoom...");
-    if (this.gameLoop) {
-      this.clock.clearInterval(this.gameLoop);
-    }
+    console.info("Disposing room...");
+    this.gameLoop?.clear();
   }
 
-  processGameTick() {
-    this.state.players.forEach((player) => {
-      if (player.target) {
-        this.handlePlayerAttack(player, player.target as Enemy);
-      }
-    });
-
-    this.state.enemies.forEach((enemy) => {
-      if (enemy.target) {
-        this.handleEnemyAttack(enemy, enemy.target as Player);
-      }
-    });
-  }
-
-  spawnEnemies() {
-    // Implementation from before
-  }
-
-  calculateDamage(attacker: Player | Enemy, target: Player | Enemy): number {
-    const attackLevel = "attackLevel" in attacker ? attacker.attackLevel : 1;
-    const strengthLevel =
-      "strengthLevel" in attacker ? attacker.strengthLevel : 1;
-    const defenceLevel = "defenceLevel" in target ? target.defenceLevel : 0;
-
-    const maxHit = Math.floor(strengthLevel / 4) + 8;
-    const accuracy = Math.random() * (attackLevel + 10);
-    const defence = Math.random() * (defenceLevel + 10);
-
-    if (accuracy > defence) {
-      return Math.floor(Math.random() * maxHit);
-    } else {
-      return 0;
-    }
-  }
-
-  handlePlayerAttack(player: Player, target: Enemy) {
-    const damage = this.calculateDamage(player, target);
-    target.health -= damage;
-
-    this.broadcast("combatEvent", {
-      type: "player_attack",
-      attackerId: player.id,
-      targetId: target.id,
-      damage,
-      targetHealth: target.health,
-      targetMaxHealth: target.maxHealth,
-      enemyType: target.type,
-    });
-
-    if (target.health <= 0) {
-      this.handleDeath(target);
-    }
-  }
-
-  handleEnemyAttack(enemy: Enemy, target: Player) {
-    const damage = this.calculateDamage(enemy, target);
-    target.health -= damage;
-
-    this.broadcast("combatEvent", {
-      type: "enemy_attack",
-      attackerId: enemy.id,
-      targetId: target.id,
-      damage,
-      targetHealth: target.health,
-      targetMaxHealth: target.maxHealth,
-    });
-
-    if (target.health <= 0) {
-      this.handleDeath(target);
-    }
-  }
-
-  handleDeath(entity: Player | Enemy) {
-    if (entity instanceof Player) {
-      console.info(`Player ${entity.id} has died.`);
-      // Future implementation: respawn logic
-    } else if (entity instanceof Enemy) {
-      console.info(`Enemy ${entity.id} has died.`);
-      this.state.enemies.delete(entity.id);
-    }
+  /**
+   * @method update
+   * @description The main game loop, running at `patchRate`.
+   */
+  update() {
+    // Server-side logic like enemy movement, AI, and physics would go here.
   }
 }

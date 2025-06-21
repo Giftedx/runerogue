@@ -1,34 +1,39 @@
 {
   "name": "@runerogue/phaser-client",
   "version": "0.1.0",
-  "description": "Phaser 3 game clients for RuneRogue",
-  "main": "enhanced-phaser-client.js",
+  "description": "Phaser 3 game client for RuneRogue Discord Activity",
+  "main": "src/main.tsx",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "echo 'No tests yet'",
-    "lint": "eslint ."
+    "test": "jest",
+    "lint": "eslint . --ext .ts,.tsx",
+    "update-discord": "node scripts/update-discord-config.js",
+    "postinstall": "node scripts/update-discord-config.js"
   },
   "dependencies": {
     "@runerogue/osrs-data": "workspace:*",
+    "@runerogue/shared": "workspace:*",
     "@discord/embedded-app-sdk": "^1.2.0",
     "bitecs": "^0.3.40",
     "clsx": "^2.1.1",
     "colyseus.js": "^0.15.0",
-    "phaser": "^3.90.0",
+    "dotenv": "^16.3.1",
+    "phaser": "^3.70.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zustand": "^4.3.8"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@types/react": "^18.2.19",
-    "@types/react-dom": "^18.2.7",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
-    "@vitejs/plugin-react": "^4.2.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31",
-    "tailwindcss": "^3.3.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.0"
   },
@@ -36,7 +41,9 @@
     "runescape",
     "phaser",
     "game",
-    "client"
+    "client",
+    "discord",
+    "activity"
   ],
   "author": "RuneRogue Team",
   "license": "MIT"

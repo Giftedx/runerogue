@@ -49,6 +49,134 @@ copy packages\phaser-client\*.pem packages\server\
 cp packages/phaser-client/*.pem packages/server/
 ```
 
+#### Automated Setup Script
+
+Create a file `scripts/setup-dev.js`:
+
+```javascript
+#!/usr/bin/env node
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
+const crypto = require("crypto");
+
+// Check Node version
+const nodeVersion = process.version.match(/^v(\d+)/)[1];
+if (parseInt(nodeVersion) < 18) {
+  console.error("❌ Node.js 18+ required. Current version:", process.version);
+  process.exit(1);
+}
+
+// Check pnpm
+try {
+  execSync("pnpm --version", { stdio: "ignore" });
+} catch {
+  console.error("❌ pnpm not found. Install with: npm install -g pnpm");
+  process.exit(1);
+}
+
+// Check mkcert
+try {
+  execSync("mkcert --version", { stdio: "ignore" });
+} catch {
+  console.error("❌ mkcert not found. Please install mkcert first.");
+  console.log("Windows: choco install mkcert");
+  console.log("macOS: brew install mkcert");
+  console.log("Linux: https://github.com/FiloSottile/mkcert/releases");
+  process.exit(1);
+}
+
+console.log("✅ Prerequisites checked");
+
+// Install dependencies
+console.log("📦 Installing dependencies...");
+try {
+  execSync("pnpm install", { stdio: "inherit" });
+} catch (error) {
+  console.error("❌ Failed to install dependencies:", error.message);
+  process.exit(1);
+}
+
+// Generate certificates
+const clientPath = path.join(__dirname, "..", "packages", "phaser-client");
+const serverPath = path.join(__dirname, "..", "packages", "server");
+
+// Ensure directories exist
+if (!fs.existsSync(clientPath)) {
+  console.error(`❌ Client path not found: ${clientPath}`);
+  process.exit(1);
+}
+
+if (!fs.existsSync(serverPath)) {
+  console.error(`❌ Server path not found: ${serverPath}`);
+  process.exit(1);
+}
+
+const keyPath = path.join(clientPath, "key.pem");
+const certPath = path.join(clientPath, "cert.pem");
+
+if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+  console.log("🔐 Generating HTTPS certificates...");
+  try {
+    execSync("mkcert -install", { stdio: "inherit" });
+    execSync(
+      "mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1",
+      {
+        cwd: clientPath,
+        stdio: "inherit",
+      }
+    );
+
+    // Copy to server
+    fs.copyFileSync(keyPath, path.join(serverPath, "key.pem"));
+    fs.copyFileSync(certPath, path.join(serverPath, "cert.pem"));
+    console.log("✅ Certificates generated and copied");
+  } catch (error) {
+    console.error("❌ Failed to generate certificates:", error.message);
+    process.exit(1);
+  }
+} else {
+  console.log("✅ Certificates already exist");
+}
+
+// Create .env files if they don't exist
+const clientEnvPath = path.join(clientPath, ".env");
+const serverEnvPath = path.join(serverPath, ".env");
+
+if (!fs.existsSync(clientEnvPath)) {
+  console.log("📝 Creating client .env file...");
+  const clientEnv = `VITE_DISCORD_CLIENT_ID=your_discord_app_id
+VITE_GAME_SERVER_URL=wss://localhost:2567
+VITE_API_URL=https://localhost:2567
+VITE_HTTPS_KEY=./key.pem
+VITE_HTTPS_CERT=./cert.pem
+`;
+  fs.writeFileSync(clientEnvPath, clientEnv, "utf8");
+}
+
+if (!fs.existsSync(serverEnvPath)) {
+  console.log("📝 Creating server .env file...");
+  const jwtSecret = crypto.randomBytes(32).toString("hex");
+  const serverEnv = `DISCORD_CLIENT_ID=your_discord_app_id
+DISCORD_CLIENT_SECRET=your_client_secret
+DISCORD_REDIRECT_URI=https://localhost:3000/auth/discord/callback
+PORT=2567
+NODE_ENV=development
+JWT_SECRET=${jwtSecret}
+HTTPS_KEY=./key.pem
+HTTPS_CERT=./cert.pem
+`;
+  fs.writeFileSync(serverEnvPath, serverEnv, "utf8");
+}
+
+console.log("✅ Development environment setup complete!");
+console.log("\n📋 Next steps:");
+console.log("1. Update .env files with your Discord app credentials");
+console.log('2. Run "pnpm dev" to start development servers');
+```
+
+Run with: `node scripts/setup-dev.js`
+
 #### Environment Setup (Cross-platform)
 
 ```bash
@@ -143,21 +271,8 @@ git pull origin main
 # Clean install to avoid dependency issues
 pnpm install --frozen-lockfile
 
-# Verify HTTPS certificates exist (Windows PowerShell)
-if (!(Test-Path packages\phaser-client\key.pem)) {
-  Write-Host "Generating HTTPS certificates..."
-  cd packages\phaser-client
-  mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1
-  cd ..\..
-}
-
-# Verify HTTPS certificates exist (Unix/macOS)
-if [ ! -f packages/phaser-client/key.pem ]; then
-  echo "Generating HTTPS certificates..."
-  cd packages/phaser-client
-  mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1
-  cd ../..
-fi
+# Run automated setup check
+node scripts/setup-dev.js
 
 # Start all services in parallel
 pnpm dev
@@ -220,13 +335,13 @@ pnpm test -- --coverage --testPathIgnorePatterns="archived"
 pnpm test -- --testPathIgnorePatterns="archived"
 
 # Check TypeScript
-pnpm -r exec tsc --noEmit
+pnpm type-check
 
 # Lint code (when configured)
-pnpm run lint --if-present || echo "No lint script configured"
+pnpm lint
 
 # Format code (when configured)
-pnpm run format --if-present || echo "No format script configured"
+pnpm format
 
 # Build packages to check for errors
 pnpm build
@@ -237,6 +352,9 @@ pnpm build
 ```bash
 # Stage changes
 git add .
+
+# Run pre-commit checks
+pnpm precommit
 
 # Commit with descriptive message
 git commit -m "feat: implement player movement system with client prediction"
@@ -392,11 +510,29 @@ pnpm test -- packages/osrs-data/src/combat/combat.test.ts
    - Verify prayer and equipment bonus calculations
 
 5. **Network Issues**
+
    - Monitor WebSocket connections in Network tab
    - Check Colyseus room state updates
    - Verify error handling and reconnection logic
    - Test with network throttling (Chrome DevTools)
    - Check for proper cleanup on disconnect
+
+6. **TypeScript Workspace Issues**
+
+   ```bash
+   # Fix TypeScript project references
+   pnpm -r exec tsc --build --clean
+   pnpm -r exec rm -rf tsconfig.tsbuildinfo
+
+   # Rebuild TypeScript projects
+   pnpm -r exec tsc --build
+
+   # Check for circular dependencies
+   pnpm dlx madge --circular packages/*/src/index.ts
+
+   # Verify all packages have correct exports
+   pnpm -r exec node -e "console.log(require('./package.json').name + ': ' + Object.keys(require('./package.json').exports || {}).join(', '))"
+   ```
 
 ### Debugging Tools
 
@@ -461,19 +597,124 @@ du -sh packages/phaser-client/dist/*
 
 ### Performance Monitoring Script
 
-Create a file `monitor-performance.js`:
+Create a file `scripts/monitor-performance.js`:
 
 ```javascript
 const { performance } = require("perf_hooks");
+const os = require("os");
 
-// Monitor server tick rate
-let lastTick = Date.now();
-setInterval(() => {
-  const now = Date.now();
-  const tickTime = now - lastTick;
-  console.log(`Tick time: ${tickTime}ms (${(1000 / tickTime).toFixed(1)} TPS)`);
-  lastTick = now;
-}, 1000);
+class PerformanceMonitor {
+  constructor() {
+    this.metrics = {
+      tickTimes: [],
+      memoryUsage: [],
+      cpuUsage: [],
+    };
+    this.lastCpuUsage = process.cpuUsage();
+  }
+
+  start() {
+    // Monitor tick rate
+    let lastTick = Date.now();
+    setInterval(() => {
+      const now = Date.now();
+      const tickTime = now - lastTick;
+      this.metrics.tickTimes.push(tickTime);
+
+      // Keep only last 60 samples
+      if (this.metrics.tickTimes.length > 60) {
+        this.metrics.tickTimes.shift();
+      }
+
+      lastTick = now;
+    }, 1000);
+
+    // Monitor memory
+    setInterval(() => {
+      const mem = process.memoryUsage();
+      this.metrics.memoryUsage.push({
+        rss: mem.rss,
+        heapUsed: mem.heapUsed,
+        external: mem.external,
+      });
+
+      if (this.metrics.memoryUsage.length > 60) {
+        this.metrics.memoryUsage.shift();
+      }
+    }, 1000);
+
+    // Monitor CPU
+    setInterval(() => {
+      const currentCpuUsage = process.cpuUsage(this.lastCpuUsage);
+      const cpuPercent =
+        (currentCpuUsage.user + currentCpuUsage.system) / 1000000; // Convert to seconds
+      this.metrics.cpuUsage.push(cpuPercent);
+
+      if (this.metrics.cpuUsage.length > 60) {
+        this.metrics.cpuUsage.shift();
+      }
+
+      this.lastCpuUsage = process.cpuUsage();
+    }, 1000);
+
+    // Display stats
+    setInterval(() => {
+      this.displayStats();
+    }, 5000);
+  }
+
+  displayStats() {
+    console.clear();
+    console.log("=== Performance Monitor ===");
+    console.log(new Date().toLocaleTimeString());
+    console.log("");
+
+    // Tick rate stats
+    if (this.metrics.tickTimes.length > 0) {
+      const avgTick =
+        this.metrics.tickTimes.reduce((a, b) => a + b, 0) /
+        this.metrics.tickTimes.length;
+      const minTick = Math.min(...this.metrics.tickTimes);
+      const maxTick = Math.max(...this.metrics.tickTimes);
+      console.log(
+        `Tick Rate: ${(1000 / avgTick).toFixed(1)} TPS (min: ${minTick}ms, max: ${maxTick}ms)`
+      );
+    }
+
+    // Memory stats
+    if (this.metrics.memoryUsage.length > 0) {
+      const latest =
+        this.metrics.memoryUsage[this.metrics.memoryUsage.length - 1];
+      console.log(
+        `Memory: RSS ${(latest.rss / 1024 / 1024).toFixed(1)}MB, Heap ${(latest.heapUsed / 1024 / 1024).toFixed(1)}MB`
+      );
+    }
+
+    // CPU stats
+    if (this.metrics.cpuUsage.length > 0) {
+      const avgCpu =
+        this.metrics.cpuUsage.reduce((a, b) => a + b, 0) /
+        this.metrics.cpuUsage.length;
+      console.log(`CPU: ${avgCpu.toFixed(1)}% average`);
+    }
+
+    // System stats
+    const totalMem = os.totalmem() / 1024 / 1024 / 1024;
+    const freeMem = os.freemem() / 1024 / 1024 / 1024;
+    console.log(
+      `System: ${freeMem.toFixed(1)}GB free of ${totalMem.toFixed(1)}GB`
+    );
+  }
+}
+
+const monitor = new PerformanceMonitor();
+monitor.start();
+
+// Handle graceful shutdown
+process.on("SIGINT", () => {
+  console.log("\nShutting down performance monitor...");
+  process.exit(0);
+});
 ```
 
 ## Deployment Process
@@ -623,6 +864,83 @@ pnpm test -- --testNamePattern="smoke"
 # Investigate and fix forward
 ```
 
+## CI/CD Workflow
+
+### GitHub Actions Workflow
+
+Create `.github/workflows/ci.yml`:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Run tests
+        run: pnpm test -- --testPathIgnorePatterns="archived" --coverage
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        if: matrix.node-version == '18.x'
+        with:
+          files: ./coverage/lcov.info
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+```
+
 ## Resources and Documentation
 
 ### Internal Documentation
@@ -769,6 +1087,26 @@ cd ../..
 # Linux: Copy to /usr/local/share/ca-certificates/ and run update-ca-certificates
 ```
 
+**pnpm Workspace Issues**
+
+```bash
+# Fix pnpm workspace linking
+pnpm install --force
+
+# Check workspace structure
+pnpm ls -r --depth 0
+
+# Verify all packages are linked correctly
+pnpm why @runerogue/shared
+
+# Fix peer dependency issues
+pnpm install --strict-peer-dependencies=false
+
+# Clean pnpm cache if corrupted
+pnpm store prune
+pnpm install --force
+```
+
 ## Discord Activity Development
 
 ### Local Testing Workflow
@@ -830,7 +1168,7 @@ cd ../..
    # Test token exchange endpoint
    curl -X POST https://localhost:2567/api/discord/token \
      -H "Content-Type: application/json" \
-     -d "{\"code\":\"test_auth_code\"}"
+     -d '{"code":"test_auth_code"}'
 
    # Verify redirect URI matches exactly
    # Check for trailing slashes
@@ -840,14 +1178,26 @@ cd ../..
 3. **WebSocket Connection Issues**
 
    ```typescript
-   // Add connection debugging
-   const client = new Colyseus.Client(process.env.VITE_GAME_SERVER_URL!, {
-     requestTimeout: 10000,
-   });
+   import * as Colyseus from "colyseus.js";
 
-   client.onError.add((error) => {
-     console.error("[Colyseus] Connection error:", error);
-   });
+   // Add connection debugging
+   const client = new Colyseus.Client(
+     process.env.VITE_GAME_SERVER_URL || "wss://localhost:2567",
+     {
+       requestTimeout: 10000,
+     }
+   );
+
+   // Note: Client error handling varies by Colyseus version
+   // For v0.15.x:
+   client
+     .joinOrCreate("game_room", {})
+     .then((room) => {
+       console.log("[Colyseus] Connected to room:", room.id);
+     })
+     .catch((error) => {
+       console.error("[Colyseus] Connection error:", error);
+     });
 
    // Monitor in Chrome DevTools
    // Network tab > WS filter
@@ -860,16 +1210,24 @@ cd ../..
 
    ```typescript
    // Add to Vite config
-   server: {
-     headers: {
-       'Content-Security-Policy': "frame-ancestors https://discord.com https://discordapp.com",
+   export default {
+     server: {
+       headers: {
+         "Content-Security-Policy":
+           "frame-ancestors https://discord.com https://discordapp.com",
+       },
      },
-   }
+   };
    ```
 
 2. **CORS Issues**
 
    ```typescript
+   import cors from "cors";
+   import express from "express";
+
+   const app = express();
+
    // Server CORS configuration
    app.use(
      cors({
@@ -880,17 +1238,46 @@ cd ../..
          "null", // Discord iframe in development
        ],
        credentials: true,
-     }),
+     })
    );
    ```
 
-3. **Activity Not Updating**
+3. **Activity Not Showing**
 
-   - Force refresh Discord activity:
-     1. Leave voice channel
-     2. Clear Discord cache
-     3. Restart Discord
-     4. Rejoin voice channel
-   - Check activity configuration
    - Verify URL mappings in Developer Portal
    - Check for console errors in Discord DevTools
+   - Ensure activity is enabled for your test server
+   - Clear Discord cache and restart client
+
+### Discord Activity Best Practices
+
+1. **Development Setup**
+
+   - Always use HTTPS with valid certificates
+   - Test in both standalone and Discord contexts
+   - Monitor console for CSP violations
+
+2. **Error Handling**
+
+   - Gracefully handle Discord SDK initialization failures
+   - Provide fallback for non-Discord environments
+   - Log all Discord-specific errors for debugging
+
+3. **Performance**
+   - Minimize initial bundle size for faster loading
+   - Lazy load non-critical assets
+   - Use Discord's CDN for large assets when possible
+
+## Summary
+
+This development workflow guide provides comprehensive instructions for:
+
+- Setting up the development environment with HTTPS certificates
+- Creating and configuring Discord Applications
+- Daily development processes and best practices
+- Testing strategies and debugging techniques
+- Performance monitoring and optimization
+- Deployment procedures for staging and production
+- Emergency response procedures
+
+Remember to always test your Discord Activity in both development and production environments, and monitor for any CSP or CORS issues that may prevent proper loading within Discord's iframe context.

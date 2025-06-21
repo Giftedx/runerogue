@@ -59,7 +59,7 @@ runerogue/
 │   ├── osrs-data/          # OSRS formulas and data API ✅
 │   ├── game-server/        # Colyseus multiplayer server ✅
 │   ├── server/             # Main Express server ✅
-│   ├── phaser-client/      # Web-based game client 🔄
+│   ├── phaser-client/      # Web-based game client ✅
 │   └── shared/             # Shared types and utilities ✅
 ├── scripts/                # Build and utility scripts
 ├── docs/                   # Documentation and reports
@@ -77,93 +77,51 @@ runerogue/
 - Shared types and utilities package
 - Test framework setup (Jest) with mixed coverage
 
-### 🎯 Phase 1: Discord Activity Prototype (CURRENT)
+### 🎯 Phase 1: Discord Activity Prototype (CURRENT - Week 1-3)
 
-- Set up Discord Activity infrastructure
-- Create unified web client with Phaser + React
-- Implement real-time multiplayer connection
-- Basic player movement and combat
-- Discord authentication and presence
+**Goal**: Create a working Discord Activity with basic multiplayer functionality
 
-#### Phase 1 Action Items:
+**Status**:
 
-1. **Set Up Discord Activity** (Priority: CRITICAL - Week 1)
+- ✅ Discord Activity infrastructure complete
+- ✅ Client foundation created and integrated
+- ✅ Basic client-server connection implemented
+- ⚠️ Test coverage needs improvement (27/106 passing)
+- ⚠️ Core gameplay features partially complete
 
-   ```bash
-   # Install Discord SDK in phaser-client with latest stable version
-   pnpm --filter @runerogue/phaser-client add @discord/embedded-app-sdk@1.2.0
+#### Phase 1 Checklist:
 
-   # Install required HTTPS development tools
-   pnpm add -D -w @vitejs/plugin-basic-ssl
-   ```
+##### Week 1: Discord Setup & Client Foundation
 
-   - [ ] Create Discord application at https://discord.com/developers
-   - [ ] Configure activity settings and OAuth2
-   - [ ] Create `discord-activity.json` manifest
-   - [ ] Implement Discord SDK initialization
-   - [ ] Add OAuth2 redirect handler endpoint
-   - [ ] Configure CSP headers for Discord iframe
-   - [ ] Set up HTTPS for local development (required for Discord)
+- [x] Create Discord application and configure settings
+- [x] Set up HTTPS certificates with mkcert
+- [x] Install all required dependencies
+- [x] Create Discord Activity manifest
+- [x] Implement Discord SDK initialization
+- [x] Set up React + Phaser hybrid architecture
+- [x] Configure Vite with HTTPS support
 
-   **Validation**: Run `pnpm --filter @runerogue/phaser-client dev` and verify HTTPS certificate is loaded
+##### Week 2: Multiplayer Integration
 
-2. **Refactor Client Architecture** (Priority: HIGH - Week 1-2)
+- [x] Implement NetworkManager for Colyseus
+- [x] Create state synchronization handlers
+- [x] Build connection status UI
+- [x] Add reconnection logic
+- [x] Test client-server communication
+- [x] Implement basic latency compensation
 
-   ```bash
-   # Install required dependencies with versions
-   pnpm --filter @runerogue/phaser-client add react@18.2.0 react-dom@18.2.0
-   pnpm --filter @runerogue/phaser-client add -D @types/react@18.2.0 @types/react-dom@18.2.0
-   pnpm --filter @runerogue/phaser-client add -D tailwindcss@3.4.0 postcss@8.4.33 autoprefixer@10.4.17 @vitejs/plugin-react@4.2.1
-   pnpm --filter @runerogue/phaser-client add zustand@4.4.7
-   pnpm --filter @runerogue/phaser-client add phaser@3.70.0
-   ```
+##### Week 3: Core Gameplay (IN PROGRESS)
 
-   - [ ] Install React and Tailwind in phaser-client
-   - [ ] Create hybrid Phaser + React structure
-   - [ ] Implement Discord-themed UI components
-   - [ ] Set up Zustand for state management
-   - [ ] Configure Vite for React + Phaser
-   - [ ] Set up proper TypeScript configurations
+- [x] Player movement (WASD/arrows)
+- [x] Basic combat with OSRS formulas
+- [x] Health bars and UI elements
+- [ ] Simple enemy spawning
+- [ ] Collision detection
+- [ ] Basic animations
+- [ ] Wave progression system
+- [ ] Death and respawn mechanics
 
-   **Validation**: Run `pnpm --filter @runerogue/phaser-client type-check` with no errors
-
-3. **Connect to Multiplayer Server** (Priority: HIGH - Week 2)
-
-   ```bash
-   # Install Colyseus client with exact version matching server
-   pnpm --filter @runerogue/phaser-client add colyseus.js@0.15.0
-
-   # Install WebSocket types
-   pnpm --filter @runerogue/phaser-client add -D @types/ws@8.5.10
-   ```
-
-   - [ ] Create NetworkManager class
-   - [ ] Implement room join/leave logic
-   - [ ] Add state synchronization handlers
-   - [ ] Create connection status UI
-   - [ ] Implement reconnection logic
-   - [ ] Add latency compensation
-
-   **Validation**: Test connection between client and server with `pnpm dev` and check WebSocket connection in Chrome DevTools
-
-4. **Implement Core Gameplay** (Priority: MEDIUM - Week 3)
-
-   ```bash
-   # No additional dependencies needed - verify all packages are installed
-   pnpm install
-   ```
-
-   - [ ] Player spawning and movement
-   - [ ] WASD/arrow key input handling
-   - [ ] Basic combat with OSRS formulas
-   - [ ] Health bars and damage numbers
-   - [ ] Simple enemy AI
-   - [ ] Collision detection
-   - [ ] Basic animations
-
-   **Validation**: Run game and verify player can move with WASD keys and health bar updates
-
-### 🚀 Phase 2: Core Systems (PLANNED)
+### 🚀 Phase 2: Core Systems (PLANNED - Week 4-6)
 
 - Full OSRS skill system implementation
 - Equipment and inventory management
@@ -171,7 +129,7 @@ runerogue/
 - Wave-based enemy spawning
 - Player progression and XP tracking
 
-### 📈 Phase 3: Polish & Launch (PLANNED)
+### 📈 Phase 3: Polish & Launch (PLANNED - Week 7-8)
 
 - Performance optimization for 60fps
 - Advanced enemy AI and boss fights
@@ -227,430 +185,346 @@ runerogue/
 - Clear user feedback for all actions
 - Professional polish matching Discord's quality
 
-## Current Status (Updated)
+## Current Status Dashboard
 
-- **OSRS Data Pipeline**: ✅ Complete - All formulas implemented with Express API
-- **Multiplayer Server**: ✅ Basic infrastructure - Colyseus rooms ready
-- **Game Server**: ✅ Core implementation - ECS and game logic in place
-- **Web Client**: ❌ Needs Complete Refactor - Current client is legacy, needs Phaser + React rebuild
-- **Discord Integration**: ❌ Not Started - Critical for Phase 1
-- **Client-Server Connection**: ❌ Not Implemented - Needed for multiplayer
-- **Test Coverage**: ⚠️ Limited - 27 passing tests, 79 failing (mostly archived), needs major cleanup
+### Package Status
 
-### Immediate Priorities
+| Package       | Status      | Tests      | Coverage | Notes                                   |
+| ------------- | ----------- | ---------- | -------- | --------------------------------------- |
+| osrs-data     | ✅ Complete | ✅ Passing | Good     | Combat formulas implemented             |
+| game-server   | ✅ Complete | ✅ Passing | Good     | Basic rooms ready, needs enemy spawning |
+| server        | ✅ Complete | ⚠️ Mixed   | Fair     | Discord routes implemented              |
+| phaser-client | ⚠️ Active   | ⚠️ Mixed   | Fair     | Needs enemy rendering & collision       |
+| shared        | ✅ Complete | ✅ Passing | Good     | Types defined                           |
 
-1. **Create Discord Application** (Day 1)
+### Critical Path Items (Phase 1)
 
-   - Go to https://discord.com/developers/applications
-   - Create new application named "RuneRogue"
-   - Note the Application ID and Public Key
-   - Configure OAuth2 redirect URLs:
-     - Development: `https://localhost:3000/auth/discord/callback`
-     - Production: `https://your-domain.com/auth/discord/callback`
-   - Set up activity settings in the Discord Developer Portal:
-     - Activity Type: Game
-     - Max Participants: 4
-     - Supports Voice: Yes
-     - Platform Type: Web
-   - Generate and secure client secret
-   - **Important**: Add your Discord user as a tester in the app settings
+1. **Discord Application Setup** - ✅ Complete
+2. **HTTPS Certificates** - ✅ Complete
+3. **Client Refactor** - ✅ Complete
+4. **WebSocket Connection** - ✅ Complete
+5. **Basic Gameplay** - ⚠️ In Progress
+   - ✅ Player movement and combat
+   - ⚠️ Enemy spawning (server-side logic needed)
+   - ⚠️ Collision detection (Phaser physics setup needed)
+   - ⚠️ Animations (sprite sheets needed)
+6. **Discord Activity Config** - ✅ Complete (discord-activity.json created)
 
-2. **Set Up Development Environment** (Day 1-2)
+## Quick Start Guide
+
+### Prerequisites Check
+
+```bash
+# Check Node.js version (need 18+)
+node --version
+
+# Check pnpm installation
+pnpm --version || npm install -g pnpm
+
+# Check mkcert installation (Windows)
+where mkcert || echo "Install mkcert first!"
+
+# Check mkcert installation (macOS/Linux)
+which mkcert || echo "Install mkcert first!"
+```
+
+### Day 1: Discord & Environment Setup
+
+1. **Create Discord Application**
+
+   - Visit https://discord.com/developers/applications
+   - Create new application "RuneRogue"
+   - Save Application ID and Public Key
+   - Navigate to OAuth2 > General
+   - Add redirect URL: `https://localhost:3000/auth/discord/callback`
+   - Generate and save Client Secret
+   - Go to Bot section, create bot, save token
+   - In App Settings > App Testers, add your Discord ID
+
+2. **Generate HTTPS Certificates**
 
    ```bash
-   # Clean install
-   rm -rf node_modules pnpm-lock.yaml packages/*/node_modules
-   pnpm install
+   # Install mkcert if needed
+   # Windows: choco install mkcert
+   # macOS: brew install mkcert
+   # Linux: Download from GitHub releases
 
-   # Install mkcert for HTTPS certificates (required for Discord Activities)
-   # On Windows (with Chocolatey)
-   choco install mkcert
-   # On macOS
-   brew install mkcert
-   # On Linux - download from https://github.com/FiloSottile/mkcert/releases
-
-   # Install mkcert root certificate
+   # Install root certificate
    mkcert -install
 
-   # Generate HTTPS certificates for local development
+   # Create certificate directory if it doesn't exist
+   mkdir -p packages/phaser-client
+
+   # Generate certificates
    cd packages/phaser-client
    mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1
    cd ../..
 
-   # Copy certificates to server (cross-platform)
-   # Windows
+   # Copy to server (Windows)
    copy packages\phaser-client\*.pem packages\server\
-   # Unix/macOS
+
+   # Copy to server (macOS/Linux)
    cp packages/phaser-client/*.pem packages/server/
    ```
 
-3. **Environment Setup** (Day 2)
+3. **Configure Environment**
 
-   Create `.env` file in `packages/phaser-client/`:
+   For Windows (PowerShell):
 
-   ```env
-   VITE_DISCORD_CLIENT_ID=your_discord_app_id
+   ```powershell
+   # Create client .env
+   @"
+   VITE_DISCORD_CLIENT_ID=YOUR_APP_ID_HERE
    VITE_GAME_SERVER_URL=wss://localhost:2567
    VITE_API_URL=https://localhost:2567
    VITE_HTTPS_KEY=./key.pem
    VITE_HTTPS_CERT=./cert.pem
-   ```
+   "@ | Out-File -FilePath packages\phaser-client\.env -Encoding UTF8
 
-   Create `.env` file in `packages/server/`:
-
-   ```env
-   DISCORD_CLIENT_ID=your_discord_app_id
-   DISCORD_CLIENT_SECRET=your_client_secret
+   # Create server .env
+   $jwtSecret = -join ((1..32) | ForEach {'{0:X2}' -f (Get-Random -Max 256)})
+   @"
+   DISCORD_CLIENT_ID=YOUR_APP_ID_HERE
+   DISCORD_CLIENT_SECRET=YOUR_CLIENT_SECRET_HERE
    DISCORD_REDIRECT_URI=https://localhost:3000/auth/discord/callback
    PORT=2567
    NODE_ENV=development
-   JWT_SECRET=your_jwt_secret_here
+   JWT_SECRET=$jwtSecret
    HTTPS_KEY=./key.pem
    HTTPS_CERT=./cert.pem
+   "@ | Out-File -FilePath packages\server\.env -Encoding UTF8
    ```
 
-4. **Start Development** (Day 2)
+   For macOS/Linux (Bash):
 
    ```bash
-   # Start all services
+   # Create client .env
+   cat > packages/phaser-client/.env << EOF
+   VITE_DISCORD_CLIENT_ID=YOUR_APP_ID_HERE
+   VITE_GAME_SERVER_URL=wss://localhost:2567
+   VITE_API_URL=https://localhost:2567
+   VITE_HTTPS_KEY=./key.pem
+   VITE_HTTPS_CERT=./cert.pem
+   EOF
+
+   # Create server .env
+   cat > packages/server/.env << EOF
+   DISCORD_CLIENT_ID=YOUR_APP_ID_HERE
+   DISCORD_CLIENT_SECRET=YOUR_CLIENT_SECRET_HERE
+   DISCORD_REDIRECT_URI=https://localhost:3000/auth/discord/callback
+   PORT=2567
+   NODE_ENV=development
+   JWT_SECRET=$(openssl rand -hex 32)
+   HTTPS_KEY=./key.pem
+   HTTPS_CERT=./cert.pem
+   EOF
+   ```
+
+### Day 2: Development Start
+
+1. **Install Dependencies**
+
+   ```bash
+   # Clean install (Windows)
+   rmdir /s /q node_modules 2>nul
+   del pnpm-lock.yaml 2>nul
+   for /d %i in (packages\*) do rmdir /s /q "%i\node_modules" 2>nul
+
+   # Clean install (macOS/Linux)
+   rm -rf node_modules pnpm-lock.yaml packages/*/node_modules
+
+   # Install base dependencies
+   pnpm install
+
+   # Install Phase 1 dependencies
+   pnpm --filter @runerogue/phaser-client add \
+     @discord/embedded-app-sdk@1.2.0 \
+     react@18.2.0 react-dom@18.2.0 \
+     phaser@3.70.0 \
+     colyseus.js@0.15.0 \
+     zustand@4.4.7
+
+   pnpm --filter @runerogue/phaser-client add -D \
+     @types/react@18.2.0 @types/react-dom@18.2.0 \
+     tailwindcss@3.4.0 postcss@8.4.33 autoprefixer@10.4.17 \
+     @vitejs/plugin-react@4.2.1
+   ```
+
+2. **Start Development**
+
+   ```bash
+   # Terminal 1: Start all services
    pnpm dev
 
-   # Or start individually:
-   # Terminal 1: Start game server
-   pnpm --filter @runerogue/server dev
+   # Terminal 2: Monitor logs (Windows)
+   type packages\server\logs\*.log 2>nul
 
-   # Terminal 2: Start web client
-   pnpm --filter @runerogue/phaser-client dev
+   # Terminal 2: Monitor logs (macOS/Linux)
+   tail -f packages/*/logs/*.log 2>/dev/null
    ```
 
-5. **Test Discord Activity** (Day 2)
-   - Open Discord
-   - Enable Developer Mode in settings (User Settings > Advanced > Developer Mode)
-   - Create a test server or use existing
-   - Join a voice channel
+3. **Test Discord Activity**
+   - Open Discord, enable Developer Mode (User Settings > Advanced > Developer Mode)
+   - Join a voice channel in a test server
    - Click Activities button (rocket icon)
-   - Find and launch your activity
-   - Monitor console for errors
+   - Your activity should appear (may need refresh)
+   - Check browser console for errors (F12 in Discord)
 
-### Quick Development Commands
+## Immediate Action Items (Phase 1 - Week 3)
 
-```bash
-# Start all services
-pnpm dev
+### 1. Complete Core Gameplay Features
 
-# Start specific services
-pnpm --filter @runerogue/server dev
-pnpm --filter @runerogue/phaser-client dev
+The client foundation is complete. Critical remaining tasks:
 
-# Run tests (skip archived)
-pnpm test -- --testPathIgnorePatterns="archived"
+#### Enemy Spawning System
 
-# Run tests in watch mode
-pnpm test -- --watch --testPathIgnorePatterns="archived"
+- [ ] Create `Enemy` schema in `packages/game-server/src/schemas/GameState.ts`
+- [ ] Implement `EnemySpawnSystem` in `packages/game-server/src/systems/`
+- [ ] Add enemy types to `packages/shared/src/types/entities.ts`
+- [ ] Create enemy sprite rendering in `packages/phaser-client/src/scenes/GameScene.ts`
 
-# Run tests with coverage
-pnpm test -- --coverage --testPathIgnorePatterns="archived"
+#### Collision Detection
 
-# Build for production
-pnpm build
+- [ ] Enable Arcade Physics in Phaser game config
+- [ ] Add physics bodies to player and enemy sprites
+- [ ] Implement collision handlers for:
+  - Player-Enemy collisions (damage dealing)
+  - Player-Projectile collisions
+  - Enemy-Projectile collisions
 
-# Type check all packages
-pnpm type-check
+#### Basic Animations
 
-# Clean build artifacts
-pnpm clean
+- [ ] Create or acquire sprite sheets for:
+  - Player idle/walk/attack animations
+  - Enemy movement animations
+  - Attack/death effects
+- [ ] Set up animation definitions in Phaser
+- [ ] Trigger animations based on game state
 
-# Full clean and reinstall
-pnpm clean && rm -rf node_modules pnpm-lock.yaml && pnpm install
+#### Integration Tasks
 
-# Verify all dependencies
-pnpm ls -r --depth 0
+- [ ] Import and use OSRS combat formulas from `@runerogue/osrs-data`
+- [ ] Sync enemy positions from server to client
+- [ ] Implement damage numbers display
+- [ ] Add basic sound effects for combat
 
-# Check for issues
-pnpm audit
+### 2. Implementation Guide for Enemy Spawning
 
-# Update dependencies
-pnpm up -i -r --latest
-```
+Create the following files:
 
-## Current Testing Status (Updated)
+**Server-side (Colyseus)**:
 
-Based on recent test runs:
+```typescript
+// packages/game-server/src/schemas/Enemy.ts
+import { Schema, type } from "@colyseus/schema";
 
-- **Total Tests**: 106 tests across all packages
-- **Passing Tests**: 27 tests (25%)
-- **Failing Tests**: 79 tests (75%)
-- **Main Issues**:
-  - Most failing tests are in archived folders with missing dependencies
-  - Active tests in core packages (osrs-data, game-server) are mostly passing
-  - Client tests need complete rewrite after refactor
-
-### Test Organization
-
-- Active tests: `packages/*/src/**/*.test.ts` (excluding archived)
-- Archived tests: `packages/*/src/archived/` (should be ignored or removed)
-- Use `--testPathIgnorePatterns="archived"` to skip legacy tests
-
-### Priority Testing Areas
-
-1. **OSRS Calculations** (packages/osrs-data) - Must be 100% accurate
-2. **Game Server Logic** (packages/game-server) - Core multiplayer functionality
-3. **Client Integration** (packages/phaser-client) - After refactor is complete
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Discord Activity Not Loading**
-
-   ```typescript
-   // Check Discord SDK initialization
-   import { DiscordSDK } from "@discord/embedded-app-sdk";
-
-   const discordSdk = new DiscordSDK(process.env.VITE_DISCORD_CLIENT_ID!);
-
-   // Ensure you're in a Discord environment
-   if (!window.parent || window.parent === window) {
-     console.warn("Not running in Discord iframe");
-   }
-
-   // Check for HTTPS (required for Discord Activities)
-   if (location.protocol !== "https:") {
-     console.error("Discord Activities require HTTPS");
-   }
-
-   // Verify CSP headers allow Discord
-   // Add to Vite config or server headers:
-   // Content-Security-Policy: frame-ancestors https://discord.com https://discordapp.com
-   ```
-
-2. **HTTPS Certificate Issues**
-
-   ```bash
-   # Regenerate certificates if needed
-   cd packages/phaser-client
-   rm -f *.pem
-   mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1
-   cd ../..
-
-   # Trust certificates (if mkcert -install didn't work)
-   # Windows: Double-click cert.pem > Install Certificate > Local Machine > Trusted Root
-   # macOS: Open Keychain Access > System > Import cert.pem
-   # Linux: Copy to /usr/local/share/ca-certificates/ and run update-ca-certificates
-   ```
-
-3. **WebSocket Connection Failed**
-
-   ```typescript
-   // Verify server is running with WSS support
-   // Check packages/server/src/index.ts:
-   import { Server } from "colyseus";
-   import { createServer } from "https";
-   import cors from "cors";
-   import fs from "fs";
-
-   // For development with HTTPS
-   const httpsServer = createServer(
-     {
-       key: fs.readFileSync("key.pem"),
-       cert: fs.readFileSync("cert.pem"),
-     },
-     app,
-   );
-
-   const gameServer = new Server({
-     server: httpsServer,
-     express: app,
-   });
-
-   // Ensure CORS is configured for Discord
-   app.use(
-     cors({
-       origin: [
-         "https://discord.com",
-         "https://discordapp.com",
-         "https://localhost:3000",
-         "null", // For Discord iframe in development
-       ],
-       credentials: true,
-     }),
-   );
-   ```
-
-4. **Build Errors**
-
-   ```bash
-   # Clear all caches and rebuild
-   pnpm clean
-   rm -rf packages/*/dist packages/*/.turbo packages/*/.vite
-   pnpm install
-   pnpm build
-
-   # If TypeScript errors persist
-   pnpm -r exec rm -rf tsconfig.tsbuildinfo
-   pnpm -r exec tsc --build --clean
-   ```
-
-5. **Module Resolution Issues**
-
-   ```bash
-   # Check for missing types
-   pnpm add -D @types/node @types/react @types/react-dom
-
-   # Verify workspace dependencies
-   pnpm -r exec tsc --noEmit
-
-   # Update all TypeScript project references
-   pnpm -r exec tsc --build
-   ```
-
-6. **Discord OAuth2 Issues**
-
-   ```bash
-   # Verify redirect URI matches exactly (including trailing slashes)
-   # Test OAuth2 flow manually
-   curl -X POST https://discord.com/api/oauth2/token \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "client_id=${DISCORD_CLIENT_ID}" \
-     -d "client_secret=${DISCORD_CLIENT_SECRET}" \
-     -d "grant_type=authorization_code" \
-     -d "code=YOUR_AUTH_CODE" \
-     -d "redirect_uri=https://localhost:3000/auth/discord/callback"
-   ```
-
-## Architecture Quick Reference
-
-### Package Responsibilities
-
-- **osrs-data**: Combat formulas, item stats, OSRS calculations
-- **game-server**: Colyseus rooms, game state, multiplayer logic
-- **server**: Express server, API endpoints, WebSocket hosting, OAuth2
-- **phaser-client**: Phaser game + React UI + Discord integration
-- **shared**: Common types, interfaces, utilities
-
-### Key Files to Create/Edit for Phase 1
-
-1. **Discord Integration** (Priority 1):
-
-   - `packages/phaser-client/src/discord/DiscordActivity.ts` - Main Discord SDK integration
-   - `packages/phaser-client/src/discord/auth.ts` - OAuth2 authentication flow
-   - `packages/phaser-client/src/discord/types.ts` - Discord-related TypeScript types
-   - `packages/phaser-client/discord-activity.json` - Activity manifest
-   - `packages/server/src/routes/discord.ts` - OAuth2 token exchange endpoint
-   - `packages/server/src/middleware/discord-auth.ts` - Authentication middleware
-
-2. **Client Architecture** (Priority 2):
-
-   - `packages/phaser-client/src/main.tsx` - React entry point
-   - `packages/phaser-client/src/game/PhaserGame.ts` - Phaser game initialization
-   - `packages/phaser-client/src/ui/App.tsx` - Main React component
-   - `packages/phaser-client/src/stores/gameStore.ts` - Zustand state management
-   - `packages/phaser-client/vite.config.ts` - Vite configuration with HTTPS
-   - `packages/phaser-client/tailwind.config.js` - Tailwind CSS setup
-   - `packages/phaser-client/postcss.config.js` - PostCSS configuration
-   - `packages/phaser-client/index.html` - Entry HTML template
-
-3. **Multiplayer Connection** (Priority 3):
-   - `packages/phaser-client/src/network/NetworkManager.ts` - Colyseus client wrapper
-   - `packages/phaser-client/src/network/StateSync.ts` - State synchronization logic
-   - `packages/phaser-client/src/network/types.ts` - Network-related types
-   - `packages/game-server/src/rooms/GameRoom.ts` - Update room logic
-   - `packages/game-server/src/schemas/GameState.ts` - Update state schema
-   - `packages/shared/src/types/multiplayer.ts` - Shared multiplayer types
-
-## Discord Activity Requirements
-
-### Technical Requirements
-
-- **HTTPS Required**: Even in development (use mkcert)
-- **CSP Headers**: Must allow Discord as frame-ancestor
-- **OAuth2 Flow**: Required for user authentication
-- **WebSocket Support**: For real-time multiplayer (WSS in production)
-- **Responsive Design**: Must work in Discord's resizable iframe
-- **SDK Version**: Use latest stable version of @discord/embedded-app-sdk
-
-### Activity Configuration
-
-```json
-{
-  "name": "RuneRogue",
-  "description": "OSRS-inspired multiplayer roguelike",
-  "type": 0,
-  "launch_options": {
-    "default": {
-      "handler": "/"
-    }
-  },
-  "activity_configuration": {
-    "supports_voice": true,
-    "max_participants": 4,
-    "requires_age_gate": false
-  },
-  "aliases": ["runerogue", "rr"],
-  "supported_platforms": ["web"],
-  "orientation_lock_state": "unlocked"
+export class Enemy extends Schema {
+  @type("string") id: string;
+  @type("number") x: number;
+  @type("number") y: number;
+  @type("number") health: number;
+  @type("number") maxHealth: number;
+  @type("string") type: string; // "goblin", "spider", etc.
 }
 ```
 
-### Discord Developer Portal Settings
+**Client-side (Phaser)**:
 
-1. **OAuth2 Settings**:
+```typescript
+// packages/phaser-client/src/entities/EnemySprite.ts
+export class EnemySprite extends Phaser.GameObjects.Sprite {
+  // Implementation details
+}
+```
 
-   - Scopes: `identify`, `guilds`, `guilds.members.read`
-   - Redirect URLs: Add both development and production URLs
+### 3. Testing Checklist
 
-2. **Activity Settings**:
+Before considering Phase 1 complete:
 
-   - Platform Type: Web
-   - Activity Privacy: Public (after testing)
-   - Age Gate: Not required
-   - Max Participants: 4
+- [ ] 4 players can connect simultaneously
+- [ ] Players can see each other move in real-time
+- [ ] Enemies spawn and move toward players
+- [ ] Combat damage is calculated using OSRS formulas
+- [ ] Players can die and respawn
+- [ ] Basic wave progression works
+- [ ] Activity loads correctly in Discord
+- [ ] No major performance issues with 4 players + 20 enemies
 
-3. **URL Mappings**:
-   - Development: `https://localhost:3000`
-   - Production: `https://your-domain.com`
+## Troubleshooting Quick Reference
 
-## Next Steps After Phase 1
+### Common Issues & Solutions
 
-Once Discord Activity and basic multiplayer work:
+| Issue                         | Solution                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------- |
+| Discord Activity not loading  | Check HTTPS certs, verify CSP headers, check console, ensure discord-activity.json exists |
+| WebSocket connection failed   | Ensure server is running, check firewall, verify WSS URL                                  |
+| HTTPS certificate errors      | Regenerate with mkcert, manually trust in OS                                              |
+| Build errors                  | Clear caches: `pnpm clean && pnpm install`                                                |
+| Test failures                 | Run with: `pnpm test -- --testPathIgnorePatterns="archived"`                              |
+| Environment variables missing | Ensure .env files exist and have correct values                                           |
+| Discord manifest not found    | Ensure .well-known/discord-activity.json is in public folder                              |
+| Phaser not rendering          | Check canvas element exists, verify game config                                           |
+| State sync issues             | Enable Colyseus debug mode, check schema definitions                                      |
 
-1. **Enhanced Combat System**
+### Debug Commands
 
-   - Port all OSRS combat formulas
-   - Add weapon types and attack styles
-   - Implement prayer system
-   - Add special attacks
+```bash
+# Check Discord connection
+curl -k https://localhost:3000/health
 
-2. **Enemy System**
+# Verify Discord manifest is served
+curl -k https://localhost:3000/.well-known/discord-activity.json
 
-   - Wave spawning mechanics
-   - Different enemy types
-   - Boss encounters
-   - Loot drops
+# Test WebSocket (install wscat first: npm install -g wscat)
+wscat -c wss://localhost:2567
 
-3. **Progression System**
+# View server logs (Windows)
+type packages\server\logs\*.log
 
-   - XP and leveling
-   - Skill unlocks
-   - Equipment upgrades
-   - Persistent progress
+# View server logs (macOS/Linux)
+tail -f packages/server/logs/*.log
 
-4. **Social Features**
-   - Voice channel integration
-   - Party system
-   - Leaderboards
-   - Achievements
+# Check certificate validity
+openssl x509 -in packages/phaser-client/cert.pem -text -noout
+
+# Monitor Phaser performance
+# In browser console: game.plugins.get('DebugPlugin').toggle()
+```
+
+## Architecture Overview
+
+### Data Flow
+
+```
+Discord Client → iframe → React UI → Phaser Game → Colyseus Client
+                                                          ↓
+PostgreSQL ← Express API ← Game Server ← Colyseus Server ↓
+```
+
+### Key Components
+
+- **Discord Activity**: Runs in iframe, uses Discord SDK
+- **React UI**: Handles menus, HUD, chat, inventory
+- **Phaser Game**: Renders game world and entities
+- **Colyseus**: Manages real-time state synchronization
+- **Express API**: Serves OSRS data and handles OAuth2
 
 ## Resources
 
-- [Discord Activities Documentation](https://discord.com/developers/docs/activities/overview)
-- [Discord Embedded App SDK](https://discord.com/developers/docs/developer-tools/embedded-app-sdk)
-- [Colyseus Documentation](https://docs.colyseus.io/)
-- [Phaser 3 Documentation](https://photonstorm.github.io/phaser3-docs/)
-- [OSRS Wiki](https://oldschool.runescape.wiki/)
-- [React Documentation](https://react.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Vite Documentation](https://vitejs.dev/)
-- [mkcert Documentation](https://github.com/FiloSottile/mkcert)
+### Documentation
 
-Remember: Focus on getting a working Discord Activity first, then iterate on gameplay features. The key is having something playable that showcases the core concept.
+- [Discord Activities Overview](https://discord.com/developers/docs/activities/overview)
+- [Discord SDK Reference](https://discord.com/developers/docs/developer-tools/embedded-app-sdk)
+- [Colyseus Getting Started](https://docs.colyseus.io/getting-started/)
+- [Phaser 3 Examples](https://phaser.io/examples)
+- [OSRS Wiki API](https://oldschool.runescape.wiki/w/RuneScape:Real-time_APIs)
+
+### Support
+
+- Discord Developer Server: [discord.gg/discord-developers](https://discord.gg/discord-developers)
+- Project Issues: Create GitHub issue with logs
+- OSRS Mechanics: Reference Wiki for exact formulas
+
+---
+
+**Remember**: Focus on getting a minimal Discord Activity working first. Everything else can be iterated on once you have players able to connect and see each other move.
