@@ -1,13 +1,7 @@
-import type { GameRoom } from "../rooms/GameRoom";
+import { defineSystem, type IWorld } from "bitecs";
 
-export class EnemyAISystem {
-  private room: GameRoom;
-
-  constructor(room: GameRoom) {
-    this.room = room;
-  }
-
-  update(_deltaTime: number) {
+export const createEnemyAISystem = () =>
+  defineSystem((world: IWorld) => {
     // TODO: Implement enemy AI logic
-  }
-}
+    return world;
+  });

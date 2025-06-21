@@ -6,6 +6,7 @@
 
 import { defineQuery, defineSystem, hasComponent, type IWorld } from "bitecs";
 import { Position, Target, Velocity, Player, Enemy } from "../components";
+import type { GameRoom } from "../../rooms/GameRoom";
 
 /**
  * A system that controls enemy AI, including aggression, targeting, pathfinding, and attacking.
@@ -76,10 +77,7 @@ export class EnemyAISystem extends System<GameRoomState> {
  * @description A system that controls enemy AI behavior, such as finding and moving towards targets.
  * @returns A BiteCS system.
  */
-export const createEnemyAISystem = () => {
-  const enemyQuery = defineQuery([Position, Velocity, Target, Enemy]);
-  const playerQuery = defineQuery([Position, Player]);
-
+export const createEnemyAISystem = (room: GameRoom) => {
   return defineSystem((world: IWorld) => {
     const enemies = enemyQuery(world);
     const players = playerQuery(world);

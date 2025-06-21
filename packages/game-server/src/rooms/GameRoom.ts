@@ -1,70 +1,104 @@
 import { Room, type Client } from "colyseus";
-import { createWorld, type IWorld } from "bitecs";
+import { createWorld, type IWorld, removeEntity } from "bitecs";
 
 import { GameRoomState, PlayerSchema } from "@runerogue/shared";
 
 // Systems
 import { createMovementSystem } from "../ecs/systems/MovementSystem";
-import { createEnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
-import { createEnemyAISystem } from "../ecs/systems/EnemyAISystem";
-import { createCombatSystem } from "../ecs/systems/CombatSystem";
-
-// Components
 import {
-  Position,
-  Velocity,
-  Health,
-  Target,
-  Combat,
-  Player,
-} from "../ecs/components";
-import { addEntity, addComponent, removeEntity } from "bitecs";
+  createCombatSystem,
+  type CombatWorld,
+} from "../ecs/systems/CombatSystem";
+import { createTargetingSystem } from "../ecs/systems/TargetingSystem";
+import { createEnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
+import { createStateUpdateSystem } from "../ecs/systems/StateUpdateSystem";
+import { Health, Position } from "../ecs/components";
 
 interface JoinOptions {
   name?: string;
 }
 
 export class GameRoom extends Room<GameRoomState> {
-  private world: IWorld = createWorld();
+  private world!: CombatWorld;
   private systems: ((world: IWorld) => IWorld)[] = [];
 
-  onCreate() {
-    this.state = new GameRoomState();
+  onCreate(options: any) {
+    this.setState(new GameRoomState());
 
-    // Register systems
-    this.systems.push(createMovementSystem());
-    this.systems.push(createEnemyAISystem());
-    this.systems.push(createCombatSystem(this));
-    this.systems.push(createEnemySpawnSystem(this));
+    // Initialize world with room reference
+    this.world = createWorld();
+    this.world.room = this;
+    this.world.entitiesToRemove = new Set();
+
+    // Initialize systems (including new ones)
+    this.systems = [
+      createMovementSystem(),
+      createCombatSystem(this),
+      createTargetingSystem(),
+      createEnemySpawnSystem(this),
+      createStateUpdateSystem(this),
+    ];
 
     // Set up the game loop
-    this.setSimulationInterval((_deltaTime) => {
+    this.setSimulationInterval((deltaTime) => {
+      this.world.time = {
+        ...this.world.time,
+        delta: deltaTime,
+        elapsed: this.clock.elapsedTime,
+      };
       for (const system of this.systems) {
         system(this.world);
       }
+      this.handleEntityDeath();
     });
+  }
 
-    // Handle player messages
-    this.onMessage("move", (client, data: { x: number; y: number }) => {
-      const player = this.state.players.get(client.sessionId);
-      if (player?.ecsId) {
-        // This is a simple direct manipulation for now.
-        // A better approach would be to have an Input component
-        // that the MovementSystem reads.
-        Velocity.x[player.ecsId] = data.x;
-        Velocity.y[player.ecsId] = data.y;
-      }
-    });
+  /**
+   * Handle entity death and cleanup
+   */
+  private handleEntityDeath(): void {
+    if (
+      !this.world.entitiesToRemove ||
+      this.world.entitiesToRemove.size === 0
+    ) {
+      return;
+    }
 
-    this.onMessage("attack", (client, data: { targetId: string }) => {
-      const player = this.state.players.get(client.sessionId);
-      const target = this.state.enemies.get(data.targetId);
+    for (const eid of this.world.entitiesToRemove) {
+      // Find if it's a player or enemy
+      let isPlayer = false;
+      this.state.players.forEach((player, sessionId) => {
+        if (player.ecsId === eid) {
+          isPlayer = true;
+          // Handle player death
+          this.broadcast("playerDeath", { playerId: sessionId });
+          // For now, respawn the player
+          player.health = player.maxHealth;
+          player.x = 400 + Math.random() * 50 - 25; // Spawn position
+          player.y = 300 + Math.random() * 50 - 25;
 
-      if (player?.ecsId && target?.ecsId) {
-        // Set the player's target
-        Target.eid[player.ecsId] = target.ecsId;
-      }
-    });
+          if (Health.current[eid]) {
+            Health.current[eid] = Health.max[eid];
+            Position.x[eid] = player.x;
+            Position.y[eid] = player.y;
+          }
+        }
+      });
+
+      if (isPlayer) continue;
+
+      this.state.enemies.forEach((enemy, enemyId) => {
+        if (enemy.ecsId === eid) {
+          // Handle enemy death
+          this.broadcast("enemyDeath", { enemyId });
+          this.state.enemies.delete(enemyId);
+          this.state.enemiesRemaining--;
+          removeEntity(this.world, eid);
+        }
+      });
+    }
+
+    this.world.entitiesToRemove.clear();
   }
 
   onJoin(client: Client, options: JoinOptions) {

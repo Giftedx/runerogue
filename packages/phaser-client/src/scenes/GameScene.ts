@@ -40,7 +40,7 @@ interface DamageMessage {
 /**
  * The main game scene where the action happens.
  */
-export default class GameScene extends Phaser.Scene {
+export class GameScene extends Phaser.Scene {
   private pipeline!: (world: IWorld) => void;
   private eidToSprite = new Map<number, Phaser.GameObjects.Sprite>();
   private sessionIdToEid = new Map<string, number>();
@@ -50,7 +50,7 @@ export default class GameScene extends Phaser.Scene {
 
   private networkManager!: NetworkManager;
   private players = new Map<string, Phaser.GameObjects.Sprite>();
-  private enemies = new Map<string, Phaser.GameObjects.Sprite>();
+  private enemies = new Map<string, Phaser.GameObjects.Container>();
   private healthBars = new Map<string, Phaser.GameObjects.Graphics>();
   private waveText!: Phaser.GameObjects.Text;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -164,7 +164,7 @@ export default class GameScene extends Phaser.Scene {
       const eid = this.sessionIdToEid.get(sessionId);
       if (eid !== undefined && colyseusService.room) {
         const player = colyseusService.room.state.players.get(sessionId);
-        if (player && 'isDead' in player && player.isDead) {
+        if (player && "isDead" in player && player.isDead) {
           this.audioManager.play("player-death");
         }
       }
@@ -338,7 +338,11 @@ export default class GameScene extends Phaser.Scene {
 
     room.state.players.onChange = (player: Player, key: string) => {
       const sprite = this.players.get(key);
-      if (sprite && this.networkManager && key !== this.networkManager.getSessionId()) {
+      if (
+        sprite &&
+        this.networkManager &&
+        key !== this.networkManager.getSessionId()
+      ) {
         sprite.setPosition(player.x, player.y);
         sprite.setAlpha(player.isDead ? 0.3 : 1);
       }
@@ -346,153 +350,263 @@ export default class GameScene extends Phaser.Scene {
 
     // Handle enemy updates
     room.state.enemies.onAdd = (enemy: Enemy, key: string) => {
-      const enemyType = 'type' in enemy ? enemy.type : 'enemy';
-      const sprite = this.physics.add.sprite(enemy.x, enemy.y, enemyType);
-      sprite.setData("enemyId", key);
-      this.enemies.set(key, sprite);
+      const container = this.add.container(enemy.x, enemy.y);
+
+      // Create enemy sprite (use different colors for different types)
+      const colors = {
+        goblin: 0x00ff00,
+        spider: 0xff00ff,
+        orc: 0xff0000,
+      };
+      const color = colors[enemy.enemyType as keyof typeof colors] || 0x808080;
+
+      const sprite = this.add.rectangle(0, 0, 24, 24, color);
+      container.add(sprite);
+
+      // Create health bar background
+      const healthBarBg = this.add.rectangle(0, -20, 30, 4, 0x000000);
+      healthBarBg.setStrokeStyle(1, 0xffffff);
 
       // Create health bar
-      const healthBar = this.add.graphics();
-      this.healthBars.set(`enemy_${key}`, healthBar);
+      const healthBar = this.add.rectangle(0, -20, 30, 4, 0xff0000);
+      healthBar.setOrigin(0.5, 0.5);
 
-      // Setup collision detection
-      this.players.forEach((playerSprite) => {
-        this.physics.add.overlap(playerSprite, sprite, () => {
-          // Collision handled on server
-        });
+      container.add([healthBarBg, healthBar]);
+
+      // Add combat level text
+      const levelText = this.add
+        .text(0, 8, enemy.combatLevel.toString(), {
+          fontSize: "10px",
+          color: "#ffffff",
+          stroke: "#000000",
+          strokeThickness: 2,
+        })
+        .setOrigin(0.5, 0);
+      container.add(levelText);
+
+      // Store references
+      container.setData("sprite", sprite);
+      container.setData("healthBar", healthBar);
+      container.setData("healthBarBg", healthBarBg);
+      container.setData("maxHealth", enemy.maxHealth);
+      container.setData("ecsId", enemy.ecsId);
+
+      // Make enemy clickable for targeting
+      sprite.setInteractive();
+      sprite.on("pointerdown", () => {
+        this.room?.send("setTarget", { targetId: enemy.ecsId });
       });
+
+      this.enemies.set(key, container);
     };
 
-    room.state.enemies.onRemove = (_enemy: Enemy, key: string) => {
-      const sprite = this.enemies.get(key);
-      if (sprite) {
-        // Death animation
-        this.tweens.add({
-          targets: sprite,
-          alpha: 0,
-          scale: 0.5,
-          duration: 300,
-          onComplete: () => {
-            sprite.destroy();
-          },
-        });
+    this.room.state.enemies.onChange((enemy, key) => {
+      const container = this.enemies.get(key);
+      if (!container) return;
+
+      // Update position with smooth interpolation
+      this.tweens.add({
+        targets: container,
+        x: enemy.x,
+        y: enemy.y,
+        duration: 100,
+        ease: "Linear",
+      });
+
+      // Update health bar
+      const healthBar = container.getData(
+        "healthBar"
+      ) as Phaser.GameObjects.Rectangle;
+      const maxHealth = container.getData("maxHealth") as number;
+      const healthPercent = Math.max(0, enemy.health / maxHealth);
+      healthBar.scaleX = healthPercent;
+
+      // Change health bar color based on percentage
+      if (healthPercent <= 0.25) {
+        healthBar.setFillStyle(0x800000); // Dark red
+      } else if (healthPercent <= 0.5) {
+        healthBar.setFillStyle(0xff8800); // Orange
+      }
+    });
+
+    this.room.state.enemies.onRemove((enemy, key) => {
+      const container = this.enemies.get(key);
+      if (container) {
+        container.destroy();
         this.enemies.delete(key);
       }
-
-      const healthBar = this.healthBars.get(`enemy_${key}`);
-      if (healthBar) {
-        healthBar.destroy();
-        this.healthBars.delete(`enemy_${key}`);
-      }
-    };
-
-    room.state.enemies.onChange = (enemy: Enemy, key: string) => {
-      const sprite = this.enemies.get(key);
-      if (sprite) {
-        sprite.setPosition(enemy.x, enemy.y);
-      }
-    };
-
-    // Handle wave updates
-    if ('wave' in room.state && room.state.wave) {
-      const wave = room.state.wave as { number: number; onChange: () => void };
-      wave.onChange = () => {
-        this.waveText.setText(`Wave: ${wave.number}`);
-      };
-    }
-  }
-
-  private updateHealthBars(): void {
-    if (!this.networkManager) return;
-    const room = this.networkManager.getRoom() as Room<GameStateType> | null;
-    if (!room) return;
-
-    // Update player health bars
-    room.state.players.forEach((player: Player, key: string) => {
-      const sprite = this.players.get(key);
-      const healthBar = this.healthBars.get(`player_${key}`);
-      if (sprite && healthBar) {
-        this.drawHealthBar(
-          healthBar,
-          sprite.x,
-          sprite.y - 30,
-          player.health,
-          player.maxHealth
-        );
-      }
     });
 
-    // Update enemy health bars
-    room.state.enemies.forEach((enemy: Enemy, key: string) => {
-      const sprite = this.enemies.get(key);
-      const healthBar = this.healthBars.get(`enemy_${key}`);
-      if (sprite && healthBar) {
-        this.drawHealthBar(
-          healthBar,
-          sprite.x,
-          sprite.y - 25,
-          enemy.health,
-          enemy.maxHealth
-        );
+    // Combat event handlers
+    this.room.onMessage(
+      "damage",
+      (data: {
+        target: number;
+        damage: number;
+        attacker: number;
+        remainingHealth: number;
+      }) => {
+        const targetPos = this.getEntityPosition(data.target);
+        if (targetPos) {
+          this.showDamageSplat(targetPos.x, targetPos.y, data.damage);
+        }
       }
-    });
+    );
+
+    this.room.onMessage(
+      "combatMiss",
+      (data: { target: number; attacker: number }) => {
+        const targetPos = this.getEntityPosition(data.target);
+        if (targetPos) {
+          this.showMissSplat(targetPos.x, targetPos.y);
+        }
+      }
+    );
+
+    this.room.onMessage(
+      "enemyDeath",
+      (data: { enemyId: string; type: string; x: number; y: number }) => {
+        const container = this.enemies.get(data.enemyId);
+        if (container) {
+          const sprite = container.getData(
+            "sprite"
+          ) as Phaser.GameObjects.Rectangle;
+
+          // Play death animation
+          this.tweens.add({
+            targets: sprite,
+            scale: 0,
+            angle: 360,
+            alpha: 0,
+            duration: 500,
+            onComplete: () => {
+              container.destroy();
+              this.enemies.delete(data.enemyId);
+            },
+          });
+        }
+      }
+    );
+
+    this.room.onMessage(
+      "waveStart",
+      (data: { waveNumber: number; enemyCount: number }) => {
+        this.showWaveAnnouncement(data.waveNumber, data.enemyCount);
+      }
+    );
   }
 
-  private drawHealthBar(
-    graphics: Phaser.GameObjects.Graphics,
-    x: number,
-    y: number,
-    health: number,
-    maxHealth: number
-  ): void {
-    graphics.clear();
-
-    // Background
-    graphics.fillStyle(0x000000, 0.7);
-    graphics.fillRect(x - 25, y, 50, 6);
-
-    // Health
-    const healthPercent = health / maxHealth;
-    const color =
-      healthPercent > 0.6 ? 0x00ff00
-      : healthPercent > 0.3 ? 0xffff00
-      : 0xff0000;
-    graphics.fillStyle(color, 1);
-    graphics.fillRect(x - 24, y + 1, 48 * healthPercent, 4);
-  }
-
-  private handleAttack(pointer: Phaser.Input.Pointer): void {
-    // Find nearest enemy to click position
-    let nearestEnemy: string | null = null;
-    let nearestDistance = Infinity;
-
-    this.enemies.forEach((sprite, id) => {
-      const distance = Phaser.Math.Distance.Between(
-        pointer.x,
-        pointer.y,
-        sprite.x,
-        sprite.y
-      );
-      if (distance < nearestDistance && distance < 50) {
-        nearestDistance = distance;
-        nearestEnemy = id;
-      }
-    });
-
-    if (nearestEnemy && this.networkManager) {
-      this.networkManager.sendAttack(nearestEnemy);
-
-      // Visual feedback
-      const enemy = this.enemies.get(nearestEnemy);
-      if (enemy) {
-        this.tweens.add({
-          targets: enemy,
-          tint: 0xff0000,
-          duration: 100,
-          yoyo: true,
-        });
+  /**
+   * Get entity position by ECS ID
+   */
+  private getEntityPosition(ecsId: number): { x: number; y: number } | null {
+    // Check players
+    for (const [_, player] of this.players) {
+      const playerEcsId = player.getData("ecsId");
+      if (playerEcsId === ecsId) {
+        return { x: player.x, y: player.y };
       }
     }
+
+    // Check enemies
+    for (const [_, enemy] of this.enemies) {
+      const enemyEcsId = enemy.getData("ecsId");
+      if (enemyEcsId === ecsId) {
+        return { x: enemy.x, y: enemy.y };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Show damage splat animation
+   */
+  private showDamageSplat(x: number, y: number, damage: number): void {
+    const damageText = this.add
+      .text(x, y - 30, damage.toString(), {
+        fontSize: "18px",
+        color: "#ffff00",
+        stroke: "#000000",
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5);
+
+    // Animate the damage splat
+    this.tweens.add({
+      targets: damageText,
+      y: y - 50,
+      alpha: 0,
+      duration: 1000,
+      ease: "Cubic.easeOut",
+      onComplete: () => {
+        damageText.destroy();
+      },
+    });
+  }
+
+  /**
+   * Show miss splat animation
+   */
+  private showMissSplat(x: number, y: number): void {
+    const missText = this.add
+      .text(x, y - 30, "Miss", {
+        fontSize: "16px",
+        color: "#0088ff",
+        stroke: "#000000",
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5);
+
+    // Animate the miss splat
+    this.tweens.add({
+      targets: missText,
+      y: y - 45,
+      alpha: 0,
+      duration: 800,
+      ease: "Cubic.easeOut",
+      onComplete: () => {
+        missText.destroy();
+      },
+    });
+  }
+
+  /**
+   * Show wave announcement
+   */
+  private showWaveAnnouncement(waveNumber: number, enemyCount: number): void {
+    const waveText = this.add
+      .text(400, 50, `Wave ${waveNumber} - ${enemyCount} enemies!`, {
+        fontSize: "32px",
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0); // UI element
+
+    // Entrance animation
+    waveText.setScale(0);
+    this.tweens.add({
+      targets: waveText,
+      scale: 1,
+      duration: 300,
+      ease: "Back.easeOut",
+    });
+
+    // Fade out after 3 seconds
+    this.time.delayedCall(3000, () => {
+      this.tweens.add({
+        targets: waveText,
+        alpha: 0,
+        scale: 0.8,
+        duration: 1000,
+        ease: "Cubic.easeIn",
+        onComplete: () => {
+          waveText.destroy();
+        },
+      });
+    });
   }
 
   /**
@@ -538,8 +652,62 @@ export default class GameScene extends Phaser.Scene {
     if (eid === undefined) return;
 
     const sprite = this.eidToSprite.get(eid);
-    if
-    Stats.defence[eid] = enemy.defence;
+    if (sprite) {
+      sprite.destroy();
+    }
+
+    removeEntity(world, eid);
+    this.eidToSprite.delete(eid);
+    this.sessionIdToEid.delete(sessionId);
+  }
+
+  /**
+   * Updates a player's entity data.
+   * @param {Player} player - The updated player data from the server.
+   * @param {string} sessionId - The player's session ID.
+   */
+  private updatePlayer(player: Player, sessionId: string): void {
+    const eid = this.sessionIdToEid.get(sessionId);
+    if (eid === undefined) return;
+
+    Position.x[eid] = player.x;
+    Position.y[eid] = player.y;
+
+    const health = Health.current[eid];
+    if (health !== player.health) {
+      Health.current[eid] = player.health;
+    }
+  }
+
+  /**
+   * Adds a new enemy entity and its sprite to the scene.
+   * @param {Enemy} enemy - The enemy data from the server.
+   * @param {string} enemyId - The enemy's ID.
+   */
+  private addEnemy(enemy: Enemy, enemyId: string): void {
+    const eid = addEntity(world);
+    this.enemyIdToEid.set(enemyId, eid);
+
+    addComponent(world, Position, eid);
+    const posX = Position.x as Float32Array;
+    const posY = Position.y as Float32Array;
+    posX[eid] = enemy.x;
+    posY[eid] = enemy.y;
+
+    addComponent(world, EnemyComponent, eid);
+    addComponent(world, Health, eid);
+    const healthCurrent = Health.current as Float32Array;
+    const healthMax = Health.max as Float32Array;
+    healthCurrent[eid] = enemy.health;
+    healthMax[eid] = enemy.maxHealth;
+
+    addComponent(world, Stats, eid);
+    const statsAttack = Stats.attack as Float32Array;
+    const statsStrength = Stats.strength as Float32Array;
+    const statsDefence = Stats.defence as Float32Array;
+    statsAttack[eid] = enemy.attack;
+    statsStrength[eid] = enemy.strength;
+    statsDefence[eid] = enemy.defence;
 
     const sprite = this.add.sprite(enemy.x, enemy.y, "enemy_placeholder");
     this.eidToSprite.set(eid, sprite);

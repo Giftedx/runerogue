@@ -13,19 +13,15 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.json",
     "__tests__/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "lib"
+    "lib",
+    "src/rooms/RuneRogueRoom.ts"
   ],
   "references": [
     {
       "path": "../shared"
-    },
-    {
-      "path": "../osrs-data"
     }
   ]
 }

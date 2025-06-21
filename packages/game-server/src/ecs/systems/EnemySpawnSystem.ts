@@ -4,58 +4,148 @@
  * @author RuneRogue Development Team
  */
 
-import { addComponent, addEntity, defineQuery, type IWorld } from "bitecs";
-import type { GameRoom } from "../../rooms/GameRoom";
 import {
-  Enemy,
-  Health,
+  defineSystem,
+  addEntity,
+  addComponent,
+  type IWorld,
+  removeEntity,
+} from "bitecs";
+import {
   Position,
   Velocity,
+  Health,
   Target,
   Combat,
+  Enemy,
 } from "../components";
 import { EnemySchema } from "@runerogue/shared";
+import { type GameRoom } from "../../rooms/GameRoom";
+
+interface SpawnConfig {
+  health: number;
+  attack: number;
+  strength: number;
+  defence: number;
+  attackSpeed: number;
+  combatLevel: number;
+}
+
+const ENEMY_CONFIGS: Record<string, SpawnConfig> = {
+  goblin: {
+    health: 5,
+    attack: 1,
+    strength: 1,
+    defence: 1,
+    attackSpeed: 2400, // 4 ticks
+    combatLevel: 2,
+  },
+  spider: {
+    health: 8,
+    attack: 2,
+    strength: 2,
+    defence: 1,
+    attackSpeed: 2400,
+    combatLevel: 3,
+  },
+  orc: {
+    health: 12,
+    attack: 3,
+    strength: 3,
+    defence: 2,
+    attackSpeed: 3000,
+    combatLevel: 5,
+  },
+};
 
 /**
- * @function createEnemySpawnSystem
- * @description Creates a system that spawns enemies.
- * @param {GameRoom} room The game room instance.
- * @returns A BiteCS system.
+ * Create enemy spawn system that manages wave-based enemy spawning
+ * @param room - The game room instance
+ * @returns The enemy spawn system function
  */
 export const createEnemySpawnSystem = (room: GameRoom) => {
-  const enemyQuery = defineQuery([Enemy]);
+  let lastSpawnTime = 0;
+  const SPAWN_INTERVAL = 5000; // 5 seconds
 
-  return (world: IWorld) => {
-    // Simple spawn logic: if no enemies exist, spawn one.
-    const enemies = enemyQuery(world);
-    if (enemies.length === 0) {
-      const enemyId = `e-${Math.random().toString(36).substring(7)}`;
-      const enemySchema = new EnemySchema();
-      enemySchema.id = enemyId;
+  return defineSystem((world: IWorld) => {
+    const currentTime = room.clock.elapsedTime;
 
+    // Start first wave
+    if (room.state.waveNumber === 0) {
+      room.state.waveNumber = 1;
+      room.state.enemiesRemaining = 3;
+      room.broadcast("waveStart", {
+        waveNumber: room.state.waveNumber,
+        enemyCount: room.state.enemiesRemaining,
+      });
+    }
+
+    // Update wave when all enemies are defeated
+    if (room.state.enemies.size === 0 && room.state.enemiesRemaining <= 0) {
+      room.state.waveNumber++;
+      room.state.enemiesRemaining = 3 + room.state.waveNumber * 2;
+      room.broadcast("waveStart", {
+        waveNumber: room.state.waveNumber,
+        enemyCount: room.state.enemiesRemaining,
+      });
+    }
+
+    if (currentTime - lastSpawnTime < SPAWN_INTERVAL) {
+      return world;
+    }
+
+    // Check if we should spawn enemies
+    if (room.state.enemies.size < room.state.enemiesRemaining) {
+      lastSpawnTime = currentTime;
+
+      // Choose enemy type based on wave
+      const enemyType =
+        room.state.waveNumber > 2 ?
+          room.state.waveNumber > 4 ?
+            "orc"
+          : "spider"
+        : "goblin";
+      const config = ENEMY_CONFIGS[enemyType];
+
+      // Create ECS entity
       const eid = addEntity(world);
 
+      // Add components
       addComponent(world, Position, eid);
-      Position.x[eid] = Math.random() * 800;
-      Position.y[eid] = Math.random() * 600;
+      Position.x[eid] = 100 + Math.random() * 600;
+      Position.y[eid] = 100 + Math.random() * 400;
 
       addComponent(world, Velocity, eid);
       addComponent(world, Health, eid);
-      Health.current[eid] = 3;
-      Health.max[eid] = 3;
+      Health.current[eid] = config.health;
+      Health.max[eid] = config.health;
 
       addComponent(world, Enemy, eid);
       addComponent(world, Target, eid);
-      addComponent(world, Combat, eid);
-      Combat.attack[eid] = 1;
-      Combat.strength[eid] = 1;
-      Combat.defence[eid] = 1;
-      Combat.attackSpeed[eid] = 2400; // 4 ticks
 
-      enemySchema.ecsId = eid;
+      addComponent(world, Combat, eid);
+      Combat.attack[eid] = config.attack;
+      Combat.strength[eid] = config.strength;
+      Combat.defence[eid] = config.defence;
+      Combat.attackSpeed[eid] = config.attackSpeed;
+      Combat.lastAttackTime[eid] = 0;
+
+      // Create and sync schema
+      const enemyId = `enemy_${eid}`;
+      const enemySchema = new EnemySchema().assign({
+        id: enemyId,
+        ecsId: eid,
+        x: Position.x[eid],
+        y: Position.y[eid],
+        health: Health.current[eid],
+        maxHealth: Health.max[eid],
+        enemyType: enemyType,
+        combatLevel: config.combatLevel,
+      });
+
       room.state.enemies.set(enemyId, enemySchema);
     }
 
     return world;
-  };
+  });
 };

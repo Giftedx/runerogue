@@ -10,11 +10,7 @@
  */
 
 import { Room, type Client, type Delayed } from "colyseus";
-import {
-  GameRoomState,
-  PlayerSchema,
-  EnemySchema,
-} from "../../../shared/src/schemas/GameRoomState";
+import { GameRoomState, PlayerSchema, EnemySchema } from "@runerogue/shared";
 
 /**
  * @interface JoinOptions

@@ -1,73 +1,126 @@
-import { defineQuery, type IWorld, type System } from "bitecs";
-import { Combat, Enemy, Player } from "../components/Combat";
-import { Position } from "../components/Movement";
+/**
+ * @file CombatSystem.ts
+ * @description System for handling combat between entities.
+ * @author RuneRogue Development Team
+ */
 
-export interface GameWorld extends IWorld {
+import { defineQuery, defineSystem, type IWorld } from "bitecs";
+import { calculateMaxHit, calculateAccuracy } from "@runerogue/osrs-data";
+import { Position, Health, Target, Combat } from "../components";
+import type { GameRoom } from "../../rooms/GameRoom";
+
+// Extend IWorld to include our custom properties
+export interface CombatWorld extends IWorld {
+  room: GameRoom;
   time: {
     delta: number;
     elapsed: number;
-    then: number;
   };
+  entitiesToRemove: Set<number>;
+}
+
+const combatQuery = defineQuery([Position, Health, Target, Combat]);
+const targetableQuery = defineQuery([Position, Health]);
+
+/**
+ * Calculate distance between two points
+ * @param x1 - X coordinate of first point
+ * @param y1 - Y coordinate of first point
+ * @param x2 - X coordinate of second point
+ * @param y2 - Y coordinate of second point
+ * @returns Distance in pixels
+ */
+function getDistance(x1: number, y1: number, x2: number, y2: number): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 /**
- * Creates the combat system.
- * @returns A function to run the combat system.
+ * Create the combat system that handles OSRS-authentic combat calculations
+ * @param room - The game room instance for broadcasting events
+ * @returns The combat system function
  */
-export const createCombatSystem = (): System<GameWorld> => {
-  const playerQuery = defineQuery([Player, Position, Combat]);
-  const enemyQuery = defineQuery([Enemy, Position, Combat]);
+export const createCombatSystem = (room: GameRoom) => {
+  return defineSystem((world: CombatWorld) => {
+    const entities = combatQuery(world);
+    const currentTime = world.time.elapsed;
 
-  return (world: GameWorld) => {
-    const now = world.time.elapsed;
-    const playerEntities = playerQuery(world);
-    const enemyEntities = enemyQuery(world);
+    for (let i = 0; i < entities.length; i++) {
+      const eid = entities[i];
+      const targetEid = Target.eid[eid];
 
-    for (const playerEid of playerEntities) {
-      // Player attacks first enemy in range
-      if (
-        now - Combat.lastAttackTime[playerEid] <
-        Combat.attackSpeed[playerEid]
-      ) {
+      // Verify target exists and is targetable
+      if (!targetEid || !targetableQuery(world).includes(targetEid)) {
         continue;
       }
 
-      for (const enemyEid of enemyEntities) {
-        const distance = Math.hypot(
-          Position.x[playerEid] - Position.x[enemyEid],
-          Position.y[playerEid] - Position.y[enemyEid]
+      // Check distance (1 tile = 32 pixels in our game)
+      const distance = getDistance(
+        Position.x[eid],
+        Position.y[eid],
+        Position.x[targetEid],
+        Position.y[targetEid]
+      );
+
+      if (distance > 40) continue; // Slightly more than 1 tile for melee
+
+      // Check attack timer (stored in milliseconds)
+      const lastAttackTime = Combat.lastAttackTime[eid] || 0;
+      const attackSpeed = Combat.attackSpeed[eid] || 2400; // 4-tick default
+
+      if (currentTime - lastAttackTime < attackSpeed) continue;
+
+      // Update attack timer
+      Combat.lastAttackTime[eid] = currentTime;
+
+      // Calculate combat using OSRS formulas
+      const attackerStats = {
+        attackLevel: Combat.attack[eid] || 1,
+        strengthLevel: Combat.strength[eid] || 1,
+        defenceLevel: Combat.defence[eid] || 1,
+        attackBonus: 0, // TODO: Equipment bonuses
+        strengthBonus: 0,
+        defenceBonus: 0,
+        attackStyle: "aggressive" as const,
+        combatType: "melee" as const,
+        prayers: [] as string[],
+      };
+
+      const defenderStats = {
+        defenceLevel: Combat.defence[targetEid] || 1,
+        defenceBonus: 0, // TODO: Equipment bonuses
+        prayers: [] as string[],
+      };
+
+      // Calculate hit chance and damage
+      const accuracy = calculateAccuracy(attackerStats, defenderStats);
+      const maxHit = calculateMaxHit(attackerStats);
+
+      // Roll for hit
+      if (Math.random() < accuracy) {
+        const damage = Math.floor(Math.random() * (maxHit + 1));
+        Health.current[targetEid] = Math.max(
+          0,
+          Health.current[targetEid] - damage
         );
 
-        if (distance <= Combat.attackRange[playerEid]) {
-          // In a real scenario, you'd have a health component and reduce it.
-          Combat.lastAttackTime[playerEid] = now;
-          break; // Attack one enemy at a time
+        // Emit damage event for client feedback
+        room.broadcast("damage", { target: targetEid, damage, attacker: eid });
+
+        if (Health.current[targetEid] <= 0) {
+          world.entitiesToRemove.add(targetEid);
         }
-      }
-    }
-
-    for (const enemyEid of enemyEntities) {
-      // Enemy attacks first player in range
-      if (
-        now - Combat.lastAttackTime[enemyEid] <
-        Combat.attackSpeed[enemyEid]
-      ) {
-        continue;
-      }
-
-      for (const playerEid of playerEntities) {
-        const distance = Math.hypot(
-          Position.x[enemyEid] - Position.x[playerEid],
-          Position.y[enemyEid] - Position.y[playerEid]
-        );
-
-        if (distance <= Combat.attackRange[enemyEid]) {
-          Combat.lastAttackTime[enemyEid] = now;
-          break; // Attack one player at a time
-        }
+      } else {
+        // Miss
+        room.broadcast("damage", {
+          target: targetEid,
+          damage: 0,
+          attacker: eid,
+        });
       }
     }
 
     return world;
-  };
+  });
 };
