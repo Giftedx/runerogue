@@ -1,7 +1,13 @@
 import { Room, type Client } from "colyseus";
-import { createWorld, type IWorld, removeEntity } from "bitecs";
+import {
+  createWorld,
+  type IWorld,
+  removeEntity,
+  addEntity,
+  addComponent,
+} from "bitecs";
 
-import { GameRoomState, PlayerSchema } from "@runerogue/shared";
+import { GameRoomState, PlayerSchema, WaveSchema } from "@runerogue/shared";
 
 // Systems
 import { createMovementSystem } from "../ecs/systems/MovementSystem";
@@ -9,10 +15,15 @@ import {
   createCombatSystem,
   type CombatWorld,
 } from "../ecs/systems/CombatSystem";
-import { createTargetingSystem } from "../ecs/systems/TargetingSystem";
 import { createEnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
+import { gameEventEmitter, GameEventType } from "../events/GameEventEmitter";
 import { createStateUpdateSystem } from "../ecs/systems/StateUpdateSystem";
-import { Health, Position } from "../ecs/components";
+import {
+  Health,
+  Position,
+  Player as PlayerComponent,
+  Stats,
+} from "../ecs/components";
 
 interface JoinOptions {
   name?: string;
@@ -20,35 +31,64 @@ interface JoinOptions {
 
 export class GameRoom extends Room<GameRoomState> {
   private world!: CombatWorld;
-  private systems: ((world: IWorld) => IWorld)[] = [];
+  private systems: ((world: IWorld) => void)[] = [];
 
-  onCreate(options: any) {
-    this.setState(new GameRoomState());
+  onCreate(_options: JoinOptions) {
+    this.state = new GameRoomState();
+    this.state.wave = new WaveSchema();
 
-    // Initialize world with room reference
     this.world = createWorld();
     this.world.room = this;
     this.world.entitiesToRemove = new Set();
+    this.world.time = { delta: 0, elapsed: 0, then: 0 };
 
-    // Initialize systems (including new ones)
+    const movementSystem = createMovementSystem();
+    const combatSystem = createCombatSystem(this);
+    const enemySpawnSystem = createEnemySpawnSystem(this);
+    const stateUpdateSystem = createStateUpdateSystem(this);
+
     this.systems = [
-      createMovementSystem(),
-      createCombatSystem(this),
-      createTargetingSystem(),
-      createEnemySpawnSystem(this),
-      createStateUpdateSystem(this),
+      movementSystem,
+      combatSystem,
+      enemySpawnSystem,
+      stateUpdateSystem,
     ];
 
     // Set up the game loop
+    /**
+     * Main simulation loop. Runs all ECS systems, then processes combat events from the event bus.
+     * Broadcasts each combat event to clients and clears the event buffer.
+     */
+    import type { CombatEvent } from "../events/types";
+    const combatEventBuffer: CombatEvent[] = [];
+    gameEventEmitter.onGameEvent(GameEventType.Combat, (event: CombatEvent) => {
+      combatEventBuffer.push(event);
+    });
     this.setSimulationInterval((deltaTime) => {
-      this.world.time = {
-        ...this.world.time,
-        delta: deltaTime,
-        elapsed: this.clock.elapsedTime,
-      };
+      this.world.time.delta = deltaTime;
+      this.world.time.elapsed += deltaTime;
+
       for (const system of this.systems) {
         system(this.world);
       }
+
+      // Process and broadcast buffered combat events
+      try {
+        while (combatEventBuffer.length > 0) {
+          const event: CombatEvent | undefined = combatEventBuffer.shift();
+          if (!event) continue;
+          this.broadcast("damage", {
+            attacker: event.attacker,
+            defender: event.defender,
+            damage: event.damage,
+            hit: event.hit,
+            timestamp: event.timestamp,
+          });
+        }
+      } catch (err) {
+        console.error("Error processing combat events:", err);
+      }
+
       this.handleEntityDeath();
     });
   }
@@ -57,15 +97,11 @@ export class GameRoom extends Room<GameRoomState> {
    * Handle entity death and cleanup
    */
   private handleEntityDeath(): void {
-    if (
-      !this.world.entitiesToRemove ||
-      this.world.entitiesToRemove.size === 0
-    ) {
+    if (this.world.entitiesToRemove.size === 0) {
       return;
     }
 
     for (const eid of this.world.entitiesToRemove) {
-      // Find if it's a player or enemy
       let isPlayer = false;
       this.state.players.forEach((player, sessionId) => {
         if (player.ecsId === eid) {
@@ -73,15 +109,13 @@ export class GameRoom extends Room<GameRoomState> {
           // Handle player death
           this.broadcast("playerDeath", { playerId: sessionId });
           // For now, respawn the player
-          player.health = player.maxHealth;
+          player.health.current = player.health.max;
           player.x = 400 + Math.random() * 50 - 25; // Spawn position
           player.y = 300 + Math.random() * 50 - 25;
 
-          if (Health.current[eid]) {
-            Health.current[eid] = Health.max[eid];
-            Position.x[eid] = player.x;
-            Position.y[eid] = player.y;
-          }
+          Health.current[eid] = Health.max[eid];
+          Position.x[eid] = player.x;
+          Position.y[eid] = player.y;
         }
       });
 
@@ -92,50 +126,49 @@ export class GameRoom extends Room<GameRoomState> {
           // Handle enemy death
           this.broadcast("enemyDeath", { enemyId });
           this.state.enemies.delete(enemyId);
-          this.state.enemiesRemaining--;
+          this.state.wave.enemiesRemaining--;
           removeEntity(this.world, eid);
         }
       });
     }
-
     this.world.entitiesToRemove.clear();
   }
 
   onJoin(client: Client, options: JoinOptions) {
-    const playerSchema = new PlayerSchema();
-    playerSchema.id = client.sessionId;
-    playerSchema.name = options.name ?? `Player ${this.clients.length}`;
-
     const eid = addEntity(this.world);
+    const player = new PlayerSchema().assign({
+      id: client.sessionId,
+      name: options.name ?? "Player",
+      x: 400 + Math.random() * 50 - 25,
+      y: 300 + Math.random() * 50 - 25,
+      ecsId: eid,
+    });
 
-    addComponent(this.world, Position, eid);
-    Position.x[eid] = 400;
-    Position.y[eid] = 300;
+    addComponent(this.world, PlayerComponent, eid);
+    addComponent(this.world, Position, { x: player.x, y: player.y }, eid);
+    addComponent(this.world, Health, { current: 10, max: 10 }, eid);
+    addComponent(
+      this.world,
+      Stats,
+      { speed: 150, damage: 1, attackSpeed: 1.0 },
+      eid
+    );
 
-    addComponent(this.world, Velocity, eid);
-    addComponent(this.world, Health, eid);
-    Health.current[eid] = 10;
-    Health.max[eid] = 10;
+    this.state.players.set(client.sessionId, player);
 
-    addComponent(this.world, Player, eid);
-
-    addComponent(this.world, Target, eid);
-    addComponent(this.world, Combat, eid);
-    Combat.attack[eid] = 1;
-    Combat.strength[eid] = 1;
-    Combat.defence[eid] = 1;
-    Combat.attackSpeed[eid] = 2400; // 4 ticks
-
-    playerSchema.ecsId = eid;
-
-    this.state.players.set(client.sessionId, playerSchema);
+    console.info(`${player.name} joined!`);
   }
 
-  onLeave(client: Client, _consented: boolean) {
+  onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
-    if (player?.ecsId) {
+    if (player) {
       removeEntity(this.world, player.ecsId);
+      this.state.players.delete(client.sessionId);
+      console.info(`${player.name} left.`);
     }
-    this.state.players.delete(client.sessionId);
+  }
+
+  onDispose() {
+    console.info("Disposing room...");
   }
 }

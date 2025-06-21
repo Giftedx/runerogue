@@ -8,7 +8,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import * as compression from "compression";
+import compression from "compression";
 
 import { type Request, type Response } from "express";
 

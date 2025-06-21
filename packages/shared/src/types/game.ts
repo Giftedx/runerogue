@@ -1,13 +1,10 @@
+import type { EnemyType, EnemyState } from "./entities";
+import type { Vector2 } from "./common";
+
 /**
  * OSRS-ACCURATE SHARED TYPES
  * These MUST match OSRS data structures exactly for authenticity
  */
-
-// Core position and movement
-export interface Vector2 {
-  x: number;
-  y: number;
-}
 
 // OSRS skill levels (1-99)
 export interface SkillLevel {
@@ -112,48 +109,6 @@ export interface PlayerState {
   target?: string; // Entity ID being attacked
   lastAttackTick: number;
   inCombat: boolean;
-}
-
-// Enemy types (OSRS creatures)
-export type EnemyType =
-  | "chicken"
-  | "rat"
-  | "spider"
-  | "cow" // Wave 1-3
-  | "goblin"
-  | "imp"
-  | "guard" // Wave 4-6
-  | "wizard"
-  | "dark_wizard"
-  | "hobgoblin" // Wave 7-10
-  | "hill_giant"
-  | "moss_giant"
-  | "fire_giant" // Wave 11-15
-  | "lesser_demon"
-  | "greater_demon"
-  | "black_demon"; // Wave 16+;
-
-// Enemy state for synchronization
-export interface EnemyState {
-  id: string;
-  type: EnemyType;
-  position: Vector2;
-  health: {
-    current: number;
-    max: number;
-  };
-  combatLevel: number;
-  stats: {
-    attack: number;
-    strength: number;
-    defence: number;
-    hitpoints: number;
-  };
-  bonuses: EquipmentBonuses;
-  // AI state
-  target?: string; // Player ID being attacked
-  lastAttackTick: number;
-  aggroRange: number;
 }
 
 // Complete game state

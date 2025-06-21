@@ -4,13 +4,7 @@
  * @author RuneRogue Development Team
  */
 
-import {
-  defineSystem,
-  addEntity,
-  addComponent,
-  type IWorld,
-  removeEntity,
-} from "bitecs";
+import { defineSystem, addEntity, addComponent, type IWorld } from "bitecs";
 import {
   Position,
   Velocity,
@@ -69,24 +63,27 @@ export const createEnemySpawnSystem = (room: GameRoom) => {
 
   return defineSystem((world: IWorld) => {
     const currentTime = room.clock.elapsedTime;
+    const wave = room.state.wave;
 
     // Start first wave
-    if (room.state.waveNumber === 0) {
-      room.state.waveNumber = 1;
-      room.state.enemiesRemaining = 3;
+    if (wave.waveNumber === 0) {
+      wave.waveNumber = 1;
+      wave.enemiesToSpawn = 3;
+      wave.enemiesRemaining = 3;
       room.broadcast("waveStart", {
-        waveNumber: room.state.waveNumber,
-        enemyCount: room.state.enemiesRemaining,
+        waveNumber: wave.waveNumber,
+        enemyCount: wave.enemiesRemaining,
       });
     }
 
     // Update wave when all enemies are defeated
-    if (room.state.enemies.size === 0 && room.state.enemiesRemaining <= 0) {
-      room.state.waveNumber++;
-      room.state.enemiesRemaining = 3 + room.state.waveNumber * 2;
+    if (room.state.enemies.size === 0 && wave.enemiesRemaining <= 0) {
+      wave.waveNumber++;
+      wave.enemiesToSpawn = 3 + wave.waveNumber * 2;
+      wave.enemiesRemaining = wave.enemiesToSpawn;
       room.broadcast("waveStart", {
-        waveNumber: room.state.waveNumber,
-        enemyCount: room.state.enemiesRemaining,
+        waveNumber: wave.waveNumber,
+        enemyCount: wave.enemiesRemaining,
       });
     }
 
@@ -95,13 +92,14 @@ export const createEnemySpawnSystem = (room: GameRoom) => {
     }
 
     // Check if we should spawn enemies
-    if (room.state.enemies.size < room.state.enemiesRemaining) {
+    if (wave.enemiesToSpawn > 0) {
       lastSpawnTime = currentTime;
+      wave.enemiesToSpawn--;
 
       // Choose enemy type based on wave
       const enemyType =
-        room.state.waveNumber > 2 ?
-          room.state.waveNumber > 4 ?
+        wave.waveNumber > 2 ?
+          wave.waveNumber > 4 ?
             "orc"
           : "spider"
         : "goblin";
@@ -111,24 +109,33 @@ export const createEnemySpawnSystem = (room: GameRoom) => {
       const eid = addEntity(world);
 
       // Add components
-      addComponent(world, Position, eid);
-      Position.x[eid] = 100 + Math.random() * 600;
-      Position.y[eid] = 100 + Math.random() * 400;
-
-      addComponent(world, Velocity, eid);
-      addComponent(world, Health, eid);
-      Health.current[eid] = config.health;
-      Health.max[eid] = config.health;
-
+      addComponent(
+        world,
+        Position,
+        { x: 100 + Math.random() * 600, y: 100 + Math.random() * 400 },
+        eid
+      );
+      addComponent(world, Velocity, { x: 0, y: 0 }, eid);
+      addComponent(
+        world,
+        Health,
+        { current: config.health, max: config.health },
+        eid
+      );
       addComponent(world, Enemy, eid);
-      addComponent(world, Target, eid);
-
-      addComponent(world, Combat, eid);
-      Combat.attack[eid] = config.attack;
-      Combat.strength[eid] = config.strength;
-      Combat.defence[eid] = config.defence;
-      Combat.attackSpeed[eid] = config.attackSpeed;
-      Combat.lastAttackTime[eid] = 0;
+      addComponent(world, Target, { targetId: -1 }, eid);
+      addComponent(
+        world,
+        Combat,
+        {
+          attack: config.attack,
+          strength: config.strength,
+          defence: config.defence,
+          attackSpeed: config.attackSpeed,
+          lastAttackTime: 0,
+        },
+        eid
+      );
 
       // Create and sync schema
       const enemyId = `enemy_${eid}`;
@@ -137,8 +144,7 @@ export const createEnemySpawnSystem = (room: GameRoom) => {
         ecsId: eid,
         x: Position.x[eid],
         y: Position.y[eid],
-        health: Health.current[eid],
-        maxHealth: Health.max[eid],
+        health: { current: Health.current[eid], max: Health.max[eid] },
         enemyType: enemyType,
         combatLevel: config.combatLevel,
       });

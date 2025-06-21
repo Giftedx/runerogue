@@ -3,7 +3,7 @@
  * @description Ensures the package can be tested and imported properly
  */
 
-import type { Vector2 } from "../types/game";
+import type { Vector2 } from "../types/common";
 
 describe("Shared Package", () => {
   it("should be able to import shared types", () => {

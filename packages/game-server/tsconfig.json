@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./lib",
+    "outDir": "./dist",
     "rootDir": "./src",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,10 +16,13 @@
     "__tests__/**/*.ts"
   ],
   "exclude": [
-    "lib",
+    "dist",
     "src/rooms/RuneRogueRoom.ts"
   ],
   "references": [
+    {
+      "path": "../osrs-data"
+    },
     {
       "path": "../shared"
     }

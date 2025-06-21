@@ -8,11 +8,13 @@ import "reflect-metadata";
  */
 
 // Re-export all types for easy importing
+export * from "./types/common";
 export * from "./types/game";
 export * from "./types/osrs";
+export * from "./types/entities";
 
 // Re-export all schemas for client/server use
-export * from "./schemas/GameRoomState";
+export * from "./schemas";
 
 // Export Result and GameError types for strict error handling
 export * from "./result";

@@ -1,14 +1,18 @@
 {
-  "application_id": "YOUR_APPLICATION_ID",
+  "application_id": "123456789012345678",
   "version": "1.0.0",
   "default_route": "/",
-  "sku_id": "YOUR_SKU_ID",
+  "sku_id": "123456789012345678",
   "name": "RuneRogue",
   "activity_type": 0,
-  "supported_platforms": ["web"],
+  "supported_platforms": [
+    "web"
+  ],
   "age_rating": "E10+",
   "max_participants": 4,
-  "classifications": ["game"],
+  "classifications": [
+    "game"
+  ],
   "proxy_url": "/.proxy/discord",
   "orientation_lock_state": "unlocked",
   "tablet_default_orientation": "landscape",
@@ -19,5 +23,4 @@
   "embedded_activity_config": {
     "description": "OSRS-inspired multiplayer roguelike survival game"
   }
-}
 }

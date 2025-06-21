@@ -10,8 +10,7 @@
     "preview": "vite preview",
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx",
-    "update-discord": "node scripts/update-discord-config.js",
-    "postinstall": "node scripts/update-discord-config.js"
+    "update-discord": "node scripts/update-discord-config.js"
   },
   "dependencies": {
     "@runerogue/osrs-data": "workspace:*",
