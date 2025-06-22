@@ -18,7 +18,10 @@ async function testSimpleRoom() {
     await new Promise((resolve) => {
       const checkState = () => {
         if (room.state && room.state.players) {
-          console.log("📊 State initialized - Players:", room.state.players.size);
+          console.log(
+            "📊 State initialized - Players:",
+            room.state.players.size
+          );
           resolve();
         } else {
           console.log("⏳ Waiting for state initialization...");
@@ -26,14 +29,13 @@ async function testSimpleRoom() {
         }
       };
       checkState();
-    });
-
-    // Listen for state changes
-    room.state.players.onAdd = (player, playerId) => {
-      console.log(
-        `👤 Player joined: ${playerId} at (${player.x}, ${player.y})`
-      );
-    };
+    }); // Listen for state changes
+    if (room.state.players) {
+      room.state.players.onAdd = (player, playerId) => {
+        console.log(
+          `👤 Player joined: ${playerId} at (${player.x}, ${player.y})`
+        );
+      };
 
       room.state.players.onChange = (player, playerId) => {
         console.log(
@@ -52,9 +54,7 @@ async function testSimpleRoom() {
     setTimeout(() => {
       console.log("📤 Sending move command...");
       room.send("move", { x: 200, y: 150 });
-    }, 2000);
-
-    // Keep connection alive for testing
+    }, 2000); // Keep connection alive for testing
     console.log("⏳ Testing for 10 seconds...");
     setTimeout(() => {
       console.log("📊 Final state:");

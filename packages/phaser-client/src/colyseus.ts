@@ -6,14 +6,14 @@
  */
 
 import { Room } from "colyseus.js";
-import type { GameState } from "@/types";
+import type { GameRoomState } from "@runerogue/shared";
 
 /**
  * @class ColyseusService
  * @description A simple singleton to bridge the React and Phaser worlds.
  */
 class ColyseusService {
-  public room: Room<GameState> | null = null;
+  public room: Room<GameRoomState> | null = null;
 }
 
 export const colyseusService = new ColyseusService();

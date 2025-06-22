@@ -5,7 +5,7 @@
  */
 
 import * as Phaser from "phaser";
-import type { Player } from "@/types";
+import type { PlayerSchema } from "@runerogue/shared";
 
 /**
  * @class PlayerSprite
@@ -17,9 +17,9 @@ export class PlayerSprite extends Phaser.GameObjects.Graphics {
   /**
    * Creates an instance of PlayerSprite.
    * @param {Phaser.Scene} scene - The scene to add the sprite to.
-   * @param {Player} player - The player data from the server.
+   * @param {PlayerSchema} player - The player data from the server.
    */
-  constructor(scene: Phaser.Scene, player: Player) {
+  constructor(scene: Phaser.Scene, player: PlayerSchema) {
     super(scene);
 
     this.x = player.x;

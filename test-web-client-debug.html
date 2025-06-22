@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue Web Client Debug</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #1a1a1a;
+        color: white;
+      }
+      .debug-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background: #2d5a2d;
+      }
+      .error {
+        background: #5a2d2d;
+      }
+      .info {
+        background: #2d2d5a;
+      }
+      .log {
+        background: #2a2a2a;
+        padding: 15px;
+        border-radius: 5px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      button {
+        background: #4a90e2;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #357abd;
+      }
+      .enemy-list {
+        margin: 10px 0;
+        padding: 10px;
+        background: #2a2a2a;
+        border-radius: 5px;
+      }
+      .enemy-item {
+        background: #3a3a3a;
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 3px;
+        border-left: 4px solid #ff4444;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="debug-container">
+      <h1>🔍 RuneRogue Web Client Debug</h1>
+
+      <div id="connection-status" class="status info">
+        🔄 Initializing connection...
+      </div>
+
+      <button onclick="testConnection()">🔌 Test Connection</button>
+      <button onclick="clearLog()">🧹 Clear Log</button>
+      <button onclick="sendMove()">➡️ Send Move Command</button>
+
+      <div class="enemy-list">
+        <h3>👹 Enemies in Game:</h3>
+        <div id="enemy-list">
+          <em>No enemies detected yet...</em>
+        </div>
+      </div>
+
+      <div class="log" id="debug-log">📝 Debug log will appear here...\n</div>
+    </div>
+
+    <script src="https://unpkg.com/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+    <script>
+      let client = null;
+      let room = null;
+      let logElement = document.getElementById("debug-log");
+      let statusElement = document.getElementById("connection-status");
+      let enemyListElement = document.getElementById("enemy-list");
+
+      function log(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        logElement.textContent += `[${timestamp}] ${message}\n`;
+        logElement.scrollTop = logElement.scrollHeight;
+        console.log(message);
+      }
+
+      function updateStatus(message, type = "info") {
+        statusElement.textContent = message;
+        statusElement.className = `status ${type}`;
+      }
+
+      function updateEnemyList(enemies) {
+        if (!enemies || Object.keys(enemies).length === 0) {
+          enemyListElement.innerHTML = "<em>No enemies detected...</em>";
+          return;
+        }
+
+        let html = "";
+        Object.entries(enemies).forEach(([id, enemy]) => {
+          html += `
+                    <div class="enemy-item">
+                        <strong>${enemy.type || "Unknown"}</strong> (${id})
+                        <br>📍 Position: (${Math.round(enemy.x || 0)}, ${Math.round(enemy.y || 0)})
+                        <br>❤️ HP: ${enemy.hitpoints || 0}/${enemy.maxHitpoints || 0}
+                        <br>⚔️ Combat: ATK ${enemy.attack || 0}, STR ${enemy.strength || 0}, DEF ${enemy.defence || 0}
+                    </div>
+                `;
+        });
+        enemyListElement.innerHTML = html;
+      }
+
+      async function connectToGame() {
+        try {
+          log("🔌 Creating Colyseus client...");
+          client = new Colyseus.Client("ws://localhost:2567");
+
+          log("🎮 Joining test room...");
+          room = await client.joinOrCreate("test", {
+            name: "WebClientDebugger",
+          });
+
+          updateStatus("✅ Connected to game server!", "success");
+          log("✅ Successfully connected to room: " + room.id);
+
+          // Listen for state changes
+          room.onStateChange((state) => {
+            log(
+              `🔄 State update received - Players: ${Object.keys(state.players || {}).length}, Enemies: ${Object.keys(state.enemies || {}).length}`
+            );
+            updateEnemyList(state.enemies);
+          });
+
+          // Listen for enemy changes specifically
+          room.state.enemies?.onAdd = (enemy, key) => {
+            log(
+              `👹 Enemy added: ${enemy.type} (${key}) at (${Math.round(enemy.x)}, ${Math.round(enemy.y)})`
+            );
+          };
+
+          room.state.enemies?.onChange = (enemy, key) => {
+            log(
+              `🔄 Enemy updated: ${key} - HP: ${enemy.hitpoints}/${enemy.maxHitpoints}`
+            );
+          };
+
+          room.state.enemies?.onRemove = (enemy, key) => {
+            log(`💀 Enemy removed: ${key}`);
+          };
+
+          // Listen for player changes
+          room.state.players?.onAdd = (player, key) => {
+            log(
+              `👤 Player joined: ${key} at (${Math.round(player.x)}, ${Math.round(player.y)})`
+            );
+          };
+
+          room.state.players?.onChange = (player, key) => {
+            log(
+              `🚶 Player moved: ${key} to (${Math.round(player.x)}, ${Math.round(player.y)}) - HP: ${player.hitpoints}/${player.maxHitpoints}`
+            );
+          };
+
+          // Listen for messages
+          room.onMessage("*", (type, message) => {
+            log(`📨 Message received: ${type} - ${JSON.stringify(message)}`);
+          });
+
+          // Handle disconnection
+          room.onLeave((code) => {
+            log(`🚪 Left room with code: ${code}`);
+            updateStatus("❌ Disconnected from server", "error");
+          });
+
+          room.onError((code, message) => {
+            log(`❌ Room error: ${code} - ${message}`);
+            updateStatus(`❌ Error: ${message}`, "error");
+          });
+        } catch (error) {
+          log(`❌ Connection failed: ${error.message}`);
+          updateStatus(`❌ Connection failed: ${error.message}`, "error");
+        }
+      }
+
+      function testConnection() {
+        if (room) {
+          log("🔄 Already connected. Disconnecting first...");
+          room.leave();
+          room = null;
+          client = null;
+        }
+        connectToGame();
+      }
+
+      function clearLog() {
+        logElement.textContent = "📝 Debug log cleared...\n";
+      }
+
+      function sendMove() {
+        if (!room) {
+          log("❌ Not connected to room");
+          return;
+        }
+
+        const x = Math.floor(Math.random() * 800);
+        const y = Math.floor(Math.random() * 600);
+        room.send("move", { x, y });
+        log(`➡️ Sent move command to (${x}, ${y})`);
+      }
+
+      // Auto-connect on load
+      window.addEventListener("load", () => {
+        log("🚀 Page loaded, attempting auto-connect...");
+        connectToGame();
+      });
+    </script>
+  </body>
+</html>

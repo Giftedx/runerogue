@@ -31,11 +31,15 @@ export const ConnectionTest: React.FC = () => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs((prev) => [`${timestamp}: ${message}`, ...prev.slice(0, 9)]); // Keep last 10 logs
   };
-
   useEffect(() => {
     async function testConnection() {
       try {
-        const client = new Client("ws://localhost:2567");
+        // Use secure protocols (https/wss) if running on HTTPS, otherwise fallback to http/ws
+        const isHttps = window.location.protocol === "https:";
+        const httpProtocol = isHttps ? "https:" : "http:";
+        const serverUrl = `${httpProtocol}//${window.location.hostname}:2567`;
+
+        const client = new Client(serverUrl);
         const room = await client.joinOrCreate("test", {
           name: "WebTestPlayer",
         });

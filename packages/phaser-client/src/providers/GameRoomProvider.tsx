@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { Client, Room } from "colyseus.js";
-import { GameState, Player } from "@/types";
+import { GameRoomState, PlayerSchema } from "@runerogue/shared";
 import { useGameStore } from "@/stores/gameStore";
 import { useDiscord } from "./DiscordActivityProvider";
 import { colyseusService } from "@/colyseus";
@@ -22,9 +22,9 @@ import { colyseusService } from "@/colyseus";
  * Context for Colyseus game room and state
  */
 interface GameRoomContextValue {
-  room: Room<GameState>;
-  state: GameState;
-  currentPlayer: Player | null;
+  room: Room<GameRoomState>;
+  state: GameRoomState;
+  currentPlayer: PlayerSchema | null;
   sendMessage: (message: string) => void;
 }
 const GameRoomContext = createContext<GameRoomContextValue | null>(null);
@@ -35,11 +35,11 @@ const GameRoomContext = createContext<GameRoomContextValue | null>(null);
 export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [room, setRoom] = useState<Room<GameState> | null>(null);
-  const [state, setState] = useState<GameState | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const [room, setRoom] = useState<Room<GameRoomState> | null>(null);
+  const [state, setState] = useState<GameRoomState | null>(null);
+  const [currentPlayer, setCurrentPlayer] = useState<PlayerSchema | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<string>(
-    "Connecting to game server...",
+    "Connecting to game server..."
   );
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0);
   const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
@@ -63,31 +63,31 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
       const url = import.meta.env.VITE_GAME_SERVER_URL;
       if (!url || !user) {
         setConnectionStatus(
-          "VITE_GAME_SERVER_URL or Discord user is not available",
+          "VITE_GAME_SERVER_URL or Discord user is not available"
         );
         return;
       }
       setConnectionStatus(
-        attempt === 0
-          ? "Connecting to game server..."
-          : `Reconnecting... (attempt ${attempt + 1}/5)`,
+        attempt === 0 ?
+          "Connecting to game server..."
+        : `Reconnecting... (attempt ${attempt + 1}/5)`
       );
       setIsReconnecting(attempt > 0);
       setReconnectAttempts(attempt);
       setReconnectFailed(false);
 
       const client = new Client(url);
-      let roomInstance: Room<GameState>;
+      let roomInstance: Room<GameRoomState>;
 
       client
-        .joinOrCreate<GameState>("game", { accessToken: user.id })
+        .joinOrCreate<GameRoomState>("game", { accessToken: user.id })
         .then((joinedRoom) => {
           roomInstance = joinedRoom;
           setRoom(joinedRoom);
           setState(joinedRoom.state);
           colyseusService.room = joinedRoom; // Share room with Phaser
 
-          const updateCurrentPlayer = (currentState: GameState) => {
+          const updateCurrentPlayer = (currentState: GameRoomState) => {
             const player = currentState.players.get(joinedRoom.sessionId);
             if (player) {
               setCurrentPlayer(player);
@@ -112,7 +112,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
               // Exponential backoff: 1s, 2s, 4s, 8s, 16s
               const delay = Math.pow(2, attempt) * 1000;
               setConnectionStatus(
-                `Disconnected. Attempting to reconnect in ${delay / 1000}s...`,
+                `Disconnected. Attempting to reconnect in ${delay / 1000}s...`
               );
               reconnectTimeout.current = setTimeout(() => {
                 connectToRoom(attempt + 1);
@@ -120,7 +120,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
             } else {
               setReconnectFailed(true);
               setConnectionStatus(
-                "Failed to reconnect. Please refresh the page.",
+                "Failed to reconnect. Please refresh the page."
               );
             }
           });
@@ -130,7 +130,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
           if (attempt < 5) {
             const delay = Math.pow(2, attempt) * 1000;
             setConnectionStatus(
-              `Connection failed. Retrying in ${delay / 1000}s...`,
+              `Connection failed. Retrying in ${delay / 1000}s...`
             );
             reconnectTimeout.current = setTimeout(() => {
               connectToRoom(attempt + 1);
@@ -138,7 +138,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
           } else {
             setReconnectFailed(true);
             setConnectionStatus(
-              "Failed to connect to game server. Please refresh the page.",
+              "Failed to connect to game server. Please refresh the page."
             );
           }
         });
@@ -148,7 +148,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
         if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
       };
     },
-    [user, setPlayerState, addChatMessage],
+    [user, setPlayerState, addChatMessage]
   );
 
   useEffect(() => {
@@ -167,7 +167,7 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
         {reconnectFailed && (
           <div className="mt-4">
             <button
-              className="bg-red-600 text-white px-4 py-2 rounded"
+              className="px-4 py-2 text-white bg-red-600 rounded"
               onClick={() => window.location.reload()}
             >
               Refresh Page

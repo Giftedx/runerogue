@@ -4,7 +4,8 @@
  */
 
 import { create } from "zustand";
-import type { DiscordUser, Player } from "../types";
+import type { DiscordUser } from "../types";
+import type { PlayerSchema } from "@runerogue/shared";
 
 /**
  * @interface Item
@@ -58,7 +59,7 @@ export interface GameStore {
   equipItem: (item: Item, slot: string) => void;
   unequipItem: (slot: string) => void;
   setDiscordUser: (user: DiscordUser | null) => void;
-  setPlayerState: (player: Player) => void;
+  setPlayerState: (player: PlayerSchema) => void;
   addChatMessage: (message: ChatMessage) => void;
 }
 
@@ -115,8 +116,8 @@ export const useGameStore = create<GameStore>((set) => ({
   setDiscordUser: (user) => set({ discordUser: user }),
   setPlayerState: (player) =>
     set({
-      health: player.health,
-      maxHealth: player.maxHealth,
+      health: player.health.current,
+      maxHealth: player.health.max,
       // ... map other player properties as they are added to the schema
     }),
   addChatMessage: (message) =>

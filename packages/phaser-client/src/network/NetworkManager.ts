@@ -8,9 +8,15 @@ export class NetworkManager {
   private client: Client;
   private room: any;
   private isConnected: boolean = false;
-
   constructor() {
-    this.client = new Client("ws://localhost:2567"); // Use HTTP for local dev
+    // Use secure protocols (https/wss) if running on HTTPS, otherwise fallback to http/ws
+    const isHttps = window.location.protocol === "https:";
+    const httpProtocol = isHttps ? "https:" : "http:";
+    const port = "2567";
+    const serverUrl = `${httpProtocol}//${window.location.hostname}:${port}`;
+
+    console.log(`Connecting to game server: ${serverUrl}`);
+    this.client = new Client(serverUrl);
   }
 
   /**

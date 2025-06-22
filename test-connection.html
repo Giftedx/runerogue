@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <title>RuneRogue Connection Test</title>
+  </head>
+  <body>
+    <h1>RuneRogue Connection Test</h1>
+    <div id="status">Initializing...</div>
+
+    <script type="module">
+      // Simple connection test without React/Discord dependencies
+      import { Client } from "https://unpkg.com/colyseus.js@^0.15.0/build/colyseus.js";
+
+      const statusDiv = document.getElementById("status");
+
+      async function testConnection() {
+        try {
+          statusDiv.textContent = "Connecting to server...";
+
+          const client = new Client("ws://localhost:2567");
+
+          const room = await client.joinOrCreate("test", {
+            accessToken: "test-user-123",
+          });
+
+          statusDiv.textContent = `Connected! Room ID: ${room.id}, Session ID: ${room.sessionId}`;
+
+          room.onStateChange((state) => {
+            console.log("State update:", state);
+            statusDiv.innerHTML = `
+                        <p>Connected! Room ID: ${room.id}</p>
+                        <p>Players: ${state.players?.size || 0}</p>
+                        <p>Enemies: ${state.enemies?.size || 0}</p>
+                    `;
+          });
+
+          room.onMessage("*", (type, message) => {
+            console.log("Received message:", type, message);
+          });
+
+          room.onError((error) => {
+            console.error("Room error:", error);
+            statusDiv.textContent = `Room error: ${error.message}`;
+          });
+
+          room.onLeave((code) => {
+            console.log("Left room with code:", code);
+            statusDiv.textContent = `Left room with code: ${code}`;
+          });
+        } catch (error) {
+          console.error("Connection failed:", error);
+          statusDiv.textContent = `Connection failed: ${error.message}`;
+        }
+      }
+
+      testConnection();
+    </script>
+  </body>
+</html>

@@ -17,26 +17,36 @@ export default defineConfig({
   publicDir: "public",
   server: {
     port: 3000,
-    // Disable HTTPS for local development - can be re-enabled for Discord Activity deployment
-    // https: {
-    //   key: fs.readFileSync(path.resolve(__dirname, "key.pem")),
-    //   cert: fs.readFileSync(path.resolve(__dirname, "cert.pem")),
-    // },
+    // Enable HTTPS for Discord Activity compatibility
+    https: (() => {
+      try {
+        return {
+          key: fs.readFileSync(path.resolve(__dirname, "key.pem")),
+          cert: fs.readFileSync(path.resolve(__dirname, "cert.pem")),
+        };
+      } catch (error) {
+        console.warn(
+          "HTTPS certificates not found, falling back to HTTP:",
+          error.message
+        );
+        return undefined;
+      }
+    })(),
     headers: {
-      // Required CSP headers for Discord Activities
+      // Required CSP headers for Discord Activities - Allow both HTTP and HTTPS for development
       "Content-Security-Policy": [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://discord.com https://discordapp.com",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: https: blob:",
-        "connect-src 'self' wss: https:",
+        "connect-src 'self' ws: wss: http: https:",
         "frame-ancestors https://discord.com https://discordapp.com https://ptb.discord.com https://canary.discord.com",
         "worker-src 'self' blob:",
       ].join("; "),
     },
     proxy: {
       "/api": {
-        target: "http://localhost:2567", // Changed to HTTP for local development
+        target: "https://localhost:2567",
         changeOrigin: true,
         secure: false,
       },

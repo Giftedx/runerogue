@@ -248,16 +248,21 @@ export class GameRoom extends Room<GameState> {
       }
     });
   }
-
   onJoin(client: Client, options: JoinOptions) {
     const eid = addEntity(this.world);
-    const player = new PlayerSchema().assign({
-      id: client.sessionId,
-      name: options.name ?? "Player",
-      x: 400 + Math.random() * 50 - 25,
-      y: 300 + Math.random() * 50 - 25,
-      ecsId: eid,
-    });
+    const player = new PlayerSchema();
+
+    // Set basic properties
+    player.id = client.sessionId;
+    player.name = options.name ?? "Player";
+    player.x = 400 + Math.random() * 50 - 25;
+    player.y = 300 + Math.random() * 50 - 25;
+    player.ecsId = eid;
+
+    // Initialize health schema (should already be initialized in constructor)
+    player.health.current = 10;
+    player.health.max = 10;
+
     addComponent(this.world, PlayerComponent, eid);
     addComponent(this.world, Position, eid);
     addComponent(this.world, Health, eid);
@@ -266,8 +271,8 @@ export class GameRoom extends Room<GameState> {
     // Set component data after registration
     Position.x[eid] = player.x;
     Position.y[eid] = player.y;
-    Health.current[eid] = 10;
-    Health.max[eid] = 10;
+    Health.current[eid] = player.health.current;
+    Health.max[eid] = player.health.max;
     Stats.speed[eid] = 150;
     Stats.damage[eid] = 1;
     Stats.attackSpeed[eid] = 1.0;

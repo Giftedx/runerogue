@@ -14,9 +14,12 @@
 import "reflect-metadata";
 import { Server } from "colyseus";
 import { createServer } from "http";
+import { createServer as createHttpsServer } from "https";
 import express from "express";
 import { monitor } from "@colyseus/monitor";
 import { WebSocketTransport } from "@colyseus/ws-transport";
+import * as fs from "fs";
+import * as path from "path";
 
 import { GameRoom } from "./rooms/GameRoom";
 import { SimpleTestRoom } from "./rooms/SimpleTestRoom";
@@ -26,8 +29,29 @@ import { configureApi } from "./api";
 // Create Express app
 const app = express() as any;
 
-// Create HTTP server
-const server = createServer(app);
+// Try to create HTTPS server if certificates exist, otherwise fallback to HTTP
+let server: any;
+try {
+  const keyPath = path.resolve(__dirname, "../key.pem");
+  const certPath = path.resolve(__dirname, "../cert.pem");
+
+  if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    const httpsOptions = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    };
+    server = createHttpsServer(httpsOptions, app);
+    console.log("🔒 HTTPS server created with SSL certificates");
+  } else {
+    throw new Error("Certificates not found, using HTTP");
+  }
+} catch (error: any) {
+  console.log(
+    "📄 Creating HTTP server (certificates not available):",
+    error.message
+  );
+  server = createServer(app);
+}
 
 // Create Colyseus server
 const gameServer = new Server({

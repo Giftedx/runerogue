@@ -15,12 +15,15 @@ import {
   Stats,
 } from "@/ecs/components";
 import { createMainPipeline, world } from "@/ecs/world";
-import type { Player, Enemy } from "@/types";
 import { AudioManager } from "@/managers/AudioManager";
 import { createAnimationSystem } from "@/systems/AnimationSystem";
 import { NetworkManager } from "../network/NetworkManager";
 import type { Room } from "colyseus.js";
-import type { GameState as GameStateType } from "@/types";
+import type {
+  GameRoomState,
+  PlayerSchema,
+  EnemySchema,
+} from "@runerogue/shared";
 
 const ATTACK_COOLDOWN_MS = 2400; // 4 ticks * 600ms
 
@@ -78,11 +81,7 @@ export class GameScene extends Phaser.Scene {
       } as AudioManager;
     }
 
-    // Load existing assets only
-    this.load.image("player_placeholder", "assets/player_placeholder.png");
-    this.load.image("enemy_placeholder", "assets/enemy_placeholder.png");
-
-    // Set up error handlers for missing assets
+    // Set up error handlers for any missing assets
     this.load.on("fileerror", (key: string) => {
       console.warn(`Failed to load asset: ${key}`);
     });
@@ -102,14 +101,24 @@ export class GameScene extends Phaser.Scene {
       console.error("Failed to create AudioManager:", error);
     }
 
-    // Generate a placeholder texture
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0xff0000, 1); // Red square
-    graphics.fillRect(0, 0, 32, 32);
-    graphics.generateTexture("player_placeholder", 32, 32);
-    graphics.destroy();
+    // Create simple colored rectangles as textures
+    // Player texture (blue)
+    const playerGraphics = this.add.graphics();
+    playerGraphics.fillStyle(0x0000ff, 1); // Blue square
+    playerGraphics.fillRect(0, 0, 32, 32);
+    playerGraphics.generateTexture("player_placeholder", 32, 32);
+    playerGraphics.destroy();
 
-    const room = colyseusService.room as Room<GameStateType> | null;
+    // Enemy texture (red)
+    const enemyGraphics = this.add.graphics();
+    enemyGraphics.fillStyle(0xff0000, 1); // Red square
+    enemyGraphics.fillRect(0, 0, 32, 32);
+    enemyGraphics.generateTexture("enemy_placeholder", 32, 32);
+    enemyGraphics.destroy();
+
+    console.log("Created placeholder textures programmatically");
+
+    const room = colyseusService.room as Room<GameRoomState> | null;
     if (!room) {
       console.error("Colyseus room not available in GameScene");
       return;
@@ -153,17 +162,17 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Initial player setup
-    room.state.players.forEach((player: Player, sessionId: string) => {
+    room.state.players.forEach((player: PlayerSchema, sessionId: string) => {
       this.addPlayer(player, sessionId);
     });
 
     // Listen for new players joining
-    room.state.players.onAdd((player: Player, sessionId: string) => {
+    room.state.players.onAdd((player: PlayerSchema, sessionId: string) => {
       this.addPlayer(player, sessionId);
     });
 
     // Listen for players leaving
-    room.state.players.onRemove((_player: Player, sessionId: string) => {
+    room.state.players.onRemove((_player: PlayerSchema, sessionId: string) => {
       const eid = this.sessionIdToEid.get(sessionId);
       if (eid !== undefined && colyseusService.room) {
         const player = colyseusService.room.state.players.get(sessionId);
@@ -175,7 +184,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     // Listen for player state changes
-    room.state.players.onChange((player: Player, sessionId: string) => {
+    room.state.players.onChange((player: PlayerSchema, sessionId: string) => {
       const eid = this.sessionIdToEid.get(sessionId);
       if (eid === undefined) return;
 
@@ -190,17 +199,17 @@ export class GameScene extends Phaser.Scene {
     });
 
     // Initial enemy setup
-    room.state.enemies.forEach((enemy: Enemy, enemyId: string) => {
+    room.state.enemies.forEach((enemy: EnemySchema, enemyId: string) => {
       this.addEnemy(enemy, enemyId);
     });
 
     // Listen for new enemies
-    room.state.enemies.onAdd((enemy: Enemy, enemyId: string) => {
+    room.state.enemies.onAdd((enemy: EnemySchema, enemyId: string) => {
       this.addEnemy(enemy, enemyId);
     });
 
     // Listen for enemies leaving
-    room.state.enemies.onRemove((_enemy: Enemy, enemyId: string) => {
+    room.state.enemies.onRemove((_enemy: EnemySchema, enemyId: string) => {
       const eid = this.enemyIdToEid.get(enemyId);
       if (eid !== undefined) {
         // The server now removes enemies after a delay, so we can play the sound here.
@@ -210,7 +219,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     // Listen for enemy state changes
-    room.state.enemies.onChange((enemy: Enemy, enemyId: string) => {
+    room.state.enemies.onChange((enemy: EnemySchema, enemyId: string) => {
       const eid = this.enemyIdToEid.get(enemyId);
       if (eid === undefined) return;
 
@@ -311,11 +320,11 @@ export class GameScene extends Phaser.Scene {
 
   private setupNetworkHandlers(): void {
     if (!this.networkManager) return;
-    const room = this.networkManager.getRoom() as Room<GameStateType> | null;
+    const room = this.networkManager.getRoom() as Room<GameRoomState> | null;
     if (!room) return;
 
     // Handle player updates
-    room.state.players.onAdd = (player: Player, key: string) => {
+    room.state.players.onAdd = (player: PlayerSchema, key: string) => {
       const sprite = this.physics.add.sprite(
         player.x,
         player.y,
@@ -329,7 +338,7 @@ export class GameScene extends Phaser.Scene {
       this.healthBars.set(`player_${key}`, healthBar);
     };
 
-    room.state.players.onRemove = (_player: Player, key: string) => {
+    room.state.players.onRemove = (_player: PlayerSchema, key: string) => {
       const sprite = this.players.get(key);
       if (sprite) {
         sprite.destroy();
@@ -343,7 +352,7 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
-    room.state.players.onChange = (player: Player, key: string) => {
+    room.state.players.onChange = (player: PlayerSchema, key: string) => {
       const sprite = this.players.get(key);
       if (
         sprite &&
@@ -356,7 +365,7 @@ export class GameScene extends Phaser.Scene {
     };
 
     // Handle enemy updates
-    room.state.enemies.onAdd = (enemy: Enemy, key: string) => {
+    room.state.enemies.onAdd = (enemy: EnemySchema, key: string) => {
       const container = this.add.container(enemy.x, enemy.y);
 
       // Create enemy sprite (use different colors for different types)
@@ -625,7 +634,7 @@ export class GameScene extends Phaser.Scene {
    * @param {Player} player - The player data from the server.
    * @param {string} sessionId - The player's session ID.
    */
-  private addPlayer(player: Player, sessionId: string): void {
+  private addPlayer(player: PlayerSchema, sessionId: string): void {
     const eid = addEntity(world);
     this.sessionIdToEid.set(sessionId, eid);
 
@@ -677,7 +686,7 @@ export class GameScene extends Phaser.Scene {
    * @param {Player} player - The updated player data from the server.
    * @param {string} sessionId - The player's session ID.
    */
-  private updatePlayer(player: Player, sessionId: string): void {
+  private updatePlayer(player: PlayerSchema, sessionId: string): void {
     const eid = this.sessionIdToEid.get(sessionId);
     if (eid === undefined) return;
 
@@ -695,7 +704,7 @@ export class GameScene extends Phaser.Scene {
    * @param {Enemy} enemy - The enemy data from the server.
    * @param {string} enemyId - The enemy's ID.
    */
-  private addEnemy(enemy: Enemy, enemyId: string): void {
+  private addEnemy(enemy: EnemySchema, enemyId: string): void {
     const eid = addEntity(world);
     this.enemyIdToEid.set(enemyId, eid);
 
@@ -747,7 +756,7 @@ export class GameScene extends Phaser.Scene {
    * @param {Enemy} enemy - The updated enemy data from the server.
    * @param {string} enemyId - The enemy's ID.
    */
-  private updateEnemy(enemy: Enemy, enemyId: string): void {
+  private updateEnemy(enemy: EnemySchema, enemyId: string): void {
     const eid = this.enemyIdToEid.get(enemyId);
     if (eid === undefined) return;
 

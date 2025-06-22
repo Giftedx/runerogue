@@ -49,6 +49,15 @@ export class SimpleEnemy extends Schema {
   @type("string")
   state: string = "moving";
 
+  @type("number")
+  attack: number = 1;
+
+  @type("number")
+  strength: number = 1;
+
+  @type("number")
+  defence: number = 1;
+
   constructor() {
     super();
   }
@@ -124,20 +133,34 @@ export class SimpleTestRoom extends Room<SimpleGameState> {
 
     console.log("✅ Enemy spawning system started");
   }
-
   private spawnEnemy() {
     const enemy = new SimpleEnemy();
     enemy.id = `enemy_${this.enemyIdCounter++}`;
     enemy.enemyType = Math.random() > 0.5 ? "spider" : "goblin";
     enemy.x = Math.random() * 800;
     enemy.y = Math.random() * 600;
-    enemy.health = enemy.enemyType === "spider" ? 30 : 50;
-    enemy.maxHealth = enemy.health;
+
+    // Set health and combat stats based on enemy type
+    if (enemy.enemyType === "spider") {
+      enemy.health = 30;
+      enemy.maxHealth = 30;
+      enemy.attack = 5;
+      enemy.strength = 8;
+      enemy.defence = 3;
+    } else {
+      // goblin
+      enemy.health = 50;
+      enemy.maxHealth = 50;
+      enemy.attack = 8;
+      enemy.strength = 12;
+      enemy.defence = 5;
+    }
+
     enemy.state = "moving";
 
     this.state.enemies.set(enemy.id, enemy);
     console.log(
-      `Spawned ${enemy.enemyType} (${enemy.id}) at (${enemy.x.toFixed(1)}, ${enemy.y.toFixed(1)})`
+      `Spawned ${enemy.enemyType} (${enemy.id}) at (${enemy.x.toFixed(1)}, ${enemy.y.toFixed(1)}) with stats: atk=${enemy.attack}, str=${enemy.strength}, def=${enemy.defence}`
     );
   }
   private startEnemyAI() {
