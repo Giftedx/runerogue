@@ -1,6 +1,7 @@
 import React from "react";
 import { useDiscord } from "@/providers/DiscordActivityProvider";
 import { useGameRoom } from "@/providers/GameRoomProvider";
+import { ConnectionTest } from "./components/ConnectionTest";
 import { HealthBar } from "./components/HealthBar";
 import { PrayerBar } from "./components/PrayerBar";
 import { RunEnergyBar } from "./components/RunEnergyBar";
@@ -21,6 +22,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full text-white p-4 bg-gray-900">
+      <ConnectionTest />
       <main className="flex flex-1 gap-4">
         <div className="w-3/4 flex flex-col gap-4">
           <div className="flex-1" id="phaser-container">

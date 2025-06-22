@@ -64,7 +64,7 @@ export class GameScene extends Phaser.Scene {
    * Preload assets for the scene.
    */
   preload(): void {
-    // Create a mock AudioManager if the actual one has type issues
+    // Create a safe AudioManager that handles missing assets
     try {
       this.audioManager = new AudioManager(this);
       this.audioManager.preload();
@@ -78,15 +78,18 @@ export class GameScene extends Phaser.Scene {
       } as AudioManager;
     }
 
-    // TODO: Replace with actual OSRS-style assets
+    // Load existing assets only
     this.load.image("player_placeholder", "assets/player_placeholder.png");
     this.load.image("enemy_placeholder", "assets/enemy_placeholder.png");
 
-    // Load placeholder sprites
-    this.load.image("player", "assets/player.png");
-    this.load.image("goblin", "assets/goblin.png");
-    this.load.image("spider", "assets/spider.png");
-    this.load.image("skeleton", "assets/skeleton.png");
+    // Set up error handlers for missing assets
+    this.load.on("fileerror", (key: string) => {
+      console.warn(`Failed to load asset: ${key}`);
+    });
+
+    this.load.on("loaderror", (file: any) => {
+      console.warn(`Loader error for file: ${file.key}`);
+    });
   }
 
   /**
@@ -313,7 +316,11 @@ export class GameScene extends Phaser.Scene {
 
     // Handle player updates
     room.state.players.onAdd = (player: Player, key: string) => {
-      const sprite = this.physics.add.sprite(player.x, player.y, "player");
+      const sprite = this.physics.add.sprite(
+        player.x,
+        player.y,
+        "player_placeholder"
+      );
       sprite.setData("playerId", key);
       this.players.set(key, sprite);
 
@@ -448,7 +455,7 @@ export class GameScene extends Phaser.Scene {
       }) => {
         const targetPos = this.getEntityPosition(data.target);
         if (targetPos) {
-          this.showDamageSplat(targetPos.x, targetPos.y, data.damage);
+          this.showDamageSplatAtPosition(targetPos.x, targetPos.y, data.damage);
         }
       }
     );
@@ -522,7 +529,11 @@ export class GameScene extends Phaser.Scene {
   /**
    * Show damage splat animation
    */
-  private showDamageSplat(x: number, y: number, damage: number): void {
+  private showDamageSplatAtPosition(
+    x: number,
+    y: number,
+    damage: number
+  ): void {
     const damageText = this.add
       .text(x, y - 30, damage.toString(), {
         fontSize: "18px",

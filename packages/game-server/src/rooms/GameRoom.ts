@@ -7,7 +7,13 @@ import {
   addComponent,
 } from "bitecs";
 
-import { GameRoomState, PlayerSchema, WaveSchema } from "@runerogue/shared";
+import {
+  GameRoomState as GameState,
+  PlayerSchema,
+  EnemySchema,
+  WaveSchema,
+} from "@runerogue/shared";
+import type { CombatEvent } from "../events/types";
 
 // Systems
 import { createMovementSystem } from "../ecs/systems/MovementSystem";
@@ -15,7 +21,8 @@ import {
   createCombatSystem,
   type CombatWorld,
 } from "../ecs/systems/CombatSystem";
-import { createEnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
+import { createSimpleEnemySpawnSystem } from "../ecs/systems/SimpleEnemySpawnSystem";
+import { createSimpleEnemyAISystem } from "../ecs/systems/SimpleEnemyAISystem";
 import { gameEventEmitter, GameEventType } from "../events/GameEventEmitter";
 import { createStateUpdateSystem } from "../ecs/systems/StateUpdateSystem";
 import {
@@ -30,22 +37,51 @@ interface JoinOptions {
   name?: string;
 }
 
-export class GameRoom extends Room<GameRoomState> {
+export class GameRoom extends Room<GameState> {
   private world!: CombatWorld;
-  private systems: ((world: IWorld) => void)[] = [];
-
+  private systems: ((world: CombatWorld) => void)[] = [];
   onCreate(_options: JoinOptions) {
-    this.state = new GameRoomState();
+    this.setState(new GameState());
     this.state.wave = new WaveSchema();
-
-    this.world = createWorld();
+    this.world = createWorld() as CombatWorld;
     this.world.room = this;
     this.world.entitiesToRemove = new Set();
-    this.world.time = { delta: 0, elapsed: 0, then: 0 };
-
+    this.world.time = { delta: 0, elapsed: 0 };
     const movementSystem = createMovementSystem();
     const combatSystem = createCombatSystem(this);
-    const enemySpawnSystem = createEnemySpawnSystem(this);
+
+    // Create simple enemy spawn system for immediate integration
+    const enemySpawnSystem = createSimpleEnemySpawnSystem({
+      getPlayerCount: () => this.clients.length,
+      getMapBounds: () => ({
+        width: 800,
+        height: 600,
+        centerX: 400,
+        centerY: 300,
+      }),
+      onEnemySpawned: (enemyEid, enemyType) => {
+        console.log(`Enemy ${enemyType} spawned with EID ${enemyEid}`);
+
+        // Add enemy to client state for rendering
+        const enemyId = `enemy_${enemyEid}`;
+        const enemy = new EnemySchema();
+        enemy.id = enemyId;
+        enemy.ecsId = enemyEid;
+        enemy.type = enemyType.toLowerCase();
+        enemy.x = (Position.x[enemyEid] as number) || 0;
+        enemy.y = (Position.y[enemyEid] as number) || 0;
+        enemy.health = (Health.current[enemyEid] as number) || 10;
+        enemy.maxHealth = (Health.max[enemyEid] as number) || 10;
+        enemy.state = "idle";
+
+        this.state.enemies.set(enemyId, enemy);
+        console.log(
+          `Enemy ${enemyType} added to client state with ID ${enemyId}`
+        );
+      },
+    });
+
+    const enemyAISystem = createSimpleEnemyAISystem();
     const stateUpdateSystem = createStateUpdateSystem(this);
     // --- OSRS-authentic PrayerSystem integration ---
     // Import OSRS prayer constants and effects
@@ -97,21 +133,18 @@ export class GameRoom extends Room<GameRoomState> {
       getDrainRate,
       getPrayerBonus,
     });
-
     this.systems = [
       movementSystem,
       prayerSystem,
       combatSystem,
       enemySpawnSystem,
+      enemyAISystem,
       stateUpdateSystem,
-    ];
-
-    // Set up the game loop
+    ]; // Set up the game loop
     /**
      * Main simulation loop. Runs all ECS systems, then processes combat events from the event bus.
      * Broadcasts each combat event to clients and clears the event buffer.
      */
-    import type { CombatEvent } from "../events/types";
     const combatEventBuffer: CombatEvent[] = [];
     gameEventEmitter.onGameEvent(GameEventType.Combat, (event: CombatEvent) => {
       combatEventBuffer.push(event);
@@ -119,10 +152,12 @@ export class GameRoom extends Room<GameRoomState> {
     this.setSimulationInterval((deltaTime) => {
       this.world.time.delta = deltaTime;
       this.world.time.elapsed += deltaTime;
-
       for (const system of this.systems) {
         system(this.world);
       }
+
+      // Sync enemy positions and health to client state
+      this.syncEnemyState();
 
       // Process and broadcast buffered combat events
       try {
@@ -186,6 +221,34 @@ export class GameRoom extends Room<GameRoomState> {
     this.world.entitiesToRemove.clear();
   }
 
+  /**
+   * Sync enemy positions and health from ECS world to client state
+   */
+  private syncEnemyState(): void {
+    this.state.enemies.forEach((enemy, enemyId) => {
+      const eid = enemy.ecsId;
+
+      // Update position
+      if (Position.x[eid] !== undefined && Position.y[eid] !== undefined) {
+        enemy.x = Position.x[eid] as number;
+        enemy.y = Position.y[eid] as number;
+      }
+
+      // Update health
+      if (Health.current[eid] !== undefined && Health.max[eid] !== undefined) {
+        enemy.health = Health.current[eid] as number;
+        enemy.maxHealth = Health.max[eid] as number;
+
+        // Update state based on health
+        if (enemy.health <= 0) {
+          enemy.state = "dead";
+        } else {
+          enemy.state = "moving"; // Simple logic for now
+        }
+      }
+    });
+  }
+
   onJoin(client: Client, options: JoinOptions) {
     const eid = addEntity(this.world);
     const player = new PlayerSchema().assign({
@@ -195,16 +258,19 @@ export class GameRoom extends Room<GameRoomState> {
       y: 300 + Math.random() * 50 - 25,
       ecsId: eid,
     });
-
     addComponent(this.world, PlayerComponent, eid);
-    addComponent(this.world, Position, { x: player.x, y: player.y }, eid);
-    addComponent(this.world, Health, { current: 10, max: 10 }, eid);
-    addComponent(
-      this.world,
-      Stats,
-      { speed: 150, damage: 1, attackSpeed: 1.0 },
-      eid
-    );
+    addComponent(this.world, Position, eid);
+    addComponent(this.world, Health, eid);
+    addComponent(this.world, Stats, eid);
+
+    // Set component data after registration
+    Position.x[eid] = player.x;
+    Position.y[eid] = player.y;
+    Health.current[eid] = 10;
+    Health.max[eid] = 10;
+    Stats.speed[eid] = 150;
+    Stats.damage[eid] = 1;
+    Stats.attackSpeed[eid] = 1.0;
 
     this.state.players.set(client.sessionId, player);
 

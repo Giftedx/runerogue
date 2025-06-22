@@ -17,14 +17,32 @@ export const DiscordActivityProvider: React.FC<{
   useEffect(() => {
     const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
     if (!clientId) {
-      console.error("VITE_DISCORD_CLIENT_ID is not defined");
+      console.warn(
+        "VITE_DISCORD_CLIENT_ID is not defined - running in demo mode"
+      );
+      // Set a mock user for development
+      setUser({
+        id: "demo-user",
+        username: "DemoUser",
+        discriminator: "0001",
+        avatar: null,
+      });
       return;
     }
     const activity = new DiscordActivity(clientId);
     activity
       .login()
       .then(setUser)
-      .catch((err) => console.error("Discord login failed", err));
+      .catch((err) => {
+        console.error("Discord login failed", err);
+        // Set a mock user as fallback
+        setUser({
+          id: "demo-user",
+          username: "DemoUser",
+          discriminator: "0001",
+          avatar: null,
+        });
+      });
   }, []);
 
   if (!user) {

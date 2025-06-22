@@ -17,11 +17,11 @@
     "docker:run": "docker run -p 2567:2567 runerogue-server"
   },
   "dependencies": {
-    "@runerogue/shared": "workspace:*",
-    "@runerogue/osrs-data": "workspace:*",
     "@colyseus/monitor": "^0.16.7",
-    "@colyseus/schema": "^3.0.39",
+    "@colyseus/schema": "^3.0.42",
     "@colyseus/ws-transport": "^0.16.5",
+    "@runerogue/osrs-data": "workspace:*",
+    "@runerogue/shared": "workspace:*",
     "bcryptjs": "^3.0.2",
     "bitecs": "^0.3.39",
     "colyseus": "^0.16.4",
@@ -39,6 +39,7 @@
     "pg": "^8.11.3",
     "rate-limit-redis": "^4.2.1",
     "redis": "^5.5.6",
+    "reflect-metadata": "^0.2.2",
     "winston": "^3.10.0"
   },
   "devDependencies": {

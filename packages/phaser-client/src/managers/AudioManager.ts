@@ -27,11 +27,14 @@ export class AudioManager {
    * Preloads all necessary audio assets. This should be called in the scene's preload method.
    */
   public preload(): void {
-    // Example sound loading - replace with actual asset paths
+    // Skip audio loading for now to avoid format issues
+    // TODO: Add properly formatted audio files later
+    /*
     this.scene.load.audio("attack-swoosh", "assets/audio/attack_swoosh.wav");
     this.scene.load.audio("hit-splat", "assets/audio/hit_splat.wav");
     this.scene.load.audio("player-death", "assets/audio/player_death.wav");
     this.scene.load.audio("enemy-death", "assets/audio/enemy_death.wav");
+    */
   }
 
   /**
@@ -39,10 +42,13 @@ export class AudioManager {
    * This should be called in the scene's create method.
    */
   public create(): void {
+    // Skip audio creation for now
+    /*
     this.addSound("attack-swoosh");
     this.addSound("hit-splat");
     this.addSound("player-death");
     this.addSound("enemy-death");
+    */
   }
 
   /**
@@ -51,9 +57,13 @@ export class AudioManager {
    * @param {Phaser.Types.Sound.SoundConfig} [config] - Optional configuration for the sound.
    */
   public addSound(key: string, config?: Phaser.Types.Sound.SoundConfig): void {
-    if (!this.sounds.has(key)) {
-      const sound = this.scene.sound.add(key, config);
-      this.sounds.set(key, sound);
+    try {
+      if (!this.sounds.has(key) && this.scene.cache.audio.exists(key)) {
+        const sound = this.scene.sound.add(key, config);
+        this.sounds.set(key, sound);
+      }
+    } catch (error) {
+      console.warn(`Failed to add sound '${key}':`, error);
     }
   }
 

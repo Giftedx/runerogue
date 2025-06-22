@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Phaser from "phaser";
 import App from "@/ui/App";
-import GameScene from "@/scenes/GameScene";
+import { GameScene } from "@/scenes/GameScene";
 import { DiscordActivityProvider } from "@/providers/DiscordActivityProvider";
 import { GameRoomProvider } from "@/providers/GameRoomProvider";
 
@@ -26,7 +26,7 @@ function bootstrap(): void {
       <GameRoomProvider>
         <App />
       </GameRoomProvider>
-    </DiscordActivityProvider>,
+    </DiscordActivityProvider>
   );
 
   // Prepare Phaser configuration

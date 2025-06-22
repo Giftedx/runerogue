@@ -12,6 +12,7 @@ export * from "./types/common";
 export * from "./types/game";
 export * from "./types/osrs";
 export * from "./types/entities";
+export * from "./types/waves";
 
 // Re-export all schemas for client/server use
 export * from "./schemas";

@@ -18,11 +18,13 @@ import express from "express";
 import { monitor } from "@colyseus/monitor";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 
-import { RuneRogueRoom } from "./rooms/RuneRogueRoom";
+import { GameRoom } from "./rooms/GameRoom";
+import { SimpleTestRoom } from "./rooms/SimpleTestRoom";
+import { SchemalessTestRoom } from "./rooms/SchemalessTestRoom";
 import { configureApi } from "./api";
 
 // Create Express app
-const app = express();
+const app = express() as any;
 
 // Create HTTP server
 const server = createServer(app);
@@ -32,8 +34,10 @@ const gameServer = new Server({
   transport: new WebSocketTransport({ server }),
 });
 
-// Define room
-gameServer.define("game", RuneRogueRoom);
+// Define rooms
+gameServer.define("game", GameRoom);
+gameServer.define("test", SimpleTestRoom);
+gameServer.define("schemaless", SchemalessTestRoom);
 
 // Configure Express middleware
 app.use(express.json());

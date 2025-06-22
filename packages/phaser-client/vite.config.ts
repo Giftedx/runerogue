@@ -9,13 +9,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   publicDir: "public",
   server: {
     port: 3000,
-    https: {
-      key: fs.readFileSync(path.resolve(__dirname, "key.pem")),
-      cert: fs.readFileSync(path.resolve(__dirname, "cert.pem")),
-    },
+    // Disable HTTPS for local development - can be re-enabled for Discord Activity deployment
+    // https: {
+    //   key: fs.readFileSync(path.resolve(__dirname, "key.pem")),
+    //   cert: fs.readFileSync(path.resolve(__dirname, "cert.pem")),
+    // },
     headers: {
       // Required CSP headers for Discord Activities
       "Content-Security-Policy": [
@@ -30,7 +36,7 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "https://localhost:2567",
+        target: "http://localhost:2567", // Changed to HTTP for local development
         changeOrigin: true,
         secure: false,
       },

@@ -1,5 +1,6 @@
 // Event bus for combat events
 import { gameEventEmitter, GameEventType } from "../events/GameEventEmitter";
+import type { CombatEvent } from "../events/types";
 import { type IWorld, defineQuery } from "bitecs";
 import type { OSRSCombatStats, OSRSEquipmentBonuses } from "@runerogue/shared";
 import {
@@ -26,21 +27,20 @@ function extractOsrsStats(eid: number): {
   equipment: OSRSEquipmentBonuses;
 } {
   const stats: OSRSCombatStats = {
-    attack: { level: Combat.attack[eid] || 1, xp: 0 },
-    strength: { level: Combat.strength[eid] || 1, xp: 0 },
-    defence: { level: Combat.defence[eid] || 1, xp: 0 },
-    hitpoints: { level: Health.max[eid] || 10, xp: 0 },
-    ranged: { level: Combat.ranged[eid] || 1, xp: 0 },
-    prayer: { level: 1, xp: 0 },
-    magic: { level: Combat.magic[eid] || 1, xp: 0 },
+    attack: (Combat.attack[eid] as number) || 1,
+    strength: (Combat.strength[eid] as number) || 1,
+    defence: (Combat.defence[eid] as number) || 1,
+    hitpoints: (Health.max[eid] as number) || 10,
+    ranged: (Combat.ranged[eid] as number) || 1,
+    prayer: 1, // Enemies don't use prayer typically
+    magic: (Combat.magic[eid] as number) || 1,
   };
   const equipment: OSRSEquipmentBonuses = {
-    attackBonus: Combat.attackBonus[eid] || 0,
-    strengthBonus: Combat.strengthBonus[eid] || 0,
-    defenceBonus: Combat.defenceBonus[eid] || 0,
-    rangedStrengthBonus: Combat.rangedStrengthBonus[eid] || 0,
-    magicBonus: Combat.magicBonus[eid] || 0,
-    magicDamageBonus: Combat.magicDamageBonus[eid] || 0,
+    attackBonus: (Combat.attackBonus[eid] as number) || 0,
+    strengthBonus: (Combat.strengthBonus[eid] as number) || 0,
+    defenceBonus: (Combat.defenceBonus[eid] as number) || 0,
+    rangedStrengthBonus: (Combat.rangedStrengthBonus[eid] as number) || 0,
+    magicDamageBonus: (Combat.magicDamageBonus[eid] as number) || 0,
   };
   return { stats, equipment };
 }
@@ -176,3 +176,6 @@ export const createEnemyAISystem = () => {
     return world;
   };
 };
+
+// Export CombatEvent for tests
+export type { CombatEvent } from "../events/types";

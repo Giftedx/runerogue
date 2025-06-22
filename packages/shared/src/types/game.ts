@@ -174,8 +174,8 @@ export type ServerMessage =
       message: string;
     };
 
-// Wave configuration
-export interface WaveConfig {
+// Wave configuration (legacy - use WaveConfig from waves.ts for new implementation)
+export interface LegacyWaveConfig {
   wave: number;
   enemyCount: number;
   enemyTypes: EnemyType[];

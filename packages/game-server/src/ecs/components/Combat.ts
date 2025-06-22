@@ -1,14 +1,6 @@
 import { defineComponent, Types } from "bitecs";
 
-/**
- * @description Component for entities that have health.
- * @property {number} current - The current health value.
- * @property {number} max - The maximum health value.
- */
-export const Health = defineComponent({
-  current: Types.i16,
-  max: Types.i16,
-});
+// Health component moved to dedicated Health.ts file
 
 /**
  * @description Component for entities that can engage in combat.
@@ -57,12 +49,5 @@ export const Combat = defineComponent({
   damage: Types.i16, // Last damage dealt
 });
 
-/**
- * @description Component to tag an entity as an enemy.
- */
-export const Enemy = defineComponent();
-
-/**
- * @description Component to tag an entity as the player.
- */
-export const Player = defineComponent();
+// Enemy and Player components moved to dedicated files
+// See ./Enemy.ts and ./Player.ts (or use the ones from Combat.ts if they exist)

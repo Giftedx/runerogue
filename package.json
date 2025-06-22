@@ -56,6 +56,8 @@
   "author": "RuneRogue Development Team",
   "license": "MIT",
   "dependencies": {
-    "@colyseus/ecs": "0.4.0-alpha.4"
+    "@colyseus/ecs": "0.4.0-alpha.4",
+    "colyseus": "0.16.4",
+    "colyseus.js": "^0.16.19"
   }
 }

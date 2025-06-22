@@ -1,4 +1,4 @@
-import { createWorld, addEntity } from "bitecs";
+import { createWorld, addEntity, addComponent } from "bitecs";
 import { Prayer } from "../../components";
 import { createPrayerSystem } from "../PrayerSystem";
 import { gameEventEmitter } from "../../../events/GameEventEmitter";
@@ -21,12 +21,15 @@ describe("PrayerSystem event integration", () => {
      * Test: PrayerDepleted event is emitted at the correct OSRS drain rate.
      * - THICK_SKIN: drainRate = 1/6 points per 3s
      * - OSRS tick: 600ms
-     */
-    const world = createWorld() as CombatWorld;
+     */ const world = createWorld() as CombatWorld;
     world.time = { delta: 600, elapsed: 0 };
     world.entitiesToRemove = new Set();
     world.room = {} as any;
     const eid = addEntity(world);
+
+    // CRITICAL: Add the Prayer component to the entity first
+    addComponent(world, Prayer, eid);
+
     Prayer.current[eid] = 2;
     Prayer.max[eid] = 2;
     Prayer.drainTimer[eid] = 0;
