@@ -21,8 +21,8 @@ import {
   createCombatSystem,
   type CombatWorld,
 } from "../ecs/systems/CombatSystem";
-import { createSimpleEnemySpawnSystem } from "../ecs/systems/SimpleEnemySpawnSystem";
-import { createSimpleEnemyAISystem } from "../ecs/systems/SimpleEnemyAISystem";
+import { createEnemySpawnSystem } from "../ecs/systems/EnemySpawnSystem";
+import { createEnemyAISystem } from "../ecs/systems/EnemyAISystem";
 import { gameEventEmitter, GameEventType } from "../events/GameEventEmitter";
 import { createStateUpdateSystem } from "../ecs/systems/StateUpdateSystem";
 import {
@@ -30,6 +30,9 @@ import {
   Position,
   Player as PlayerComponent,
   Stats,
+  Enemy,
+  AIState,
+  CombatStats,
 } from "../ecs/components";
 import { createPrayerSystem } from "../ecs/systems/PrayerSystem";
 
@@ -48,10 +51,8 @@ export class GameRoom extends Room<GameState> {
     this.world.entitiesToRemove = new Set();
     this.world.time = { delta: 0, elapsed: 0 };
     const movementSystem = createMovementSystem();
-    const combatSystem = createCombatSystem(this);
-
-    // Create simple enemy spawn system for immediate integration
-    const enemySpawnSystem = createSimpleEnemySpawnSystem({
+    const combatSystem = createCombatSystem(this); // Create advanced enemy spawn system with wave progression
+    const enemySpawnSystem = createEnemySpawnSystem({
       getPlayerCount: () => this.clients.length,
       getMapBounds: () => ({
         width: 800,
@@ -79,9 +80,42 @@ export class GameRoom extends Room<GameState> {
           `Enemy ${enemyType} added to client state with ID ${enemyId}`
         );
       },
+      onWaveCompleted: (waveNumber) => {
+        console.log(`Wave ${waveNumber} completed!`);
+        this.broadcast("waveCompleted", { waveNumber });
+      },
+      onWaveStarted: (waveNumber) => {
+        console.log(`Wave ${waveNumber} started!`);
+        this.state.wave.number = waveNumber;
+        this.state.wave.isActive = true;
+        this.broadcast("waveStarted", { waveNumber });
+      },
     });
 
-    const enemyAISystem = createSimpleEnemyAISystem();
+    const enemyAISystem = createEnemyAISystem({
+      getPlayerEntities: () => {
+        const playerEids: number[] = [];
+        this.state.players.forEach((player) => {
+          playerEids.push(player.ecsId);
+        });
+        return playerEids;
+      },
+      getPlayerPosition: (playerEid: number) => {
+        return {
+          x: Position.x[playerEid] as number,
+          y: Position.y[playerEid] as number,
+        };
+      },
+      isPlayerAlive: (playerEid: number) => {
+        return (Health.current[playerEid] as number) > 0;
+      },
+      onEnemyTargetAcquired: (enemyEid, targetEid) => {
+        console.log(`Enemy ${enemyEid} acquired target ${targetEid}`);
+      },
+      onEnemyTargetLost: (enemyEid, previousTargetEid) => {
+        console.log(`Enemy ${enemyEid} lost target ${previousTargetEid}`);
+      },
+    });
     const stateUpdateSystem = createStateUpdateSystem(this);
     // --- OSRS-authentic PrayerSystem integration ---
     // Import OSRS prayer constants and effects

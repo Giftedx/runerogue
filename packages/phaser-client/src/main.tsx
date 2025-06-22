@@ -29,27 +29,31 @@ function bootstrap(): void {
     </DiscordActivityProvider>
   );
 
-  // Prepare Phaser configuration
-  const config: Phaser.Types.Core.GameConfig = {
-    type: Phaser.AUTO,
-    parent: "phaser-game",
-    width: window.innerWidth,
-    height: window.innerHeight,
-    scene: [GameScene],
-    physics: {
-      default: "arcade",
-      arcade: { debug: false },
-    },
-    backgroundColor: "#000000",
-  };
+  // Wait for React to render, then initialize Phaser
+  setTimeout(() => {
+    // Prepare Phaser configuration
+    const config: Phaser.Types.Core.GameConfig = {
+      type: Phaser.AUTO,
+      parent: "phaser-container", // Use the container within the React app
+      width: 800,
+      height: 600,
+      scene: [GameScene],
+      physics: {
+        default: "arcade",
+        arcade: { debug: false },
+      },
+      backgroundColor: "#000000",
+    };
 
-  // Initialize Phaser game
-  try {
-    // eslint-disable-next-line no-new
-    new Phaser.Game(config);
-  } catch (error) {
-    console.error("Phaser initialization error:", error);
-  }
+    // Initialize Phaser game
+    try {
+      // eslint-disable-next-line no-new
+      new Phaser.Game(config);
+      console.log("Phaser game initialized successfully");
+    } catch (error) {
+      console.error("Phaser initialization error:", error);
+    }
+  }, 100); // Small delay to ensure React has rendered
 }
 
 bootstrap();

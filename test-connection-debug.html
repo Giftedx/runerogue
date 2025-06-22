@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuneRogue Connection Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #1a1a1a;
+        color: white;
+        padding: 20px;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background: #2d5a27;
+      }
+      .error {
+        background: #5a2727;
+      }
+      .info {
+        background: #27345a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>RuneRogue Connection Test</h1>
+    <div id="status">Testing connections...</div>
+
+    <script>
+      const statusEl = document.getElementById("status");
+
+      function addStatus(message, type = "info") {
+        const div = document.createElement("div");
+        div.className = `status ${type}`;
+        div.textContent = message;
+        statusEl.appendChild(div);
+      }
+
+      // Test 1: Basic JavaScript
+      addStatus("✓ JavaScript is working", "success");
+
+      // Test 2: Test server connection
+      fetch("https://localhost:2567/monitor")
+        .then((response) => {
+          if (response.ok) {
+            addStatus("✓ Game server is reachable", "success");
+          } else {
+            addStatus(
+              "✗ Game server returned error: " + response.status,
+              "error"
+            );
+          }
+        })
+        .catch((err) => {
+          addStatus("✗ Game server connection failed: " + err.message, "error");
+        });
+
+      // Test 3: WebSocket connection test
+      try {
+        const ws = new WebSocket("wss://localhost:2567");
+        ws.onopen = () => {
+          addStatus("✓ WebSocket connection successful", "success");
+          ws.close();
+        };
+        ws.onerror = (err) => {
+          addStatus("✗ WebSocket connection failed", "error");
+        };
+      } catch (err) {
+        addStatus("✗ WebSocket creation failed: " + err.message, "error");
+      }
+      // Test 4: Check if running in a modern environment
+      try {
+        if (window.location.protocol === "https:") {
+          addStatus("✓ Running on HTTPS", "success");
+        } else {
+          addStatus("ℹ Running on HTTP", "info");
+        }
+      } catch (err) {
+        addStatus("ℹ Environment check failed", "info");
+      }
+
+      console.log("Connection test loaded successfully");
+    </script>
+  </body>
+</html>

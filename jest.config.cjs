@@ -35,4 +35,7 @@ module.exports = {
   modulePathIgnorePatterns: ["<rootDir>/external-repos/"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testTimeout: 20000,
+  fakeTimers: {
+    enableGlobally: true,
+  },
 };

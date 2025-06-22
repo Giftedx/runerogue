@@ -11,6 +11,7 @@ import { EquipmentPanel } from "./components/EquipmentPanel";
 import { Minimap } from "./components/Minimap";
 import { ActionBar } from "./components/ActionBar";
 import { ChatPanel } from "./components/ChatPanel";
+import { DebugPanel } from "./components/DebugPanel";
 
 /**
  * Main application component: shows authenticated user and room players.
@@ -22,6 +23,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full text-white p-4 bg-gray-900">
+      <DebugPanel />
       <ConnectionTest />
       <main className="flex flex-1 gap-4">
         <div className="w-3/4 flex flex-col gap-4">
