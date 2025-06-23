@@ -22,8 +22,8 @@ import { colyseusService } from "@/colyseus";
  * Context for Colyseus game room and state
  */
 interface GameRoomContextValue {
-  room: Room<GameRoomState>;
-  state: GameRoomState;
+  room: Room<GameRoomState> | null;
+  state: GameRoomState | null;
   currentPlayer: PlayerSchema | null;
   sendMessage: (message: string) => void;
 }
@@ -88,6 +88,12 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
           colyseusService.room = joinedRoom; // Share room with Phaser
 
           const updateCurrentPlayer = (currentState: GameRoomState) => {
+            // Check if state is properly initialized
+            if (!currentState || !currentState.players) {
+              console.warn("Room state not fully initialized yet");
+              return;
+            }
+
             const player = currentState.players.get(joinedRoom.sessionId);
             if (player) {
               setCurrentPlayer(player);
@@ -159,28 +165,43 @@ export const GameRoomProvider: React.FC<{ children: React.ReactNode }> = ({
 
   if (!room || !state) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-white">
-        <div>{connectionStatus}</div>
-        {isReconnecting && reconnectAttempts > 0 && reconnectAttempts < 5 && (
-          <div>Reconnection attempt {reconnectAttempts + 1} of 5...</div>
-        )}
-        {reconnectFailed && (
-          <div className="mt-4">
-            <button
-              className="px-4 py-2 text-white bg-red-600 rounded"
-              onClick={() => window.location.reload()}
-            >
-              Refresh Page
-            </button>
-          </div>
-        )}
-      </div>
+      <GameRoomContext.Provider
+        value={{
+          room,
+          state,
+          currentPlayer,
+          sendMessage,
+        }}
+      >
+        {children}
+        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-2 text-center z-50">
+          <div>{connectionStatus}</div>
+          {isReconnecting && reconnectAttempts > 0 && reconnectAttempts < 5 && (
+            <div>Reconnection attempt {reconnectAttempts + 1} of 5...</div>
+          )}
+          {reconnectFailed && (
+            <div className="mt-4">
+              <button
+                className="px-4 py-2 text-white bg-red-600 rounded"
+                onClick={() => window.location.reload()}
+              >
+                Refresh Page
+              </button>
+            </div>
+          )}
+        </div>
+      </GameRoomContext.Provider>
     );
   }
 
   return (
     <GameRoomContext.Provider
-      value={{ room, state, currentPlayer, sendMessage }}
+      value={{
+        room,
+        state,
+        currentPlayer,
+        sendMessage,
+      }}
     >
       {children}
     </GameRoomContext.Provider>

@@ -15,12 +15,24 @@ import { PlayerMarker } from "./PlayerMarker";
 export const Minimap: React.FC = () => {
   const { state, currentPlayer } = useGameRoom();
 
+  // Handle null state gracefully
+  if (!state || !state.players) {
+    return (
+      <div className="relative p-2 bg-gray-800 rounded aspect-square">
+        <h3 className="mb-2 text-lg font-bold">Minimap</h3>
+        <div className="absolute flex items-center justify-center bg-gray-600 inset-4">
+          <span className="text-sm text-gray-400">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-2 bg-gray-800 rounded aspect-square relative">
-      <h3 className="text-lg font-bold mb-2">Minimap</h3>
+    <div className="relative p-2 bg-gray-800 rounded aspect-square">
+      <h3 className="mb-2 text-lg font-bold">Minimap</h3>
       {/* Placeholder for map background */}
-      <div className="absolute inset-4 bg-gray-600">
-        {Object.values(state.players).map((p) => (
+      <div className="absolute bg-gray-600 inset-4">
+        {Array.from(state.players.values()).map((p) => (
           <PlayerMarker
             key={p.id}
             player={p}

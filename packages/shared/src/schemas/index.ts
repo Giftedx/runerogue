@@ -1,3 +1,6 @@
+// Import reflect-metadata at the top
+import "reflect-metadata";
+
 export * from "./Vector2Schema";
 export * from "./HealthSchema";
 export * from "./SkillSchema";

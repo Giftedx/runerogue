@@ -1,4 +1,5 @@
 import { Schema, type } from "@colyseus/schema";
+import { fixSchemaMetadata } from "../utils/schemaCompat";
 
 export class EquipmentBonusesSchema extends Schema {
   @type("number") attackStab = 0;
@@ -16,3 +17,6 @@ export class EquipmentBonusesSchema extends Schema {
   @type("number") magicDamage = 0;
   @type("number") prayer = 0;
 }
+
+// Apply metadata compatibility fix
+fixSchemaMetadata(EquipmentBonusesSchema);

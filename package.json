@@ -33,7 +33,8 @@
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^8.34.1"
+    "typescript-eslint": "^8.34.1",
+    "ws": "^8.18.2"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -57,7 +58,9 @@
   "license": "MIT",
   "dependencies": {
     "@colyseus/ecs": "0.4.0-alpha.4",
+    "@colyseus/schema": "^3.0.42",
     "colyseus": "0.16.4",
-    "colyseus.js": "^0.16.19"
+    "colyseus.js": "^0.16.19",
+    "reflect-metadata": "^0.2.2"
   }
 }

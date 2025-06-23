@@ -1,5 +1,6 @@
 import { Schema, type } from "@colyseus/schema";
 import { SkillSchema } from "./SkillSchema";
+import { fixSchemaMetadata } from "../utils/schemaCompat";
 
 export class CombatStatsSchema extends Schema {
   @type(SkillSchema) attack = new SkillSchema();
@@ -10,3 +11,6 @@ export class CombatStatsSchema extends Schema {
   @type(SkillSchema) prayer = new SkillSchema();
   @type(SkillSchema) magic = new SkillSchema();
 }
+
+// Apply metadata compatibility fix
+fixSchemaMetadata(CombatStatsSchema);

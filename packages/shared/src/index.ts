@@ -7,6 +7,9 @@ import "reflect-metadata";
  * @package @runerogue/shared
  */
 
+// Force immediate import and initialization of schemas
+import "./schemas";
+
 // Re-export all types for easy importing
 export * from "./types/common";
 export * from "./types/game";

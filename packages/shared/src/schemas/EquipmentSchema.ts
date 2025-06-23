@@ -1,5 +1,6 @@
 import { Schema, type } from "@colyseus/schema";
 import { ItemSchema } from "./ItemSchema";
+import { fixSchemaMetadata } from "../utils/schemaCompat";
 
 export class EquipmentSchema extends Schema {
   @type(ItemSchema) weapon = new ItemSchema();
@@ -8,3 +9,6 @@ export class EquipmentSchema extends Schema {
   @type(ItemSchema) legs = new ItemSchema();
   // Add other slots as needed
 }
+
+// Apply metadata compatibility fix
+fixSchemaMetadata(EquipmentSchema);

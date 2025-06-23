@@ -1,10 +1,20 @@
 {
-  "name": "rune-rogue-activity",
+  "name": "RuneRogue",
   "version": "1.0.0",
+  "description": "A multiplayer OSRS-inspired roguelike survival game",
   "activity": {
     "sdk_version": "1.2.0",
-    "client_id": "YOUR_DISCORD_APP_ID",
-    "auth_routes": ["https://localhost:3000/auth/discord/callback"],
-    "redirect_uri": "https://localhost:3000/auth/discord/callback"
+    "client_id": "1386478818365018254",
+    "auth_routes": [
+      "https://localhost:3000/auth/discord/callback",
+      "https://localhost:3000/"
+    ],
+    "redirect_uri": "https://localhost:3000/auth/discord/callback",
+    "url_mappings": {
+      "/": "https://localhost:3000"
+    },
+    "orientation_lock_state": "unlocked",
+    "requires_age_gate": false,
+    "supported_platforms": ["desktop", "mobile"]
   }
 }

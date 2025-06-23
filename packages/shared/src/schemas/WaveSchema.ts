@@ -1,4 +1,5 @@
 import { Schema, type } from "@colyseus/schema";
+import { fixSchemaMetadata } from "../utils/schemaCompat";
 
 /**
  * @class WaveSchema
@@ -9,3 +10,6 @@ export class WaveSchema extends Schema {
   @type("number") enemiesToSpawn = 0;
   @type("number") enemiesRemaining = 0;
 }
+
+// Apply metadata compatibility fix
+fixSchemaMetadata(WaveSchema);

@@ -58,21 +58,25 @@ const App: React.FC = () => {
       <footer className="mt-4">
         <h2 className="text-xl mb-2">Players in Room:</h2>
         <ul className="list-disc list-inside">
-          {Object.values(state.players).map((p) => (
-            <li key={p.id}>
-              {p.id} — ({p.x.toFixed(0)}, {p.y.toFixed(0)})
-            </li>
-          ))}
+          {state?.players ?
+            Object.values(state.players).map((p) => (
+              <li key={p.id}>
+                {p.id} — ({p.x.toFixed(0)}, {p.y.toFixed(0)})
+              </li>
+            ))
+          : <li>No players connected</li>}
         </ul>
         <h2 className="text-xl mt-6 mb-2">Enemies (Debug/Info):</h2>
         <ul className="list-disc list-inside">
-          {Object.values(state.enemies).map((e) => (
-            <li key={e.id}>
-              {e.id} — {e.health}/{e.maxHealth} HP — ATK: {e.attack} STR:{" "}
-              {e.strength} DEF: {e.defence} — ({e.x.toFixed(0)},{" "}
-              {e.y.toFixed(0)})
-            </li>
-          ))}
+          {state?.enemies ?
+            Object.values(state.enemies).map((e) => (
+              <li key={e.id}>
+                {e.id} — {e.health}/{e.maxHealth} HP — ATK: {e.attack} STR:{" "}
+                {e.strength} DEF: {e.defence} — ({e.x.toFixed(0)},{" "}
+                {e.y.toFixed(0)})
+              </li>
+            ))
+          : <li>No enemies spawned</li>}
         </ul>
       </footer>
     </div>

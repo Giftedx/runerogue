@@ -12,7 +12,14 @@ import {
   PlayerSchema,
   EnemySchema,
   WaveSchema,
+  createEnemySchema,
+  createPlayerSchema,
 } from "@runerogue/shared";
+import {
+  fixSchemaHierarchy,
+  fixAllSchemaTypes,
+} from "@runerogue/shared/src/utils/schemaCompat";
+import { Schema, MapSchema, ArraySchema } from "@colyseus/schema";
 import type { CombatEvent } from "../events/types";
 
 // Systems
@@ -44,6 +51,15 @@ export class GameRoom extends Room<GameState> {
   private world!: CombatWorld;
   private systems: ((world: CombatWorld) => void)[] = [];
   onCreate(_options: JoinOptions) {
+    // Apply comprehensive schema metadata fixes at runtime
+    console.log("🔧 Applying runtime schema metadata fixes...");
+    fixSchemaHierarchy(GameState);
+    fixSchemaHierarchy(PlayerSchema);
+    fixSchemaHierarchy(EnemySchema);
+    fixSchemaHierarchy(WaveSchema);
+    fixAllSchemaTypes(Schema, ArraySchema, MapSchema);
+    console.log("✅ Schema metadata fixes applied");
+
     this.setState(new GameState());
     this.state.wave = new WaveSchema();
     this.world = createWorld() as CombatWorld;
@@ -65,20 +81,29 @@ export class GameRoom extends Room<GameState> {
 
         // Add enemy to client state for rendering
         const enemyId = `enemy_${enemyEid}`;
-        const enemy = new EnemySchema();
-        enemy.id = enemyId;
-        enemy.ecsId = enemyEid;
-        enemy.type = enemyType.toLowerCase();
-        enemy.x = (Position.x[enemyEid] as number) || 0;
-        enemy.y = (Position.y[enemyEid] as number) || 0;
-        enemy.health = (Health.current[enemyEid] as number) || 10;
-        enemy.maxHealth = (Health.max[enemyEid] as number) || 10;
-        enemy.state = "idle";
+        try {
+          // Use the factory function to create a properly initialized enemy
+          const enemy = createEnemySchema({
+            id: enemyId,
+            ecsId: enemyEid,
+            type: enemyType.toLowerCase(),
+            x: (Position.x[enemyEid] as number) || 0,
+            y: (Position.y[enemyEid] as number) || 0,
+            health: (Health.current[enemyEid] as number) || 10,
+            maxHealth: (Health.max[enemyEid] as number) || 10,
+            state: "idle",
+          });
 
-        this.state.enemies.set(enemyId, enemy);
-        console.log(
-          `Enemy ${enemyType} added to client state with ID ${enemyId}`
-        );
+          this.state.enemies.set(enemyId, enemy);
+          console.log(
+            `✅ Enemy ${enemyType} added to client state with ID ${enemyId}`
+          );
+        } catch (error) {
+          console.error(
+            `❌ Failed to create enemy schema:`,
+            error instanceof Error ? error.message : String(error)
+          );
+        }
       },
       onWaveCompleted: (waveNumber) => {
         console.log(`Wave ${waveNumber} completed!`);
@@ -283,15 +308,14 @@ export class GameRoom extends Room<GameState> {
     });
   }
   onJoin(client: Client, options: JoinOptions) {
-    const eid = addEntity(this.world);
-    const player = new PlayerSchema();
-
-    // Set basic properties
-    player.id = client.sessionId;
-    player.name = options.name ?? "Player";
-    player.x = 400 + Math.random() * 50 - 25;
-    player.y = 300 + Math.random() * 50 - 25;
-    player.ecsId = eid;
+    const eid = addEntity(this.world); // Use factory function to create player
+    const player = createPlayerSchema({
+      id: client.sessionId,
+      name: options.name ?? "Player",
+      x: 400 + Math.random() * 50 - 25,
+      y: 300 + Math.random() * 50 - 25,
+      ecsId: eid,
+    });
 
     // Initialize health schema (should already be initialized in constructor)
     player.health.current = 10;
