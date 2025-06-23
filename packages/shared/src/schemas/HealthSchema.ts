@@ -1,10 +1,12 @@
 import { Schema, type } from "@colyseus/schema";
-import { fixSchemaMetadata } from "../utils/schemaCompat";
 
+/**
+ * @class HealthSchema
+ * @description Represents the health points of an entity (player or enemy).
+ * @author The Architect
+ */
 export class HealthSchema extends Schema {
-  @type("number") current = 10;
-  @type("number") max = 10;
+  @type("number") current: number = 10;
+  @type("number") max: number = 10;
+  @type("number") level: number = 1;
 }
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(HealthSchema);

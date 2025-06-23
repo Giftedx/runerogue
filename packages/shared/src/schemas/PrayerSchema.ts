@@ -1,14 +1,13 @@
-import { Schema, ArraySchema, type } from "@colyseus/schema";
-import { fixSchemaMetadata, fixAllSchemaTypes } from "../utils/schemaCompat";
+import { Schema, type } from "@colyseus/schema";
 
+/**
+ * @class PrayerSchema
+ * @description Represents the prayer points and active prayers of a player.
+ * @author The Architect
+ */
 export class PrayerSchema extends Schema {
-  @type("number") points = 1;
-  @type(["string"]) activePrayers = new ArraySchema<string>();
-  @type("number") drainRate = 0;
+  @type("number") current: number = 1;
+  @type("number") max: number = 1;
+  @type("number") level: number = 1;
+  // TODO: Add a map or array for active prayers if needed
 }
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(PrayerSchema);
-
-// Fix ArraySchema for activePrayers field
-fixAllSchemaTypes(ArraySchema);

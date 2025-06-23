@@ -1,10 +1,12 @@
 import { Schema, type } from "@colyseus/schema";
-import { fixSchemaMetadata } from "../utils/schemaCompat";
 
+/**
+ * @class SpecialAttackSchema
+ * @description Represents the special attack energy of a player.
+ * @author The Architect
+ */
 export class SpecialAttackSchema extends Schema {
-  @type("number") energy = 100;
-  @type("boolean") available = true;
+  @type("number") current: number = 100;
+  @type("number") max: number = 100;
+  @type("boolean") isEnabled: boolean = false;
 }
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(SpecialAttackSchema);

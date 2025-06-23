@@ -1,11 +1,12 @@
 import { Schema, type } from "@colyseus/schema";
-import { fixSchemaMetadata } from "../utils/schemaCompat";
 
+/**
+ * @class SkillSchema
+ * @description Represents a single player skill, including its level and experience.
+ * @author The Architect
+ */
 export class SkillSchema extends Schema {
   @type("number") level = 1;
   @type("number") xp = 0;
   @type("number") boosted = 0;
 }
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(SkillSchema);

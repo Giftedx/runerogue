@@ -1,61 +1,42 @@
 import { Schema, type } from "@colyseus/schema";
+import { EquipmentSchema } from "./EquipmentSchema";
 import { HealthSchema } from "./HealthSchema";
 import { CombatStatsSchema } from "./CombatStatsSchema";
-import { EquipmentSchema } from "./EquipmentSchema";
 import { PrayerSchema } from "./PrayerSchema";
 import { SpecialAttackSchema } from "./SpecialAttackSchema";
-import { fixSchemaMetadata, fixSchemaHierarchy } from "../utils/schemaCompat";
-
-export class PlayerSchema extends Schema {
-  @type("string") name = "Player";
-  @type("string") id = "";
-  @type("number") x = 400;
-  @type("number") y = 300;
-  @type("number") ecsId = 0;
-  @type(HealthSchema) health = new HealthSchema();
-  @type(CombatStatsSchema) stats = new CombatStatsSchema();
-  @type(EquipmentSchema) equipment = new EquipmentSchema();
-  @type(PrayerSchema) prayer = new PrayerSchema();
-  @type(SpecialAttackSchema) specialAttack = new SpecialAttackSchema();
-}
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(PlayerSchema);
-
-// Apply hierarchical fix to ensure all nested schemas are properly fixed
-fixSchemaHierarchy(PlayerSchema);
 
 /**
- * Factory function to create a properly initialized PlayerSchema instance.
- * This ensures the Colyseus schema metadata is correctly set up.
- *
- * @param data - Initial data for the player
- * @returns A properly initialized PlayerSchema instance
+ * @class PlayerSchema
+ * @description Represents the state of a player in the game.
+ * This includes their position, appearance, equipment, and combat-related stats.
+ * This schema is synchronized across all clients.
+ * @author The Architect
  */
-export function createPlayerSchema(
-  data: Partial<{
-    name: string;
-    id: string;
-    x: number;
-    y: number;
-    ecsId: number;
-  }>
-): PlayerSchema {
-  const player = new PlayerSchema();
+export class PlayerSchema extends Schema {
+  @type("string") sessionId: string = "";
+  @type("string") ecsId: string = "";
+  @type("string") userId: string = "";
+  @type("string") username: string = "";
+  @type("number") x: number = 0;
+  @type("number") y: number = 0;
+  @type("string") direction: string = "down";
+  @type("boolean") isMoving: boolean = false;
 
-  // Apply metadata fixes to all nested schema instances
-  fixSchemaMetadata(player.health.constructor as any);
-  fixSchemaMetadata(player.stats.constructor as any);
-  fixSchemaMetadata(player.equipment.constructor as any);
-  fixSchemaMetadata(player.prayer.constructor as any);
-  fixSchemaMetadata(player.specialAttack.constructor as any);
+  // Appearance
+  @type("string") body: string = "male";
+  @type("string") hair: string = "default";
+  @type("string") skinColor: string = "#C68642";
+  @type("string") hairColor: string = "#000000";
 
-  // Set provided data
-  if (data.name !== undefined) player.name = data.name;
-  if (data.id !== undefined) player.id = data.id;
-  if (data.x !== undefined) player.x = data.x;
-  if (data.y !== undefined) player.y = data.y;
-  if (data.ecsId !== undefined) player.ecsId = data.ecsId;
+  // Equipment & Stats
+  @type(EquipmentSchema) equipment = new EquipmentSchema();
+  @type(HealthSchema) health = new HealthSchema();
+  @type(CombatStatsSchema) combatStats = new CombatStatsSchema();
+  @type(PrayerSchema) prayer = new PrayerSchema();
+  @type(SpecialAttackSchema) specialAttack = new SpecialAttackSchema();
 
-  return player;
+  // Player State
+  @type("boolean") isConnected: boolean = true;
+  @type("boolean") isInCombat: boolean = false;
+  @type("string") targetId: string = ""; // ECS ID of the current target
 }

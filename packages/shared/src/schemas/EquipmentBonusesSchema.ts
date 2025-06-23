@@ -1,6 +1,10 @@
 import { Schema, type } from "@colyseus/schema";
-import { fixSchemaMetadata } from "../utils/schemaCompat";
 
+/**
+ * @class EquipmentBonusesSchema
+ * @description Represents the collection of combat bonuses provided by a piece of equipment.
+ * @author The Architect
+ */
 export class EquipmentBonusesSchema extends Schema {
   @type("number") attackStab = 0;
   @type("number") attackSlash = 0;
@@ -17,6 +21,3 @@ export class EquipmentBonusesSchema extends Schema {
   @type("number") magicDamage = 0;
   @type("number") prayer = 0;
 }
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(EquipmentBonusesSchema);

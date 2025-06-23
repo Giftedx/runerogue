@@ -1,15 +1,11 @@
 /**
- * RuneRogue Game Server - Main Entry Point
- * Colyseus multiplayer server for RuneRogue
- *
- * @author agent/backend-infra (The Architect)
+ * @file RuneRogue Game Server - Main Entry Point
+ * @description This file initializes and configures the Colyseus game server for RuneRogue.
+ * It sets up an Express server, configures HTTPS (if certificates are available),
+ * defines the game rooms, and applies necessary middleware like CORS and the Colyseus monitor.
+ * @author The Architect
  * @package @runerogue/game-server
  */
-
-// Patch Node.js fs module to handle EMFILE errors gracefully
-// import * as fs from "fs";
-// import * as gracefulFs from "graceful-fs";
-// gracefulFs.gracefulify(fs);
 
 import "reflect-metadata";
 import { Server } from "colyseus";
@@ -29,11 +25,20 @@ import { SimpleTestRoom } from "./rooms/SimpleTestRoom";
 import { SchemalessTestRoom } from "./rooms/SchemalessTestRoom";
 import { configureApi } from "./api";
 
-// Create Express app
-const app = express() as any;
+// --- Server Setup ---
 
-// Try to create HTTPS server if certificates exist, otherwise fallback to HTTP
+/**
+ * The Express application instance.
+ * @type {express.Express}
+ */
+const app = express();
+
+/**
+ * The underlying HTTP/HTTPS server instance.
+ * @type {http.Server | https.Server}
+ */
 let server: any;
+
 try {
   const keyPath = path.resolve(__dirname, "../key.pem");
   const certPath = path.resolve(__dirname, "../cert.pem");
@@ -44,50 +49,60 @@ try {
       cert: fs.readFileSync(certPath),
     };
     server = createHttpsServer(httpsOptions, app);
-    console.log("🔒 HTTPS server created with SSL certificates");
+    console.log("🔒 HTTPS server created with SSL certificates.");
   } else {
-    throw new Error("Certificates not found, using HTTP");
+    throw new Error("SSL certificates not found, falling back to HTTP.");
   }
 } catch (error: any) {
-  console.log(
-    "📄 Creating HTTP server (certificates not available):",
-    error.message
-  );
+  console.log(`📄 Creating HTTP server: ${error.message}`);
   server = createServer(app);
 }
 
-// Create Colyseus server with HTTPS/WSS transport
+/**
+ * The Colyseus game server instance.
+ * @type {Server}
+ */
 const gameServer = new Server({
   transport: new WebSocketTransport({
     server,
-    // Force WSS when using HTTPS
     verifyClient: (info: {
       origin?: string;
       secure?: boolean;
       req: IncomingMessage;
     }) => {
-      // Allow all connections for development
+      // Allow all connections during development
       return true;
     },
   }),
 });
 
-// Define rooms
+// --- Room Definitions ---
+
+/**
+ * Defines the available game rooms.
+ * - "game": The main RuneRogue game room.
+ * - "test": A simple room for testing basic schema synchronization.
+ * - "schemaless": A room for testing without a state schema.
+ */
 gameServer.define("game", GameRoom);
 gameServer.define("test", SimpleTestRoom);
 gameServer.define("schemaless", SchemalessTestRoom);
 
-// Configure Express middleware
+// --- Express Middleware ---
+
 app.use(express.json());
 
-// Configure CORS for Discord Activities
+/**
+ * Configures Cross-Origin Resource Sharing (CORS) for the server.
+ * This is crucial for allowing the Discord Activity and web clients to connect.
+ */
 app.use(
   cors({
     origin: [
       "https://localhost:3000",
-      "https://localhost:3001", // Added port 3001 for client
+      "https://localhost:3001",
       "https://127.0.0.1:3000",
-      "https://127.0.0.1:3001", // Added port 3001 for client
+      "https://127.0.0.1:3001",
       "https://discord.com",
       "https://canary.discord.com",
       "https://ptb.discord.com",
@@ -98,28 +113,20 @@ app.use(
   })
 );
 
-app.use("/colyseus", monitor());
-
-// Add health check endpoint
-app.get("/health", (req: Request, res: Response) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
-
-// Add basic CORS preflight handling
-app.options("*", (req: Request, res: Response) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Content-Length, X-Requested-With"
-  );
-  res.sendStatus(200);
-});
-
-// Configure API routes
+/**
+ * Configures the API endpoints for the server.
+ * @see {@link ./api.ts}
+ */
 configureApi(app);
 
-// Start the server
+/**
+ * Attaches the Colyseus monitor panel for real-time server inspection.
+ * Accessible at /colyseus
+ */
+app.use("/colyseus", monitor());
+
+// --- Server Activation ---
+
 const port = Number(process.env.PORT) || 2567;
 
 async function start() {
@@ -137,5 +144,14 @@ async function start() {
 }
 
 void start();
+
+// Graceful shutdown logic
+process.on("SIGINT", () => {
+  console.log("\nShutting down server...");
+  gameServer.gracefullyShutdown().then(() => {
+    console.log("Server has been shut down gracefully.");
+    process.exit(0);
+  });
+});
 
 export { gameServer, app };

@@ -1,133 +1,88 @@
+/**
+ * @file schemaCompat.ts
+ * @author The Architect
+ * @date 2025-06-23
+ * @description Comprehensive and robust solution for Colyseus schema metadata compatibility issues.
+ * This utility provides a single function, `fixSchemaHierarchy`, to recursively patch
+ * the metadata of all schema classes, including nested schemas within `MapSchema` and `ArraySchema`.
+ * This is necessary to bridge the gap between newer `@colyseus/schema` versions that use
+ * `Symbol(Symbol.metadata)` and the Colyseus server internals that still expect a `.metadata` property.
+ */
+
 import { Schema, ArraySchema, MapSchema } from "@colyseus/schema";
 
 /**
- * Fix for Colyseus schema metadata compatibility issue.
- *
- * The newer @colyseus/schema v3.0.42 stores metadata in Symbol(Symbol.metadata)
- * but MapSchema and other Colyseus internals still look for the old metadata property.
- *
- * This function copies the Symbol metadata to the metadata property to maintain compatibility.
- *
- * @param SchemaClass - The Schema class to fix
+ * A Set to keep track of already processed schema classes to avoid infinite recursion.
+ * @type {Set<any>}
  */
-export function fixSchemaMetadata(SchemaClass: typeof Schema): void {
-  try {
-    const symbolMetadata = (SchemaClass as any)[Symbol.metadata];
-    if (symbolMetadata && !(SchemaClass as any).metadata) {
-      (SchemaClass as any).metadata = symbolMetadata;
-    }
+const visited = new Set<any>();
 
-    // Also ensure _definition exists (fallback for older Colyseus compatibility)
-    if (symbolMetadata && !(SchemaClass as any)._definition) {
-      (SchemaClass as any)._definition = symbolMetadata;
+/**
+ * Copies the metadata from `Symbol(Symbol.metadata)` to a `.metadata` property
+ * on a given class constructor. This is the core of the compatibility fix.
+ *
+ * @param {any} SchemaClass - The class (e.g., PlayerSchema, ArraySchema) to patch.
+ */
+function applyMetadataFix(SchemaClass: any): void {
+  if (!SchemaClass || typeof SchemaClass !== "function") return;
+
+  try {
+    const symbolMetadata = SchemaClass[Symbol.metadata];
+    if (symbolMetadata && !SchemaClass.metadata) {
+      SchemaClass.metadata = symbolMetadata;
     }
   } catch (error) {
-    console.warn(
-      `Failed to fix schema metadata for ${SchemaClass.name}:`,
-      error
-    );
+    // Ignore errors, as some classes might not have these properties.
   }
 }
 
 /**
- * Apply metadata fix to multiple schema classes at once
- * @param schemas - Array of Schema classes to fix
- */
-export function fixMultipleSchemas(...schemas: (typeof Schema)[]): void {
-  schemas.forEach(fixSchemaMetadata);
-}
-
-/**
- * Recursively fix all schemas in a hierarchy
- * @param RootSchema - The root schema class to fix along with all its nested schemas
+ * Recursively traverses the entire schema hierarchy starting from a root schema,
+ * applying the metadata compatibility fix to every discovered schema class,
+ * including `ArraySchema` and `MapSchema`.
+ *
+ * This is the ONLY function that needs to be called. It should be called once,
+ * at runtime, before the server starts listening for connections. The best place
+is in the `GameRoom.onCreate()` method.
+ *
+ * @param {typeof Schema} RootSchema - The top-level schema class (e.g., GameRoomState).
  */
 export function fixSchemaHierarchy(RootSchema: typeof Schema): void {
-  const visited = new Set<typeof Schema>();
+  if (visited.has(RootSchema)) {
+    return;
+  }
+  visited.add(RootSchema);
 
-  function fixRecursively(SchemaClass: typeof Schema): void {
-    if (visited.has(SchemaClass)) return;
-    visited.add(SchemaClass);
+  // 1. Fix the root schema itself
+  applyMetadataFix(RootSchema);
 
-    fixSchemaMetadata(SchemaClass);
+  // 2. Fix ArraySchema and MapSchema globally, as they are used by the root
+  applyMetadataFix(ArraySchema);
+  applyMetadataFix(MapSchema);
 
-    // Check for nested schemas in the metadata
-    try {
-      const metadata =
-        (SchemaClass as any)[Symbol.metadata] || (SchemaClass as any).metadata;
-      if (metadata && typeof metadata === "object") {
-        Object.values(metadata).forEach((fieldDef: any) => {
-          if (fieldDef && typeof fieldDef === "object" && fieldDef.type) {
-            const nestedType = fieldDef.type;
-            if (
-              nestedType &&
-              typeof nestedType === "function" &&
-              nestedType.prototype instanceof Schema
-            ) {
-              fixRecursively(nestedType);
-            }
-          }
-        });
-      }
-    } catch (error) {
-      // Ignore errors when introspecting metadata
-    }
+  // 3. Introspect the schema's definition to find and fix all nested schemas
+  const definition =
+    (RootSchema as any)._definition || (RootSchema as any).metadata;
+  if (!definition || !definition.fields) {
+    return;
   }
 
-  fixRecursively(RootSchema);
-}
+  for (const field of definition.fields) {
+    let fieldType = field.type;
 
-/**
- * Fix ArraySchema metadata compatibility
- * @param ArraySchemaClass - The ArraySchema class to fix
- */
-export function fixArraySchemaMetadata(
-  ArraySchemaClass: typeof ArraySchema
-): void {
-  try {
-    const symbolMetadata = (ArraySchemaClass as any)[Symbol.metadata];
-    if (symbolMetadata && !(ArraySchemaClass as any).metadata) {
-      (ArraySchemaClass as any).metadata = symbolMetadata;
+    // Handle collection types (maps and arrays)
+    if (typeof fieldType === "object" && (fieldType.map || fieldType.array)) {
+      fieldType = fieldType.map || fieldType.array;
     }
 
-    if (symbolMetadata && !(ArraySchemaClass as any)._definition) {
-      (ArraySchemaClass as any)._definition = symbolMetadata;
+    // If the field type is a valid Schema subclass, recurse into it
+    if (
+      fieldType &&
+      typeof fieldType === "function" &&
+      fieldType.prototype instanceof Schema &&
+      !visited.has(fieldType)
+    ) {
+      fixSchemaHierarchy(fieldType as typeof Schema);
     }
-  } catch (error) {
-    console.warn(`Failed to fix ArraySchema metadata:`, error);
   }
-}
-
-/**
- * Fix MapSchema metadata compatibility
- * @param MapSchemaClass - The MapSchema class to fix
- */
-export function fixMapSchemaMetadata(MapSchemaClass: typeof MapSchema): void {
-  try {
-    const symbolMetadata = (MapSchemaClass as any)[Symbol.metadata];
-    if (symbolMetadata && !(MapSchemaClass as any).metadata) {
-      (MapSchemaClass as any).metadata = symbolMetadata;
-    }
-
-    if (symbolMetadata && !(MapSchemaClass as any)._definition) {
-      (MapSchemaClass as any)._definition = symbolMetadata;
-    }
-  } catch (error) {
-    console.warn(`Failed to fix MapSchema metadata:`, error);
-  }
-}
-
-/**
- * Comprehensive schema compatibility fix that handles all schema types
- * @param classes - Mix of Schema, ArraySchema, and MapSchema classes
- */
-export function fixAllSchemaTypes(...classes: any[]): void {
-  classes.forEach((cls) => {
-    if (cls.prototype instanceof Schema) {
-      fixSchemaMetadata(cls);
-    } else if (cls === ArraySchema) {
-      fixArraySchemaMetadata(cls);
-    } else if (cls === MapSchema) {
-      fixMapSchemaMetadata(cls);
-    }
-  });
 }

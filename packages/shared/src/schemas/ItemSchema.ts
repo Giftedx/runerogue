@@ -1,7 +1,11 @@
 import { Schema, type } from "@colyseus/schema";
 import { EquipmentBonusesSchema } from "./EquipmentBonusesSchema";
-import { fixSchemaMetadata } from "../utils/schemaCompat";
 
+/**
+ * @class ItemSchema
+ * @description Represents a single item in the game, including its stats and properties.
+ * @author The Architect
+ */
 export class ItemSchema extends Schema {
   @type("number") id = 0;
   @type("string") name = "";
@@ -11,6 +15,3 @@ export class ItemSchema extends Schema {
   @type("number") attackSpeed = 5;
   @type("number") attackRange = 1;
 }
-
-// Apply metadata compatibility fix
-fixSchemaMetadata(ItemSchema);
