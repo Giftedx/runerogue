@@ -378,8 +378,8 @@ export const MAGIC_WEAPONS: MagicWeapon[] = [
 export function calculateMagicMaxHit(
   magicLevel: number,
   spell: Spell,
-  magicBonus: number = 0,
-  prayerMultiplier: number = 1.0,
+  magicBonus = 0,
+  prayerMultiplier = 1.0,
 ): number {
   // OSRS magic damage calculation
   // Base max hit is the spell's max hit
@@ -404,7 +404,7 @@ export function calculateMagicAccuracy(
   attackBonus: number,
   targetDefenceLevel: number,
   targetMagicDefence: number,
-  prayerMultiplier: number = 1.0,
+  prayerMultiplier = 1.0,
 ): number {
   // Effective magic level
   const effectiveMagicLevel = Math.floor(magicLevel * prayerMultiplier) + 8;
@@ -443,7 +443,7 @@ export function getAvailableSpells(magicLevel: number): Spell[] {
  * Check if player has required runes for spell
  */
 export function hasRequiredRunes(
-  inventory: Array<{ itemId: number; quantity: number }>,
+  inventory: { itemId: number; quantity: number }[],
   spell: Spell,
 ): boolean {
   return spell.runes.every((requirement) => {
@@ -458,7 +458,7 @@ export function hasRequiredRunes(
  * Consume runes for spell casting
  */
 export function consumeRunes(
-  inventory: Array<{ itemId: number; quantity: number }>,
+  inventory: { itemId: number; quantity: number }[],
   spell: Spell,
 ): void {
   spell.runes.forEach((requirement) => {

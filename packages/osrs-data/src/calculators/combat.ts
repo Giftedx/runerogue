@@ -7,7 +7,7 @@
  * @wiki https://oldschool.runescape.wiki/w/Damage_per_second/Melee
  */
 
-import { OSRSCombatStats, OSRSEquipmentBonuses } from "@runerogue/shared";
+import { type OSRSCombatStats, type OSRSEquipmentBonuses } from "@runerogue/shared";
 
 /**
  * Calculate maximum hit for melee combat
@@ -22,8 +22,8 @@ import { OSRSCombatStats, OSRSEquipmentBonuses } from "@runerogue/shared";
 export function calculateMaxHit(
   stats: OSRSCombatStats,
   equipment: OSRSEquipmentBonuses,
-  prayerMultiplier: number = 1.0,
-  styleBonus: number = 0,
+  prayerMultiplier = 1.0,
+  styleBonus = 0,
 ): number {
   // OSRS max hit formula
   // Effective strength = floor(strength * prayerMultiplier) + styleBonus + 8
@@ -57,10 +57,10 @@ export function calculateAccuracy(
   attackerEquipment: OSRSEquipmentBonuses,
   defenderStats: OSRSCombatStats,
   defenderEquipment: OSRSEquipmentBonuses,
-  attackerPrayerMultiplier: number = 1.0,
-  defenderPrayerMultiplier: number = 1.0,
-  attackerStyleBonus: number = 0,
-  defenderStyleBonus: number = 0,
+  attackerPrayerMultiplier = 1.0,
+  defenderPrayerMultiplier = 1.0,
+  attackerStyleBonus = 0,
+  defenderStyleBonus = 0,
 ): number {
   // OSRS accuracy formula
   // Effective attack = floor(attack * prayerMultiplier) + styleBonus + 8

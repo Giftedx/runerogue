@@ -18,20 +18,8 @@ export * from "./api/server";
 // Wiki scrapers
 export * from "./scrapers/wiki-scraper";
 
-// Type definitions for OSRS data
-export interface OSRSCombatStats {
-  attack: number;
-  strength: number;
-  defence: number;
-  hitpoints: number;
-  prayer: number;
-}
-
-export interface OSRSEquipmentBonuses {
-  attackBonus: number;
-  strengthBonus: number;
-  defenceBonus: number;
-}
+// Re-export types from shared package
+export type { OSRSCombatStats, OSRSEquipmentBonuses } from "@runerogue/shared";
 
 export interface OSRSEnemy {
   id: string;

@@ -6,7 +6,7 @@ import { Schema, type } from "@colyseus/schema";
  * @author The Architect
  */
 export class HealthSchema extends Schema {
-  @type("number") current: number = 10;
-  @type("number") max: number = 10;
-  @type("number") level: number = 1;
+  @type("number") current = 10;
+  @type("number") max = 10;
+  @type("number") level = 1;
 }

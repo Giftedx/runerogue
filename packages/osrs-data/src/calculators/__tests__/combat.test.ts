@@ -11,7 +11,7 @@
  * @author agent/osrs-data (The Lorekeeper)
  */
 
-import { OSRSCombatStats, OSRSEquipmentBonuses } from "@runerogue/shared";
+import { type OSRSCombatStats, type OSRSEquipmentBonuses } from "@runerogue/shared";
 import {
   calculateAccuracy,
   calculateCombatLevel,

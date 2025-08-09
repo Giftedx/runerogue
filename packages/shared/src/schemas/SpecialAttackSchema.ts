@@ -6,7 +6,7 @@ import { Schema, type } from "@colyseus/schema";
  * @author The Architect
  */
 export class SpecialAttackSchema extends Schema {
-  @type("number") current: number = 100;
-  @type("number") max: number = 100;
-  @type("boolean") isEnabled: boolean = false;
+  @type("number") current = 100;
+  @type("number") max = 100;
+  @type("boolean") isEnabled = false;
 }

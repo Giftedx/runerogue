@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain */
 /**
  * @file schemaCompat.ts
  * @author The Architect
@@ -13,9 +14,9 @@ import { Schema, ArraySchema, MapSchema } from "@colyseus/schema";
 
 /**
  * A Set to keep track of already processed schema classes to avoid infinite recursion.
- * @type {Set<any>}
+ * @type {Set<unknown>}
  */
-const visited = new Set<any>();
+const visited = new Set<unknown>();
 
 /**
  * Copies the metadata from `Symbol(Symbol.metadata)` to a `.metadata` property
@@ -23,15 +24,16 @@ const visited = new Set<any>();
  *
  * @param {any} SchemaClass - The class (e.g., PlayerSchema, ArraySchema) to patch.
  */
-function applyMetadataFix(SchemaClass: any): void {
+function applyMetadataFix(SchemaClass: unknown): void {
   if (!SchemaClass || typeof SchemaClass !== "function") return;
 
   try {
-    const symbolMetadata = SchemaClass[Symbol.metadata];
-    if (symbolMetadata && !SchemaClass.metadata) {
-      SchemaClass.metadata = symbolMetadata;
+    const schemaClass = SchemaClass as unknown as Record<string, unknown>;
+    const symbolMetadata = schemaClass[Symbol.metadata as unknown as keyof typeof schemaClass];
+    if (symbolMetadata && !schemaClass.metadata) {
+      schemaClass.metadata = symbolMetadata;
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore errors, as some classes might not have these properties.
   }
 }
@@ -61,18 +63,22 @@ export function fixSchemaHierarchy(RootSchema: typeof Schema): void {
   applyMetadataFix(MapSchema);
 
   // 3. Introspect the schema's definition to find and fix all nested schemas
-  const definition =
-    (RootSchema as any)._definition || (RootSchema as any).metadata;
+  const rootSchema = RootSchema as unknown as Record<string, unknown>;
+  const definition = rootSchema._definition as Record<string, unknown> || rootSchema.metadata as Record<string, unknown>;
   if (!definition || !definition.fields) {
     return;
   }
 
-  for (const field of definition.fields) {
+  const fields = definition.fields as Record<string, unknown>[];
+  for (const field of fields) {
     let fieldType = field.type;
 
     // Handle collection types (maps and arrays)
-    if (typeof fieldType === "object" && (fieldType.map || fieldType.array)) {
-      fieldType = fieldType.map || fieldType.array;
+    if (typeof fieldType === "object" && fieldType) {
+      const fieldTypeObj = fieldType as Record<string, unknown>;
+      if (fieldTypeObj.map || fieldTypeObj.array) {
+        fieldType = fieldTypeObj.map ?? fieldTypeObj.array;
+      }
     }
 
     // If the field type is a valid Schema subclass, recurse into it

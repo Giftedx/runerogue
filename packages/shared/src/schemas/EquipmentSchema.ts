@@ -7,15 +7,15 @@ import { Schema, type } from "@colyseus/schema";
  * @author The Architect
  */
 export class EquipmentSchema extends Schema {
-  @type("string") head: string = "";
-  @type("string") cape: string = "";
-  @type("string") neck: string = "";
-  @type("string") ammo: string = "";
-  @type("string") weapon: string = "";
-  @type("string") body: string = "";
-  @type("string") shield: string = "";
-  @type("string") legs: string = "";
-  @type("string") hands: string = "";
-  @type("string") feet: string = "";
-  @type("string") ring: string = "";
+  @type("string") head = "";
+  @type("string") cape = "";
+  @type("string") neck = "";
+  @type("string") ammo = "";
+  @type("string") weapon = "";
+  @type("string") body = "";
+  @type("string") shield = "";
+  @type("string") legs = "";
+  @type("string") hands = "";
+  @type("string") feet = "";
+  @type("string") ring = "";
 }

@@ -23,6 +23,9 @@ export * from "./schemas";
 // Export Result and GameError types for strict error handling
 export * from "./result";
 
+// Export utilities
+export * from "./utils";
+
 // Export constants
 export * from "./constants";
 
