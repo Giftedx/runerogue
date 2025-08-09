@@ -59,7 +59,7 @@
   "license": "MIT",
   "dependencies": {
     "@colyseus/ecs": "0.4.0-alpha.4",
-    "@colyseus/schema": "^3.0.42",
+    "@colyseus/schema": "^3.0.52",
     "colyseus": "0.16.4",
     "colyseus.js": "^0.16.19",
     "reflect-metadata": "^0.2.2"
