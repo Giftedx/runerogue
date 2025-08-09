@@ -13,21 +13,22 @@
     "update-discord": "node scripts/update-discord-config.js"
   },
   "dependencies": {
-    "@discord/embedded-app-sdk": "^2.1.0",
+    "@discord/embedded-app-sdk": "^2.2.0",
+
     "@runerogue/osrs-data": "workspace:*",
     "@runerogue/shared": "workspace:*",
     "bitecs": "^0.3.40",
     "clsx": "^2.1.1",
     "colyseus.js": "^0.16.19",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.1",
     "phaser": "^3.70.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "zustand": "^5.0.6"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.21",
