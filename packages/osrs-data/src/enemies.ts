@@ -30,11 +30,11 @@ export interface OSRSEnemyData {
     strengthBonus: number;
     defenceBonus: number;
   };
-  loot: Array<{
+  loot: {
     item: string;
     chance: number;
     quantity: number;
-  }>;
+  }[];
   experience: {
     attack: number;
     strength: number;

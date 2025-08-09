@@ -11,7 +11,7 @@
     "test:watch": "jest --watch --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",
     "type-check": "pnpm -r exec tsc --noEmit",
-    "lint": "pnpm -r run lint --if-present",
+    "lint": "pnpm -r run lint",
     "format": "pnpm -r run format --if-present",
     "clean": "pnpm -r exec rm -rf dist .turbo node_modules/.cache",
     "setup": "node scripts/setup-dev.js",
@@ -20,6 +20,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.32",
     "eslint": "^9.29.0",

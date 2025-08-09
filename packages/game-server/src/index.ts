@@ -31,7 +31,7 @@ import { configureApi } from "./api";
  * The Express application instance.
  * @type {express.Express}
  */
-const app = express();
+const app: express.Express = express();
 
 /**
  * The underlying HTTP/HTTPS server instance.

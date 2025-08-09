@@ -13,20 +13,20 @@ import { SpecialAttackSchema } from "./SpecialAttackSchema";
  * @author The Architect
  */
 export class PlayerSchema extends Schema {
-  @type("string") sessionId: string = "";
-  @type("string") ecsId: string = "";
-  @type("string") userId: string = "";
-  @type("string") username: string = "";
-  @type("number") x: number = 0;
-  @type("number") y: number = 0;
-  @type("string") direction: string = "down";
-  @type("boolean") isMoving: boolean = false;
+  @type("string") sessionId = "";
+  @type("string") ecsId = "";
+  @type("string") userId = "";
+  @type("string") username = "";
+  @type("number") x = 0;
+  @type("number") y = 0;
+  @type("string") direction = "down";
+  @type("boolean") isMoving = false;
 
   // Appearance
-  @type("string") body: string = "male";
-  @type("string") hair: string = "default";
-  @type("string") skinColor: string = "#C68642";
-  @type("string") hairColor: string = "#000000";
+  @type("string") body = "male";
+  @type("string") hair = "default";
+  @type("string") skinColor = "#C68642";
+  @type("string") hairColor = "#000000";
 
   // Equipment & Stats
   @type(EquipmentSchema) equipment = new EquipmentSchema();
@@ -36,7 +36,7 @@ export class PlayerSchema extends Schema {
   @type(SpecialAttackSchema) specialAttack = new SpecialAttackSchema();
 
   // Player State
-  @type("boolean") isConnected: boolean = true;
-  @type("boolean") isInCombat: boolean = false;
-  @type("string") targetId: string = ""; // ECS ID of the current target
+  @type("boolean") isConnected = true;
+  @type("boolean") isInCombat = false;
+  @type("string") targetId = ""; // ECS ID of the current target
 }

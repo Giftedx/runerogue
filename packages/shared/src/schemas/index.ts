@@ -18,4 +18,4 @@ export * from "./PrayerSchema";
 export * from "./SkillSchema";
 export * from "./SpecialAttackSchema";
 export * from "./Vector2Schema";
-export * from "./WaveSchema";
+

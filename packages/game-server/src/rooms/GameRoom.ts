@@ -1,6 +1,5 @@
 import { Room, Client } from "colyseus";
-import { GameRoomState, PlayerSchema } from "@runerogue/shared/schemas";
-import { fixSchemaHierarchy } from "@runerogue/shared/utils";
+import { GameRoomState, PlayerSchema, fixSchemaHierarchy } from "@runerogue/shared";
 
 /**
  * @class GameRoom
@@ -27,7 +26,7 @@ export class GameRoom extends Room<GameRoomState> {
     this.setState(new GameRoomState());
 
     // Apply the schema compatibility fix recursively to the entire state
-    fixSchemaHierarchy(this.state);
+    fixSchemaHierarchy(GameRoomState);
 
     // Set up a simulation interval for game logic updates
     this.setSimulationInterval((deltaTime) => this.update(deltaTime));

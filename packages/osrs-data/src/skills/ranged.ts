@@ -362,8 +362,8 @@ export const RANGED_ATTACK_STYLES: RangedAttackStyle[] = [
 export function calculateRangedMaxHit(
   rangedLevel: number,
   rangedStrength: number,
-  prayerMultiplier: number = 1.0,
-  styleBonus: number = 0,
+  prayerMultiplier = 1.0,
+  styleBonus = 0,
 ): number {
   // OSRS ranged max hit formula
   const effectiveRanged =
@@ -383,8 +383,8 @@ export function calculateRangedAccuracy(
   attackBonus: number,
   targetDefenceLevel: number,
   targetRangedDefence: number,
-  prayerMultiplier: number = 1.0,
-  styleBonus: number = 0,
+  prayerMultiplier = 1.0,
+  styleBonus = 0,
 ): number {
   // Effective ranged level
   const effectiveRangedLevel =

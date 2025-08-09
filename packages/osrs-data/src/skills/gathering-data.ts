@@ -745,7 +745,7 @@ export function calculateFishingSuccess(
 export function calculateCookingSuccess(
   cookingLevel: number,
   foodLevel: number,
-  toolEffectiveness: number = 1.0,
+  toolEffectiveness = 1.0,
 ): number {
   const levelDifference = cookingLevel - foodLevel;
   let baseChance = 0.5 + levelDifference * 0.02;
@@ -763,8 +763,8 @@ export function calculateBurnChance(
   cookingLevel: number,
   foodLevel: number,
   burnStopLevel: number,
-  isRange: boolean = false,
-  hasCookingGauntlets: boolean = false,
+  isRange = false,
+  hasCookingGauntlets = false,
 ): number {
   // No burning after burn stop level
   if (cookingLevel >= burnStopLevel) return 0;
@@ -787,7 +787,7 @@ export function calculateBurnChance(
 export function calculateFiremakingSuccess(
   firemakingLevel: number,
   logLevel: number,
-  toolEffectiveness: number = 1.0,
+  toolEffectiveness = 1.0,
 ): number {
   const levelDifference = firemakingLevel - logLevel;
   let baseChance = 0.6 + levelDifference * 0.03;
