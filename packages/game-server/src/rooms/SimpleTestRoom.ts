@@ -8,19 +8,19 @@ import { MapSchema, Schema, type } from "@colyseus/schema";
 
 export class SimplePlayer extends Schema {
   @type("string")
-  id: string = "";
+  id = "";
 
   @type("number")
-  x: number = 0;
+  x = 0;
 
   @type("number")
-  y: number = 0;
+  y = 0;
 
   @type("number")
-  health: number = 100;
+  health = 100;
 
   @type("number")
-  maxHealth: number = 100;
+  maxHealth = 100;
 
   constructor() {
     super();
@@ -29,34 +29,34 @@ export class SimplePlayer extends Schema {
 
 export class SimpleEnemy extends Schema {
   @type("string")
-  id: string = "";
+  id = "";
 
   @type("number")
-  x: number = 0;
+  x = 0;
 
   @type("number")
-  y: number = 0;
+  y = 0;
 
   @type("number")
-  health: number = 50;
+  health = 50;
 
   @type("number")
-  maxHealth: number = 50;
+  maxHealth = 50;
 
   @type("string")
-  enemyType: string = "goblin";
+  enemyType = "goblin";
 
   @type("string")
-  state: string = "moving";
+  state = "moving";
 
   @type("number")
-  attack: number = 1;
+  attack = 1;
 
   @type("number")
-  strength: number = 1;
+  strength = 1;
 
   @type("number")
-  defence: number = 1;
+  defence = 1;
 
   constructor() {
     super();
@@ -65,16 +65,16 @@ export class SimpleEnemy extends Schema {
 
 export class SimpleGameState extends Schema {
   @type({ map: SimplePlayer })
-  players: MapSchema<SimplePlayer> = new MapSchema<SimplePlayer>();
+  players = new MapSchema<SimplePlayer>();
 
   @type({ map: SimpleEnemy })
-  enemies: MapSchema<SimpleEnemy> = new MapSchema<SimpleEnemy>();
+  enemies = new MapSchema<SimpleEnemy>();
 
   @type("number")
-  waveNumber: number = 1;
+  waveNumber = 1;
 
   @type("number")
-  enemiesKilled: number = 0;
+  enemiesKilled = 0;
 
   constructor() {
     super();

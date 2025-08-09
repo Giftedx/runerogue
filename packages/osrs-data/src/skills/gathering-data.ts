@@ -599,21 +599,24 @@ export const FISH = {
  * @param playerId Player entity (for inventory check)
  * @returns Best available tool or null
  */
+interface Tool {
+  name: string;
+  level: number;
+}
+
 export function getEffectiveTool(
-  tools: Record<string, any>,
+  tools: Record<string, Tool>,
   playerLevel: number,
-  playerId?: any,
-): any | null {
+  _playerId?: string,
+): Tool | null {
   // For now, return the most appropriate tool for the level
   // In full implementation, check player's inventory
   const availableTools = Object.values(tools).filter(
-    (tool: any) => tool.level <= playerLevel,
+    (tool) => tool.level <= playerLevel,
   );
   if (availableTools.length === 0) return null;
   // Direct tool selection based on level ranges for test consistency
-  console.log(`Debug: Player level ${playerLevel}`);
   if (playerLevel >= 51) {
-    console.log("Branch: 51+");
     // Prefer Rune tools
     return (
       availableTools.find((tool) => tool.name.includes("Rune")) ??
@@ -624,7 +627,6 @@ export function getEffectiveTool(
       availableTools[0]
     );
   } else if (playerLevel >= 41) {
-    console.log("Branch: 41+");
     // Prefer Rune tools
     return (
       availableTools.find((tool) => tool.name.includes("Rune")) ??
@@ -635,7 +637,6 @@ export function getEffectiveTool(
       availableTools[0]
     );
   } else if (playerLevel >= 31) {
-    console.log("Branch: 31+");
     // Prefer Adamant tools
     return (
       availableTools.find((tool) => tool.name.includes("Adamant")) ??
@@ -645,7 +646,6 @@ export function getEffectiveTool(
       availableTools[0]
     );
   } else if (playerLevel >= 21) {
-    console.log("Branch: 21+");
     // Prefer Mithril tools
     return (
       availableTools.find((tool) => tool.name.includes("Mithril")) ??
@@ -654,7 +654,6 @@ export function getEffectiveTool(
       availableTools[0]
     );
   } else if (playerLevel >= 6) {
-    console.log("Branch: 6+");
     // Prefer Steel tools
     return (
       availableTools.find((tool) => tool.name.includes("Steel")) ??
@@ -662,13 +661,7 @@ export function getEffectiveTool(
       availableTools[0]
     );
   } else {
-    console.log("Branch: 1-5");
     // Prefer Bronze tools (level 1-5)
-    console.log(`Debug: Looking for Bronze in level ${playerLevel}`);
-    const bronzeFound = availableTools.find((tool) =>
-      tool.name.includes("Bronze"),
-    );
-    console.log(`Debug: Bronze found:`, bronzeFound?.name);
     return (
       availableTools.find((tool) => tool.name.includes("Bronze")) ??
       availableTools[0]

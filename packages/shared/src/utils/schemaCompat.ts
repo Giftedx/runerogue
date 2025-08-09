@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain */
+
 /**
  * @file schemaCompat.ts
  * @author The Architect
@@ -65,9 +65,9 @@ export function fixSchemaHierarchy(RootSchema: typeof Schema): void {
   // 3. Introspect the schema's definition to find and fix all nested schemas
   const rootSchema = RootSchema as unknown as Record<string, unknown>;
   const definition =
-    (rootSchema._definition && typeof rootSchema._definition === "object" && rootSchema._definition !== null
+    (rootSchema._definition && typeof rootSchema._definition === "object"
       ? rootSchema._definition as Record<string, unknown>
-      : (rootSchema.metadata && typeof rootSchema.metadata === "object" && rootSchema.metadata !== null
+      : (rootSchema.metadata && typeof rootSchema.metadata === "object"
         ? rootSchema.metadata as Record<string, unknown>
         : undefined));
   if (!definition || typeof definition !== "object" || !("fields" in definition) || !definition.fields) {

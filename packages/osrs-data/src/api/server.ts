@@ -5,12 +5,9 @@
  * @author agent/osrs-data (The Lorekeeper)
  */
 
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import compression from "compression";
-
-import { type Request, type Response } from "express";
 
 const app: Express = express();
 const PORT = process.env.PORT ?? 3001;
@@ -18,7 +15,6 @@ const PORT = process.env.PORT ?? 3001;
 // Middleware
 app.use(helmet());
 app.use(cors());
-app.use(compression());
 app.use(express.json());
 
 // Health check endpoint

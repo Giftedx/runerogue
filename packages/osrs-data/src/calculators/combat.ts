@@ -25,14 +25,23 @@ export function calculateMaxHit(
   prayerMultiplier = 1.0,
   styleBonus = 0,
 ): number {
+  // Validate inputs
+  if (!stats || !equipment) {
+    return 0;
+  }
+
+  // Ensure we have valid numbers
+  const strength = typeof stats.strength === 'number' ? stats.strength : 1;
+  const strengthBonus = typeof equipment.strengthBonus === 'number' ? equipment.strengthBonus : 0;
+
   // OSRS max hit formula
   // Effective strength = floor(strength * prayerMultiplier) + styleBonus + 8
   // Max hit = floor(0.5 + (effective_strength * (strength_bonus + 64)) / 640)
 
   const effectiveStrength =
-    Math.floor(stats.strength * prayerMultiplier) + styleBonus + 8;
+    Math.floor(strength * prayerMultiplier) + styleBonus + 8;
   const maxHit = Math.floor(
-    0.5 + (effectiveStrength * (equipment.strengthBonus + 64)) / 640,
+    0.5 + (effectiveStrength * (strengthBonus + 64)) / 640,
   );
 
   return maxHit;
@@ -62,6 +71,17 @@ export function calculateAccuracy(
   attackerStyleBonus = 0,
   defenderStyleBonus = 0,
 ): number {
+  // Validate inputs
+  if (!attackerStats || !attackerEquipment || !defenderStats || !defenderEquipment) {
+    return 0;
+  }
+
+  // Ensure we have valid numbers
+  const attackerAttack = typeof attackerStats.attack === 'number' ? attackerStats.attack : 1;
+  const attackerAttackBonus = typeof attackerEquipment.attackBonus === 'number' ? attackerEquipment.attackBonus : 0;
+  const defenderDefence = typeof defenderStats.defence === 'number' ? defenderStats.defence : 1;
+  const defenderDefenceBonus = typeof defenderEquipment.defenceBonus === 'number' ? defenderEquipment.defenceBonus : 0;
+
   // OSRS accuracy formula
   // Effective attack = floor(attack * prayerMultiplier) + styleBonus + 8
   // Max attack roll = effective_attack * (attack_bonus + 64)
@@ -69,17 +89,17 @@ export function calculateAccuracy(
   // Max defence roll = effective_defence * (defence_bonus + 64)
 
   const effectiveAttack =
-    Math.floor(attackerStats.attack * attackerPrayerMultiplier) +
+    Math.floor(attackerAttack * attackerPrayerMultiplier) +
     attackerStyleBonus +
     8;
-  const maxAttackRoll = effectiveAttack * (attackerEquipment.attackBonus + 64);
+  const maxAttackRoll = effectiveAttack * (attackerAttackBonus + 64);
 
   const effectiveDefence =
-    Math.floor(defenderStats.defence * defenderPrayerMultiplier) +
+    Math.floor(defenderDefence * defenderPrayerMultiplier) +
     defenderStyleBonus +
     8;
   const maxDefenceRoll =
-    effectiveDefence * (defenderEquipment.defenceBonus + 64);
+    effectiveDefence * (defenderDefenceBonus + 64);
 
   // Calculate accuracy based on OSRS formula
   let accuracy: number;
@@ -100,17 +120,25 @@ export function calculateAccuracy(
  * @returns Combat level (1-126)
  */
 export function calculateCombatLevel(stats: OSRSCombatStats): number {
-  // OSRS combat level formula
-  const defenceLevel = stats.defence;
-  const hitpointsLevel = stats.hitpoints;
-  const prayerLevel = stats.prayer || 1;
+  // Validate inputs
+  if (!stats) {
+    return 3;
+  }
 
+  // Ensure we have valid numbers
+  const defenceLevel = typeof stats.defence === 'number' ? stats.defence : 1;
+  const hitpointsLevel = typeof stats.hitpoints === 'number' ? stats.hitpoints : 10;
+  const prayerLevel = typeof stats.prayer === 'number' ? stats.prayer : 1;
+  const attackLevel = typeof stats.attack === 'number' ? stats.attack : 1;
+  const strengthLevel = typeof stats.strength === 'number' ? stats.strength : 1;
+
+  // OSRS combat level formula
   // Calculate base combat level
   const baseCombatLevel =
     (defenceLevel + hitpointsLevel + Math.floor(prayerLevel / 2)) * 0.25;
 
   // Calculate melee combat level
-  const meleeCombatLevel = (stats.attack + stats.strength) * 0.325;
+  const meleeCombatLevel = (attackLevel + strengthLevel) * 0.325;
 
   // For now, assume melee combat (can extend for ranged/magic later)
   const combatLevel = Math.floor(baseCombatLevel + meleeCombatLevel);

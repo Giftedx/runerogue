@@ -57,8 +57,8 @@ export function loadInitialEnemies(): Record<string, OSRSEnemyData> {
     "../data/enemies/initial-enemies.json",
   );
   const raw = fs.readFileSync(dataPath, "utf-8");
-  const parsed = JSON.parse(raw);
-  return parsed.enemies as Record<string, OSRSEnemyData>;
+  const parsed = JSON.parse(raw) as { enemies: Record<string, OSRSEnemyData> };
+  return parsed.enemies;
 }
 
 /**
