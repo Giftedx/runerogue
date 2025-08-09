@@ -64,8 +64,13 @@ export function fixSchemaHierarchy(RootSchema: typeof Schema): void {
 
   // 3. Introspect the schema's definition to find and fix all nested schemas
   const rootSchema = RootSchema as unknown as Record<string, unknown>;
-  const definition = rootSchema._definition as Record<string, unknown> || rootSchema.metadata as Record<string, unknown>;
-  if (!definition || !definition.fields) {
+  const definition =
+    (rootSchema._definition && typeof rootSchema._definition === "object" && rootSchema._definition !== null
+      ? rootSchema._definition as Record<string, unknown>
+      : (rootSchema.metadata && typeof rootSchema.metadata === "object" && rootSchema.metadata !== null
+        ? rootSchema.metadata as Record<string, unknown>
+        : undefined));
+  if (!definition || typeof definition !== "object" || !("fields" in definition) || !definition.fields) {
     return;
   }
 
