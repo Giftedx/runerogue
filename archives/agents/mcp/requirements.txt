@@ -10,7 +10,7 @@ slowapi>=0.1.8
 python-multipart>=0.0.5
 
 # OSRS Agent System Dependencies
-pyautogen>=0.2.0
+ag2>=0.2.0
 requests>=2.28.0
 beautifulsoup4>=4.11.0
 lxml>=4.9.0
