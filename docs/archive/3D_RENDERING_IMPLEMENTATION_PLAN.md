@@ -5,5 +5,3 @@
 ## Overview
 
 This document outlines the comprehensive plan for implementing 3D rendering in RuneRogue, building on the existing Godot 4.x client and ECS/Colyseus multiplayer foundation.
-
-... existing code ...
