@@ -1,3 +1,5 @@
+> Note: This document references a historical `packages/server` path. The current asset cache lives at `packages/phaser-client/public/assets/osrs-cache`. Server integration references are historical.
+
 # 🎯 RuneRogue Combat Assets Extraction Success Report
 
 ## ✅ Mission Accomplished: Combat Visual Effects Ready!

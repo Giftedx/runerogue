@@ -7,12 +7,15 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.json",
-    "__tests__/**/*.ts"
+    "src/**/*.json"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "**/__tests__/**",
+    "**/*.test.ts"
   ],
   "references": [
     {

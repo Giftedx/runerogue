@@ -1,3 +1,5 @@
+> Note: This report contains historical references to a `packages/server` directory that does not exist in the current repo. Use `packages/phaser-client/public/assets/osrs-cache` for the asset cache path. Treat server integration notes as historical context.
+
 # 🎮 RuneRogue OSRS Asset Pipeline Status Report
 
 ## ✅ Current Status: OPERATIONAL AND COMBAT-READY

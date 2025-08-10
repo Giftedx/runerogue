@@ -1,19 +1,18 @@
 # @runerogue/phaser-client
 
-**Status: Active – Canonical Discord Activity Client**
+**Status: Active – Discord Activity Client**
 
-This package contains the official, production-ready RuneRogue Discord Activity client. It is a modern web application built with TypeScript, React, Phaser 3, Zustand, Colyseus, and the Discord Embedded App SDK, following the architecture and requirements described in the project documentation.
+This package contains the RuneRogue Discord Activity client. It is a web application built with TypeScript, React, Phaser 3, Zustand, Colyseus, and the Discord Embedded App SDK.
 
 ## Features
 
-- **Discord Activity**: Runs natively as a Discord Activity in an iframe, with full Discord SDK integration and authentication.
-- **Phaser 3 Game Engine**: Real-time 2D game rendering and logic.
-- **React 18 UI**: Modern, responsive UI for menus, HUD, and overlays.
-- **Zustand State Management**: Efficient, scalable state for UI and player data.
-- **Colyseus Multiplayer**: Real-time multiplayer rooms and state sync.
-- **Tailwind CSS**: Discord-like styling and rapid UI development.
-- **Vite Build Tool**: Fast development, HMR, and optimized production builds.
-- **ECS Architecture**: Uses bitECS for performant entity-component-system logic.
+- **Discord Activity**: Runs in an iframe via the Discord Embedded App SDK
+- **Phaser 3 Game Engine**: Real-time 2D rendering and logic
+- **React 18 UI**: Menus, HUD, overlays
+- **Zustand State Management**
+- **Colyseus Multiplayer**: Real-time rooms and state sync
+- **Tailwind CSS**: Styling
+- **Vite Build Tool**: Fast dev and optimized builds
 
 ## Getting Started
 
@@ -49,8 +48,8 @@ pnpm install
 
 ### Discord Activity Manifest
 
-- The `discord-activity.json` manifest must be present in the build output (public directory) for Discord to recognize the Activity.
-- Update the `client_id` and URLs as needed for your Discord application.
+- The `discord-activity.json` manifest must be present in `public/`.
+- Update `client_id` and URLs for your Discord application.
 
 ### Production Build
 
@@ -58,15 +57,10 @@ pnpm install
 pnpm build
 ```
 
-## Architecture
+## Notes
 
-- See the main project documentation for full technical details and architecture diagrams.
-- This client implements all requirements for OSRS-authentic combat, multiplayer, and Discord integration.
+- This repository does not include a canonical backend server. If testing multiplayer locally, run any available server prototype separately and set `VITE_GAME_SERVER_URL` accordingly.
 
 ## Contributing
 
 See the root [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
-
----
-
-_This is the canonical client for RuneRogue Discord Activity. All new development should occur here._

@@ -136,3 +136,5 @@ The RuneRogue project Phase 4 skill systems (Magic, Ranged, Smithing, Equipment,
 **Generated**: 2025-06-15  
 **Session Duration**: Post-Phase 4 Development & Build Stabilization  
 **Status**: COMPLETED SUCCESSFULLY ✅
+
+> Note: References to `packages/server` are historical and may not match the current repository. Treat as background context.
