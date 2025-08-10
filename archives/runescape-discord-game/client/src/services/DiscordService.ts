@@ -15,7 +15,7 @@ if (VITE_DISCORD_CLIENT_ID === "YOUR_DISCORD_CLIENT_ID_PLACEHOLDER") {
 export class DiscordService {
   private static instance: DiscordService;
   public discordSdk: DiscordSDK;
-  private isReady: boolean = false;
+  private isReady = false;
   private authResult: { code: string } | null = null;
 
   private constructor() {

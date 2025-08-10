@@ -7,7 +7,7 @@ import { Client } from "colyseus.js";
 export class NetworkManager {
   private client: Client;
   private room: any;
-  private isConnected: boolean = false;
+  private isConnected = false;
   constructor() {
     // Use secure protocols (https/wss) if running on HTTPS, otherwise fallback to http/ws
     const isHttps = window.location.protocol === "https:";

@@ -2,6 +2,7 @@
   "name": "runerogue",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "OSRS-inspired multiplayer roguelike survival game for Discord Activities",
   "scripts": {
     "dev": "pnpm -r --parallel --stream run dev",

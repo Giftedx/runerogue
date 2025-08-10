@@ -9,7 +9,7 @@
 // import { OSRSEnemy, InitialEnemyId, INITIAL_ENEMIES } from '../../../shared/src/types/osrs';
 
 // Temporary types for building
-type InitialEnemyId = string;
+// type InitialEnemyId = string;
 interface OSRSEnemy {
   id: string;
   name: string;
@@ -35,14 +35,16 @@ const INITIAL_ENEMIES: string[] = [
  * Scrape enemy data from OSRS Wiki
  * Must use MCP OSRS tools for Wiki access
  */
-export async function scrapeEnemyData(enemyId: string): Promise<OSRSEnemy> {
+export function scrapeEnemyData(enemyId: string): Promise<OSRSEnemy> {
   // TODO: Implement using MCP OSRS tools
   // - mcp_osrs_osrs_wiki_search
   // - mcp_osrs_osrs_wiki_parse_page
   // - mcp_osrs_search_npctypes
 
-  throw new Error(
-    `Wiki scraping not yet implemented for ${enemyId} - agent/osrs-data task pending`,
+  return Promise.reject(
+    new Error(
+      `Wiki scraping not yet implemented for ${enemyId} - agent/osrs-data task pending`,
+    ),
   );
 }
 
@@ -67,21 +69,23 @@ export async function scrapeAllInitialEnemies(): Promise<OSRSEnemy[]> {
 /**
  * Scrape combat formulas from OSRS Wiki
  */
-export async function scrapeCombatFormulas(): Promise<any> {
+export function scrapeCombatFormulas(): Promise<Record<string, unknown>> {
   // TODO: Implement combat formula scraping
   // Target pages:
   // - https://oldschool.runescape.wiki/w/Combat_level
   // - https://oldschool.runescape.wiki/w/Damage_per_second/Melee
 
-  throw new Error(
-    "Combat formula scraping not yet implemented - agent/osrs-data task pending",
+  return Promise.reject(
+    new Error(
+      "Combat formula scraping not yet implemented - agent/osrs-data task pending",
+    ),
   );
 }
 
 /**
  * Validate scraped data against known OSRS values
  */
-export function validateScrapedData(data: any): boolean {
+export function validateScrapedData(_data: Record<string, unknown>): boolean {
   // TODO: Implement validation against known OSRS examples
   console.warn(
     "Data validation not yet implemented - agent/osrs-data task pending",
