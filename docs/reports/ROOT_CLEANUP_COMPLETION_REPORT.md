@@ -4,6 +4,8 @@
 **Duration**: ~30 minutes  
 **Status**: ✅ **COMPLETE**
 
+> Note: This report contains historical references to `client/` and `packages/server/` directories that are not present in the current repository structure. Treat them as historical context only.
+
 ## 📊 Cleanup Summary
 
 ### ✅ COMPLETED TASKS

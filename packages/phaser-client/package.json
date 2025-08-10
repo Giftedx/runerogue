@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@discord/embedded-app-sdk": "^2.2.0",
-
     "@runerogue/osrs-data": "workspace:*",
     "@runerogue/shared": "workspace:*",
     "bitecs": "^0.3.40",
@@ -27,6 +26,7 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-basic-ssl": "^2.1.0",

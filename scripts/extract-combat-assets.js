@@ -17,7 +17,7 @@ const WIKI_API = "https://oldschool.runescape.wiki/api.php";
 const WIKI_IMAGE_BASE = "https://oldschool.runescape.wiki/images/";
 const ASSET_CACHE_DIR = path.join(
   __dirname,
-  "../packages/server/assets/osrs-cache",
+  "../packages/phaser-client/public/assets/osrs-cache",
 );
 const MANIFEST_PATH = path.join(ASSET_CACHE_DIR, "manifest.json");
 

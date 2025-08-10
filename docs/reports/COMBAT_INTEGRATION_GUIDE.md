@@ -223,3 +223,5 @@ start packages/phaser-client/combat-effects-test.html
 ---
 
 **Ready to bring authentic OSRS combat feedback to multiplayer roguelike action!** ⚔️🎮
+
+> Note: Server code paths in this guide refer to a historical `packages/server` package not present in this repo. Use this as background only. Asset cache path: `packages/phaser-client/public/assets/osrs-cache`.

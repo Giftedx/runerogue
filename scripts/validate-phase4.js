@@ -1,3 +1,9 @@
+/*
+ NOTE: Historical script
+ - References `packages/server` and ECS files that are not present in the current repository.
+ - Retained for historical context only.
+*/
+
 #!/usr/bin/env node
 
 /**

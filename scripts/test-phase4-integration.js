@@ -1,3 +1,9 @@
+/*
+ NOTE: Historical script
+ - This script references a former `packages/server` directory and specific ECS files that are not present in the current repository.
+ - Keep for archival context only; do not rely on it for current validation.
+*/
+
 /**
  * Phase 4 Integration Test
  * Tests the new skill systems integration
