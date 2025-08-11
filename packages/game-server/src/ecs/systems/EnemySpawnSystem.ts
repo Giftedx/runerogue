@@ -124,7 +124,8 @@ function startNextWave(
     for (let i = 0; i < scaledCount; i++) {
       waveState.spawnQueue.push({
         type: enemyConfig.type,
-        spawnTime: spawnTime + i * enemyConfig.spawnDelay,
+        // Ensure first spawn occurs after at least one delay tick to avoid immediate spawn in same tick
+        spawnTime: spawnTime + (i + 1) * enemyConfig.spawnDelay,
         spawnRadius: enemyConfig.spawnRadius,
       });
     }

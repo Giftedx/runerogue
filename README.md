@@ -47,6 +47,38 @@ pnpm run test
 
 Note: This project uses Jest; some packages may not currently define tests.
 
+### Running the legacy game server locally
+
+The Colyseus-based legacy server lives in `packages/game-server`. To run it:
+
+```bash
+pnpm run server:dev
+```
+
+This starts the server on `ws://localhost:2567` (HTTP/WS by default, HTTPS/WSS if certs are present).
+
+### Running integration tests
+
+Integration tests connect to a running server and are opt-in to keep the default test run hermetic.
+
+1. In one terminal, start the server:
+
+```bash
+pnpm run server:dev
+```
+
+2. In another terminal, run the integration test suite:
+
+```bash
+pnpm run test:integration
+```
+
+Alternatively, to include integration tests in a single run, set the flag and use the root config:
+
+```bash
+RUN_INTEGRATION=1 pnpm run test
+```
+
 ## Architecture Notes
 
 - Network schemas and shared contracts live in `packages/shared`.
