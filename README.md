@@ -89,6 +89,10 @@ RUN_INTEGRATION=1 pnpm run test
 
 See `CONTRIBUTING.md` for guidelines.
 
+## Credits
+
+See `CREDITS.md` for acknowledgements and external resources.
+
 ## License
 
 MIT — see `LICENSE`.
