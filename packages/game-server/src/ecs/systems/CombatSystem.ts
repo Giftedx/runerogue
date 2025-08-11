@@ -4,15 +4,16 @@
  * @author RuneRogue Development Team
  */
 
-import { defineQuery, defineSystem, type IWorld } from "bitecs";
-import { calculateMaxHit, calculateAccuracy } from "@runerogue/osrs-data";
+import { defineQuery, defineSystem, type IWorld, hasComponent } from "bitecs";
+import { calculateMaxHit, calculateAccuracy, getEnemyById } from "@runerogue/osrs-data";
 import { Prayer as PrayerComponent } from "../components/Prayer";
 import {
   PRAYER_EFFECTS,
   Prayer as PrayerEnum,
   CombatStyle,
+  EnemyType,
 } from "@runerogue/shared";
-import { Position, Health, Target, Combat } from "../components";
+import { Position, Health, Target, Combat, Enemy } from "../components";
 import type { GameRoom } from "../../rooms/GameRoom";
 import { gameEventEmitter, GameEventType } from "../../events/GameEventEmitter";
 import type { CombatEvent } from "../../events/types";

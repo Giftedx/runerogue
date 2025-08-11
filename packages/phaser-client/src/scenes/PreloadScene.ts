@@ -20,8 +20,11 @@ const PRELOAD_CONFIG = {
   PLACEHOLDER_SPRITES: {
     player: { width: 32, height: 32, color: 0x4169e1 },
     goblin: { width: 24, height: 24, color: 0x228b22 },
-    spider: { width: 20, height: 20, color: 0x8b4513 },
+    giant_rat: { width: 20, height: 20, color: 0x8b4513 },
     skeleton: { width: 28, height: 28, color: 0x808080 },
+    chicken: { width: 14, height: 14, color: 0xffffe0 },
+    cow: { width: 28, height: 18, color: 0xf5deb3 },
+    zombie: { width: 28, height: 28, color: 0x556b2f },
     chest: { width: 32, height: 32, color: 0xffd700 },
     projectile: { width: 8, height: 8, color: 0xff4500 },
   },

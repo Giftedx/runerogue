@@ -23,7 +23,8 @@
     "phaser": "^3.70.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "zustand": "^5.0.7"
+    "zustand": "^5.0.7",
+    "gl-matrix": "^3.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",

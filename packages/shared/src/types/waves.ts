@@ -87,23 +87,29 @@ export const WAVE_CONFIGS: WaveConfig[] = [
     difficultyMultiplier: 1.0,
   },
 
-  // Wave 3: Challenging - 2 Skeletons
+  // Wave 3: Chickens and Cows for training and variety
   {
     waveNumber: 3,
     enemies: [
       {
-        type: EnemyType.Skeleton,
+        type: EnemyType.Chicken,
+        count: 6,
+        spawnDelay: 500,
+        spawnRadius: 220,
+      },
+      {
+        type: EnemyType.Cow,
         count: 2,
         spawnDelay: 1500,
-        spawnRadius: 180,
+        spawnRadius: 200,
       },
     ],
     rewards: {
-      xpReward: 100, // Higher XP for tougher enemies
-      goldReward: 50,
+      xpReward: 80,
+      goldReward: 35,
       itemDrops: [],
     },
-    timeBeforeNextWave: 8000,
+    timeBeforeNextWave: 6000,
     difficultyMultiplier: 1.0,
   },
 
@@ -133,12 +139,12 @@ export const WAVE_CONFIGS: WaveConfig[] = [
     difficultyMultiplier: 1.1, // 10% stronger
   },
 
-  // Wave 5: Boss wave - 1 Strong Skeleton + 4 Goblins
+  // Wave 5: Boss wave - 1 Zombie + 4 Goblins
   {
     waveNumber: 5,
     enemies: [
       {
-        type: EnemyType.Skeleton,
+        type: EnemyType.Zombie,
         count: 1,
         spawnDelay: 0,
         spawnRadius: 150,
@@ -151,9 +157,9 @@ export const WAVE_CONFIGS: WaveConfig[] = [
       },
     ],
     rewards: {
-      xpReward: 200, // Boss wave bonus
-      goldReward: 100,
-      itemDrops: ["bronze_sword"], // First equipment drop
+      xpReward: 220, // Boss wave bonus
+      goldReward: 120,
+      itemDrops: ["bronze_sword"],
     },
     timeBeforeNextWave: 15000, // Longer rest after boss
     difficultyMultiplier: 1.2, // 20% stronger
@@ -174,16 +180,16 @@ export function generateWaveConfig(waveNumber: number): WaveConfig {
   if (waveNumber % 5 === 0) {
     // Boss waves every 5 waves
     enemies.push({
-      type: EnemyType.Skeleton,
+      type: EnemyType.Zombie,
       count: Math.floor(1 + waveNumber / 10),
       spawnDelay: 2000,
       spawnRadius: 150,
     });
     enemies.push({
-      type: EnemyType.GiantRat,
-      count: Math.floor(2 + waveNumber / 8),
-      spawnDelay: 1000,
-      spawnRadius: 200,
+      type: EnemyType.Skeleton,
+      count: Math.floor(waveNumber / 6),
+      spawnDelay: 1800,
+      spawnRadius: 170,
     });
   } else {
     // Regular waves
@@ -203,11 +209,38 @@ export function generateWaveConfig(waveNumber: number): WaveConfig {
       });
     }
 
+    if (waveNumber > 3) {
+      enemies.push({
+        type: EnemyType.Chicken,
+        count: Math.floor(2 + waveNumber / 3),
+        spawnDelay: 700,
+        spawnRadius: 240,
+      });
+    }
+
+    if (waveNumber > 4) {
+      enemies.push({
+        type: EnemyType.Cow,
+        count: Math.floor(1 + waveNumber / 5),
+        spawnDelay: 1500,
+        spawnRadius: 210,
+      });
+    }
+
     if (waveNumber > 6) {
       enemies.push({
         type: EnemyType.Skeleton,
-        count: Math.floor(waveNumber / 6),
+        count: Math.floor(waveNumber / 7),
         spawnDelay: 1500,
+        spawnRadius: 180,
+      });
+    }
+
+    if (waveNumber > 9) {
+      enemies.push({
+        type: EnemyType.Zombie,
+        count: Math.floor(waveNumber / 10),
+        spawnDelay: 1900,
         spawnRadius: 180,
       });
     }
