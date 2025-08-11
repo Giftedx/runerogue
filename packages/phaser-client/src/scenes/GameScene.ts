@@ -786,7 +786,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     const text = this.add.text(x, y, damage.toString(), {
-      fontFamily: "'RuneScape UF'",
+      fontFamily: "'RuneScape UF', Arial, sans-serif",
       fontSize: "16px",
       color: color,
       stroke: "#000000",

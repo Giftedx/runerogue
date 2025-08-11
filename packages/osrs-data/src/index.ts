@@ -15,6 +15,9 @@ export * from "./calculators/combat";
 // Data API
 export * from "./api/server";
 
+// Enemies data loader
+export { loadInitialEnemies, getEnemyById } from "./enemies";
+
 // Wiki scrapers
 export * from "./scrapers/wiki-scraper";
 

@@ -42,7 +42,8 @@
     "redis": "^5.8.0",
 
     "reflect-metadata": "^0.2.2",
-    "winston": "^3.10.0"
+    "winston": "^3.10.0",
+    "gl-matrix": "^3.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",

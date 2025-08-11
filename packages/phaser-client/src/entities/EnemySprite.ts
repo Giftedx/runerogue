@@ -37,6 +37,7 @@ export class EnemySprite extends Phaser.GameObjects.Container {
       -config.size.height / 2 - 20,
       enemy.type,
       {
+        fontFamily: "'RuneScape UF', Arial, sans-serif",
         fontSize: "12px",
         color: "#ffffff",
         stroke: "#000000",

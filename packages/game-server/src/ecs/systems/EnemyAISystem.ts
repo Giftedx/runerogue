@@ -254,9 +254,9 @@ function updateAggressiveBehavior(
   const enemyX = Position.x[enemyEid];
   const enemyY = Position.y[enemyEid];
   const attackRange = Enemy.maxAttackRange[enemyEid];
-  const distance = Math.sqrt(
-    Math.pow(targetPos.x - enemyX, 2) + Math.pow(targetPos.y - enemyY, 2)
-  );
+  const dx = targetPos.x - enemyX;
+  const dy = targetPos.y - enemyY;
+  const distance = Math.hypot(dx, dy);
 
   if (distance <= attackRange) {
     transitionToState(enemyEid, EnemyAIState.Combat, currentTime);
@@ -290,9 +290,9 @@ function updateCombatBehavior(
   const enemyX = Position.x[enemyEid];
   const enemyY = Position.y[enemyEid];
   const attackRange = Enemy.maxAttackRange[enemyEid];
-  const distance = Math.sqrt(
-    Math.pow(targetPos.x - enemyX, 2) + Math.pow(targetPos.y - enemyY, 2)
-  );
+  const dx = targetPos.x - enemyX;
+  const dy = targetPos.y - enemyY;
+  const distance = Math.hypot(dx, dy);
 
   if (distance > attackRange) {
     // Target moved out of range, chase again
