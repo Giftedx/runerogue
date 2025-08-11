@@ -11,6 +11,8 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",
+    "test:integration": "RUN_INTEGRATION=1 jest --config jest.integration.cjs",
+    "server:dev": "pnpm --filter @runerogue/game-server dev",
     "type-check": "pnpm -r exec tsc --noEmit",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format --if-present",
