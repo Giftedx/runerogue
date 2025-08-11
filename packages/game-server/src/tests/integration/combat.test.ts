@@ -1,7 +1,10 @@
 import { Client, type Room } from "colyseus.js";
 import type { GameRoomState, EnemySchema } from "@runerogue/shared";
 
-describe("OSRS Combat Integration Test", () => {
+const RUN_INTEGRATION = process.env.RUN_INTEGRATION === "1" || process.env.RUN_INTEGRATION === "true";
+const describeIntegration = RUN_INTEGRATION ? describe : describe.skip;
+
+describeIntegration("OSRS Combat Integration Test", () => {
   let client: Client;
   let room: Room<GameRoomState>;
 
@@ -21,9 +24,11 @@ describe("OSRS Combat Integration Test", () => {
   });
 
   afterAll(async () => {
-    if (room.connection.isOpen) {
-      await room.leave();
-    }
+    try {
+      if (room && room.connection && room.connection.isOpen) {
+        await room.leave();
+      }
+    } catch {}
   });
 
   it("should connect to the game room and have a valid session ID", () => {

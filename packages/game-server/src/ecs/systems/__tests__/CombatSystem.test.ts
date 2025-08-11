@@ -1,4 +1,4 @@
-import { createWorld, addEntity } from "bitecs";
+import { createWorld, addEntity, addComponent } from "bitecs";
 import { Position, Health, Target, Combat } from "../../components";
 import { createCombatSystem } from "../CombatSystem";
 import {
@@ -11,13 +11,21 @@ import type { CombatWorld } from "../CombatSystem";
 describe("CombatSystem", () => {
   it("emits CombatEvent on hit and miss", () => {
     const world = createWorld() as CombatWorld;
-    world.time = { delta: 600, elapsed: 0 };
+    world.time = { delta: 600, elapsed: 3000 }; // ensure time progressed beyond any attack speed
     world.entitiesToRemove = new Set();
     const room = { broadcast: jest.fn() } as any;
     world.room = room;
-    // Add attacker and defender
+    // Add attacker and defender and register components per bitECS pattern
     const attacker = addEntity(world);
     const defender = addEntity(world);
+    addComponent(world, Position, attacker);
+    addComponent(world, Position, defender);
+    addComponent(world, Health, attacker);
+    addComponent(world, Health, defender);
+    addComponent(world, Target, attacker);
+    addComponent(world, Combat, attacker);
+    addComponent(world, Combat, defender);
+
     Position.x[attacker] = 0;
     Position.y[attacker] = 0;
     Position.x[defender] = 0;
