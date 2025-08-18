@@ -37,7 +37,7 @@
     "directory": "packages/shared"
   },
   "dependencies": {
-    "@colyseus/schema": "^3.0.52",
+    "@colyseus/schema": "^3.0.54",
     "reflect-metadata": "^0.2.2"
   }
 }
